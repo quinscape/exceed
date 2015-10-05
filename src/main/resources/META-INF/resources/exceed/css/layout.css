@@ -1,0 +1,92 @@
+.datagrid .header {
+    display: inline-block;
+}
+
+.datagrid .sort-indicator {
+    float: right;
+}
+
+
+.datagrid .current {
+    color: #000;
+    font-weight: bold;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+.exceed-toolbar
+{
+    background: #222;
+    color: #ccc;
+}
+
+.exceed-toolbar a
+{
+    color: #ddd;
+}
+
+.exceed-toolbar a:focus
+{
+    color: #fff;
+}
+
+div.notification
+{
+    position: absolute;
+    width: 300px;
+    right: 10px;
+    background: #D9EDF7;
+    padding: 1em 2ex;
+    border: 1px solid #62a4c4;
+
+    -moz-animation-duration: 10s;
+    -webkit-animation-duration: 10s;
+    -moz-animation-name: slidein;
+    -webkit-animation-name: slidein;
+}
+
+@-moz-keyframes slidein {
+    from {
+        right:-100%;
+        opacity: 0;
+    }
+
+    10% {
+        right: 10px;
+        opacity: 1;
+        -moz-opacity: 1;
+        -webkit-opacity: 1;
+    }
+    90% {
+        right: 10px;
+        opacity: 1;
+        -moz-opacity: 1;
+        -webkit-opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+        -moz-opacity: 0;
+        -webkit-opacity: 0;
+    }
+}
+
+@-webkit-keyframes slidein {
+    from {
+        top:-100%;
+    }
+
+    50% {
+        top: 10px;
+    }
+
+    to {
+        top: -100%
+    }
+}
+
+@-moz-document url-prefix() {
+    fieldset { display: table-cell; }
+}
