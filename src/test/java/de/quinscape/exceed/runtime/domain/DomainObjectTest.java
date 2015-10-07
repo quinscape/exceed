@@ -1,6 +1,5 @@
-package de.quinscape.exceed.app.domain;
+package de.quinscape.exceed.runtime.domain;
 
-import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.domain.tables.pojos.AppUser;
 import org.junit.Test;
 import org.svenson.ClassNameBasedTypeMapper;

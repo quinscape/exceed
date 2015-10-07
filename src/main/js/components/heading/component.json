@@ -1,0 +1,14 @@
+{
+  "components": {
+    "Heading": {
+      "props" : {
+        "value" : {
+          "type" : "PlainText"
+        },
+        "size" : {
+          "type" : "Integer"
+        }
+      }
+    }
+  }
+}

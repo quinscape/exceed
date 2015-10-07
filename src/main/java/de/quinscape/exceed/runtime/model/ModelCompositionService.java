@@ -7,7 +7,7 @@ import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.PropertyType;
 import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.runtime.util.FileExtension;
-import de.quinscape.exceed.runtime.view.DataProvider;
+import de.quinscape.exceed.runtime.component.DataProvider;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.resource.ApplicationResources;

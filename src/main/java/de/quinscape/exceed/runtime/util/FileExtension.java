@@ -4,4 +4,5 @@ public interface FileExtension
 {
     String JS = ".js";
     String JSON = ".json";
+    String CSS = ".css";
 }

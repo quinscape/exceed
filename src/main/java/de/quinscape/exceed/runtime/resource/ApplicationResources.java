@@ -10,10 +10,10 @@ import java.util.Map;
  */
 public class ApplicationResources
 {
-    private final List<? extends Extension> extensions;
+    private final List<? extends ResourceRoot> extensions;
     private final Map<String, ResourceLocation> resourceLocations;
 
-    public ApplicationResources(List<? extends Extension> extensions, Map<String, ResourceLocation>
+    public ApplicationResources(List<? extends ResourceRoot> extensions, Map<String, ResourceLocation>
         resourceLocations)
     {
         this.extensions = extensions;
@@ -52,7 +52,7 @@ public class ApplicationResources
         return resourceLocation;
     }
 
-    public List<? extends Extension> getExtensions()
+    public List<? extends ResourceRoot> getExtensions()
     {
         return extensions;
     }

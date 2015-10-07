@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.config;
 
 import de.quinscape.exceed.runtime.util.Util;
+import de.quinscape.exceed.runtime.component.ComponentDataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,5 +73,11 @@ public class WebConfiguration
     public void addInterceptors(InterceptorRegistry registry)
     {
         registry.addInterceptor(new CommonVariablesInterceptor());
+    }
+
+    @Bean
+    public ComponentDataProvider defaultDataProvider()
+    {
+        return new ComponentDataProvider();
     }
 }

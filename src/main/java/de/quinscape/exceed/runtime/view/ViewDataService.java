@@ -3,6 +3,7 @@ package de.quinscape.exceed.runtime.view;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.component.DataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

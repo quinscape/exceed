@@ -1,4 +1,4 @@
-package de.quinscape.exceed.app.config;
+package de.quinscape.exceed.runtime.config;
 
 import static de.quinscape.exceed.domain.Tables.APP_USER;
 

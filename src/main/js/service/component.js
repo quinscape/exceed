@@ -1,8 +1,10 @@
 
+var extend = require("extend");
+
 var components = {};
 
 
-function registerMapRecursively(root, map, path)
+function registerMapRecursively(map)
 {
     //console.debug("registerMapRecursively", componentsMap, path);
     for (var name in map)
@@ -14,40 +16,19 @@ function registerMapRecursively(root, map, path)
             {
                 if (name === "component")
                 {
-                    if (typeof value.component === "string")
+                    if (value.components && typeof value.components === "object")
                     {
-                        register(root, path, value);
-                    }
-                    else if (value.length && typeof value[0] === "string")
-                    {
-                        for (var i = 0; i < value.length; i++)
-                        {
-                            register(root, path, value[i]);
-                        }
+                        ComponentService.register(map, value);
                     }
                 }
                 else
                 {
-                    registerMapRecursively(root, value, path.concat(name));
+                    registerMapRecursively(map[name], value);
                 }
             }
         }
     }
 }
-
-function register(componentsMap, path, def)
-{
-    var component = componentsMap;
-
-    for (var i = 0; i < path.length; i++)
-    {
-        var name = path[i];
-        component = component[name];
-    }
-    ComponentService.register(def, component);
-}
-
-
 
 var ComponentService = {
     getComponents: function ()
@@ -57,11 +38,36 @@ var ComponentService = {
 
     registerBulk: function (bulkMap)
     {
-        registerMapRecursively(bulkMap, bulkMap, []);
+        registerMapRecursively(bulkMap);
     },
-    register: function(def, component)
+    register: function(dir, def)
     {
-        console.log("register", def, component);
+        //console.log("register def", dir.DataGrid, def);
+
+        var subComponents = def.components;
+        for (var name in subComponents)
+        {
+            if (subComponents.hasOwnProperty(name))
+            {
+                var componentDef = subComponents[name];
+
+                var parts = name.split(".");
+
+                var component = dir;
+                for (var i = 0; i < parts.length; i++)
+                {
+                    component = component[parts[i]];
+                    if (!component)
+                    {
+                        throw new Error("Cannot find module for declared component '" + name + "'");
+                    }
+                }
+
+                components[name] = extend({
+                    component : component
+                }, componentDef);
+            }
+        }
     }
 };
 

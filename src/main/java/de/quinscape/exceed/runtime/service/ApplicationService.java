@@ -107,6 +107,8 @@ public class ApplicationService
         }
         else
         {
+            log.info("Starting application '{}'", appName);
+
             ApplicationHolder holder = new ApplicationHolder(appName);
             ApplicationHolder existing = applications.putIfAbsent(appName, holder);
             if (existing != null)
@@ -116,8 +118,6 @@ public class ApplicationService
 
             holder.setStatus(status);
             RuntimeApplication runtimeApplication = holder.getRuntimeApplication(servletContext);
-
-            log.info("Starting application '{}'", appName);
         }
     }
 

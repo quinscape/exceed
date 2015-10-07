@@ -12,11 +12,13 @@ public class FileExtensionResource
 {
     private final int extensionIndex;
     private final File file;
+    private final String relative;
 
-    public FileExtensionResource(int extensionIndex, File file)
+    public FileExtensionResource(int extensionIndex, File file, String relative)
     {
         this.extensionIndex = extensionIndex;
         this.file = file;
+        this.relative = relative;
     }
 
     @Override
@@ -49,6 +51,11 @@ public class FileExtensionResource
         return file;
     }
 
+    @Override
+    public String getRelativePath()
+    {
+        return relative;
+    }
 
     @Override
     public String toString()

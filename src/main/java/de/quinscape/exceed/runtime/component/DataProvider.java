@@ -1,6 +1,7 @@
-package de.quinscape.exceed.runtime.view;
+package de.quinscape.exceed.runtime.component;
 
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.runtime.view.DataProviderContext;
 
 import java.util.Map;
 

@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.resource;
 
-import de.quinscape.exceed.runtime.resource.classpath.ClassPathExtension;
-import de.quinscape.exceed.runtime.resource.file.FileBasedExtension;
+import de.quinscape.exceed.runtime.resource.classpath.ClassPathResourceRoot;
+import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -24,13 +24,13 @@ public class ResourceLoaderTestCase
     public void testLoad() throws Exception
     {
         ResourceLoader resourceLoader = new ResourceLoader();
-        List<Extension> extensions = Arrays.asList(
-            new ClassPathExtension("resource-base"),
-            new FileBasedExtension(new File("./src/test/java/de/quinscape/exceed/runtime/resource/resource-ext")),
-            new FileBasedExtension(new File("./src/test/java/de/quinscape/exceed/runtime/resource/resource-ext2"))
+        List<ResourceRoot> resourceRoots = Arrays.asList(
+            new ClassPathResourceRoot("resource-base"),
+            new FileResourceRoot(new File("./src/test/java/de/quinscape/exceed/runtime/resource/resource-ext")),
+            new FileResourceRoot(new File("./src/test/java/de/quinscape/exceed/runtime/resource/resource-ext2"))
         );
 
-        ApplicationResources resources = resourceLoader.lookupResources(extensions);
+        ApplicationResources resources = resourceLoader.lookupResources(resourceRoots);
 
         ResourceLocation resource = resources.getResourceLocation("/a.json");
 

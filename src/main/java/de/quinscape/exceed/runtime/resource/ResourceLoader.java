@@ -8,15 +8,31 @@ import java.util.concurrent.ConcurrentMap;
 
 public class ResourceLoader
 {
-    public ApplicationResources lookupResources(List<? extends Extension> extensions)
+    public ApplicationResources lookupResources(List<? extends ResourceRoot> extensions)
     {
 
         ConcurrentMap<String, ResourceLocation> locations = new ConcurrentHashMap<>();
 
         for (int extensionIndex = 0; extensionIndex < extensions.size(); extensionIndex++)
         {
-            Extension extension = extensions.get(extensionIndex);
-            extension.insertResources(locations, extensionIndex);
+            ResourceRoot resourceRoot = extensions.get(extensionIndex);
+            resourceRoot.setExtensionIndex(extensionIndex);
+
+            List<? extends ExtensionResource> extensionResources = resourceRoot.listResources();
+
+            for (ExtensionResource resource : extensionResources)
+            {
+                String relative = resource.getRelativePath();
+
+                ResourceLocation location = locations.get(relative);
+                if (location == null)
+                {
+                    location = new ResourceLocation(relative);
+                    locations.put(relative, location);
+                }
+
+                location.addExtensionResource(resource);
+            }
         }
 
         return new ApplicationResources(extensions, locations);

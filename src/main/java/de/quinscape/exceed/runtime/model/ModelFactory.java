@@ -2,7 +2,7 @@ package de.quinscape.exceed.runtime.model;
 
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.view.ComponentModel;
-import de.quinscape.exceed.runtime.view.ComponentService;
+import de.quinscape.exceed.runtime.component.ComponentIdService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,16 +11,16 @@ public class ModelFactory
 {
     private static Logger log = LoggerFactory.getLogger(ModelFactory.class);
 
-    private ComponentService componentService;
+    private ComponentIdService componentIdService;
 
-    public ModelFactory(ComponentService componentService)
+    public ModelFactory(ComponentIdService componentIdService)
     {
-        if (componentService == null)
+        if (componentIdService == null)
         {
             throw new IllegalArgumentException("componentService can't be null");
         }
 
-        this.componentService = componentService;
+        this.componentIdService = componentIdService;
     }
 
     @Override
@@ -42,7 +42,7 @@ public class ModelFactory
 
             if (model instanceof ComponentModel)
             {
-                ((ComponentModel) model).setComponentService(componentService);
+                ((ComponentModel) model).setComponentIdService(componentIdService);
 
             }
 

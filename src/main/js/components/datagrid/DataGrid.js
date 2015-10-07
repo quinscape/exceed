@@ -131,28 +131,28 @@ var Header = React.createClass({
 
 var DataGrid = React.createClass({
 
-    statics: {
-        vars: {
-            orderBy: ri.prop("orderBy"),
-            filter: {},
-            offset: 0,
-            limit: ri.prop("limit")
-        },
-        queries: {
-            rows: {
-                from: ri.prop("type"),
-                orderBy: ri.var("orderBy"),
-                filter: ri.var("filter"),
-                limit: ri.var("limit"),
-                offset: ri.var("offset")
-            },
-            count: {
-                from: ri.prop("type"),
-                filter: ri.var("filter"),
-                count: true
-            }
-        }
-    },
+    //statics: {
+    //    vars: {
+    //        orderBy: ri.prop("orderBy"),
+    //        filter: {},
+    //        offset: 0,
+    //        limit: ri.prop("limit")
+    //    },
+    //    queries: {
+    //        rows: {
+    //            from: ri.prop("type"),
+    //            orderBy: ri.var("orderBy"),
+    //            filter: ri.var("filter"),
+    //            limit: ri.var("limit"),
+    //            offset: ri.var("offset")
+    //        },
+    //        count: {
+    //            from: ri.prop("type"),
+    //            filter: ri.var("filter"),
+    //            count: true
+    //        }
+    //    }
+    //},
 
     propTypes: {
         type: React.PropTypes.string.isRequired,
@@ -303,6 +303,5 @@ var DataGrid = React.createClass({
 });
 
 DataGrid.Column = Column;
-DataGrid.Header = Header;
 
 module.exports = DataGrid;

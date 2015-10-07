@@ -1,0 +1,12 @@
+.DataGrid .header {
+    display: inline-block;
+}
+
+.DataGrid .sort-indicator {
+    float: right;
+}
+
+.DataGrid .current {
+    color: #000;
+    font-weight: bold;
+}

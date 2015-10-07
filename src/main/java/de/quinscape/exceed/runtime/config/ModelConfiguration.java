@@ -4,7 +4,7 @@ import de.quinscape.exceed.runtime.model.ModelFactory;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
 import de.quinscape.exceed.runtime.resource.ResourceLoader;
-import de.quinscape.exceed.runtime.view.ComponentService;
+import de.quinscape.exceed.runtime.component.ComponentIdService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,9 +24,9 @@ public class ModelConfiguration
     }
 
     @Bean
-    public ComponentService componentService()
+    public ComponentIdService componentService()
     {
-        return new ComponentService();
+        return new ComponentIdService();
     }
 
     @Bean

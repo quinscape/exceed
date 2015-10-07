@@ -24,4 +24,6 @@ public interface ExtensionResource
      * @return last modified timestamp
      */
     long lastModified();
+
+    String getRelativePath();
 }

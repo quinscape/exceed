@@ -10,13 +10,15 @@ public class ClassPathExtensionResource
     implements ExtensionResource
 {
     private final int extensionIndex;
-    private final String relative;
+    private final String path;
     private final ClassLoader classLoader;
+    private final String relative;
 
-    public ClassPathExtensionResource(int extensionIndex, ClassLoader classLoader, String relative)
+    public ClassPathExtensionResource(int extensionIndex, ClassLoader classLoader, String path, String relative)
     {
         this.extensionIndex = extensionIndex;
         this.classLoader = classLoader;
+        this.path = path;
         this.relative = relative;
     }
 
@@ -31,7 +33,7 @@ public class ClassPathExtensionResource
     {
         try
         {
-            return IOUtils.toString(classLoader.getResourceAsStream(relative), "UTF-8");
+            return IOUtils.toString(classLoader.getResourceAsStream(path), "UTF-8");
         }
         catch (IOException e)
         {
@@ -46,13 +48,19 @@ public class ClassPathExtensionResource
         return 0;
     }
 
+    @Override
+    public String getRelativePath()
+    {
+        return relative;
+    }
+
 
     @Override
     public String toString()
     {
         return super.toString() + ": "
             + "extensionIndex = " + extensionIndex
-            + ", relative = '" + relative + '\''
+            + ", relative = '" + path + '\''
             ;
     }
 }

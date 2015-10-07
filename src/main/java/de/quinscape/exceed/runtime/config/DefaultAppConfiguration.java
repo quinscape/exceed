@@ -51,7 +51,7 @@ public class DefaultAppConfiguration
         }
         else
         {
-            log.info("Updating  application {}: path = {}, extensions = {}", defaultAppName, extensions);
+            log.debug("Updating  application {}: path = {}, extensions = {}", defaultAppName, extensions);
             applicationService.updateApplication(servletContext, defaultAppName, extensionPath, extensions);
         }
     }
@@ -70,7 +70,7 @@ public class DefaultAppConfiguration
             extensionPath = "classpath:/WEB-INF/extensions";
         }
 
-        log.info("Starting default application from config {}", extensionPath);
+        log.debug("Starting default application from config {}", extensionPath);
         return extensionPath;
     }
 

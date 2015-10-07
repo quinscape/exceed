@@ -1,11 +1,9 @@
-package de.quinscape.exceed.app.config;
+package de.quinscape.exceed.runtime.config;
 
 import static de.quinscape.exceed.domain.Tables.APP_USER;
 
-import de.quinscape.exceed.runtime.config.DomainConfiguration;
 import de.quinscape.exceed.domain.tables.pojos.AppUser;
 import de.quinscape.exceed.domain.tables.records.AppUserRecord;
-import de.quinscape.exceed.runtime.config.ModelConfiguration;
 import org.jooq.DSLContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;

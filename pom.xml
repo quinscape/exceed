@@ -201,6 +201,26 @@
 
     <build>
         <finalName>exceed</finalName>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>src/main/js/components</directory>
+                <targetPath>de/quinscape/exceed/components</targetPath>
+                <includes>
+                    <include>**/*.css</include>
+                    <include>**/*.json</include>
+                    <!-- js files are included in the gulp bundle -->
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/models</directory>
+                <targetPath>de/quinscape/exceed/models</targetPath>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -415,11 +435,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>de.quinscape.exceed.build.GenerateModuleResourceList</mainClass>
-                    <arguments>
-                        <argument>${basedir}/src/main/resources/de/quinscape/exceed/model/base</argument>
-                        <argument>${build.directory}/classes/de/quinscape/exceed/model/base/resource.lst</argument>
-                    </arguments>
+                    <mainClass>de.quinscape.exceed.build.GenerateLibraryResourceLists</mainClass>
                 </configuration>
             </plugin>
         </plugins>

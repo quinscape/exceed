@@ -4,7 +4,11 @@ var componentService = require("./service/component");
 var Alert = require("./ui/Alert");
 
 var componentsMap = bulk(__dirname, ["components/**/*.json", "components/**/*.js"]);
+
 componentService.registerBulk(componentsMap);
+
+console.log("Registered Components:");
+console.dir(componentService.getComponents());
 
 var domready = require("domready");
 domready(function ()

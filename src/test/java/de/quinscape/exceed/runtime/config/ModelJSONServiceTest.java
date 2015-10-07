@@ -1,4 +1,4 @@
-package de.quinscape.exceed.app.config;
+package de.quinscape.exceed.runtime.config;
 
 import de.quinscape.exceed.model.view.Attributes;
 import de.quinscape.exceed.runtime.model.ModelFactory;
@@ -8,7 +8,7 @@ import de.quinscape.exceed.model.view.AttributeValueType;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
-import de.quinscape.exceed.runtime.view.ComponentService;
+import de.quinscape.exceed.runtime.component.ComponentIdService;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +25,8 @@ public class ModelJSONServiceTest
     private static Logger log = LoggerFactory.getLogger(ModelJSONServiceTest.class);
 
 
-    private ComponentService componentService = new ComponentService();
-    private ModelJSONService modelJSONService = new ModelJSONServiceImpl(new ModelFactory(componentService));
+    private ComponentIdService componentIdService = new ComponentIdService();
+    private ModelJSONService modelJSONService = new ModelJSONServiceImpl(new ModelFactory(componentIdService));
 
     @Test
     public void testToJSON() throws Exception
@@ -48,11 +48,11 @@ public class ModelJSONServiceTest
         attrs.put("value", "{ this.props.foo }");
 
         ComponentModel root = new ComponentModel();
-        root.setComponentService(componentService);
+        root.setComponentIdService(componentIdService);
         root.setName("Foo");
         root.setAttrs(new Attributes(attrs));
         ComponentModel kid = new ComponentModel();
-        kid.setComponentService(componentService);
+        kid.setComponentIdService(componentIdService);
         kid.setName("Bar");
         kid.init();
         root.setKids(Collections.singletonList(kid));
@@ -79,7 +79,7 @@ public class ModelJSONServiceTest
 
         // ids are generated but..
         ComponentModel c = new ComponentModel();
-        c.setComponentService(componentService);
+        c.setComponentIdService(componentIdService);
         c.setName("Qux");
         c.init();
 

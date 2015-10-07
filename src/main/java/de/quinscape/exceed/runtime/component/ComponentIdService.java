@@ -1,10 +1,10 @@
-package de.quinscape.exceed.runtime.view;
+package de.quinscape.exceed.runtime.component;
 
 import de.quinscape.exceed.runtime.util.Util;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-public class ComponentService
+public class ComponentIdService
 {
     private AtomicLong idCounter = new AtomicLong(0L);
 

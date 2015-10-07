@@ -1,4 +1,4 @@
-package de.quinscape.exceed.app.config;
+package de.quinscape.exceed.runtime.config;
 
 import org.jooq.DSLContext;
 import org.springframework.context.annotation.Bean;

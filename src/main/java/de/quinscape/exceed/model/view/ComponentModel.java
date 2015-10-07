@@ -1,17 +1,14 @@
 package de.quinscape.exceed.model.view;
 
-import de.quinscape.exceed.runtime.view.ComponentService;
-import de.quinscape.exceed.runtime.view.DataProvider;
+import de.quinscape.exceed.runtime.component.ComponentIdService;
+import de.quinscape.exceed.runtime.component.DataProvider;
 import org.svenson.JSON;
 import org.svenson.JSONProperty;
 import org.svenson.StringBuilderSink;
 
 import javax.annotation.PostConstruct;
-import java.lang.reflect.AnnotatedType;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ComponentModel
 {
@@ -25,7 +22,7 @@ public class ComponentModel
 
     private DataProvider dataProviderInstance;
 
-    private ComponentService componentService;
+    private ComponentIdService componentIdService;
 
     @JSONProperty(priority = 10)
     public String getName()
@@ -102,7 +99,7 @@ public class ComponentModel
 
         if (attrs.getAttribute("id") == null)
         {
-            attrs.setGeneratedId(componentService.createId());
+            attrs.setGeneratedId(componentIdService.createId());
         }
     }
 
@@ -124,14 +121,14 @@ public class ComponentModel
     }
 
     @JSONProperty(ignore = true)
-    public ComponentService getComponentService()
+    public ComponentIdService getComponentIdService()
     {
-        return componentService;
+        return componentIdService;
     }
 
-    public void setComponentService(ComponentService componentService)
+    public void setComponentIdService(ComponentIdService componentIdService)
     {
-        this.componentService = componentService;
+        this.componentIdService = componentIdService;
     }
 
     @Override

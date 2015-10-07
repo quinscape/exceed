@@ -6,10 +6,10 @@ import de.quinscape.exceed.runtime.application.ApplicationStatus;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.resource.ApplicationResources;
-import de.quinscape.exceed.runtime.resource.Extension;
+import de.quinscape.exceed.runtime.resource.ResourceRoot;
 import de.quinscape.exceed.runtime.resource.ResourceLoader;
-import de.quinscape.exceed.runtime.resource.classpath.ClassPathExtension;
-import de.quinscape.exceed.runtime.resource.file.FileBasedExtension;
+import de.quinscape.exceed.runtime.resource.classpath.ClassPathResourceRoot;
+import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,24 +41,24 @@ public class RuntimeApplicationFactory
 
     public RuntimeApplication createRuntimeApplication(ServletContext servletContext, AppState state)
     {
-        List<Extension> extensions = configureExtensions(servletContext, state);
+        List<ResourceRoot> resourceRoots = configureExtensions(servletContext, state);
 
-        log.info("Creating runtime application '{}', extensions = ", state.getName(), extensions);
+        log.info("Creating runtime application '{}', extensions = ", state.getName(), resourceRoots);
 
-        ApplicationResources applicationResources = resourceLoader.lookupResources(extensions);
+        ApplicationResources applicationResources = resourceLoader.lookupResources(resourceRoots);
         boolean production = ApplicationStatus.from(state) == ApplicationStatus.PRODUCTION;
         ApplicationModel applicationModel = modelCompositionService.compose(applicationResources);
 
         return new RuntimeApplication(servletContext, applicationModel);
     }
 
-    private List<Extension> configureExtensions(ServletContext servletContext, AppState state)
+    private List<ResourceRoot> configureExtensions(ServletContext servletContext, AppState state)
     {
-        List<Extension> extensions = new ArrayList<>();
+        List<ResourceRoot> resourceRoots = new ArrayList<>();
         String appName = state.getName();
         String extensionPath = state.getPath();
         String extensionNames = state.getExtensions();
-        extensions.add(getBaseExtension(appName));
+        resourceRoots.add(getBaseExtension(appName));
 
         boolean extensionsInClasspath = extensionPath.startsWith("classpath:");
 
@@ -72,34 +72,34 @@ public class RuntimeApplicationFactory
                 if (extensionsInClasspath)
                 {
                     String base = extensionPath.substring(CLASSPATH_PREFIX.length());
-                    extensions.add(new ClassPathExtension(base + "/" + extension));
+                    resourceRoots.add(new ClassPathResourceRoot(base + "/" + extension));
                 }
                 else
                 {
-                    extensions.add(new FileBasedExtension( new File(servletContext.getRealPath(extensionPath + "/" +
+                    resourceRoots.add(new FileResourceRoot( new File(servletContext.getRealPath(extensionPath + "/" +
                         extension))));
                 }
             }
         }
-        return extensions;
+        return resourceRoots;
     }
 
-    private Extension getBaseExtension(String appName)
+    private ResourceRoot getBaseExtension(String appName)
     {
         File sourceDir = Util.getExceedLibrarySource();
         if (sourceDir != null)
         {
-            File modelSourceLocation = new File(sourceDir, "./src/main/resources/de/quinscape/exceed/model/base");
+            File modelSourceLocation = new File(sourceDir, "./src/main/models");
 
             log.info("Using model source location {} for application {}", modelSourceLocation.getPath(), appName);
 
-            return new FileBasedExtension(modelSourceLocation);
+            return new FileResourceRoot(modelSourceLocation);
         }
         else
         {
-            String classPath = "de/quinscape/exceed/model/base";
+            String classPath = "de/quinscape/exceed/models";
             log.info("Using class path location {} for application {}", classPath, appName);
-            return new ClassPathExtension(classPath);
+            return new ClassPathResourceRoot(classPath);
         }
     }
 }
