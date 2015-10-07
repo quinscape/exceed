@@ -2,7 +2,9 @@ package de.quinscape.exceed.model.view;
 
 import de.quinscape.exceed.runtime.view.ComponentService;
 import de.quinscape.exceed.runtime.view.DataProvider;
+import org.svenson.JSON;
 import org.svenson.JSONProperty;
+import org.svenson.StringBuilderSink;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.AnnotatedType;
@@ -130,6 +132,42 @@ public class ComponentModel
     public void setComponentService(ComponentService componentService)
     {
         this.componentService = componentService;
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilderSink sb = new StringBuilderSink();
+        sb.append("<");
+        sb.append(name);
+
+        if (attrs != null)
+        {
+            for (String name : attrs.getNames())
+            {
+                sb.append(" ");
+                sb.append(name);
+                sb.append("=");
+
+                AttributeValue attribute = attrs.getAttribute(name);
+                AttributeValueType type = attribute.getType();
+                Object value = attribute.getValue();
+                if (type == AttributeValueType.COMPLEX)
+                {
+                    JSON.defaultJSON().dumpObject(sb, value);
+                }
+                else if (type == AttributeValueType.STRING)
+                {
+                    JSON.defaultJSON().quote(sb, (String) value);
+                }
+                else
+                {
+                    sb.append(value);
+                }
+            }
+        }
+        sb.append(">");
+        return sb.getContent();
     }
 }
 
