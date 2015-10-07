@@ -8,6 +8,7 @@ import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainRegistration;
 import de.quinscape.exceed.runtime.domain.DomainRegistry;
 import de.quinscape.exceed.runtime.domain.DomainService;
+import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DataSourceConnectionProvider;
 import org.jooq.impl.DefaultDSLContext;
@@ -123,6 +124,13 @@ public class DomainConfiguration
             registration.register(registry);
         }
 
+        return svc;
+    }
+
+    @Bean
+    public ModelCompositionService modelCompositionService()
+    {
+        ModelCompositionService svc = new ModelCompositionService();
         return svc;
     }
 }

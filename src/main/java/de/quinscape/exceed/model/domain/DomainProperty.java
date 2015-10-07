@@ -1,7 +1,6 @@
 package de.quinscape.exceed.model.domain;
 
 import de.quinscape.exceed.model.Model;
-import de.quinscape.exceed.model.NamedModel;
 import org.svenson.JSONProperty;
 
 public class DomainProperty

@@ -1,7 +1,9 @@
 package de.quinscape.exceed.runtime.controller;
 
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,46 +29,43 @@ public class ApplicationController
     @Autowired
     private ApplicationService applicationService;
 
-    @RequestMapping("/app/{name}/{rest:.*}")
+    @Autowired
+    private RuntimeContextFactory runtimeContextFactory;
+
+    @RequestMapping("/app/{name}/**")
     public String showApplicationView(
         @PathVariable("name") String appName,
-        @PathVariable("rest") String rest,
         HttpServletRequest request, HttpServletResponse response, ModelMap model) throws IOException
     {
-
-        RuntimeApplication runtimeApplication = applicationService.getRuntimeApplication(servletContext, appName);
-        if (runtimeApplication == null)
+        String rest = request.getRequestURI().substring(request.getContextPath().length() + appName.length() + 6);
+        log.debug("showApplicationView: app = {} path = {}", appName, rest);
+        try
         {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Application '" + appName + "' not found");
+            RuntimeApplication runtimeApplication = applicationService.getRuntimeApplication(servletContext, appName);
+            if (runtimeApplication == null)
+            {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Application '" + appName + "' not found");
+                return null;
+            }
+
+            RuntimeContext runtimeContext = runtimeContextFactory.create(request, response, model, "/" + rest);
+            runtimeApplication.route(runtimeContext);
+
+            if (response.isCommitted())
+            {
+                return null;
+            }
+            else
+            {
+                model.put("title", "Application View");
+                return "react-base";
+            }
+        }
+        catch(Exception e)
+        {
+            log.error("Error rendering application view", e);
+            response.sendError(500);
             return null;
         }
-
-        runtimeApplication.route(request, response, rest);
-
-
-        return reactView(request, model, appName, rest, "Application View", true);
-    }
-
-    @RequestMapping("/editor/{name}/{rest:.*}")
-    public String showEditor(
-        @PathVariable("name") String appName,
-        @PathVariable("rest") String rest,
-        HttpServletRequest request, ModelMap model)
-    {
-        return reactView(request, model, appName, rest, "Application Editor", false);
-    }
-
-    private String reactView(HttpServletRequest request, ModelMap model, String appName, String rest, String title, boolean toEditor)
-    {
-
-        String query = request.getQueryString();
-        String editUrl = request.getContextPath() + "/" + (toEditor ? "editor" : "app") +  "/" + appName + "/" + rest + (query != null ? query : "");
-
-        servletContext.getRealPath("/exceed/views/error.jsp");
-
-        model.put("title", title);
-        model.put("editUrl", editUrl);
-        model.put("editText", toEditor ? "Edit" : "Preview");
-        return "react-base";
     }
 }

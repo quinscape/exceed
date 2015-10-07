@@ -14,11 +14,16 @@ public class ApplicationModel
 {
     private RoutingTable routingTable;
 
-    private Map<String,DomainType> domainTypes = new HashMap<>();
+    private Map<String, DomainType> domainTypes = new HashMap<>();
 
-    private Map<String,PropertyType> propertyTypes = new HashMap<>();
+    private Map<String, PropertyType> propertyTypes = new HashMap<>();
 
-    private Map<String,View> views = new HashMap<>();
+    private Map<String, View> views = new HashMap<>();
+
+    public ApplicationModel()
+    {
+
+    }
 
     public RoutingTable getRoutingTable()
     {
@@ -35,10 +40,6 @@ public class ApplicationModel
         return domainTypes;
     }
 
-    public ApplicationModel()
-    {
-
-    }
 
     @JSONTypeHint(DomainType.class)
     public void setDomainTypes(Map<String, DomainType> domainTypes)

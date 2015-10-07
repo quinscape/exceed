@@ -1,16 +1,19 @@
 package de.quinscape.exceed.app.config;
 
+import de.quinscape.exceed.model.view.Attributes;
 import de.quinscape.exceed.runtime.model.ModelFactory;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.AttributeValueType;
-import de.quinscape.exceed.model.view.ElementNode;
+import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
+import de.quinscape.exceed.runtime.view.ComponentService;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,12 +25,13 @@ public class ModelJSONServiceTest
     private static Logger log = LoggerFactory.getLogger(ModelJSONServiceTest.class);
 
 
-    private ModelJSONService modelJSONService = new ModelJSONServiceImpl(new ModelFactory());
+    private ComponentService componentService = new ComponentService();
+    private ModelJSONService modelJSONService = new ModelJSONServiceImpl(new ModelFactory(componentService));
 
     @Test
     public void testToJSON() throws Exception
     {
-        assertThat(modelJSONService.toJSON(new RoutingTable()), is("{\"_type\":\"routing.RoutingTable\",\"rootNode\":null}"));
+        assertThat(modelJSONService.toJSON(new RoutingTable()), is("{\"_type\":\"routing.RoutingTable\",\"name\":\"routing\",\"rootNode\":null}"));
 
     }
 
@@ -37,17 +41,31 @@ public class ModelJSONServiceTest
         View view = new View();
         view.setName("myview");
         Map<String, Object> attrs = new HashMap<>();
+        attrs.put("id", "my-foo");
         attrs.put("key", "my-key");
         attrs.put("n", 12);
         attrs.put("flag", true);
         attrs.put("value", "{ this.props.foo }");
-        ElementNode root = new ElementNode("Foo", attrs, new ElementNode("Bar", null));
+
+        ComponentModel root = new ComponentModel();
+        root.setComponentService(componentService);
+        root.setName("Foo");
+        root.setAttrs(new Attributes(attrs));
+        ComponentModel kid = new ComponentModel();
+        kid.setComponentService(componentService);
+        kid.setName("Bar");
+        kid.init();
+        root.setKids(Collections.singletonList(kid));
+        root.init();
         view.setRoot(root);
 
+        assertThat(root.getComponentId(), is("my-foo"));
         assertThat(root.getAttribute("key").getType(), is(AttributeValueType.STRING));
         assertThat(root.getAttribute("n").getType(), is(AttributeValueType.NUMBER));
         assertThat(root.getAttribute("value").getType(), is(AttributeValueType.EXPRESSION));
         assertThat(root.getAttribute("flag").getType(), is(AttributeValueType.BOOLEAN));
+
+        assertThat(root.getKids().get(0).getAttribute("id"), is(notNullValue()));
 
         String json = modelJSONService.toJSON(view);
 
@@ -59,6 +77,17 @@ public class ModelJSONServiceTest
 
         //log.info(JSON.formatJSON(json));
 
+        // ids are generated but..
+        ComponentModel c = new ComponentModel();
+        c.setComponentService(componentService);
+        c.setName("Qux");
+        c.init();
+
+        String componentId = c.getComponentId();
+        assertThat(componentId, is(notNullValue()));
+
+        // ..not dumped out again
+        assertThat(modelJSONService.toJSON(c), not(containsString(c.getComponentId())));
     }
 
     @Test

@@ -4,6 +4,7 @@ import de.quinscape.exceed.domain.tables.pojos.AppState;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.runtime.application.ApplicationStatus;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.resource.ApplicationResources;
 import de.quinscape.exceed.runtime.resource.Extension;
 import de.quinscape.exceed.runtime.resource.ResourceLoader;
@@ -30,10 +31,13 @@ public class RuntimeApplicationFactory
     private static Logger log = LoggerFactory.getLogger(RuntimeApplicationFactory.class);
 
     @Autowired
-    private ApplicationCompositionService applicationCompositionService;
+    private ModelCompositionService modelCompositionService;
 
     @Autowired
     private ResourceLoader resourceLoader;
+
+    @Autowired
+    private RuntimeContextFactory runtimeContextFactory;
 
     public RuntimeApplication createRuntimeApplication(ServletContext servletContext, AppState state)
     {
@@ -42,10 +46,10 @@ public class RuntimeApplicationFactory
         log.info("Creating runtime application '{}', extensions = ", state.getName(), extensions);
 
         ApplicationResources applicationResources = resourceLoader.lookupResources(extensions);
-        ApplicationModel applicationModel = applicationCompositionService.compose(applicationResources);
         boolean production = ApplicationStatus.from(state) == ApplicationStatus.PRODUCTION;
+        ApplicationModel applicationModel = modelCompositionService.compose(applicationResources);
 
-        return new RuntimeApplication(servletContext, applicationModel, production);
+        return new RuntimeApplication(servletContext, applicationModel);
     }
 
     private List<Extension> configureExtensions(ServletContext servletContext, AppState state)

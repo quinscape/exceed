@@ -3,14 +3,15 @@ package de.quinscape.exceed.model.routing;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 
+import java.util.Collections;
 import java.util.List;
 
-public class Node
+public class MappingNode
 {
     private String name;
 
     private Mapping mapping;
-    private List<Node> children;
+    private List<MappingNode> children;
 
     public String getName()
     {
@@ -22,14 +23,23 @@ public class Node
         this.name = name;
     }
 
-    public List<Node> getChildren()
+    public List<MappingNode> children()
+    {
+        if (children == null)
+        {
+            return Collections.emptyList();
+        }
+
+        return children;
+    }
+    public List<MappingNode> getChildren()
     {
         return children;
     }
 
     @JSONProperty("kids")
-    @JSONTypeHint(Node.class)
-    public void setChildren(List<Node> children)
+    @JSONTypeHint(MappingNode.class)
+    public void setChildren(List<MappingNode> children)
     {
         this.children = children;
     }

@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.service;
 
 import de.quinscape.exceed.domain.tables.pojos.AppState;
 import de.quinscape.exceed.domain.tables.records.AppStateRecord;
+import de.quinscape.exceed.runtime.application.ApplicationNotFoundException;
 import de.quinscape.exceed.runtime.application.ApplicationStatus;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import org.jooq.DSLContext;
@@ -153,10 +154,13 @@ public class ApplicationService
     public RuntimeApplication getRuntimeApplication(ServletContext servletContext, String appName)
     {
         ApplicationHolder applicationHolder = applications.get(appName);
-        return applicationHolder != null ? applicationHolder.getRuntimeApplication(servletContext) : null;
+        if (applicationHolder == null)
+        {
+            throw new ApplicationNotFoundException("Application '" + appName + "' not found");
+        }
+
+        return applicationHolder.getRuntimeApplication(servletContext);
     }
-
-
 
     private class ApplicationHolder
     {

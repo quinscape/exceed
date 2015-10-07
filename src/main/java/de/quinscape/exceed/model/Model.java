@@ -22,7 +22,7 @@ public abstract class Model
      *
      * @return
      */
-    @JSONProperty(value = "_type", readOnly = true, priority = 100)
+    @JSONProperty(value = "_type", readOnly = true, priority = 90)
     public String getType()
     {
         return ModelJSONServiceImpl.getType(this.getClass());
@@ -35,7 +35,7 @@ public abstract class Model
      *
      * @return
      */
-    @JSONProperty(value = "_", ignoreIfNull = true, priority = 99)
+    @JSONProperty(value = "_", ignoreIfNull = true, priority = 100)
     public Object getAnnotation()
     {
         return annotation;

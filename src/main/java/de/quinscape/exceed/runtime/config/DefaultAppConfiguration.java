@@ -51,13 +51,8 @@ public class DefaultAppConfiguration
         }
         else
         {
-            // if path or extensions have changed, we update
-            if (!extensionPath.equals(applicationState.getPath()) || !Util.equals(extensions, applicationState.getExtensions()))
-            {
-                log.info("Updating  application {}: path = {}, extensions = {}", defaultAppName, extensions);
-
-                applicationService.updateApplication(servletContext, defaultAppName, extensionPath, extensions);
-            }
+            log.info("Updating  application {}: path = {}, extensions = {}", defaultAppName, extensions);
+            applicationService.updateApplication(servletContext, defaultAppName, extensionPath, extensions);
         }
     }
 

@@ -1,15 +1,16 @@
 package de.quinscape.exceed.runtime.model;
 
+import de.quinscape.exceed.model.view.Attributes;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.AbstractPropertyValueBasedTypeMapper;
 import org.svenson.JSON;
+import org.svenson.JSONCharacterSink;
 import org.svenson.JSONParser;
+import org.svenson.SinkAwareJSONifier;
 import org.svenson.matcher.SubtypeMatcher;
-
-import java.util.concurrent.atomic.AtomicLong;
 
 public class ModelJSONServiceImpl
     implements ModelJSONService
@@ -18,7 +19,7 @@ public class ModelJSONServiceImpl
 
     private JSONParser parser;
 
-    private final static AtomicLong idCounter = new AtomicLong(0L);
+    private JSON generator;
 
     public ModelJSONServiceImpl(ModelFactory modelFactory)
     {
@@ -28,12 +29,15 @@ public class ModelJSONServiceImpl
         {
             parser.addObjectFactory(modelFactory);
         }
+
+        generator = new JSON();
+        generator.registerJSONifier(Attributes .class, new AttributesJSONifier());
     }
 
     @Override
-    public <M extends Model> String toJSON(M model)
+    public <M extends Object> String toJSON(M model)
     {
-        return JSON.defaultJSON().forValue(model);
+        return generator.forValue(model);
     }
 
     /**
@@ -113,4 +117,39 @@ public class ModelJSONServiceImpl
         return className.substring(MODEL_PACKAGE.length() + 1);
     }
 
+    private class AttributesJSONifier
+        implements SinkAwareJSONifier
+    {
+
+        @Override
+        public void writeToSink(JSONCharacterSink sink, Object o)
+        {
+            Attributes  attrs = (Attributes)o;
+
+            sink.append('{');
+            boolean first = true;
+            for (String name : attrs.getNames())
+            {
+                if (!name.equals("id") || !attrs.isIdGenerated() )
+                {
+                    if (!first)
+                    {
+                        sink.append(',');
+                    }
+                    generator.quote(sink, name);
+                    sink.append(':');
+                    generator.dumpObject(sink, attrs.getAttribute(name).getValue());
+
+                    first = false;
+                }
+            }
+            sink.append('}');
+        }
+
+        @Override
+        public String toJSON(Object o)
+        {
+            throw new UnsupportedOperationException();
+        }
+    }
 }

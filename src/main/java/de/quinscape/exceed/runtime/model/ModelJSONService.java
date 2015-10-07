@@ -19,7 +19,7 @@ public interface ModelJSONService
      * @param <M>       model type
      * @return  JSON string
      */
-    <M extends Model> String toJSON(M model);
+    <M extends Object> String toJSON(M model);
 
     /**
      * Converts the given JSON to the corresponding model.

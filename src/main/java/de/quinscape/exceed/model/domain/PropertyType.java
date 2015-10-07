@@ -1,9 +1,9 @@
 package de.quinscape.exceed.model.domain;
 
-import de.quinscape.exceed.model.NamedModel;
+import de.quinscape.exceed.model.TopLevelModel;
 
 public class PropertyType
-    extends NamedModel
+    extends TopLevelModel
 {
     private String converter;
     private Integer defaultLength;

@@ -1,0 +1,8 @@
+{
+  "root" : {
+    "name" : "Heading",
+    "attrs" : {
+      "value" : "{ \"foo\" }"
+    }
+  }
+}

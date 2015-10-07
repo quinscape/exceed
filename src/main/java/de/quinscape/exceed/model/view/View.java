@@ -1,30 +1,18 @@
 package de.quinscape.exceed.model.view;
 
-import de.quinscape.exceed.model.Model;
+import de.quinscape.exceed.model.TopLevelModel;
 
 public class View
-    extends Model
+    extends TopLevelModel
 {
-    private String name;
+    private ComponentModel root;
 
-    private ElementNode root;
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
-    }
-
-    public ElementNode getRoot()
+    public ComponentModel getRoot()
     {
         return root;
     }
 
-    public void setRoot(ElementNode root)
+    public void setRoot(ComponentModel root)
     {
         this.root = root;
     }

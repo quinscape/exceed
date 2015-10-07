@@ -1,15 +1,12 @@
 package de.quinscape.exceed.model.domain;
 
-import de.quinscape.exceed.model.Model;
-import de.quinscape.exceed.model.NamedModel;
-import org.svenson.JSONProperty;
+import de.quinscape.exceed.model.TopLevelModel;
 import org.svenson.JSONTypeHint;
 
 import java.util.Map;
-import java.util.Set;
 
 public class DomainType
-    extends NamedModel
+    extends TopLevelModel
 {
     private Map<String,DomainProperty> properties;
 

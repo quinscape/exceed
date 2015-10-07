@@ -8,7 +8,7 @@ import org.svenson.JSONProperty;
  * Stores the original name internally to handle being renamed.
  *
  */
-public abstract class NamedModel
+public abstract class TopLevelModel
     extends Model
 {
     private String originalFilename;
@@ -45,7 +45,7 @@ public abstract class NamedModel
 
     protected String fileNameForModel()
     {
-        return name + ".json";
+        return getName() + ".json";
     }
 
 }

@@ -1,7 +1,7 @@
 {
   "rootNode" : {
-    "home" : {
-
+    "mapping" : {
+      "viewName" : "Home"
     }
   }
 }

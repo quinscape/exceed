@@ -1,5 +1,4 @@
 {
-  "_type": "domain.DomainType",
   "name": "app_user",
   "properties": {
     "id": {
