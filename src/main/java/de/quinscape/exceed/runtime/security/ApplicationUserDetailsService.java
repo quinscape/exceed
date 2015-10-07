@@ -1,4 +1,4 @@
-package de.quinscape.exceed.runtime.config;
+package de.quinscape.exceed.runtime.security;
 
 import de.quinscape.exceed.domain.tables.pojos.AppUser;
 import de.quinscape.exceed.domain.Tables;

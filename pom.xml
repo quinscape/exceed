@@ -188,6 +188,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.3</version>
+        </dependency>
+
         <!-- Logging Target End -->
 
     </dependencies>
@@ -392,6 +398,29 @@
                     </execution>
 
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.4.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>
+                                java
+                            </goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>de.quinscape.exceed.build.GenerateModuleResourceList</mainClass>
+                    <arguments>
+                        <argument>${basedir}/src/main/resources/de/quinscape/exceed/model/base</argument>
+                        <argument>${build.directory}/classes/de/quinscape/exceed/model/base/resource.lst</argument>
+                    </arguments>
+                </configuration>
             </plugin>
         </plugins>
     </build>

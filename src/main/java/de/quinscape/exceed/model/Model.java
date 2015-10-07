@@ -1,6 +1,6 @@
 package de.quinscape.exceed.model;
 
-import de.quinscape.exceed.runtime.model.ModelService;
+import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
 import org.svenson.JSON;
 import org.svenson.JSONProperty;
 
@@ -11,13 +11,13 @@ import org.svenson.JSONProperty;
  * base class but don't really need to since the surrounding model class provides the necessary type hints.
  *
  */
-public abstract class ModelBase
+public abstract class Model
 {
-
     private Object annotation;
 
+
     /**
-     * Provides a read-only "_type" property with the path relative to this package which is used by {@link ModelService}
+     * Provides a read-only "_type" property with the path relative to this package which is used by {@link ModelJSONServiceImpl}
      * to parse JSON into the correct java type.
      *
      * @return
@@ -25,19 +25,9 @@ public abstract class ModelBase
     @JSONProperty(value = "_type", readOnly = true, priority = 100)
     public String getType()
     {
-        return ModelService.getType(this.getClass());
+        return ModelJSONServiceImpl.getType(this.getClass());
     }
 
-    /**
-     * JSONifies the current instance.
-     *
-     * @return JSON string
-     */
-    @Override
-    public String toString()
-    {
-        return JSON.defaultJSON().forValue(this);
-    }
 
     /**
      * Allows to specify arbitrary JSON content as annotation on a model instance. This can be just a description
@@ -51,8 +41,21 @@ public abstract class ModelBase
         return annotation;
     }
 
+
     public void setAnnotation(Object annotation)
     {
         this.annotation = annotation;
+    }
+
+
+    /**
+     * JSONifies the current instance.
+     *
+     * @return JSON string
+     */
+    @Override
+    public String toString()
+    {
+        return JSON.defaultJSON().forValue(this);
     }
 }

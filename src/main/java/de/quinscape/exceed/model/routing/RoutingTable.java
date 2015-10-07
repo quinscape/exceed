@@ -1,11 +1,10 @@
 package de.quinscape.exceed.model.routing;
 
 
-import de.quinscape.exceed.model.ModelBase;
-import de.quinscape.exceed.model.routing.Node;
+import de.quinscape.exceed.model.Model;
 
 public class RoutingTable
-    extends ModelBase
+    extends Model
 {
     private Node rootNode;
 

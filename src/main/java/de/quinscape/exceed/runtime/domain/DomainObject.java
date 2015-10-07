@@ -14,9 +14,11 @@ import org.svenson.JSONProperty;
  * it here.
  *
  */
-public abstract class DomainBase
+public abstract class DomainObject
 {
     private String id;
+
+    private DomainService domainService;
 
     @JSONProperty(value = "_type", readOnly = true, priority = 100)
     public String getType()
@@ -43,5 +45,16 @@ public abstract class DomainBase
     public void setId(String id)
     {
         this.id = id;
+    }
+
+    @JSONProperty(ignore = true)
+    public DomainService getDomainService()
+    {
+        return domainService;
+    }
+
+    public void setDomainService(DomainService domainService)
+    {
+        this.domainService = domainService;
     }
 }

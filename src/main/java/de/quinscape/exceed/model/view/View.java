@@ -1,22 +1,22 @@
 package de.quinscape.exceed.model.view;
 
-import de.quinscape.exceed.model.ModelBase;
+import de.quinscape.exceed.model.Model;
 
 public class View
-    extends ModelBase
+    extends Model
 {
-    private String id;
+    private String name;
 
     private ElementNode root;
 
-    public String getId()
+    public String getName()
     {
-        return id;
+        return name;
     }
 
-    public void setId(String id)
+    public void setName(String name)
     {
-        this.id = id;
+        this.name = name;
     }
 
     public ElementNode getRoot()

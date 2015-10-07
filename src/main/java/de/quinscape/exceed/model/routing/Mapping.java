@@ -1,10 +1,10 @@
 package de.quinscape.exceed.model.routing;
 
 
-import de.quinscape.exceed.model.ModelBase;
+import de.quinscape.exceed.model.Model;
 
 public class Mapping
-    extends ModelBase
+    extends Model
 {
-
+    private String viewName;
 }

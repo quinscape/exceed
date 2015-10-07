@@ -40,16 +40,15 @@
 </head>
 <body data-context-path="${contextPath}">
 <div class="container">
-    <sec:authorize access="hasRole('EDITOR')">
-        <div id="container-fluid exceed-toolbar">
-            <a href="btn btn-link btn-default" href="${editURL}">Edit</a>
-        </div>
-    </sec:authorize>
     <div id="root">
     </div>
 </div>
 <footer>
-    <hr>
+    <div class="btn-toolbar exceed-toolbar text-right">
+        <sec:authorize access="hasRole('ROLE_EDITOR')">
+            <a class="btn btn-link btn-default" href="${editUrl}">${editText}</a>
+        </sec:authorize>
+    </div>
     <c:choose>
         <c:when test="${userName == 'Anonymous'}">
             <a class="btn btn-link" href="${contextPath}/login">Login</a>

@@ -1,0 +1,4 @@
+{
+  "name" : "Long",
+  "converter": "de.quinscape.exceed.runtime.domain.property.LongConverter"
+}

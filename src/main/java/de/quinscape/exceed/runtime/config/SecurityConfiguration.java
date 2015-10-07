@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.config;
 
+import de.quinscape.exceed.runtime.security.ApplicationUserDetailsService;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

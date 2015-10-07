@@ -1,6 +1,6 @@
 package de.quinscape.exceed.app.domain;
 
-import de.quinscape.exceed.runtime.domain.DomainBase;
+import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.domain.tables.pojos.AppUser;
 import org.junit.Test;
 import org.svenson.ClassNameBasedTypeMapper;
@@ -10,7 +10,7 @@ import org.svenson.matcher.SubtypeMatcher;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
 
-public class DomainBaseTest
+public class DomainObjectTest
 {
     @Test
     public void testJSONParsing() throws Exception
@@ -18,12 +18,12 @@ public class DomainBaseTest
         JSONParser parser = new JSONParser();
         ClassNameBasedTypeMapper typeMapper = new ClassNameBasedTypeMapper();
         typeMapper.setBasePackage(AppUser.class.getPackage().getName());
-        typeMapper.setEnforcedBaseType(DomainBase.class);
+        typeMapper.setEnforcedBaseType(DomainObject.class);
         typeMapper.setDiscriminatorField("_type");
-        typeMapper.setPathMatcher(new SubtypeMatcher(DomainBase.class));
+        typeMapper.setPathMatcher(new SubtypeMatcher(DomainObject.class));
         parser.setTypeMapper(typeMapper);
 
-        AppUser foo = (AppUser)parser.parse(DomainBase.class, "{ \"_type\" : \"AppUser\", \"login\" : " +
+        AppUser foo = (AppUser)parser.parse(DomainObject.class, "{ \"_type\" : \"AppUser\", \"login\" : " +
             "\"Foolicious\", \"password\" : \"pw123\"}");
 
         assertThat(foo, is(notNullValue()));

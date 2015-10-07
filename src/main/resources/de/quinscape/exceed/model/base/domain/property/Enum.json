@@ -1,0 +1,4 @@
+{
+  "name":"Enum",
+  "converter":"de.quinscape.exceed.runtime.domain.property.EnumConverter"
+}

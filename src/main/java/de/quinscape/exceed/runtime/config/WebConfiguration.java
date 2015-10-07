@@ -7,16 +7,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import javax.servlet.ServletContext;
+import java.io.File;
 import java.io.IOException;
 
 @ComponentScan({
-    "de.quinscape.exceed.app.controller"
+    "de.quinscape.exceed.runtime.controller"
+})
+@PropertySource({
+    "/WEB-INF/profiles/${spring.profiles.active}.properties"
 })
 @Configuration
 public class WebConfiguration
@@ -30,13 +35,13 @@ public class WebConfiguration
     @Bean
     public JsService jsService() throws IOException
     {
-        String param = System.getProperty("exceed.library.source");
+        File sourceDir = Util.getExceedLibrarySource();
         String sourceLocation = null;
-        if (param != null)
+        if (sourceDir != null)
         {
-            sourceLocation = Util.path(param + "/target/classes/META-INF/resources/exceed/js/main.js");
+            sourceLocation = new File(sourceDir, Util.path("target/classes/META-INF/resources/exceed/js/main.js")).getPath();
         }
-        return new JsService(sourceLocation);
+        return new JsService(servletContext, sourceLocation);
     }
 
 //    @Bean

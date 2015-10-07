@@ -5,6 +5,7 @@ import static de.quinscape.exceed.domain.Tables.APP_USER;
 import de.quinscape.exceed.runtime.config.DomainConfiguration;
 import de.quinscape.exceed.domain.tables.pojos.AppUser;
 import de.quinscape.exceed.domain.tables.records.AppUserRecord;
+import de.quinscape.exceed.runtime.config.ModelConfiguration;
 import org.jooq.DSLContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +23,11 @@ import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { DomainConfiguration.class, TestConfiguration.class })
+@ContextConfiguration(classes = {
+    ModelConfiguration.class,
+    DomainConfiguration.class,
+    TestConfiguration.class
+})
 @Transactional
 public class DomainConfigurationTest
 {

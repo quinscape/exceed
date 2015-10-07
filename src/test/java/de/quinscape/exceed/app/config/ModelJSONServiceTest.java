@@ -1,10 +1,12 @@
 package de.quinscape.exceed.app.config;
 
-import de.quinscape.exceed.runtime.model.ModelService;
+import de.quinscape.exceed.runtime.model.ModelFactory;
+import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.AttributeValueType;
 import de.quinscape.exceed.model.view.ElementNode;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,17 +17,17 @@ import java.util.Map;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
 
-public class ModelServiceTest
+public class ModelJSONServiceTest
 {
-    private static Logger log = LoggerFactory.getLogger(ModelServiceTest.class);
+    private static Logger log = LoggerFactory.getLogger(ModelJSONServiceTest.class);
 
 
-    private ModelService modelService = new ModelService();
+    private ModelJSONService modelJSONService = new ModelJSONServiceImpl(new ModelFactory());
 
     @Test
     public void testToJSON() throws Exception
     {
-        assertThat(modelService.toJSON(new RoutingTable()), is("{\"_type\":\"routing.RoutingTable\",\"rootNode\":null}"));
+        assertThat(modelJSONService.toJSON(new RoutingTable()), is("{\"_type\":\"routing.RoutingTable\",\"rootNode\":null}"));
 
     }
 
@@ -33,7 +35,7 @@ public class ModelServiceTest
     public void testViewToJSON() throws Exception
     {
         View view = new View();
-        view.setId("myview");
+        view.setName("myview");
         Map<String, Object> attrs = new HashMap<>();
         attrs.put("key", "my-key");
         attrs.put("n", 12);
@@ -47,7 +49,7 @@ public class ModelServiceTest
         assertThat(root.getAttribute("value").getType(), is(AttributeValueType.EXPRESSION));
         assertThat(root.getAttribute("flag").getType(), is(AttributeValueType.BOOLEAN));
 
-        String json = modelService.toJSON(view);
+        String json = modelJSONService.toJSON(view);
 
         assertThat(json, containsString("myview"));
         assertThat(json, containsString("\"my-key\""));
@@ -62,7 +64,7 @@ public class ModelServiceTest
     @Test
     public void testToModel() throws Exception
     {
-        RoutingTable routingTable = (RoutingTable) modelService.toModel("{\"_type\":\"routing.RoutingTable\",\"rootNode\":{\"name\":\"foo\", \"mapping\": null}}");
+        RoutingTable routingTable = (RoutingTable) modelJSONService.toModel("{\"_type\":\"routing.RoutingTable\",\"rootNode\":{\"name\":\"foo\", \"mapping\": null}}");
 
         assertThat(routingTable,is(notNullValue()));
         assertThat(routingTable.getRootNode().getName(),is("foo"));
@@ -73,6 +75,6 @@ public class ModelServiceTest
     @Test
     public void testGetType() throws Exception
     {
-        assertThat(ModelService.getType(RoutingTable.class), is("routing.RoutingTable"));
+        assertThat(ModelJSONServiceImpl.getType(RoutingTable.class), is("routing.RoutingTable"));
     }
 }

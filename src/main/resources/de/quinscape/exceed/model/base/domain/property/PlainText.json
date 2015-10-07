@@ -1,0 +1,4 @@
+{
+  "name" : "PlainText",
+  "converter": "de.quinscape.exceed.runtime.domain.property.PlainTextConverter"
+}

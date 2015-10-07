@@ -1,8 +1,15 @@
 package de.quinscape.exceed.runtime.domain;
 
 /**
- * Created by sven on 05.10.15.
+ *  Handles registration of domain types in the system and converts domain objects to JSON and back.
  */
-public class DomainService
+public interface DomainService
 {
+    <D extends DomainObject> String toJSON(D domainObject);
+
+    DomainObject toDomainObject(String json);
+
+    <D extends DomainObject> D toDomainObject(Class<D> cls, String json);
+
+    DomainRegistry getRegistry();
 }

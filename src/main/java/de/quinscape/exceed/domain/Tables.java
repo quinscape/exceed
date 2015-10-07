@@ -4,6 +4,7 @@
 package de.quinscape.exceed.domain;
 
 
+import de.quinscape.exceed.domain.tables.AppState;
 import de.quinscape.exceed.domain.tables.AppUser;
 import de.quinscape.exceed.domain.tables.PersistentLogins;
 
@@ -22,6 +23,11 @@ import javax.annotation.Generated;
 )
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Tables {
+
+	/**
+	 * The table public.app_state
+	 */
+	public static final AppState APP_STATE = de.quinscape.exceed.domain.tables.AppState.APP_STATE;
 
 	/**
 	 * The table public.app_user

@@ -7,11 +7,16 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.stream.Collectors;
 
 public class JsService
 {
+    public static final String SOURCE_PATH = "/exceed/js/main.js";
+    public static final String MAP_PATH = "/exceed/js/main.js.map";
     private static Logger log = LoggerFactory.getLogger(ScriptController.class);
 
     private volatile long sourceModified;
@@ -20,7 +25,7 @@ public class JsService
     private byte[] sourceData;
     private byte[] mapData;
 
-    public JsService(String sourceLocation) throws IOException
+    public JsService(ServletContext servletContext, String sourceLocation) throws IOException
     {
         if (sourceLocation != null)
         {
@@ -33,11 +38,24 @@ public class JsService
 
             log.info("Loading js sources from classpath");
 
-            this.source = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream
-                ("/de/quinscape/exceed/resources/js/exceed/main.js"), "UTF-8");
+            log.info("paths: {}", servletContext.getResourcePaths("/").stream().filter( p -> !p.toString().contains(".jar")));
+
+            InputStream sourceStream = servletContext.getResourceAsStream(SOURCE_PATH);
+            InputStream mapStream = servletContext.getResourceAsStream(MAP_PATH);
+
+            if (sourceStream == null)
+            {
+                throw new ExceedRuntimeException("Cannot read source from classpath resource " + SOURCE_PATH);
+            }
+
+            if (mapStream == null)
+            {
+                throw new ExceedRuntimeException("Cannot read source map from classpath resource " + MAP_PATH);
+            }
+
+            this.source = IOUtils.toString(sourceStream, "UTF-8");
             this.sourceData = this.source.getBytes("UTF-8");
-            this.mapData = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream
-                ("/de/quinscape/exceed/resources/js/exceed/main.js.map"), "UTF-8").getBytes("UTF-8");
+            this.mapData = IOUtils.toString(mapStream, "UTF-8").getBytes("UTF-8");
         }
     }
 

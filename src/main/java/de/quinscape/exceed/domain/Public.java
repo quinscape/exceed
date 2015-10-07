@@ -4,6 +4,7 @@
 package de.quinscape.exceed.domain;
 
 
+import de.quinscape.exceed.domain.tables.AppState;
 import de.quinscape.exceed.domain.tables.AppUser;
 import de.quinscape.exceed.domain.tables.PersistentLogins;
 
@@ -30,7 +31,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Public extends SchemaImpl {
 
-	private static final long serialVersionUID = 228819226;
+	private static final long serialVersionUID = 1368042757;
 
 	/**
 	 * The reference instance of <code>public</code>
@@ -53,6 +54,7 @@ public class Public extends SchemaImpl {
 
 	private final List<Table<?>> getTables0() {
 		return Arrays.<Table<?>>asList(
+			AppState.APP_STATE,
 			AppUser.APP_USER,
 			PersistentLogins.PERSISTENT_LOGINS);
 	}

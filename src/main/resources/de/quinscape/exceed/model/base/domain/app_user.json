@@ -1,0 +1,27 @@
+{
+  "_type": "domain.DomainType",
+  "name": "app_user",
+  "properties": {
+    "id": {
+      "type" : "UUID"
+    },
+    "login": {
+      "type" : "PlainText",
+      "maxLength" : 64
+    },
+    "password": {
+      "type" : "PlainText",
+      "maxLength" : 255
+    },
+    "created": {
+      "type" : "Timestamp"
+    },
+    "last_login": {
+      "type" : "Timestamp"
+    },
+    "roles": {
+      "type" : "PlainText",
+      "maxLength" : 255
+    }
+  }
+}
