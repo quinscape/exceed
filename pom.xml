@@ -239,7 +239,7 @@
                         </goals>
                         <configuration>
                             <includes>
-                                <include>de/quinscape/exceed/build/**</include>
+                                <include>de/quinscape/exceed/tooling/**</include>
                             </includes>
                         </configuration>
                     </execution>
@@ -351,7 +351,7 @@
                             <validationAnnotations>true</validationAnnotations>
                         </generate>
                         <strategy>
-                            <name>de.quinscape.exceed.build.GeneratorStrategy</name>
+                            <name>de.quinscape.exceed.tooling.GeneratorStrategy</name>
                         </strategy>
                     </generator>
                 </configuration>
@@ -435,7 +435,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>de.quinscape.exceed.build.GenerateLibraryResourceLists</mainClass>
+                    <mainClass>de.quinscape.exceed.tooling.GenerateLibraryResourceLists</mainClass>
                 </configuration>
             </plugin>
         </plugins>

@@ -1,4 +1,4 @@
-package de.quinscape.exceed.build;
+package de.quinscape.exceed.tooling;
 
 
 import org.jooq.util.DefaultGeneratorStrategy;

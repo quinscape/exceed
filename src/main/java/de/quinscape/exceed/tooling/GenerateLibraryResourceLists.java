@@ -1,4 +1,4 @@
-package de.quinscape.exceed.build;
+package de.quinscape.exceed.tooling;
 
 import de.quinscape.exceed.runtime.util.FileExtension;
 import de.quinscape.exceed.runtime.util.Util;
