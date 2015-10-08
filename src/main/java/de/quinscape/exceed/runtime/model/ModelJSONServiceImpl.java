@@ -31,7 +31,7 @@ public class ModelJSONServiceImpl
         }
 
         generator = new JSON();
-        generator.registerJSONifier(Attributes .class, new AttributesJSONifier());
+        generator.registerJSONifier(Attributes .class, new AttributesJSONifier(false));
     }
 
     @Override
@@ -120,6 +120,12 @@ public class ModelJSONServiceImpl
     private class AttributesJSONifier
         implements SinkAwareJSONifier
     {
+        private final boolean ignoreGeneratedIds;
+
+        private AttributesJSONifier(boolean ignoreGeneratedIds)
+        {
+            this.ignoreGeneratedIds = ignoreGeneratedIds;
+        }
 
         @Override
         public void writeToSink(JSONCharacterSink sink, Object o)
@@ -130,7 +136,7 @@ public class ModelJSONServiceImpl
             boolean first = true;
             for (String name : attrs.getNames())
             {
-                if (!name.equals("id") || !attrs.isIdGenerated() )
+                if (!ignoreGeneratedIds || !name.equals("id") || !attrs.isIdGenerated() )
                 {
                     if (!first)
                     {

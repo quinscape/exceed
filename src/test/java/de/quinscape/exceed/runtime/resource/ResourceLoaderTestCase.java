@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.resource;
 
-import de.quinscape.exceed.runtime.resource.classpath.ClassPathResourceRoot;
+import de.quinscape.exceed.runtime.resource.stream.ClassPathResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
 import org.junit.Test;

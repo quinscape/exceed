@@ -8,7 +8,7 @@ public class ViewData
 {
     private final String viewName;
 
-    private final Map<String,Map<String,Object>> componentData;
+    private final Map<String,Object> componentData;
 
     public ViewData(String viewName)
     {
@@ -21,7 +21,7 @@ public class ViewData
         return viewName;
     }
 
-    public Map<String, Map<String, Object>> getComponentData()
+    public Map<String, Object> getComponentData()
     {
         return componentData;
     }

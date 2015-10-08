@@ -1,8 +1,17 @@
 {
   "root" : {
-    "name" : "Heading",
+    "name" : "div",
     "attrs" : {
-      "value" : "{ \"foo\" }"
-    }
+      "className" : "bg-success"
+    },
+    "kids" : [
+      {
+        "name" : "Heading",
+        "attrs" : {
+          "value" : "{ 'foo' }"
+        }
+      }
+    ]
+
   }
 }

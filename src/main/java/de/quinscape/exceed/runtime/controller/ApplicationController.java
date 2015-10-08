@@ -58,6 +58,7 @@ public class ApplicationController
             else
             {
                 model.put("title", "Application View");
+                model.put("appName", appName);
                 return "react-base";
             }
         }

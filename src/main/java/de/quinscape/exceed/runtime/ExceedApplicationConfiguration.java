@@ -4,6 +4,7 @@ import de.quinscape.exceed.runtime.config.DefaultAppConfiguration;
 import de.quinscape.exceed.runtime.config.DomainConfiguration;
 import de.quinscape.exceed.runtime.config.ModelConfiguration;
 import de.quinscape.exceed.runtime.config.SecurityConfiguration;
+import de.quinscape.exceed.runtime.config.ServiceConfiguration;
 import de.quinscape.exceed.runtime.config.WebConfiguration;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.PropertySource;
     ModelConfiguration.class,
     DomainConfiguration.class,
     SecurityConfiguration.class,
+    ServiceConfiguration.class,
     WebConfiguration.class,
     DefaultAppConfiguration.class
 })

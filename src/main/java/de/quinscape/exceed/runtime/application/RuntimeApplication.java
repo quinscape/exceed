@@ -1,17 +1,19 @@
 package de.quinscape.exceed.runtime.application;
 
-import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.model.Application;
 import de.quinscape.exceed.model.routing.Mapping;
 import de.quinscape.exceed.model.routing.MappingNode;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import org.jooq.DSLContext;
+import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
+import de.quinscape.exceed.runtime.view.ViewData;
+import de.quinscape.exceed.runtime.view.ViewDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.ModelMap;
+import org.svenson.JSON;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.StringTokenizer;
@@ -22,13 +24,17 @@ public class RuntimeApplication
 
     private final ServletContext servletContext;
 
-    private final ApplicationModel applicationModel;
+    private final Application applicationModel;
+
+    private final String collectedStyles;
+
+    private final ViewDataService viewDataService;
+
 
     public RuntimeApplication(
         ServletContext servletContext,
-        ApplicationModel applicationModel
-
-    )
+        Application applicationModel,
+        String collectedStyles, ViewDataService viewDataService)
     {
         if (servletContext == null)
         {
@@ -42,6 +48,8 @@ public class RuntimeApplication
 
         this.servletContext = servletContext;
         this.applicationModel = applicationModel;
+        this.collectedStyles = collectedStyles;
+        this.viewDataService = viewDataService;
     }
 
     public ServletContext getServletContext()
@@ -49,7 +57,7 @@ public class RuntimeApplication
         return servletContext;
     }
 
-    public ApplicationModel getApplicationModel()
+    public Application getApplicationModel()
     {
         return applicationModel;
     }
@@ -70,8 +78,11 @@ public class RuntimeApplication
             return;
         }
 
+        ViewData viewData = viewDataService.prepareData(runtimeContext, view);
 
-
+        ModelMap model = runtimeContext.getModel();
+        model.put("viewData", JSON.defaultJSON().forValue(viewData));
+        model.put("viewModel", view.getCachedJSON());
     }
 
     private RoutingResult resolve(String path)
@@ -117,6 +128,11 @@ public class RuntimeApplication
         }
 
         throw new MappingNotFoundException("Could not find a valid mapping for path '" + path + "'");
+    }
+
+    public String getCollectedStyles()
+    {
+        return collectedStyles;
     }
 }
 

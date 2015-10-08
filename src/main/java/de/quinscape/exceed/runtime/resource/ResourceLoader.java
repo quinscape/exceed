@@ -18,9 +18,9 @@ public class ResourceLoader
             ResourceRoot resourceRoot = extensions.get(extensionIndex);
             resourceRoot.setExtensionIndex(extensionIndex);
 
-            List<? extends ExtensionResource> extensionResources = resourceRoot.listResources();
+            List<? extends AppResource> extensionResources = resourceRoot.listResources();
 
-            for (ExtensionResource resource : extensionResources)
+            for (AppResource resource : extensionResources)
             {
                 String relative = resource.getRelativePath();
 

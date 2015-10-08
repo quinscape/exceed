@@ -21,9 +21,7 @@
     <title>${title} - react inject base</title>
 
     <!-- Bootstrap -->
-    <link href="${contextPath}/exceed/css/bootstrap.min.css" rel="stylesheet">
-
-    <link href="${contextPath}/exceed/css/layout.css" rel="stylesheet">
+    <link href="${contextPath}/style/${appName}.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -39,16 +37,20 @@
     <script src="${contextPath}/app.js"></script>
 </head>
 <body data-context-path="${contextPath}">
-<div class="container">
-    <div id="root">
-    </div>
+<div class="btn-toolbar exceed-toolbar text-right">
+    <sec:authorize  access="hasRole('ROLE_EDITOR')">
+        <a class="btn btn-link btn-default" href="${editUrl}">${editText}</a>
+    </sec:authorize>
 </div>
+<div id="root">
+</div>
+<script id="root-model" type="x-ceed/view-model">
+    ${viewModel}
+</script>
+<script id="root-data" type="x-ceed/view-data">
+    ${viewData}
+</script>
 <footer>
-    <div class="btn-toolbar exceed-toolbar text-right">
-        <sec:authorize access="hasRole('ROLE_EDITOR')">
-            <a class="btn btn-link btn-default" href="${editUrl}">${editText}</a>
-        </sec:authorize>
-    </div>
     <c:choose>
         <c:when test="${userName == 'Anonymous'}">
             <a class="btn btn-link" href="${contextPath}/login">Login</a>

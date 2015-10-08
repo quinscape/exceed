@@ -1,6 +1,9 @@
 {
   "components": {
     "Heading": {
+      "queries" : {
+        "test" : { "from": "Test" }
+      },
       "props" : {
         "value" : {
           "type" : "PlainText"

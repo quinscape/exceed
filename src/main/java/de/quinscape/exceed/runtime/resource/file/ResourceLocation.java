@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.resource.file;
 
-import de.quinscape.exceed.runtime.resource.ExtensionResource;
+import de.quinscape.exceed.runtime.resource.AppResource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,26 +9,26 @@ public class ResourceLocation
 {
     private final String relativePath;
 
-    private List<ExtensionResource> extensionResources = new ArrayList<>();
+    private List<AppResource> appResources = new ArrayList<>();
 
     public ResourceLocation(String relativePath)
     {
         this.relativePath = relativePath;
     }
 
-    public void addExtensionResource(ExtensionResource extensionResource)
+    public void addExtensionResource(AppResource appResource)
     {
-        this.extensionResources.add(extensionResource);
+        this.appResources.add(appResource);
     }
 
-    public List<ExtensionResource> getExtensionResources()
+    public List<AppResource> getAppResources()
     {
-        return extensionResources;
+        return appResources;
     }
 
-    public ExtensionResource getHighestPriorityResource()
+    public AppResource getHighestPriorityResource()
     {
-        return extensionResources.get(extensionResources.size() - 1);
+        return appResources.get(appResources.size() - 1);
     }
 
 
@@ -37,7 +37,7 @@ public class ResourceLocation
     {
         return super.toString() + ": "
             + "relativePath = '" + relativePath + '\''
-            + ", extensionResources = " + extensionResources
+            + ", extensionResources = " + appResources
             ;
     }
 }

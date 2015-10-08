@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.model;
 
-import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.model.Application;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.domain.DomainType;
@@ -28,6 +28,11 @@ public class ModelCompositionService
     implements ApplicationContextAware
 {
     private static final String DEFAULT_DATA_PROVIDER = "defaultDataProvider";
+    public static final String APP_MODEL_NAME = "/app.json";
+    public static final String ROUTING_MODEL_NAME = "/routing.json";
+    public static final String DOMAIN_MODEL_PREFIX = "/domain/";
+    public static final String DOMAIN_PROPERTY_MODEL_PREFIX = "/domain/property";
+    public static final String VIEW_MODEL_PREFIX = "/view/";
 
     private static Logger log = LoggerFactory.getLogger(ModelCompositionService.class);
 
@@ -36,16 +41,33 @@ public class ModelCompositionService
 
     private ApplicationContext applicationContext;
 
-    public ApplicationModel compose(ApplicationResources applicationResources)
+    public Application compose(ApplicationResources applicationResources)
     {
 
-        ApplicationModel applicationModel = new ApplicationModel();
-
         Map<String, ResourceLocation> resourceLocations = applicationResources.getResourceLocations();
+
+        Application applicationModel;
+
+        ResourceLocation appModelLocation = resourceLocations.get(APP_MODEL_NAME);
+        if (appModelLocation != null)
+        {
+            String json = appModelLocation.getHighestPriorityResource().read();
+            applicationModel = create(Application.class, json, APP_MODEL_NAME);
+        }
+        else
+        {
+            applicationModel = new Application();
+        }
+
         for (Map.Entry<String, ResourceLocation> entry : resourceLocations.entrySet())
         {
-
             String path = entry.getKey();
+
+            if (path.equals(APP_MODEL_NAME))
+            {
+                continue;
+            }
+
             ResourceLocation resource = entry.getValue();
             update(applicationModel, path, resource);
         }
@@ -53,14 +75,13 @@ public class ModelCompositionService
         return applicationModel;
     }
 
-    public void update(ApplicationModel applicationModel, String path, ResourceLocation resource)
+    public void update(Application applicationModel, String path, ResourceLocation resource)
     {
         String json = resource.getHighestPriorityResource().read();
 
-
         try
         {
-            if (path.equals("/routing.json"))
+            if (path.equals(ROUTING_MODEL_NAME))
             {
                 log.debug("Reading {} as RoutingTable", path);
 
@@ -68,9 +89,9 @@ public class ModelCompositionService
 
                 applicationModel.setRoutingTable(routingTable);
             }
-            else if (path.startsWith("/domain/"))
+            else if (path.startsWith(DOMAIN_MODEL_PREFIX))
             {
-                if (path.startsWith("/domain/property"))
+                if (path.startsWith(DOMAIN_PROPERTY_MODEL_PREFIX))
                 {
                     log.debug("Reading {} as PropertyType", path);
 
@@ -85,14 +106,13 @@ public class ModelCompositionService
                     applicationModel.getDomainTypes().put(domainType.getName(), domainType);
                 }
             }
-            else if (path.startsWith("/view/"))
+            else if (path.startsWith(VIEW_MODEL_PREFIX))
             {
                 log.debug("Reading {} as View", path);
 
                 View view = create(View.class, json, path);
-
                 initializeDataProvider(view.getRoot());
-
+                view.setCachedJSON(modelJSONService.toJSON(view));
                 applicationModel.getViews().put(view.getName(), view);
             }
             else

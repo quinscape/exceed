@@ -1,20 +1,20 @@
 package de.quinscape.exceed.runtime.resource.file;
 
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
-import de.quinscape.exceed.runtime.resource.ExtensionResource;
+import de.quinscape.exceed.runtime.resource.AppResource;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 
-public class FileExtensionResource
-    implements ExtensionResource
+public class FileAppResource
+    implements AppResource
 {
     private final int extensionIndex;
     private final File file;
     private final String relative;
 
-    public FileExtensionResource(int extensionIndex, File file, String relative)
+    public FileAppResource(int extensionIndex, File file, String relative)
     {
         this.extensionIndex = extensionIndex;
         this.file = file;
@@ -44,6 +44,12 @@ public class FileExtensionResource
     public long lastModified()
     {
         return file.lastModified();
+    }
+
+    @Override
+    public boolean exists()
+    {
+        return file.exists();
     }
 
     public File getFile()

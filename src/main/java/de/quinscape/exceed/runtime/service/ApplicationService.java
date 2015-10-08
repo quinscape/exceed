@@ -104,6 +104,7 @@ public class ApplicationService
 
             // TODO: Notify applications of being taken offline?
             ApplicationHolder removed = applications.remove(appName);
+            removed.setStatus(status);
         }
         else
         {

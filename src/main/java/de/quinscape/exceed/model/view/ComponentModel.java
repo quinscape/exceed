@@ -4,6 +4,7 @@ import de.quinscape.exceed.runtime.component.ComponentIdService;
 import de.quinscape.exceed.runtime.component.DataProvider;
 import org.svenson.JSON;
 import org.svenson.JSONProperty;
+import org.svenson.JSONTypeHint;
 import org.svenson.StringBuilderSink;
 
 import javax.annotation.PostConstruct;
@@ -36,12 +37,13 @@ public class ComponentModel
         return attrs;
     }
 
-    @JSONProperty(ignoreIfNull = true)
     public List<ComponentModel> getKids()
     {
         return kids;
     }
 
+    @JSONProperty(ignoreIfNull = true)
+    @JSONTypeHint(ComponentModel.class)
     public void setKids(List<ComponentModel> kids)
     {
         this.kids = kids;
@@ -165,6 +167,11 @@ public class ComponentModel
         }
         sb.append(">");
         return sb.getContent();
+    }
+
+    public boolean isComponent()
+    {
+        return Character.isUpperCase(name.charAt(0));
     }
 }
 

@@ -4,13 +4,23 @@ import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.PropertyType;
 import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.View;
+import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ApplicationModel
+/**
+ * Encapsulates the general application configuration.
+ *
+ * The JSON-ignored properties contain models that live in their resource locations.
+ *
+ * @see de.quinscape.exceed.runtime.model.ModelCompositionService
+ */
+public class Application
+    extends TopLevelModel
 {
     private RoutingTable routingTable;
 
@@ -20,11 +30,15 @@ public class ApplicationModel
 
     private Map<String, View> views = new HashMap<>();
 
-    public ApplicationModel()
+    private List<String> styleSheets;
+
+    public Application()
     {
 
     }
 
+
+    @JSONProperty(ignore = true)
     public RoutingTable getRoutingTable()
     {
         return routingTable;
@@ -35,37 +49,52 @@ public class ApplicationModel
         this.routingTable = routingTable;
     }
 
+    @JSONProperty(ignore = true)
     public Map<String, DomainType> getDomainTypes()
     {
         return domainTypes;
     }
 
-
-    @JSONTypeHint(DomainType.class)
     public void setDomainTypes(Map<String, DomainType> domainTypes)
     {
         this.domainTypes = domainTypes;
     }
 
+    @JSONProperty(ignore = true)
     public Map<String, PropertyType> getPropertyTypes()
     {
         return propertyTypes;
     }
 
-    @JSONTypeHint(PropertyType.class)
     public void setPropertyTypes(Map<String, PropertyType> propertyTypes)
     {
         this.propertyTypes = propertyTypes;
     }
 
+    @JSONProperty(ignore = true)
     public Map<String, View> getViews()
     {
         return views;
     }
 
-    @JSONTypeHint(View.class)
     public void setViews(Map<String, View> views)
     {
         this.views = views;
+    }
+
+    public List<String> getStyleSheets()
+    {
+        return styleSheets;
+    }
+
+    public void setStyleSheets(List<String> styleSheets)
+    {
+        this.styleSheets = styleSheets;
+    }
+
+    @Override
+    public String getName()
+    {
+        return "app.json";
     }
 }

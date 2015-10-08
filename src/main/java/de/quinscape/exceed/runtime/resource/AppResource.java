@@ -3,7 +3,7 @@ package de.quinscape.exceed.runtime.resource;
 /**
  * Encapsulates a model resource within an extension
  */
-public interface ExtensionResource
+public interface AppResource
 {
     /**
      * Returns the position of the parent index within the system's active extensions.
@@ -24,6 +24,8 @@ public interface ExtensionResource
      * @return last modified timestamp
      */
     long lastModified();
+
+    boolean exists();
 
     String getRelativePath();
 }

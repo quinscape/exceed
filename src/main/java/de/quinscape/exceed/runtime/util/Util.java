@@ -70,4 +70,14 @@ public final class Util
     {
         return sourceDir.isDirectory() && new File(sourceDir, path("src/main/java/de/quinscape/exceed/runtime/ExceedApplicationConfiguration.java")).isFile();
     }
+
+    public static String parentDir(String relativePath)
+    {
+        int pos = relativePath.lastIndexOf('/');
+        if (pos < 0)
+        {
+            return "";
+        }
+        return relativePath.substring(0, pos);
+    }
 }

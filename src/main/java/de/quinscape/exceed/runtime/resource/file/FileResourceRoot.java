@@ -1,7 +1,8 @@
 package de.quinscape.exceed.runtime.resource.file;
 
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
-import de.quinscape.exceed.runtime.resource.ExtensionResource;
+import de.quinscape.exceed.runtime.resource.AppResource;
+import de.quinscape.exceed.runtime.util.Util;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 
@@ -14,6 +15,9 @@ public class FileResourceRoot
 {
     private final File baseDirectory;
 
+    /**
+     * Index of the extension this root belongs to in the list of extensions.
+     */
     private int extensionIndex;
 
     public FileResourceRoot(File baseDirectory)
@@ -27,17 +31,16 @@ public class FileResourceRoot
     }
 
     @Override
-    public List<? extends ExtensionResource> listResources()
+    public List<? extends AppResource> listResources()
     {
-        String extensionPath = baseDirectory.getPath();
-        int relativeFileNameStart = extensionPath.length();
+        int relativeFileNameStart = baseDirectory.getPath().length();
 
-        List<ExtensionResource> list = new ArrayList<>();
+        List<AppResource> list = new ArrayList<>();
         for (File file : FileUtils.listFiles(baseDirectory, JSONFileFilter.INSTANCE, TrueFileFilter.INSTANCE))
         {
             String relative = file.getPath().substring(relativeFileNameStart);
 
-            list.add(new FileExtensionResource(extensionIndex, file, relative));
+            list.add(new FileAppResource(extensionIndex, file, relative));
         }
 
         return list;
@@ -47,6 +50,15 @@ public class FileResourceRoot
     public boolean supportsHotReloading()
     {
         return true;
+    }
+
+    @Override
+    public AppResource getResource(String path)
+    {
+        int relativeFileNameStart = baseDirectory.getPath().length();
+        File file = new File(baseDirectory, Util.path(path));
+        String relative = file.getPath().substring(relativeFileNameStart);
+        return new FileAppResource(extensionIndex, file, relative);
     }
 
 

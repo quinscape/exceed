@@ -7,6 +7,8 @@ import de.quinscape.exceed.runtime.component.DataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 public class ViewDataService
 {
     private static Logger log = LoggerFactory.getLogger(ViewDataService.class);
@@ -25,9 +27,10 @@ public class ViewDataService
      */
     public ViewData prepareData(RuntimeContext runtimeContext, View view)
     {
-        DataProviderContext context = new DataProviderContext(this, runtimeContext, view.getName());
+        ViewData viewData = new ViewData(view.getName());
+        DataProviderContext context = new DataProviderContext(this, runtimeContext, view.getName(), viewData);
         prepareRecursive(context, view.getRoot());
-        return context.getViewData();
+        return viewData;
     }
 
     void prepareRecursive(DataProviderContext context, ComponentModel element)
@@ -35,11 +38,16 @@ public class ViewDataService
         DataProvider dataProviderInstance = element.getDataProviderInstance();
         if (dataProviderInstance != null)
         {
-            context.enableContinueOnChildren();
 
             log.debug("Calling {} for {}", dataProviderInstance, element);
 
-            dataProviderInstance.provide(context, element);
+            context.enableContinueOnChildren();
+
+            if (element.isComponent())
+            {
+                Map<String, Object> componentDataMap = dataProviderInstance.provide(context, element);
+                context.getViewData().getComponentData().put(element.getComponentId(), componentDataMap != null ? componentDataMap : false);
+            }
 
             if (context.isContinueOnChildren())
             {

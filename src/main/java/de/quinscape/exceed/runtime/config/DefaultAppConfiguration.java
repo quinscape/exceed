@@ -1,15 +1,22 @@
 package de.quinscape.exceed.runtime.config;
 
 import de.quinscape.exceed.domain.tables.pojos.AppState;
+import de.quinscape.exceed.runtime.resource.ResourceRoot;
+import de.quinscape.exceed.runtime.resource.stream.ClassPathResourceRoot;
+import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
+import de.quinscape.exceed.runtime.resource.stream.ServletResourceRoot;
 import de.quinscape.exceed.runtime.service.ApplicationService;
+import de.quinscape.exceed.runtime.service.ComponentRegistry;
+import de.quinscape.exceed.runtime.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.svenson.util.Util;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
+import java.io.File;
+import java.io.IOException;
 
 
 /**
@@ -29,13 +36,50 @@ public class DefaultAppConfiguration
 
     @Autowired
     private ServletContext servletContext;
+
     @Autowired
     private ApplicationService applicationService;
 
-    @PostConstruct
-    public void initializeDefaultApp()
-    {
+    @Autowired
+    private ComponentRegistry componentRegistry;
 
+    @PostConstruct
+    public void initialize() throws IOException
+    {
+        registerComponents();
+        initializeDefaultApp();
+    }
+
+    private void registerComponents() throws IOException
+    {
+        File exceedLibrarySource = Util.getExceedLibrarySource();
+
+        ResourceRoot baseComponentRoot;
+        if (exceedLibrarySource != null)
+        {
+            baseComponentRoot = new FileResourceRoot(new File(exceedLibrarySource, Util.path("src/main/js/components")));
+        }
+        else
+        {
+            baseComponentRoot = new ClassPathResourceRoot("de/quinscape/exceed/components");
+        }
+
+        componentRegistry.registerComponents(baseComponentRoot);
+
+        String realPath = servletContext.getRealPath("/components");
+        if (realPath != null)
+        {
+            componentRegistry.registerComponents(new FileResourceRoot(new File(realPath)));
+        }
+        else
+        {
+            componentRegistry.registerComponents(new ServletResourceRoot(servletContext, "/components"));
+        }
+
+    }
+
+    private void initializeDefaultApp()
+    {
         String defaultAppName = getDefaultApplicationName();
 
         String extensionPath = getExtensionBasePath();

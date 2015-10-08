@@ -1,24 +1,23 @@
-package de.quinscape.exceed.runtime.resource.classpath;
+package de.quinscape.exceed.runtime.resource.stream;
 
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
-import de.quinscape.exceed.runtime.resource.ExtensionResource;
+import de.quinscape.exceed.runtime.resource.AppResource;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 
-public class ClassPathExtensionResource
-    implements ExtensionResource
+public abstract class AbstractStreamResource
+    implements AppResource
 {
-    private final int extensionIndex;
-    private final String path;
-    private final ClassLoader classLoader;
-    private final String relative;
+    protected final int extensionIndex;
+    protected final String path;
+    protected final String relative;
 
-    public ClassPathExtensionResource(int extensionIndex, ClassLoader classLoader, String path, String relative)
+    public AbstractStreamResource(String path, int extensionIndex, String relative)
     {
-        this.extensionIndex = extensionIndex;
-        this.classLoader = classLoader;
         this.path = path;
+        this.extensionIndex = extensionIndex;
         this.relative = relative;
     }
 
@@ -33,13 +32,15 @@ public class ClassPathExtensionResource
     {
         try
         {
-            return IOUtils.toString(classLoader.getResourceAsStream(path), "UTF-8");
+            return IOUtils.toString(openStream(), "UTF-8");
         }
         catch (IOException e)
         {
             throw new ExceedRuntimeException(e);
         }
     }
+
+    protected abstract InputStream openStream();
 
     @Override
     public long lastModified()
@@ -54,7 +55,6 @@ public class ClassPathExtensionResource
         return relative;
     }
 
-
     @Override
     public String toString()
     {
@@ -62,5 +62,13 @@ public class ClassPathExtensionResource
             + "extensionIndex = " + extensionIndex
             + ", relative = '" + path + '\''
             ;
+    }
+
+    @Override
+    public boolean exists()
+    {
+        InputStream is = openStream();
+        IOUtils.closeQuietly(is);
+        return is != null;
     }
 }

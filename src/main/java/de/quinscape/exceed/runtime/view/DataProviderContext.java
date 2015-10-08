@@ -5,10 +5,10 @@ import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
 
 /**
- * Encapsulates the necessariy context for a view data provisioning invocation for
+ * Encapsulates the necessary context for a view data provisioning invocation for
  * a view at runtime.
  */
-public class DataProviderContext
+public final class DataProviderContext
     implements Cloneable
 {
     private final ViewDataService viewDataService;
@@ -16,17 +16,16 @@ public class DataProviderContext
     private final RuntimeContext runtimeContext;
 
     private final String viewName;
-
     private final ViewData viewData;
 
     private boolean continueOnChildren = true;
 
-    public DataProviderContext(ViewDataService viewDataService, RuntimeContext runtimeContext, String viewName)
+    public DataProviderContext(ViewDataService viewDataService, RuntimeContext runtimeContext, String viewName, ViewData viewData)
     {
         this.viewDataService = viewDataService;
         this.viewName = viewName;
         this.runtimeContext = runtimeContext;
-        this.viewData = new ViewData(viewName);
+        this.viewData = viewData;
     }
 
     public RuntimeContext getRuntimeContext()
@@ -34,10 +33,6 @@ public class DataProviderContext
         return runtimeContext;
     }
 
-    public ViewData getViewData()
-    {
-        return viewData;
-    }
 
     public String getViewName()
     {
@@ -101,5 +96,10 @@ public class DataProviderContext
     boolean isContinueOnChildren()
     {
         return continueOnChildren;
+    }
+
+    ViewData getViewData()
+    {
+        return viewData;
     }
 }

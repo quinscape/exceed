@@ -194,10 +194,22 @@
             <version>2.3</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.opensaga</groupId>
+            <artifactId>opensaga-dynamic-stylesheets</artifactId>
+            <version>3.0.7</version>
+        </dependency>
         <!-- Logging Target End -->
 
     </dependencies>
 
+    <repositories>
+        <repository>
+            <id>opensaga</id>
+            <name>OpenSAGA Repository</name>
+            <url>http://www.opensaga.org/maven/content/groups/public</url>
+        </repository>
+    </repositories>
 
     <build>
         <finalName>exceed</finalName>
@@ -254,9 +266,10 @@
                         </goals>
                         <configuration>
                             <includes>
+                                <include>de/quinscape/exceed/component/**</include>
                                 <include>de/quinscape/exceed/domain/**</include>
-                                <include>de/quinscape/exceed/runtime/**</include>
                                 <include>de/quinscape/exceed/model/**</include>
+                                <include>de/quinscape/exceed/runtime/**</include>
                             </includes>
                         </configuration>
                     </execution>

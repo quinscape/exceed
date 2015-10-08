@@ -34,9 +34,6 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 @EnableTransactionManagement
 @PropertySource(value = "classpath:application.properties")
-@ComponentScan({
-    "de.quinscape.exceed.runtime.service"
-})
 public class DomainConfiguration
 {
     @Bean
