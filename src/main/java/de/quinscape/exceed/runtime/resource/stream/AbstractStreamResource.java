@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.resource.stream;
 
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.resource.AppResource;
+import de.quinscape.exceed.runtime.resource.ResourceRoot;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -10,29 +11,33 @@ import java.io.InputStream;
 public abstract class AbstractStreamResource
     implements AppResource
 {
-    protected final int extensionIndex;
     protected final String path;
     protected final String relative;
 
-    public AbstractStreamResource(String path, int extensionIndex, String relative)
+    private final ResourceRoot root;
+
+
+    public AbstractStreamResource(String path, ResourceRoot root, String relative)
     {
         this.path = path;
-        this.extensionIndex = extensionIndex;
+        this.root = root;
         this.relative = relative;
     }
 
-    @Override
-    public int getExtensionIndex()
-    {
-        return extensionIndex;
-    }
 
     @Override
-    public String read()
+    public byte[] read()
     {
         try
         {
-            return IOUtils.toString(openStream(), "UTF-8");
+            InputStream input = openStream();
+            if (input == null)
+            {
+                throw new ExceedRuntimeException("Cannot read " + this);
+            }
+
+
+            return IOUtils.toByteArray(input);
         }
         catch (IOException e)
         {
@@ -59,7 +64,7 @@ public abstract class AbstractStreamResource
     public String toString()
     {
         return super.toString() + ": "
-            + "extensionIndex = " + extensionIndex
+            + "root = " + root
             + ", relative = '" + path + '\''
             ;
     }
@@ -70,5 +75,12 @@ public abstract class AbstractStreamResource
         InputStream is = openStream();
         IOUtils.closeQuietly(is);
         return is != null;
+    }
+
+
+    @Override
+    public ResourceRoot getResourceRoot()
+    {
+        return root;
     }
 }

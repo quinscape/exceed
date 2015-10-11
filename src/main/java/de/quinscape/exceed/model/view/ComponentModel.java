@@ -169,6 +169,7 @@ public class ComponentModel
         return sb.getContent();
     }
 
+    @JSONProperty(ignore = true)
     public boolean isComponent()
     {
         return Character.isUpperCase(name.charAt(0));

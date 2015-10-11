@@ -34,9 +34,10 @@
     "watchify": "^3.2.3"
   },
   "browserify-shim": {
-    "react/addons": "global:React"
+    "react/addons": "global:React",
+    "react-dom": "global:ReactDOM"
   },
-  "exceed" : {
+  "exceed": {
     "components": "./src/main/js/components"
   }
 }

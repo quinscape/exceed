@@ -1,14 +1,15 @@
 package de.quinscape.exceed.runtime.security;
 
 import de.quinscape.exceed.domain.tables.pojos.AppUser;
+import de.quinscape.exceed.runtime.util.Util;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.svenson.JSON;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 public class ApplicationUserDetails
     implements UserDetails
@@ -19,18 +20,21 @@ public class ApplicationUserDetails
     private final String password;
     private final List<GrantedAuthority> authorities;
 
+    private final String roles;
+
+
     public ApplicationUserDetails(AppUser appUser)
     {
         username = appUser.getLogin();
         password = appUser.getPassword();
 
-        authorities = new ArrayList<>();
+        List<String> strings = Util.splitAtComma(appUser.getRoles());
 
-        StringTokenizer tokenizer = new StringTokenizer(appUser.getRoles(), ",");
-        while(tokenizer.hasMoreElements())
-        {
-            authorities.add(new SimpleGrantedAuthority(tokenizer.nextToken()));
-        }
+        roles = appUser.getRoles();
+
+        authorities = strings.stream()
+            .map(SimpleGrantedAuthority::new)
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -73,5 +77,11 @@ public class ApplicationUserDetails
     public boolean isEnabled()
     {
         return true;
+    }
+
+
+    public String getRoles()
+    {
+        return roles;
     }
 }

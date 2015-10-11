@@ -22,8 +22,8 @@ public class GenerateLibraryResourceLists
         GenerateLibraryResourceLists tool = new GenerateLibraryResourceLists();
 
         tool.generateResourceList(
-            "src/main/models",
-            "target/classes/de/quinscape/exceed/models/resource.lst",
+            "src/main/base",
+            "target/classes/de/quinscape/exceed/base/resource.lst",
             TrueFileFilter.INSTANCE);
 
         tool.generateResourceList(

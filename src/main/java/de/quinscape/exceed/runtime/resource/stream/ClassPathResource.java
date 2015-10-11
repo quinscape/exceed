@@ -1,5 +1,7 @@
 package de.quinscape.exceed.runtime.resource.stream;
 
+import de.quinscape.exceed.runtime.resource.ResourceRoot;
+
 import java.io.InputStream;
 
 public class ClassPathResource
@@ -7,9 +9,9 @@ public class ClassPathResource
 {
     private final ClassLoader classLoader;
 
-    public ClassPathResource(int extensionIndex, ClassLoader classLoader, String path, String relative)
+    public ClassPathResource(ClassPathResourceRoot root, ClassLoader classLoader, String path, String relative)
     {
-        super(path, extensionIndex, relative);
+        super(path, root, relative);
 
         this.classLoader = classLoader;
     }

@@ -7,6 +7,7 @@ import de.quinscape.exceed.runtime.config.SecurityConfiguration;
 import de.quinscape.exceed.runtime.config.ServiceConfiguration;
 import de.quinscape.exceed.runtime.config.WebConfiguration;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 

@@ -3,19 +3,26 @@ package de.quinscape.exceed.runtime.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class Util
 {
     public static final String LIBRARY_SOURCE_SYSTEM_PROPERTY = "exceed.library.source";
+
     private static Logger log = LoggerFactory.getLogger(Util.class);
+
 
     private Util()
     {
 
     }
+
 
     public static String path(String path)
     {
@@ -27,8 +34,11 @@ public final class Util
         return path;
     }
 
+
     final static char[] BASE32_ALPHABET = "0123456789abcdefghijklmnopqrstuv".toCharArray();
+
     final static String C0 = String.valueOf(BASE32_ALPHABET[0]);
+
 
     public static String base32(long value)
     {
@@ -37,13 +47,15 @@ public final class Util
         do
         {
             int lowerBits = (int) (value & 31);
-            sb.append( BASE32_ALPHABET[lowerBits]);
+            sb.append(BASE32_ALPHABET[lowerBits]);
             value >>>= 5;
         } while (value != 0);
         return sb.reverse().toString();
     }
 
+
     private static AtomicBoolean sourceChecked = new AtomicBoolean(false);
+
 
     public static File getExceedLibrarySource()
     {
@@ -58,7 +70,8 @@ public final class Util
         {
             if (!isValidSourceDir(sourceDir))
             {
-                throw new IllegalStateException("System property " + LIBRARY_SOURCE_SYSTEM_PROPERTY + " is set but does not point to a valid source checkout");
+                throw new IllegalStateException("System property " + LIBRARY_SOURCE_SYSTEM_PROPERTY + " is set but " +
+                    "does not point to a valid source checkout");
             }
             sourceChecked.set(true);
         }
@@ -66,10 +79,13 @@ public final class Util
         return sourceDir;
     }
 
+
     private static boolean isValidSourceDir(File sourceDir)
     {
-        return sourceDir.isDirectory() && new File(sourceDir, path("src/main/java/de/quinscape/exceed/runtime/ExceedApplicationConfiguration.java")).isFile();
+        return sourceDir.isDirectory() && new File(sourceDir, path
+            ("src/main/java/de/quinscape/exceed/runtime/ExceedApplicationConfiguration.java")).isFile();
     }
+
 
     public static String parentDir(String relativePath)
     {
@@ -79,5 +95,29 @@ public final class Util
             return "";
         }
         return relativePath.substring(0, pos);
+    }
+
+
+    public static List<String> splitAtComma(String s)
+    {
+        return split(s, ",");
+    }
+
+
+    public static List<String> split(String s, String separator)
+    {
+        StringTokenizer tokenizer = new StringTokenizer(s, separator);
+        List<String> list = new ArrayList<>();
+        while (tokenizer.hasMoreElements())
+        {
+            list.add(tokenizer.nextToken().trim());
+        }
+        return list;
+    }
+
+
+    public static List<String> splitAtWhitespace(String line)
+    {
+        return split(line, " \t\r\n");
     }
 }

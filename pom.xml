@@ -228,8 +228,8 @@
                 </includes>
             </resource>
             <resource>
-                <directory>src/main/models</directory>
-                <targetPath>de/quinscape/exceed/models</targetPath>
+                <directory>src/main/base</directory>
+                <targetPath>de/quinscape/exceed/base</targetPath>
             </resource>
         </resources>
 

@@ -22,14 +22,7 @@ public class ExceedDSSResourceManager
     @Override
     public InputStream getInputStream(String name)
     {
-        try
-        {
-            return new ByteArrayInputStream(resourceRoot.getResource(name).read().getBytes("UTF-8"));
-        }
-        catch (UnsupportedEncodingException e)
-        {
-            throw new ExceedRuntimeException(e);
-        }
+        return new ByteArrayInputStream(resourceRoot.getResource(name).read());
     }
 
     @Override
@@ -41,6 +34,6 @@ public class ExceedDSSResourceManager
     @Override
     public long getLastModified(String name)
     {
-        return 0;
+        return resourceRoot.getResource(name).lastModified();
     }
 }

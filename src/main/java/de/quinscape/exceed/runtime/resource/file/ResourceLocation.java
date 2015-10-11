@@ -31,6 +31,10 @@ public class ResourceLocation
         return appResources.get(appResources.size() - 1);
     }
 
+    public String getRelativePath()
+    {
+        return relativePath;
+    }
 
     @Override
     public String toString()

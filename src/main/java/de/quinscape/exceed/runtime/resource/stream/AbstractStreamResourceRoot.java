@@ -20,10 +20,12 @@ public abstract class AbstractStreamResourceRoot
     protected final String pathBase;
     private int extensionIndex;
 
+
     public AbstractStreamResourceRoot(String pathBase)
     {
         this.pathBase = pathBase;
     }
+
 
     private List<String> readFileList()
     {
@@ -49,17 +51,20 @@ public abstract class AbstractStreamResourceRoot
         }
     }
 
+
     @Override
     public void setExtensionIndex(int extensionIndex)
     {
         this.extensionIndex = extensionIndex;
     }
 
+
     @Override
     public int getExtensionIndex()
     {
         return extensionIndex;
     }
+
 
     @Override
     public List<? extends AppResource> listResources()
@@ -70,21 +75,16 @@ public abstract class AbstractStreamResourceRoot
 
         return relativePaths.stream()
             .map(this::getResource)
-            .collect( Collectors.toList());
+            .collect(Collectors.toList());
     }
 
-    @Override
-    public boolean supportsHotReloading()
-    {
-        return false;
-    }
 
     @Override
     public String toString()
     {
-        return super.toString() + ": " + pathBase
-            ;
+        return super.toString() + ": " + pathBase;
     }
+
 
     protected abstract InputStream openStream(String path);
 }

@@ -1,5 +1,11 @@
 package de.quinscape.exceed.runtime.config;
 
+import de.quinscape.exceed.runtime.resource.ResourceRoot;
+import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
+import de.quinscape.exceed.runtime.resource.stream.ServletResourceRoot;
+import de.quinscape.exceed.runtime.service.ApplicationService;
+import de.quinscape.exceed.runtime.util.MediaTypeService;
+import de.quinscape.exceed.runtime.util.MediaTypeServiceImpl;
 import de.quinscape.exceed.runtime.util.Util;
 import de.quinscape.exceed.runtime.component.ComponentDataProvider;
 import org.slf4j.Logger;
@@ -9,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.web.context.support.ServletContextResource;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -33,27 +40,27 @@ public class WebConfiguration
     @Autowired
     private ServletContext servletContext;
 
-    @Bean
-    public JsService jsService() throws IOException
-    {
-        File sourceDir = Util.getExceedLibrarySource();
-        String sourceLocation = null;
-        if (sourceDir != null)
-        {
-            sourceLocation = new File(sourceDir, Util.path("target/classes/META-INF/resources/exceed/js/main.js")).getPath();
-        }
-        return new JsService(servletContext, sourceLocation);
-    }
-
+//    @Autowired
+//    private ApplicationService applicationService;
+//
 //    @Bean
-//    public ViewResolver reactViewResolver() throws Exception
+//    public JsService jsService() throws IOException
 //    {
-//        ReactViewResolver resolver = new ReactViewResolver();
-//        resolver.setUseMinifiedReact(false);
-//        resolver.setOrder(0);
-//        resolver.setDevelopment(true);
-//        return resolver;
+//        File sourceDir = Util.getExceedLibrarySource();
+//        String sourceLocation = null;
+//        ResourceRoot root;
+//        if (sourceDir != null)
+//        {
+//            root = new FileResourceRoot(new File(sourceDir, Util.path("target/classes/META-INF/resources")), true);
+//        }
+//        else
+//        {
+//            root = new ServletResourceRoot(servletContext, "");
+//        }
+//        return new JsService(applicationService, root);
+//
 //    }
+//
 
     @Override
     public void configureViewResolvers(ViewResolverRegistry registry)
@@ -64,7 +71,8 @@ public class WebConfiguration
         resolver.setAlwaysInclude(false);
 
         // TODO: change this based on prod/dev
-        servletContext.setAttribute("reactVersion", "react-with-addons.js");
+        servletContext.setAttribute("reactVersion", "react-0.14.0.js");
+        servletContext.setAttribute("reactDOMVersion", "react-dom-0.14.0.js");
 
         registry.viewResolver(resolver);
     }
@@ -79,5 +87,11 @@ public class WebConfiguration
     public ComponentDataProvider defaultDataProvider()
     {
         return new ComponentDataProvider();
+    }
+
+    @Bean
+    public MediaTypeService mediaTypeService()
+    {
+        return new MediaTypeServiceImpl(new ServletContextResource(servletContext, "/WEB-INF/mime.types"));
     }
 }

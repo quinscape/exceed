@@ -1,0 +1,11 @@
+{
+  "components": {
+    "InputElement": {
+      "props": {
+        "value" : {
+          "type" : "PlainText"
+        }
+      }
+    }
+  }
+}

@@ -2,16 +2,25 @@ package de.quinscape.exceed.runtime.resource;
 
 import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
 
+import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class ResourceLoader
 {
-    public ApplicationResources lookupResources(List<? extends ResourceRoot> extensions)
-    {
+    private static final Charset UTF8 = Charset.forName("UTF-8");
 
-        ConcurrentMap<String, ResourceLocation> locations = new ConcurrentHashMap<>();
+    private final List<ResourceRoot> extensions;
+    private final ConcurrentMap<String, ResourceLocation> resourceLocations;
+
+
+    public ResourceLoader(List<ResourceRoot> extensions)
+    {
+        this.extensions = extensions;
+
+        resourceLocations = new ConcurrentHashMap<>();
 
         for (int extensionIndex = 0; extensionIndex < extensions.size(); extensionIndex++)
         {
@@ -24,18 +33,63 @@ public class ResourceLoader
             {
                 String relative = resource.getRelativePath();
 
-                ResourceLocation location = locations.get(relative);
+                ResourceLocation location = resourceLocations.get(relative);
                 if (location == null)
                 {
                     location = new ResourceLocation(relative);
-                    locations.put(relative, location);
+                    resourceLocations.put(relative, location);
                 }
 
                 location.addExtensionResource(resource);
             }
         }
 
-        return new ApplicationResources(extensions, locations);
-
     }
+
+    public ResourceLocation getResourceLocation(String relativePath)
+    {
+        return resourceLocations.get(relativePath);
+    }
+
+
+    public Map<String, ResourceLocation> getResourceLocations()
+    {
+        return resourceLocations;
+    }
+
+    public String readResource(String relativePath)
+    {
+        ResourceLocation resourceLocation = resourceFile(relativePath);
+        return new String(resourceLocation.getHighestPriorityResource().read(), UTF8);
+    }
+    public long lastModified(String relativePath) throws ResourceNotFoundException
+    {
+        ResourceLocation resourceLocation = resourceFile(relativePath);
+        return resourceLocation.getHighestPriorityResource().lastModified();
+    }
+
+    private ResourceLocation resourceFile(String relativePath)
+    {
+        ResourceLocation resourceLocation = getResourceLocation(relativePath);
+        if (resourceLocation == null)
+        {
+            throw new ResourceNotFoundException("No resource found for relative path '" + relativePath + "'");
+        }
+        return resourceLocation;
+    }
+
+    public List<? extends ResourceRoot> getExtensions()
+    {
+        return extensions;
+    }
+
+    @Override
+    public String toString()
+    {
+        return super.toString() + ": "
+            + "extensions = " + extensions
+            + ", resourceLocations = " + resourceLocations
+            ;
+    }
+
 }

@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.resource.stream;
 
 import de.quinscape.exceed.runtime.resource.AppResource;
+import de.quinscape.exceed.runtime.resource.ResourceWatcher;
 
 import java.io.InputStream;
 
@@ -25,6 +26,13 @@ public class ClassPathResourceRoot
     public AppResource getResource(String resourcePath)
     {
         String path = pathBase + resourcePath;
-        return new ClassPathResource(getExtensionIndex(), this.getClass().getClassLoader(), path, resourcePath);
+        return new ClassPathResource(this, this.getClass().getClassLoader(), path, resourcePath);
+    }
+
+
+    @Override
+    public ResourceWatcher getResourceWatcher()
+    {
+        return null;
     }
 }

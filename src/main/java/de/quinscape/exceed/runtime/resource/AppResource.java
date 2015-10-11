@@ -6,17 +6,18 @@ package de.quinscape.exceed.runtime.resource;
 public interface AppResource
 {
     /**
-     * Returns the position of the parent index within the system's active extensions.
-     * @return position
+     * Returns the resource root this resource belongs to.
+     *
+     * @return resource root
      */
-    int getExtensionIndex();
+    ResourceRoot getResourceRoot();
 
     /**
      * Reads the contents of the resource.
      *
      * @return contents
      */
-    String read();
+    byte[] read();
 
     /**
      * Returns a last modified value for the resource, if applicable.

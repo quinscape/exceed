@@ -6,10 +6,23 @@ var Heading = React.createClass({
     render: function ()
     {
         return (
-            <h1>
+            <h2>
                 { this.props.value }
-            </h1>
+            </h2>
         )
     }
 });
+
+var HR = React.createClass({
+
+    render: function ()
+    {
+        return (
+            <hr/>
+        )
+    }
+});
+
+Heading.HR = HR;
+
 module.exports = Heading;

@@ -1,0 +1,11 @@
+{
+  "components": {
+    "Counter": {
+      "props": {
+        "value" : {
+          "type" : "PlainText"
+        }
+      }
+    }
+  }
+}

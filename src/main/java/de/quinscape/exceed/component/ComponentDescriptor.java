@@ -4,6 +4,11 @@ import org.svenson.JSONParameter;
 
 import java.util.Map;
 
+/**
+ * Descriptor for a single component within a component package.
+ *
+ * @see ComponentPackageDescriptor
+ */
 public class ComponentDescriptor
 {
     private final Map<String,VarDeclaration> vars;

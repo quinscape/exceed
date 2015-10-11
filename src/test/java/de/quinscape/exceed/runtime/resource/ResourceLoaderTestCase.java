@@ -23,28 +23,28 @@ public class ResourceLoaderTestCase
     @Test
     public void testLoad() throws Exception
     {
-        ResourceLoader resourceLoader = new ResourceLoader();
-        List<ResourceRoot> resourceRoots = Arrays.asList(
-            new ClassPathResourceRoot("resource-base"),
-            new FileResourceRoot(new File("./src/test/java/de/quinscape/exceed/runtime/resource/resource-ext")),
-            new FileResourceRoot(new File("./src/test/java/de/quinscape/exceed/runtime/resource/resource-ext2"))
-        );
+        ClassPathResourceRoot base = new ClassPathResourceRoot("resource-base");
+        FileResourceRoot ext = new FileResourceRoot(new File("" +
+            "./src/test/java/de/quinscape/exceed/runtime/resource/resource-ext"), false);
+        FileResourceRoot ext2 = new FileResourceRoot(new File("" +
+            "./src/test/java/de/quinscape/exceed/runtime/resource/resource-ext2"), false);
 
-        ApplicationResources resources = resourceLoader.lookupResources(resourceRoots);
+        List<ResourceRoot> resourceRoots = Arrays.asList(base,ext,ext2);
 
-        ResourceLocation resource = resources.getResourceLocation("/a.json");
+        ResourceLoader resourceLoader = new ResourceLoader(resourceRoots);
+
+        ResourceLocation resource = resourceLoader.getResourceLocation("/a.json");
 
         assertThat(resource, is(notNullValue()));
-        assertThat(resource.getHighestPriorityResource().getExtensionIndex(), is(0));
-        assertThat(resources.getResourceLocation("/b.json").getHighestPriorityResource().getExtensionIndex(), is(2));
-        assertThat(resources.getResourceLocation("/c.json").getHighestPriorityResource().getExtensionIndex(), is(1));
-        assertThat(resources.getResourceLocation("/d.json").getHighestPriorityResource().getExtensionIndex(), is(2));
+        assertThat(resource.getHighestPriorityResource().getResourceRoot(), is(base));
+        assertThat(resourceLoader.getResourceLocation("/b.json").getHighestPriorityResource().getResourceRoot(), is(ext2));
+        assertThat(resourceLoader.getResourceLocation("/c.json").getHighestPriorityResource().getResourceRoot(), is(ext));
+        assertThat(resourceLoader.getResourceLocation("/d.json").getHighestPriorityResource().getResourceRoot(), is(ext2));
 
-        assertThat(JSONParser.defaultJSONParser().parse(resources.readResource("/a.json")), is("a-base"));
-        assertThat(JSONParser.defaultJSONParser().parse(resources.readResource("/b.json")), is("b-ext2"));
-        assertThat(JSONParser.defaultJSONParser().parse(resources.readResource("/c.json")), is("c-ext"));
-        assertThat(JSONParser.defaultJSONParser().parse(resources.readResource("/d.json")), is("d-ext2"));
+        assertThat(JSONParser.defaultJSONParser().parse(resourceLoader.readResource("/a.json")), is("a-base"));
+        assertThat(JSONParser.defaultJSONParser().parse(resourceLoader.readResource("/b.json")), is("b-ext2"));
+        assertThat(JSONParser.defaultJSONParser().parse(resourceLoader.readResource("/c.json")), is("c-ext"));
+        assertThat(JSONParser.defaultJSONParser().parse(resourceLoader.readResource("/d.json")), is("d-ext2"));
 
-        log.info("resources: {}", resources);
     }
 }

@@ -1,8 +1,13 @@
 package de.quinscape.exceed.runtime.resource.stream;
 
 import de.quinscape.exceed.runtime.resource.AppResource;
+import de.quinscape.exceed.runtime.resource.ResourceRoot;
+import de.quinscape.exceed.runtime.resource.ResourceWatcher;
+import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 
 import javax.servlet.ServletContext;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 
 public class ServletResourceRoot
@@ -26,6 +31,13 @@ public class ServletResourceRoot
     @Override
     public AppResource getResource(String relative)
     {
-        return new ServetResource(servletContext, relative, pathBase + relative, getExtensionIndex());
+        return new ServletResource(servletContext, this, relative, pathBase + relative);
+    }
+
+
+    @Override
+    public ResourceWatcher getResourceWatcher()
+    {
+        return null;
     }
 }

@@ -10,7 +10,8 @@ public interface ResourceRoot
 
     List<? extends AppResource> listResources();
 
-    boolean supportsHotReloading();
-
     AppResource getResource(String path);
+
+    ResourceWatcher getResourceWatcher();
+
 }

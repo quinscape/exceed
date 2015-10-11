@@ -12,6 +12,13 @@
           "type" : "Integer"
         }
       }
+    },
+    "Heading.HR": {
+      "props" : {
+        "value" : {
+          "type" : "PlainText"
+        }
+      }
     }
   }
 }

@@ -1,11 +1,31 @@
 package de.quinscape.exceed.runtime.application;
 
 import de.quinscape.exceed.model.Application;
+import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.change.CodeChange;
+import de.quinscape.exceed.model.change.Shutdown;
+import de.quinscape.exceed.model.change.StyleChange;
+import de.quinscape.exceed.model.change.Timeout;
 import de.quinscape.exceed.model.routing.Mapping;
 import de.quinscape.exceed.model.routing.MappingNode;
+import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
+import de.quinscape.exceed.runtime.model.ModelCompositionService;
+import de.quinscape.exceed.runtime.resource.AppResource;
+import de.quinscape.exceed.runtime.resource.ResourceChangeListener;
+import de.quinscape.exceed.runtime.resource.ResourceLoader;
+import de.quinscape.exceed.runtime.resource.ResourceRoot;
+import de.quinscape.exceed.runtime.resource.ResourceWatcher;
+import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
+import de.quinscape.exceed.runtime.resource.file.ModuleResourceEvent;
+import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
+import de.quinscape.exceed.runtime.resource.stream.ServletResourceRoot;
+import de.quinscape.exceed.runtime.service.ComponentRegistration;
+import de.quinscape.exceed.runtime.service.ComponentRegistry;
+import de.quinscape.exceed.runtime.service.StyleService;
+import de.quinscape.exceed.runtime.util.FileExtension;
 import de.quinscape.exceed.runtime.view.ViewData;
 import de.quinscape.exceed.runtime.view.ViewDataService;
 import org.slf4j.Logger;
@@ -16,9 +36,13 @@ import org.svenson.JSON;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 public class RuntimeApplication
+    implements ResourceChangeListener
 {
     private static Logger log = LoggerFactory.getLogger(RuntimeApplication.class);
 
@@ -26,36 +50,61 @@ public class RuntimeApplication
 
     private final Application applicationModel;
 
-    private final String collectedStyles;
-
     private final ViewDataService viewDataService;
+
+    private final StyleService styleService;
+
+    private final ComponentRegistry componentRegistry;
+
+    private final ModelCompositionService modelCompositionService;
+
+    private final ResourceLoader resourceLoader;
+
+    private long lastChange;
+
+    private TopLevelModel changeModel = null;
 
 
     public RuntimeApplication(
         ServletContext servletContext,
-        Application applicationModel,
-        String collectedStyles, ViewDataService viewDataService)
+        ViewDataService viewDataService,
+        ComponentRegistry componentRegistry,
+        StyleService styleService,
+        ModelCompositionService modelCompositionService,
+        List<ResourceRoot> resourceRoots
+    )
     {
         if (servletContext == null)
         {
             throw new IllegalArgumentException("servletContext can't be null");
         }
 
-        if (applicationModel == null)
-        {
-            throw new IllegalArgumentException("applicationModel can't be null");
-        }
-
         this.servletContext = servletContext;
-        this.applicationModel = applicationModel;
-        this.collectedStyles = collectedStyles;
         this.viewDataService = viewDataService;
+        this.styleService = styleService;
+        this.componentRegistry = componentRegistry;
+        this.modelCompositionService = modelCompositionService;
+        this.resourceLoader = new ResourceLoader(resourceRoots);
+
+        //boolean production = ApplicationStatus.from(state) == ApplicationStatus.PRODUCTION;
+        applicationModel = modelCompositionService.compose(resourceLoader.getResourceLocations());
+
+        for (ResourceRoot root : resourceLoader.getExtensions())
+        {
+            ResourceWatcher resourceWatcher = root.getResourceWatcher();
+            if (resourceWatcher != null)
+            {
+                resourceWatcher.register(this);
+            }
+        }
     }
+
 
     public ServletContext getServletContext()
     {
         return servletContext;
     }
+
 
     public Application getApplicationModel()
     {
@@ -74,7 +123,8 @@ public class RuntimeApplication
         View view;
         if (viewName == null || (view = applicationModel.getViews().get(viewName)) == null)
         {
-            runtimeContext.getResponse().sendError(HttpServletResponse.SC_NOT_FOUND, "View " + viewName + " not found.");
+            runtimeContext.getResponse().sendError(HttpServletResponse.SC_NOT_FOUND, "View " + viewName + " not found" +
+                ".");
             return;
         }
 
@@ -84,6 +134,7 @@ public class RuntimeApplication
         model.put("viewData", JSON.defaultJSON().forValue(viewData));
         model.put("viewModel", view.getCachedJSON());
     }
+
 
     private RoutingResult resolve(String path)
     {
@@ -130,9 +181,180 @@ public class RuntimeApplication
         throw new MappingNotFoundException("Could not find a valid mapping for path '" + path + "'");
     }
 
+
     public String getCollectedStyles()
     {
-        return collectedStyles;
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+
+
+            for (String name : applicationModel.getStyleSheets())
+            {
+                ResourceLocation resourceLocation = resourceLoader.getResourceLocation(name);
+
+                if (resourceLocation == null)
+                {
+                    log.info("RESOURCE LOCATIONS:\n{}", JSON.formatJSON(JSON.defaultJSON().forValue(resourceLoader.getResourceLocations().keySet())));
+                    throw new IllegalStateException("Resource '" + name +"' does not exist in any extension");
+                }
+
+                ResourceRoot root = resourceLocation.getHighestPriorityResource().getResourceRoot();
+                sb.append("/* APP '")
+                    .append(name)
+                    .append("' */\n")
+                    .append(styleService.process(root, name))
+                    .append('\n');
+            }
+
+            collectComponentStyles(applicationModel, sb);
+
+            return sb.toString();
+        }
+        catch (IOException e)
+        {
+            throw new ExceedRuntimeException(e);
+        }
+    }
+
+
+    private void collectComponentStyles(Application applicationModel, StringBuilder out)
+    {
+        Set<String> usedComponents = findUsedComponents(applicationModel);
+        for (String name : usedComponents)
+        {
+            if (Character.isUpperCase(name.charAt(0)))
+            {
+                ComponentRegistration registration = componentRegistry
+                    .getComponentRegistration(name);
+
+                if (registration == null)
+                {
+                    throw new IllegalStateException("No component registration with name '" + name + "' found");
+                }
+
+
+                String styles = registration.getStyles();
+                if (styles != null)
+                {
+                    out.append("/* COMPONENT '")
+                        .append(name)
+                        .append("' */\n")
+                        .append(styles)
+                        .append('\n');
+                }
+            }
+        }
+    }
+
+
+    private Set<String> findUsedComponents(Application applicationModel)
+    {
+        Set<String> usedComponents = new HashSet<>();
+        for (View view : applicationModel.getViews().values())
+        {
+            addComponentsRecursive(view.getRoot(), usedComponents);
+        }
+
+        return usedComponents;
+    }
+
+
+    private void addComponentsRecursive(ComponentModel component, Set<String> usedComponents)
+    {
+        usedComponents.add(component.getName());
+        for (ComponentModel kid : component.children())
+        {
+            addComponentsRecursive(kid, usedComponents);
+        }
+    }
+
+
+    @Override
+    public synchronized void onResourceChange(ModuleResourceEvent resourceEvent, FileResourceRoot root, String
+        modulePath)
+    {
+        log.debug("onResourceChange", resourceEvent, root, modulePath);
+
+        ResourceLocation resourceLocation = resourceLoader.getResourceLocation(modulePath);
+
+        AppResource topResource = resourceLocation.getHighestPriorityResource();
+        ResourceRoot rootOfTopResource = topResource.getResourceRoot();
+        if (root.equals(rootOfTopResource))
+        {
+            if (topResource.getRelativePath().endsWith(FileExtension.CSS))
+            {
+                if (applicationModel.getStyleSheets().contains(modulePath))
+                {
+                    try
+                    {
+                        styleService.reload(root, modulePath);
+                    }
+                    catch (IOException e)
+                    {
+                        throw new ExceedRuntimeException(e);
+                    }
+                }
+            }
+
+            TopLevelModel model = modelCompositionService.update(applicationModel, topResource);
+            if (model != null)
+            {
+                notifyChange(model);
+            }
+        }
+    }
+
+
+    public void notifyStyleChange()
+    {
+        log.debug("notifyStyleChange");
+
+        notifyChange(StyleChange.INSTANCE);
+    }
+
+
+    public void notifyCodeChange()
+    {
+        notifyChange(CodeChange.INSTANCE);
+    }
+
+
+    private synchronized void notifyChange(TopLevelModel changeModel)
+    {
+        log.debug("notifyChange", changeModel);
+
+        this.lastChange = System.currentTimeMillis();
+        this.changeModel = changeModel;
+        this.notifyAll();
+    }
+
+
+    public synchronized TopLevelModel waitForChange(long timeout) throws InterruptedException
+    {
+        long start = lastChange;
+
+        while (lastChange == start)
+        {
+            this.wait(timeout);
+            if (lastChange == start)
+            {
+                return Timeout.INSTANCE;
+            }
+        }
+        return changeModel;
+    }
+
+
+    public ResourceLoader getResourceLoader()
+    {
+        return resourceLoader;
+    }
+
+
+    public void notifyShutdown()
+    {
+        notifyChange(Shutdown.INSTANCE);
     }
 }
 

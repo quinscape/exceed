@@ -110,7 +110,7 @@ function bundle(watch, cb) {
             }))
             .pipe(gulpif(compress, streamify(uglify())))
             .pipe(sourcemaps.write(".")) // writes .map file
-            .pipe(gulp.dest("./target/classes/META-INF/resources/exceed/js"));
+            .pipe(gulp.dest("./src/main/base/resources/js"));
     }
 
     return rebundle(bro);

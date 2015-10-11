@@ -15,21 +15,34 @@ public interface ModelJSONService
     /**
      * Converts the given model to JSON.
      *
-     * @param model     model
-     * @param <M>       model type
+     * @param model     model or collection of models
+     *
      * @return  JSON string
      */
-    <M extends Object> String toJSON(M model);
+    String toJSON(Object model);
+
+    /**
+     * Converts the given model to an external cleaned format.
+     *
+     * Some model properties are only needed for the internal operation of the server-side application engine and
+     * communication with the client-side code.
+     *
+     * This method returns JSON without those properties.
+     *
+     * @param model     model or collection of models
+     * @return  JSON string
+     */
+    String toExternalJSON(Object model);
 
     /**
      * Converts the given JSON to the corresponding model.
      *
      * @param json  JSON string
-     * @param <T>   type will reflect the "_type" attribute of the JSON resolved against the currently registered domain
+     * @param <M>   type will reflect the "_type" attribute of the JSON resolved against the currently registered domain
      *              typwes.
      * @return  typed model
      */
-    <T extends Model> T toModel(String json);
+    <M extends Model> M toModel(String json);
 
     /**
      * Creates a model instance from the given JSON object

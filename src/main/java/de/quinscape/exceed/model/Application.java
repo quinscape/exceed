@@ -97,4 +97,15 @@ public class Application
     {
         return "app.json";
     }
+
+
+    /**
+     * copies the non-app.json data of the give application model into this one.
+     *
+     * @param applicationModel      application model
+     */
+    public void merge(Application applicationModel)
+    {
+        this.styleSheets = applicationModel.styleSheets;
+    }
 }

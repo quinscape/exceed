@@ -19,6 +19,8 @@ function indent(buf, depth)
 
 var generatedIdRegEx = /^id-[a-z0-5]+$/;
 
+var expressionRegEx = /^\{\s*(.*?)\s*}$/;
+
 window.debug = function (a)
 {
     console.log("DEBUG", a);
@@ -28,9 +30,7 @@ window.debug = function (a)
 function renderRecursively(buf, componentModel, depth, usedComponents)
 {
     var name = componentModel.name;
-    var code;
-    var value;
-    var component;
+    var code, value, component, m;
 
     var componentDescriptor;
     var isComponent = components.hasOwnProperty(name);
@@ -46,22 +46,19 @@ function renderRecursively(buf, componentModel, depth, usedComponents)
         component = JSON.stringify(name);
     }
 
-    indent(buf, depth);
-
-
-
     var attrs = componentModel.attrs;
     var queries = componentDescriptor && componentDescriptor.queries;
 
+    indent(buf, depth);
     buf.push("React.createElement(", component, ", ");
 
     if (queries)
     {
-        buf.push("extend({")
+        buf.push("extend({\n")
     }
     else
     {
-        buf.push("{")
+        buf.push("{\n")
     }
 
     var first = true;
@@ -76,20 +73,21 @@ function renderRecursively(buf, componentModel, depth, usedComponents)
 
                 if (!first)
                 {
-                    buf.push(", ");
+                    buf.push(",\n");
                 }
                 first = false;
 
                 var last = (value.length - 1);
-                if (typeof value === "string" && value.length > 2 && value[0] === '{' && value[last] === "}")
+                if (typeof value === "string" && (m = expressionRegEx.exec(value)))
                 {
-                    code = value.substr(1, last - 1);
+                    code = m[1];
                 }
                 else
                 {
                     code = JSON.stringify(value);
                 }
 
+                indent(buf, depth + 2);
                 buf.push(JSON.stringify(attrName), " : ", code);
             }
         }
@@ -97,69 +95,69 @@ function renderRecursively(buf, componentModel, depth, usedComponents)
 
     if (queries)
     {
-        buf.push("}, this.props.componentData[\"" + attrs.id + "\"])\n");
+        buf.push("\n");
+        indent(buf, depth + 1);
+        buf.push("}, this.props.componentData[\"" + attrs.id + "\"])");
     }
     else
     {
-        buf.push("}\n");
+        buf.push("\n");
+        indent(buf, depth + 1);
+        buf.push("}");
     }
 
     var kids = componentModel.kids;
     if (kids)
     {
-        buf.push(",");
         for (var i = 0; i < kids.length; i++)
         {
+            buf.push(",\n");
             var kidModel = kids[i];
             renderRecursively(buf, kidModel, depth + 1, usedComponents);
         }
     }
-
+    buf.push("\n");
     indent(buf, depth);
-    buf.push(")\n");
+    buf.push(")");
 }
 
 /**
- * Handles converting the view JSON models into js code
+ * Handles converting the view JSON models into js code and caching the React component results.
+ *
  * @type {{}}
  */
 var ViewService = {
 
     renderView: function (name, model)
     {
-        var buf = [
-            "(function(React, components, extend){ return React.createClass({ displayName: \"" + name +"\", render: function () {\n\n"];
+        var buf = [ "\nreturn React.createClass({\n    displayName: \"" + name +"\",\n\n    render: function ()\n    {\n        return (\n\n"];
 
         var usedComponents = {};
 
-        var headerPos = buf.length;
+        renderRecursively(buf, model.root, 3, usedComponents);
 
-        buf.push("\n    return (\n\n")
-
-        renderRecursively(buf, model.root, 2, usedComponents);
-
-        for (var name in usedComponents)
+        for (var componentName in usedComponents)
         {
-            if (usedComponents.hasOwnProperty(name))
+            if (usedComponents.hasOwnProperty(componentName))
             {
-                buf.splice(headerPos, 0, "    var " + name + " = components[\"" + name + "\"].component;\n");
+                buf.splice(0, 0, "var " + componentName + " = components[\"" + componentName + "\"].component;\n");
             }
         }
 
-        buf.push("\n    );}});\n})");
+        buf.push("\n        );\n    }\n});");
         return buf.join("");
     },
 
-    getViewComponent: function (name, model)
+    getViewComponent: function (name, model, regenerate)
     {
         var component = viewComponents[name];
-        if (!component)
+        if (!component || regenerate)
         {
             var code = ViewService.renderView(name, model);
 
-            console.debug(code)
+            console.debug(code);
 
-            component = eval(code)(React, components, extend);
+            component = new Function("React", "components", "extend", code)(React, components, extend);
 
             viewComponents[name] = component;
         }

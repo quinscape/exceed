@@ -1,3 +1,4 @@
+<%@ page import="org.svenson.JSON" %>
 <%@page pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
@@ -18,10 +19,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>${title} - react inject base</title>
+    <title>${title} - local base</title>
 
     <!-- Bootstrap -->
-    <link href="${contextPath}/style/${appName}.css" rel="stylesheet">
+    <link id="application-styles" href="${contextPath}/style/${appName}.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -33,10 +34,11 @@
     <meta name="token-type" content="${_csrf.headerName}"/>
 
     <script src="${contextPath}/exceed/js/${applicationScope.reactVersion}"></script>
+    <script src="${contextPath}/exceed/js/${applicationScope.reactDOMVersion}"></script>
     <script src="${contextPath}/code/main.js"></script>
     <script src="${contextPath}/app.js"></script>
 </head>
-<body data-context-path="${contextPath}">
+<body data-context-path="${contextPath}" data-app-name="${appName}" data-roles="${user.roles}">
 <div class="btn-toolbar exceed-toolbar text-right">
     <sec:authorize  access="hasRole('ROLE_EDITOR')">
         <a class="btn btn-link btn-default" href="${editUrl}">${editText}</a>

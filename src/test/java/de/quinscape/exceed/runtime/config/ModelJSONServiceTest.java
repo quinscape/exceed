@@ -77,7 +77,7 @@ public class ModelJSONServiceTest
 
         //log.info(JSON.formatJSON(json));
 
-        // ids are generated but..
+        // ids are generated
         ComponentModel c = new ComponentModel();
         c.setComponentIdService(componentIdService);
         c.setName("Qux");
@@ -85,9 +85,6 @@ public class ModelJSONServiceTest
 
         String componentId = c.getComponentId();
         assertThat(componentId, is(notNullValue()));
-
-        // ..not dumped out again
-        assertThat(modelJSONService.toJSON(c), not(containsString(c.getComponentId())));
     }
 
     @Test

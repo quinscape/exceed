@@ -17,9 +17,10 @@ public class ModelJSONServiceImpl
 {
     private static Logger log = LoggerFactory.getLogger(ModelJSONServiceImpl.class);
 
-    private JSONParser parser;
 
-    private JSON generator;
+    private final JSONParser parser;
+    private final JSON generator;
+    private final JSON externalGenerator;
 
     public ModelJSONServiceImpl(ModelFactory modelFactory)
     {
@@ -32,12 +33,22 @@ public class ModelJSONServiceImpl
 
         generator = new JSON();
         generator.registerJSONifier(Attributes .class, new AttributesJSONifier(false));
+
+        externalGenerator = new JSON();
+        externalGenerator.registerJSONifier(Attributes .class, new AttributesJSONifier(true));
     }
 
     @Override
-    public <M extends Object> String toJSON(M model)
+    public String toJSON(Object model)
     {
         return generator.forValue(model);
+    }
+
+
+    @Override
+    public String toExternalJSON(Object model)
+    {
+        return externalGenerator.forValue(model);
     }
 
     /**

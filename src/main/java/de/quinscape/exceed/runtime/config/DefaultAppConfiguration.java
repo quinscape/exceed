@@ -57,7 +57,7 @@ public class DefaultAppConfiguration
         ResourceRoot baseComponentRoot;
         if (exceedLibrarySource != null)
         {
-            baseComponentRoot = new FileResourceRoot(new File(exceedLibrarySource, Util.path("src/main/js/components")));
+            baseComponentRoot = new FileResourceRoot(new File(exceedLibrarySource, Util.path("src/main/js/components")), true);
         }
         else
         {
@@ -69,10 +69,12 @@ public class DefaultAppConfiguration
         String realPath = servletContext.getRealPath("/components");
         if (realPath != null)
         {
-            componentRegistry.registerComponents(new FileResourceRoot(new File(realPath)));
+            log.info("Using file access for local components");
+            componentRegistry.registerComponents(new FileResourceRoot(new File(realPath), true));
         }
         else
         {
+            log.info("Using servlet resource access for local components");
             componentRegistry.registerComponents(new ServletResourceRoot(servletContext, "/components"));
         }
 

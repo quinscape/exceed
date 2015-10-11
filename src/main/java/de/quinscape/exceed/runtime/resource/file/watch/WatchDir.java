@@ -16,6 +16,8 @@ import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static java.nio.file.LinkOption.*;
 import static java.nio.file.StandardWatchEventKinds.*;
@@ -25,7 +27,7 @@ abstract class WatchDir
     private static Logger log = LoggerFactory.getLogger(WatchDir.class);
 
     private final WatchService watcher;
-    private final Map<WatchKey, Path> keys;
+    private final ConcurrentMap<WatchKey, Path> keys;
     private final boolean recursive;
     private volatile boolean running = true;
 
@@ -41,21 +43,6 @@ abstract class WatchDir
     private void register(Path dir) throws IOException
     {
         WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
-        if (log.isDebugEnabled())
-        {
-            Path prev = keys.get(key);
-            if (prev == null)
-            {
-                log.trace("register: {}", dir);
-            }
-            else
-            {
-                if (!dir.equals(prev))
-                {
-                    log.trace("update: {} -> {}", prev, dir);
-                }
-            }
-        }
         keys.put(key, dir);
     }
 
@@ -86,7 +73,7 @@ abstract class WatchDir
         Path dir = FileSystems.getDefault().getPath(path);
 
         this.watcher = FileSystems.getDefault().newWatchService();
-        this.keys = new HashMap<WatchKey, Path>();
+        this.keys = new ConcurrentHashMap<>();
         this.recursive = recursive;
 
         if (recursive)
@@ -164,7 +151,7 @@ abstract class WatchDir
                     }
                     catch (IOException x)
                     {
-                        throw new ModuleWatcherException(x);
+                        throw new ResourceWatcherException(x);
                     }
                 }
             }

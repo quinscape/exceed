@@ -1,9 +1,7 @@
 package de.quinscape.exceed.runtime.controller;
 
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
-import de.quinscape.exceed.runtime.config.JsService;
 import de.quinscape.exceed.runtime.service.ApplicationService;
-import de.quinscape.exceed.runtime.util.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

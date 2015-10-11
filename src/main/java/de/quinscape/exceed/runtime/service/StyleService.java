@@ -44,4 +44,11 @@ public class StyleService
         resourceManager.setResourceRoot(root);
         return chassis.process(path);
     }
+
+    public synchronized String reload(ResourceRoot root, String path) throws IOException
+    {
+        resourceManager.setResourceRoot(root);
+        chassis.lastModified(path);
+        return chassis.process(path);
+    }
 }
