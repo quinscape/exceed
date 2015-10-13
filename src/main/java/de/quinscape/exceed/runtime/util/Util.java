@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.util;
 
 
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -120,4 +121,127 @@ public final class Util
     {
         return split(line, " \t\r\n");
     }
-}
+
+
+    public static String parseSingleQuotedString(String str)
+    {
+        return parseString('\'', str);
+    }
+
+
+    public static String parseDoubleQuotedString(String str)
+    {
+        return parseString('"', str);
+    }
+
+
+    private static String parseString(char quoteChar, String str)
+    {
+        if (str.charAt(0) != quoteChar)
+        {
+            throw new ExceedRuntimeException(str + " starts with invalid quote char.");
+        }
+
+        int pos = 1;
+
+        StringBuilder sb = new StringBuilder();
+        boolean escape = false;
+        int c;
+        while (pos < str.length())
+        {
+            c = str.charAt(pos++);
+
+            if (c == quoteChar && !escape)
+            {
+                return sb.toString();
+            }
+
+            if (c == '\\')
+            {
+                if (escape)
+                {
+                    sb.append('\\');
+                }
+                escape = !escape;
+            }
+            else if (escape)
+            {
+                switch((char)c)
+                {
+                    case '\'':
+                    case '"':
+                    case '/':
+                        sb.append((char)c);
+                        break;
+                    case 'b':
+                        sb.append('\b');
+                        break;
+                    case 'f':
+                        sb.append('\f');
+                        break;
+                    case 'n':
+                        sb.append('\n');
+                        break;
+                    case 'r':
+                        sb.append('\r');
+                        break;
+                    case 't':
+                        sb.append('\t');
+                        break;
+                    case 'u':
+
+                        if (pos + 4 >= str.length())
+                        {
+                            throw new ExceedRuntimeException("Unexpected end in unicode escape");
+                        }
+                        int unicode = (hexValue((char)str.charAt(pos++)) << 12) + (hexValue(str.charAt(pos++)) << 8) + (hexValue(str.charAt(pos++)) << 4) + hexValue(str.charAt(pos++));
+                        sb.append((char)unicode);
+                        break;
+                    default:
+                        throw new ExceedRuntimeException("Illegal escape character "+c+" / "+Integer.toHexString(c));
+                }
+                escape = false;
+            }
+            else
+            {
+                // we can't use java.lang.Character.isISOControl(int) because
+                // that uses an incorrect definition of control character.
+                // According to RFC4627 it's 0 to 31
+                if (c < 32)
+                {
+                    throw new ExceedRuntimeException("Illegal control character 0x"+Integer.toHexString(c));
+                }
+                sb.append((char)c);
+            }
+        }
+        throw new ExceedRuntimeException("Unclosed quotes");
+    }
+
+    private final static int HEX_LETTER_OFFSET = 'A' - '9' - 1;
+
+    public static int hexValue(char c)
+    {
+        int n = c;
+        if (n >= 'a')
+        {
+            n = n & ~32;
+        }
+
+        if ( (n >= '0' && n <= '9') || (n >= 'A' && n <= 'F'))
+        {
+            n -= '0';
+            if (n > 9)
+            {
+                return n - HEX_LETTER_OFFSET;
+            }
+            else
+            {
+                return n;
+            }
+
+        }
+        else
+        {
+            throw new NumberFormatException("Invalid hex character " + c);
+        }
+    }}

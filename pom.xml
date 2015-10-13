@@ -268,9 +268,13 @@
                             <includes>
                                 <include>de/quinscape/exceed/component/**</include>
                                 <include>de/quinscape/exceed/domain/**</include>
+                                <include>de/quinscape/exceed/expression/**</include>
                                 <include>de/quinscape/exceed/model/**</include>
                                 <include>de/quinscape/exceed/runtime/**</include>
                             </includes>
+                            <excludes>
+                                <exclude>**/*.jj</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
                 </executions>
