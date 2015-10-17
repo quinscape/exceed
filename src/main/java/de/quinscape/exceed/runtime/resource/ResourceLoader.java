@@ -1,6 +1,10 @@
 package de.quinscape.exceed.runtime.resource;
 
+import com.google.common.cache.LoadingCache;
+import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
+import de.quinscape.exceed.runtime.resource.file.ModuleResourceEvent;
 import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
+import de.quinscape.exceed.runtime.service.CachedResource;
 
 import java.nio.charset.Charset;
 import java.util.List;
@@ -9,11 +13,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class ResourceLoader
+    implements ResourceChangeListener
 {
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     private final List<ResourceRoot> extensions;
     private final ConcurrentMap<String, ResourceLocation> resourceLocations;
+
+    private LoadingCache<String, CachedResource> resourceCache;
 
 
     public ResourceLoader(List<ResourceRoot> extensions)
@@ -25,6 +32,7 @@ public class ResourceLoader
         for (int extensionIndex = 0; extensionIndex < extensions.size(); extensionIndex++)
         {
             ResourceRoot resourceRoot = extensions.get(extensionIndex);
+
             resourceRoot.setExtensionIndex(extensionIndex);
 
             List<? extends AppResource> extensionResources = resourceRoot.listResources();
@@ -43,8 +51,34 @@ public class ResourceLoader
                 location.addExtensionResource(resource);
             }
         }
-
     }
+
+
+    public void setResourceCache(LoadingCache<String, CachedResource> resourceCache)
+    {
+        if (resourceCache == null)
+        {
+            throw new IllegalArgumentException("cache can't be null");
+        }
+
+        this.resourceCache = resourceCache;
+
+        for (ResourceRoot root : extensions)
+        {
+            ResourceWatcher watcher = root.getResourceWatcher();
+            if (watcher != null)
+            {
+                watcher.register(this);
+            }
+        }
+    }
+
+
+    public LoadingCache<String, CachedResource> getResourceCache()
+    {
+        return resourceCache;
+    }
+
 
     public ResourceLocation getResourceLocation(String relativePath)
     {
@@ -92,4 +126,15 @@ public class ResourceLoader
             ;
     }
 
+
+    @Override
+    public void onResourceChange(ModuleResourceEvent resourceEvent, FileResourceRoot root, String resourcePath)
+    {
+        ResourceLocation resourceLocation = getResourceLocation(resourcePath);
+        if (resourceLocation.getHighestPriorityResource().getResourceRoot().equals(root))
+        {
+            // we should only be registered if cache is not null
+            resourceCache.refresh(resourcePath);
+        }
+    }
 }
