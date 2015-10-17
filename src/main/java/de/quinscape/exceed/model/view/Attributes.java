@@ -1,5 +1,6 @@
 package de.quinscape.exceed.model.view;
 
+import de.quinscape.exceed.expression.ParseException;
 import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONParameters;
 import org.svenson.JSONProperty;
@@ -18,7 +19,7 @@ public class Attributes
     public Attributes(
         @JSONParameters
         Map<String, Object> attrs
-    )
+    ) throws ParseException
     {
         if (attrs != null)
         {
@@ -36,7 +37,7 @@ public class Attributes
         attrs.put(name,value);
     }
 
-    private Map<String, AttributeValue> convert(Map<String, Object> attrs)
+    private Map<String, AttributeValue> convert(Map<String, Object> attrs) throws ParseException
     {
         Map<String, AttributeValue> newAttrs = new HashMap<>(attrs.size());
         for (Map.Entry<String, Object> entry : attrs.entrySet())
@@ -46,7 +47,7 @@ public class Attributes
         return newAttrs;
     }
 
-    private AttributeValue convertValue(Object value)
+    private AttributeValue convertValue(Object value) throws ParseException
     {
         AttributeValue attrValue;
         if (value instanceof String)
@@ -54,7 +55,6 @@ public class Attributes
             String stringValue = (String) value;
             if (stringValue.startsWith("{") && stringValue.endsWith("}"))
             {
-
                 attrValue = new AttributeValue(AttributeValueType.EXPRESSION, formatExpression(stringValue));
             }
             else
@@ -81,22 +81,22 @@ public class Attributes
         return attrValue;
     }
 
-    public void setAttribute(String name, String value)
+    public void setAttribute(String name, String value) throws ParseException
     {
         setAttribute(name, convertValue(value));
     }
 
-    public void setAttribute(String name, int value)
+    public void setAttribute(String name, int value) throws ParseException
     {
         setAttribute(name, new AttributeValue(AttributeValueType.NUMBER, value));
     }
 
-    public void setAttribute(String name, boolean value)
+    public void setAttribute(String name, boolean value) throws ParseException
     {
         setAttribute(name, new AttributeValue(AttributeValueType.BOOLEAN, value));
     }
 
-    public void setAttribute(String name, Object value)
+    public void setAttribute(String name, Object value) throws ParseException
     {
         setAttribute(name, convertValue(value));
     }
@@ -128,7 +128,7 @@ public class Attributes
         return attrs.get(id);
     }
 
-    void setGeneratedId(String id)
+    void setGeneratedId(String id) throws ParseException
     {
         setAttribute("id", id);
         this.idGenerated = true;

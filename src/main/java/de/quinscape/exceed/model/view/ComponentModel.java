@@ -1,5 +1,6 @@
 package de.quinscape.exceed.model.view;
 
+import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.runtime.component.ComponentIdService;
 import de.quinscape.exceed.runtime.component.DataProvider;
 import org.svenson.JSON;
@@ -92,7 +93,7 @@ public class ComponentModel
     }
 
     @PostConstruct
-    public void init()
+    public void init() throws ParseException
     {
         if (attrs == null)
         {
