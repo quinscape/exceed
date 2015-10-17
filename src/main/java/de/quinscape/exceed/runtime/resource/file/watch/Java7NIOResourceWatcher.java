@@ -39,7 +39,7 @@ public class Java7NIOResourceWatcher
     {
         log.info("Start watcher for {}", root);
 
-        Thread t = new Thread(this, "Exceed resource watcher for (" + root + ")");
+        Thread t = new Thread(this, "Watcher-" + root.getBaseDirectory().getPath());
         t.setDaemon(true);
         t.start();
     }
