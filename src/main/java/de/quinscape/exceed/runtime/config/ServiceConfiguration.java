@@ -19,6 +19,29 @@ public class ServiceConfiguration
         return new ViewDataService();
     }
 
+
+    @Bean
+    public QueryTransformer queryTransformer()
+    {
+        return new QueryTransformer();
+    }
+
+    @Bean
+    public ResourceCacheFactory resourceCacheFactory()
+    {
+        DefaultResourceCacheFactory cacheFactory = new DefaultResourceCacheFactory();
+        cacheFactory.setCacheSizePerApplication(10000);
+        return cacheFactory;
+    }
+
+    private final static String DEFAULT_QUERY_EXECUTOR = "jooqQueryExecutor";
+
+    @Bean(name = DEFAULT_QUERY_EXECUTOR)
+    public JOOQQueryExecutor defaultQueryExecutor()
+    {
+        return new JOOQQueryExecutor(dslContext, new DefaultNamingStrategy());
+    }
+
     @Bean
     public Translator translator()
     {

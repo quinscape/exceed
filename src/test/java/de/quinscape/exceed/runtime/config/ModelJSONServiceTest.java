@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.config;
 
+import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.Attributes;
 import de.quinscape.exceed.runtime.model.ModelFactory;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
@@ -8,7 +9,6 @@ import de.quinscape.exceed.model.view.AttributeValueType;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
-import de.quinscape.exceed.runtime.component.ComponentIdService;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +25,7 @@ public class ModelJSONServiceTest
     private static Logger log = LoggerFactory.getLogger(ModelJSONServiceTest.class);
 
 
-    private ComponentIdService componentIdService = new ComponentIdService();
-    private ModelJSONService modelJSONService = new ModelJSONServiceImpl(new ModelFactory(componentIdService));
+    private ModelJSONService modelJSONService = new ModelJSONServiceImpl(new ModelFactory());
 
     @Test
     public void testToJSON() throws Exception
@@ -48,15 +47,11 @@ public class ModelJSONServiceTest
         attrs.put("value", "{ this.props.foo }");
 
         ComponentModel root = new ComponentModel();
-        root.setComponentIdService(componentIdService);
         root.setName("Foo");
         root.setAttrs(new Attributes(attrs));
         ComponentModel kid = new ComponentModel();
-        kid.setComponentIdService(componentIdService);
         kid.setName("Bar");
-        kid.init();
         root.setKids(Collections.singletonList(kid));
-        root.init();
         view.setRoot(root);
 
         assertThat(root.getComponentId(), is("my-foo"));
@@ -64,8 +59,6 @@ public class ModelJSONServiceTest
         assertThat(root.getAttribute("n").getType(), is(AttributeValueType.NUMBER));
         assertThat(root.getAttribute("value").getType(), is(AttributeValueType.EXPRESSION));
         assertThat(root.getAttribute("flag").getType(), is(AttributeValueType.BOOLEAN));
-
-        assertThat(root.getKids().get(0).getAttribute("id"), is(notNullValue()));
 
         String json = modelJSONService.toJSON(view);
 
@@ -76,25 +69,29 @@ public class ModelJSONServiceTest
 
 
         //log.info(JSON.formatJSON(json));
-
-        // ids are generated
-        ComponentModel c = new ComponentModel();
-        c.setComponentIdService(componentIdService);
-        c.setName("Qux");
-        c.init();
-
-        String componentId = c.getComponentId();
-        assertThat(componentId, is(notNullValue()));
     }
 
     @Test
     public void testToModel() throws Exception
     {
-        RoutingTable routingTable = (RoutingTable) modelJSONService.toModel("{\"_type\":\"routing.RoutingTable\",\"rootNode\":{\"name\":\"foo\", \"mapping\": null}}");
 
-        assertThat(routingTable,is(notNullValue()));
-        assertThat(routingTable.getRootNode().getName(),is("foo"));
-        assertThat(routingTable.getRootNode().getMapping(), is(nullValue()));
+        {
+            RoutingTable routingTable = (RoutingTable) modelJSONService.toModel("{\"_type\":\"routing.RoutingTable\",\"rootNode\":{\"name\":\"foo\", \"mapping\": null}}");
+
+            assertThat(routingTable,is(notNullValue()));
+            assertThat(routingTable.getRootNode().getName(),is("foo"));
+            assertThat(routingTable.getRootNode().getMapping(), is(nullValue()));
+        }
+
+        View view = (View) modelJSONService.toModel("{\"_type\":\"view.View\",\"root\":{\"name\":\"div\", \"kids\": [\"String child\"]}}");
+
+        assertThat(view,is(notNullValue()));
+        assertThat(view.getRoot().getKids().size(),is(1));
+        ComponentModel strModel = view.getRoot().getKids().get(0);
+        AttributeValue valueAttr = strModel.getAttribute("value");
+        assertThat(strModel.getName(),is("[String]"));
+        assertThat(valueAttr.getType(),is(AttributeValueType.STRING));
+        assertThat(valueAttr.getValue(),is("String child"));
 
     }
 

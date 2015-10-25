@@ -10,33 +10,35 @@ import de.quinscape.exceed.model.domain.PropertyType;
 import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
-import de.quinscape.exceed.runtime.component.DataProvider;
+import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
+import de.quinscape.exceed.runtime.service.ComponentRegistration;
+import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.util.FileExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class ModelCompositionService
-    implements ApplicationContextAware
 {
-    private static final String DEFAULT_DATA_PROVIDER = "defaultDataProvider";
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     public static final String APP_MODEL_NAME = "/models/app.json";
+
     public static final String ROUTING_MODEL_NAME = "/models/routing.json";
+
     public static final String DOMAIN_MODEL_PREFIX = "/models/domain/";
+
     public static final String DOMAIN_PROPERTY_MODEL_PREFIX = "/models/domain/property";
+
     public static final String VIEW_MODEL_PREFIX = "/models/view/";
 
     private static Logger log = LoggerFactory.getLogger(ModelCompositionService.class);
@@ -44,21 +46,26 @@ public class ModelCompositionService
     @Autowired
     private ModelJSONService modelJSONService;
 
-    private ApplicationContext applicationContext;
+    @Autowired
+    private ComponentRegistry componentRegistry;
 
-    public Application compose(Map<String, ResourceLocation> resourceLocations)
+    @Autowired
+    private QueryTransformer queryTransformer;
+
+
+    public void compose(RuntimeApplication runtimeApplication, Map<String, ResourceLocation> resourceLocations,
+                        Application applicationModel)
     {
-        Application applicationModel = new Application();
 
         for (ResourceLocation resource : resourceLocations.values())
         {
-            update(applicationModel, resource.getHighestPriorityResource());
+            update(runtimeApplication, applicationModel, resource.getHighestPriorityResource());
         }
-
-        return applicationModel;
     }
 
-    public TopLevelModel update(Application applicationModel, AppResource resource)
+
+    public TopLevelModel update(RuntimeApplication runtimeApplication, Application applicationModel, AppResource
+        resource)
     {
         String path = resource.getRelativePath();
         if (path.endsWith(FileExtension.CSS))
@@ -116,10 +123,10 @@ public class ModelCompositionService
             else if (path.startsWith(VIEW_MODEL_PREFIX))
             {
                 log.debug("Reading {} as View", path);
-
                 View view = create(View.class, json, path);
-                initializeDataProvider(view.getRoot());
+                updateComponentRegistrations(runtimeApplication, view.getRoot(), null);
                 view.setCachedJSON(modelJSONService.toJSON(view));
+
                 applicationModel.getViews().put(view.getName(), view);
                 return view;
             }
@@ -135,49 +142,49 @@ public class ModelCompositionService
         }
     }
 
-    private void initializeDataProvider(ComponentModel elem)
+
+    /**
+     * Updates the application component registration for the given component model and its children
+     *
+     * @param runtimeApplication runtime application
+     * @param elem               component model
+     * @param componentNames     component names to update or <code>null</code> or empty to update all components.
+     */
+    public void updateComponentRegistrations(RuntimeApplication runtimeApplication, ComponentModel elem, Set<String>
+        componentNames)
     {
-        String dataProvider = elem.getDataProvider();
-
-        if (dataProvider == null)
+        if (componentNames != null && componentNames.size() == 0)
         {
-            dataProvider = DEFAULT_DATA_PROVIDER;
+            componentNames = null;
         }
-
-        DataProvider dataProviderBean = null;
-        try
-        {
-            Object bean = applicationContext.getBean(dataProvider);
-            if (bean instanceof DataProvider)
-            {
-                dataProviderBean = (DataProvider) bean;
-            }
-            else
-            {
-                log.warn("Bean with name {} ( {} ) is no data provider", dataProvider, bean);
-            }
-
-        }
-        catch(NoSuchBeanDefinitionException e)
-        {
-            log.warn("DataProvider {} is not defined.", dataProvider);
-        }
-        catch(BeansException e)
-        {
-            log.warn("Error creating DataProvider bean " + dataProvider, e);
-        }
-
-        if (dataProviderBean != null)
-        {
-            elem.setDataProviderInstance(dataProviderBean);
-        }
-        else
-        {
-            log.warn("Ignoring data provider {} on element {} due to errors", dataProvider, elem);
-        }
-
-        elem.children().forEach(this::initializeDataProvider);
+        updateComponentRegistrationsRecursive(runtimeApplication, elem, componentNames);
     }
+
+    private void updateComponentRegistrationsRecursive(RuntimeApplication runtimeApplication, ComponentModel elem, Set<String>
+        componentNames)
+    {
+        if (elem.isComponent() && (componentNames == null || componentNames.contains(elem.getName())))
+        {
+            ComponentRegistration registration = componentRegistry.getComponentRegistration(elem.getName());
+
+            if (registration == null)
+            {
+                throw new IllegalStateException("No component registered for name '" + elem.getName() + "'");
+            }
+
+            if (registration.getDataProvider() != null && elem.getComponentId() == null)
+            {
+                throw new ModelCompositionException(elem + " must have a id attribute");
+            }
+            elem.setComponentRegistration(registration);
+        }
+
+        for (ComponentModel componentModel : elem.children())
+        {
+            updateComponentRegistrationsRecursive(runtimeApplication, componentModel, componentNames);
+        }
+    }
+
 
     private <M extends Model> M create(Class<M> cls, String json, String path)
     {
@@ -199,6 +206,7 @@ public class ModelCompositionService
         return m;
     }
 
+
     private String nameFromPath(String path)
     {
         int start = path.lastIndexOf('/');
@@ -212,11 +220,5 @@ public class ModelCompositionService
             end = path.length();
         }
         return path.substring(start + 1, end);
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
     }
 }

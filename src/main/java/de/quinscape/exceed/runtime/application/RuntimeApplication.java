@@ -26,6 +26,7 @@ import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.service.StyleService;
 import de.quinscape.exceed.runtime.util.FileExtension;
+import de.quinscape.exceed.runtime.view.ComponentData;
 import de.quinscape.exceed.runtime.view.ViewData;
 import de.quinscape.exceed.runtime.view.ViewDataService;
 import org.slf4j.Logger;
@@ -128,7 +129,9 @@ public class RuntimeApplication
             return;
         }
 
-        ViewData viewData = viewDataService.prepareData(runtimeContext, view);
+        runtimeContext.setView(view);
+
+        ViewData viewData = viewDataService.prepareView(runtimeContext, view);
 
         ModelMap model = runtimeContext.getModel();
         model.put("viewData", JSON.defaultJSON().forValue(viewData));
@@ -195,8 +198,9 @@ public class RuntimeApplication
 
                 if (resourceLocation == null)
                 {
-                    log.info("RESOURCE LOCATIONS:\n{}", JSON.formatJSON(JSON.defaultJSON().forValue(resourceLoader.getResourceLocations().keySet())));
-                    throw new IllegalStateException("Resource '" + name +"' does not exist in any extension");
+                    log.info("RESOURCE LOCATIONS:\n{}", JSON.formatJSON(JSON.defaultJSON().forValue(resourceLoader
+                        .getResourceLocations().keySet())));
+                    throw new IllegalStateException("Resource '" + name + "' does not exist in any extension");
                 }
 
                 ResourceRoot root = resourceLocation.getHighestPriorityResource().getResourceRoot();
@@ -274,7 +278,7 @@ public class RuntimeApplication
     public synchronized void onResourceChange(ModuleResourceEvent resourceEvent, FileResourceRoot root, String
         modulePath)
     {
-        log.debug("onResourceChange", resourceEvent, root, modulePath);
+        log.debug("onResourceChange:  {}:{}", resourceEvent, root, modulePath);
 
         ResourceLocation resourceLocation = resourceLoader.getResourceLocation(modulePath);
 
@@ -282,7 +286,7 @@ public class RuntimeApplication
         ResourceRoot rootOfTopResource = topResource.getResourceRoot();
         if (root.equals(rootOfTopResource))
         {
-            if (topResource.getRelativePath().endsWith(FileExtension.CSS))
+            if (modulePath.endsWith(FileExtension.CSS))
             {
                 if (applicationModel.getStyleSheets().contains(modulePath))
                 {

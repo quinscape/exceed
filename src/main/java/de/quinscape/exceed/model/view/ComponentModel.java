@@ -1,14 +1,13 @@
 package de.quinscape.exceed.model.view;
 
 import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.runtime.component.ComponentIdService;
-import de.quinscape.exceed.runtime.component.DataProvider;
+import de.quinscape.exceed.runtime.service.ComponentRegistration;
+import de.quinscape.exceed.runtime.util.Util;
 import org.svenson.JSON;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 import org.svenson.StringBuilderSink;
 
-import javax.annotation.PostConstruct;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,11 +19,8 @@ public class ComponentModel
 
     private List<ComponentModel> kids;
 
-    private String dataProvider;
+    private ComponentRegistration componentRegistration;
 
-    private DataProvider dataProviderInstance;
-
-    private ComponentIdService componentIdService;
 
     @JSONProperty(priority = 10)
     public String getName()
@@ -32,22 +28,44 @@ public class ComponentModel
         return name;
     }
 
+
     @JSONProperty(ignoreIfNull = true, priority = 5)
     public Attributes getAttrs()
     {
         return attrs;
     }
 
+
     public List<ComponentModel> getKids()
     {
         return kids;
     }
 
+
     @JSONProperty(ignoreIfNull = true)
     @JSONTypeHint(ComponentModel.class)
-    public void setKids(List<ComponentModel> kids)
+    public void setKids(List kids) throws ParseException
     {
-        this.kids = kids;
+        for (int i = 0; i < kids.size(); i++)
+        {
+            Object o = kids.get(i);
+            if (o instanceof String)
+            {
+                ComponentModel model = new ComponentModel();
+                model.setName("[String]");
+                Attributes attrs = new Attributes(null);
+                attrs.setAttribute("value", o);
+                model.setAttrs(attrs);
+
+                kids.set(i, model);
+            }
+            else if (!(o instanceof ComponentModel))
+            {
+                throw new IllegalStateException("Cannot add " + o + " to " + this);
+            }
+        }
+
+        this.kids = (List<ComponentModel>) kids;
     }
 
 
@@ -55,6 +73,7 @@ public class ComponentModel
     {
         this.name = name;
     }
+
 
     /**
      * Null-safe list of children
@@ -70,69 +89,30 @@ public class ComponentModel
         return kids;
     }
 
-    @JSONProperty(ignoreIfNull = true)
-    public String getDataProvider()
-    {
-        return dataProvider;
-    }
-
-    public void setDataProvider(String dataProvider)
-    {
-        this.dataProvider = dataProvider;
-    }
-
-    public void setDataProviderInstance(DataProvider dataProviderInstance)
-    {
-        this.dataProviderInstance = dataProviderInstance;
-    }
-
-    @JSONProperty(ignore = true)
-    public DataProvider getDataProviderInstance()
-    {
-        return dataProviderInstance;
-    }
-
-    @PostConstruct
-    public void init() throws ParseException
-    {
-        if (attrs == null)
-        {
-            attrs = new Attributes(null);
-        }
-
-        if (attrs.getAttribute("id") == null)
-        {
-            attrs.setGeneratedId(componentIdService.createId());
-        }
-    }
 
     @JSONProperty(ignore = true)
     public String getComponentId()
     {
+        if (attrs == null)
+        {
+            return null;
+        }
         AttributeValue value = attrs.getAttribute("id");
         return value != null ? (String) value.getValue() : null;
     }
+
 
     public AttributeValue getAttribute(String key)
     {
         return attrs.getAttribute(key);
     }
 
+
     public void setAttrs(Attributes attrs)
     {
         this.attrs = attrs;
     }
 
-    @JSONProperty(ignore = true)
-    public ComponentIdService getComponentIdService()
-    {
-        return componentIdService;
-    }
-
-    public void setComponentIdService(ComponentIdService componentIdService)
-    {
-        this.componentIdService = componentIdService;
-    }
 
     @Override
     public String toString()
@@ -170,10 +150,49 @@ public class ComponentModel
         return sb.getContent();
     }
 
+
+    /**
+     * Returns <code>true</code> if the element represented by this model is full component or just a HTML tag.
+     * <p>
+     * Exceed follows the ReactJs convention that component names start with an upper case letter and HTML tags
+     * with a lower case letter.
+     * </p>
+     *
+     * @return
+     */
     @JSONProperty(ignore = true)
     public boolean isComponent()
     {
         return Character.isUpperCase(name.charAt(0));
+    }
+
+
+    @JSONProperty(ignore = true)
+    public void setComponentRegistration(ComponentRegistration componentRegistration)
+    {
+        this.componentRegistration = componentRegistration;
+    }
+
+
+    public ComponentRegistration getComponentRegistration()
+    {
+        return componentRegistration;
+    }
+
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        return obj == this || obj instanceof ComponentModel && ((ComponentModel) obj).getComponentId().equals
+            (getComponentId());
+
+    }
+
+
+    @Override
+    public int hashCode()
+    {
+        return Util.hashcodeOver(getComponentId());
     }
 }
 

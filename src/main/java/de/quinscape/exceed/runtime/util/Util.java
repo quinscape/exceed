@@ -1,6 +1,8 @@
 package de.quinscape.exceed.runtime.util;
 
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +10,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -244,4 +248,29 @@ public final class Util
         {
             throw new NumberFormatException("Invalid hex character " + c);
         }
-    }}
+    }
+
+    public static int hashcodeOver(Object... objs)
+    {
+        int hashcode = 17;
+        for (Object obj : objs)
+        {
+            if (obj != null)
+            {
+                hashcode = (hashcode + obj.hashCode()) * 37;
+            }
+        }
+        return hashcode;
+    }
+
+
+    public static <K,V> Map<K, V> immutableMap(Map<K, V> map)
+    {
+        return map != null ? ImmutableMap.copyOf(map) : Collections.emptyMap() ;
+    }
+
+    public static <V> List<V> immutableList(List<V> list)
+    {
+        return list != null ? ImmutableList.copyOf(list) : Collections.emptyList() ;
+    }
+}

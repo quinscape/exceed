@@ -1,28 +1,42 @@
 package de.quinscape.exceed.runtime.service;
 
 import de.quinscape.exceed.component.ComponentDescriptor;
+import de.quinscape.exceed.runtime.component.DataProvider;
+
+import java.util.Map;
 
 /**
- * Encapsulates the component descriptor and the a reference to a potential style sheet for a single component
- * within a component package.
+ * Encapsulates the registration of a component definition and contains the component descriptor, the processed styles
+ * for the component and the data provider implementation.
  */
 public class ComponentRegistration
 {
     private final ComponentDescriptor descriptor;
 
-    private final String styleSheetName;
-
     private final String styles;
 
     private final String componentName;
 
+    private final DataProvider dataProvider;
 
-    ComponentRegistration(String componentName, ComponentDescriptor descriptor, String styleSheetName, String styles)
+
+    ComponentRegistration(String componentName, ComponentDescriptor descriptor, String styles,
+                          DataProvider dataProvider)
     {
+        if (componentName == null)
+        {
+            throw new IllegalArgumentException("componentName can't be null");
+        }
+
+        if (descriptor == null)
+        {
+            throw new IllegalArgumentException("descriptor can't be null");
+        }
+
         this.componentName = componentName;
         this.descriptor = descriptor;
-        this.styleSheetName = styleSheetName;
         this.styles = styles;
+        this.dataProvider = dataProvider;
     }
 
 
@@ -32,9 +46,9 @@ public class ComponentRegistration
     }
 
 
-    public String getStyleSheetName()
+    public String getComponentName()
     {
-        return styleSheetName;
+        return componentName;
     }
 
 
@@ -44,12 +58,19 @@ public class ComponentRegistration
     }
 
 
+    public DataProvider getDataProvider()
+    {
+        return dataProvider;
+    }
+
+
     @Override
     public String toString()
     {
         return super.toString() + ": "
             + "componentName = '" + componentName + '\''
-            + ", styleSheetName = '" + styleSheetName + '\''
+            + ", dataProvider = " + dataProvider
             ;
     }
+
 }

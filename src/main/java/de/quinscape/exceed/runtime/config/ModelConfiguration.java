@@ -3,7 +3,6 @@ package de.quinscape.exceed.runtime.config;
 import de.quinscape.exceed.runtime.model.ModelFactory;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
-import de.quinscape.exceed.runtime.component.ComponentIdService;
 import de.quinscape.exceed.runtime.util.MediaTypeService;
 import de.quinscape.exceed.runtime.util.MediaTypeServiceImpl;
 import org.springframework.context.annotation.Bean;
@@ -22,12 +21,6 @@ public class ModelConfiguration
     @Bean
     public ModelFactory modelFactory()
     {
-        return new ModelFactory(componentService());
-    }
-
-    @Bean
-    public ComponentIdService componentService()
-    {
-        return new ComponentIdService();
+        return new ModelFactory();
     }
 }

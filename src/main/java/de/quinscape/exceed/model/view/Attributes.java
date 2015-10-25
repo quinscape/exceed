@@ -14,7 +14,6 @@ public class Attributes
 {
 
     private Map<String,AttributeValue> attrs;
-    private boolean idGenerated;
 
     public Attributes(
         @JSONParameters
@@ -128,18 +127,6 @@ public class Attributes
         return attrs.get(id);
     }
 
-    void setGeneratedId(String id) throws ParseException
-    {
-        setAttribute("id", id);
-        this.idGenerated = true;
-    }
-
-
-    @JSONProperty(ignore = true)
-    public boolean isIdGenerated()
-    {
-        return idGenerated;
-    }
     @JSONProperty(ignore = true)
     public Set<String> getNames()
     {

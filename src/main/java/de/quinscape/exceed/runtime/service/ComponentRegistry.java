@@ -1,7 +1,11 @@
 package de.quinscape.exceed.runtime.service;
 
+import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.component.ComponentPackageDescriptor;
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.component.DataProvider;
+import de.quinscape.exceed.runtime.component.QueryDataProvider;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.ResourceChangeListener;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
@@ -12,7 +16,10 @@ import de.quinscape.exceed.runtime.util.FileExtension;
 import de.quinscape.exceed.runtime.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.svenson.JSONParser;
 
@@ -27,9 +34,11 @@ import java.util.concurrent.ConcurrentMap;
 
 @Service
 public class ComponentRegistry
-    implements ResourceChangeListener
+    implements ResourceChangeListener, ApplicationContextAware
 {
     private static final Charset UTF8 = Charset.forName("UTF-8");
+
+    private static final String DEFAULT_DATA_PROVIDER = "defaultDataProvider";
 
     private static Logger log = LoggerFactory.getLogger(ComponentRegistry.class);
 
@@ -41,18 +50,26 @@ public class ComponentRegistry
     @Autowired
     private ApplicationService applicationService;
 
-    private ConcurrentMap<String,ComponentRegistration> components = new ConcurrentHashMap<>();
-    private ConcurrentMap<String,Set<String>> packages = new ConcurrentHashMap<>();
+    private ApplicationContext applicationContext;
+
+    private ConcurrentMap<String, ComponentRegistration> components = new ConcurrentHashMap<>();
+
+    private ConcurrentMap<String, Set<String>> packages = new ConcurrentHashMap<>();
+
+    private Map<String, DataProvider> dataProviders;
+
 
     public ComponentRegistry()
     {
         this.parser = new JSONParser();
     }
 
+
     public void clear()
     {
         components.clear();
     }
+
 
     public void registerComponents(ResourceRoot root) throws IOException
     {
@@ -72,14 +89,25 @@ public class ComponentRegistry
     }
 
 
-    private void processResource(ResourceRoot root, AppResource appResource, boolean reload) throws IOException
+    private synchronized void processResource(ResourceRoot root, AppResource appResource, boolean reload) throws
+        IOException
     {
         if (!appResource.getRelativePath().endsWith(FileExtension.JSON))
         {
             return;
         }
 
-        ComponentPackageDescriptor componentPackageDescriptor = parser.parse(ComponentPackageDescriptor.class, new String(appResource.read(), UTF8));
+        ComponentPackageDescriptor componentPackageDescriptor;
+        try
+        {
+            componentPackageDescriptor = parser.parse(ComponentPackageDescriptor.class, new String(appResource.read()
+                , UTF8));
+
+        }
+        catch (Exception e)
+        {
+            throw new ExceedRuntimeException("Error parsing component package descriptor from " + appResource, e);
+        }
 
         Set<String> componentNames = new HashSet<>();
 
@@ -105,7 +133,24 @@ public class ComponentRegistry
                 }
             }
 
-            ComponentRegistration registration = new ComponentRegistration(componentName, descriptor, styleSheetName, styles);
+            String dataProviderName = descriptor.getDataProviderName();
+            DataProvider dataProviderBean = dataProviders.get(dataProviderName != null ? dataProviderName :
+                DEFAULT_DATA_PROVIDER);
+            if (dataProviderBean == null)
+            {
+                log.warn("No data provider with name {}", dataProviderName);
+            }
+
+            // if we have no queries, and the data provider is the query data provider, we ignore
+            // it since it wouldn't provide as with data anyway and we can minimize the component models
+            // we need to define id attributes for
+            if (dataProviderBean instanceof QueryDataProvider && descriptor.getQueries().size() == 0)
+            {
+                dataProviderBean = null;
+            }
+
+            ComponentRegistration registration = new ComponentRegistration(componentName, descriptor,
+                styles, dataProviderBean);
             components.put(componentName, registration);
 
             log.debug("(Re)registering {}", registration);
@@ -113,7 +158,15 @@ public class ComponentRegistry
             componentNames.add(componentName);
         }
 
-        packages.put(appResource.getRelativePath(), componentNames);
+        if (componentNames.size() > 0)
+        {
+            packages.put(appResource.getRelativePath(), componentNames);
+
+            if (reload)
+            {
+                applicationService.signalComponentChanges(componentNames);
+            }
+        }
     }
 
 
@@ -128,8 +181,8 @@ public class ComponentRegistry
     {
         /*
             we're only interested in JSON and CSS changes, the js changes get picked up by a running gulp watcher and
-            when that regenerates the bundle it will be reloaded by
-            {@link de.quinscape.exceed.runtime.controller.ScriptController}
+            when that regenerates the bundle it will be cause a client notification for changed code which then will
+            cause a reload via {@link de.quinscape.exceed.runtime.controller.ResourceController}
          */
         boolean isJSON = resourcePath.endsWith(FileExtension.JSON);
         if (isJSON || resourcePath.endsWith(FileExtension.CSS))
@@ -140,10 +193,14 @@ public class ComponentRegistry
                 {
                     if (resourceEvent == ModuleResourceEvent.DELETED)
                     {
-                        Set<String> componentNames = packages.get(resourcePath);
-                        if (componentNames != null)
+                        synchronized (this)
                         {
-                            componentNames.forEach(components::remove);
+                            Set<String> componentNames = packages.get(resourcePath);
+                            if (componentNames != null)
+                            {
+                                componentNames.forEach(components::remove);
+                                applicationService.signalComponentChanges(componentNames);
+                            }
                         }
                     }
                     else
@@ -164,5 +221,14 @@ public class ComponentRegistry
                 e.printStackTrace();
             }
         }
+    }
+
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.applicationContext = applicationContext;
+
+        this.dataProviders = ImmutableMap.copyOf(applicationContext.getBeansOfType(DataProvider.class));
     }
 }

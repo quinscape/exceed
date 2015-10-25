@@ -1,8 +1,20 @@
 package de.quinscape.exceed.runtime.view;
 
+import de.quinscape.exceed.expression.ASTExpression;
+import de.quinscape.exceed.expression.ASTFunction;
+import de.quinscape.exceed.expression.ASTString;
+import de.quinscape.exceed.expression.ExpressionParser;
+import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
+import de.quinscape.exceed.runtime.service.ComponentRegistration;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Encapsulates the necessary context for a view data provisioning invocation for
@@ -20,12 +32,18 @@ public final class DataProviderContext
 
     private boolean continueOnChildren = true;
 
-    public DataProviderContext(ViewDataService viewDataService, RuntimeContext runtimeContext, String viewName, ViewData viewData)
+    private final ComponentModel overridden;
+    private final Map<String, Object> varsOverride;
+
+
+    public DataProviderContext(ViewDataService viewDataService, RuntimeContext runtimeContext, String viewName, ViewData viewData, ComponentModel overridden,Map<String, Object> varsOverride)
     {
         this.viewDataService = viewDataService;
         this.viewName = viewName;
         this.runtimeContext = runtimeContext;
         this.viewData = viewData;
+        this.overridden = overridden;
+        this.varsOverride = varsOverride;
     }
 
     public RuntimeContext getRuntimeContext()
@@ -101,5 +119,98 @@ public final class DataProviderContext
     ViewData getViewData()
     {
         return viewData;
+    }
+
+
+    public Map<String, Object> getVars(ComponentModel componentModel)
+    {
+        if (componentModel == null)
+        {
+            throw new IllegalArgumentException("componentModel can't be null");
+        }
+
+        if (componentModel.equals(overridden))
+        {
+            return varsOverride;
+        }
+
+        try
+        {
+            return new VariableResolutionEnvironment(componentModel).evaluateVars();
+        }
+        catch (ParseException e)
+        {
+            throw new ExceedRuntimeException(e);
+        }
+    }
+
+    public static class VariableResolutionEnvironment
+        extends ExpressionEnvironment
+    {
+
+        private final ComponentModel componentModel;
+
+
+        public VariableResolutionEnvironment(ComponentModel componentModel)
+        {
+            this.componentModel = componentModel;
+        }
+
+
+        public Map<String, Object> evaluateVars() throws ParseException
+        {
+            ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
+            if (componentRegistration == null)
+            {
+                throw new IllegalStateException("No component registration for " + componentModel);
+            }
+
+            Map<String, String> varExpressions = componentRegistration.getDescriptor().getVars();
+
+            if (varExpressions != null)
+            {
+                Map<String, Object> vars = new HashMap<>();
+                for (Map.Entry<String, String> entry : varExpressions.entrySet())
+                {
+                    String varName = entry.getKey();
+                    String expression = entry.getValue();
+
+
+                    ASTExpression astExpression = ExpressionParser.parse(expression);
+                    Object result = astExpression.jjtAccept(this, null);
+                    vars.put(varName, result);
+                }
+                return vars;
+            }
+            else
+            {
+                return Collections.emptyMap();
+            }
+        }
+
+        public Object prop(ASTFunction node)
+        {
+            Object result = node.jjtGetChild(0).jjtAccept(this, null);
+            if (result instanceof String)
+            {
+                String propName = (String) result;
+                AttributeValue attribute = componentModel.getAttribute(propName);
+                if (attribute == null)
+                {
+                    return null;
+                }
+
+                ASTExpression astExpression = attribute.getAstExpression();
+                if (astExpression != null)
+                {
+                    return astExpression.jjtAccept(this, null);
+                }
+                return attribute.getValue();
+            }
+            else
+            {
+                throw new VariableResolutionException("Invalid prop operator argument: " + result);
+            }
+        }
     }
 }
