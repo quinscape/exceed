@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Encapsulates the general application configuration.
@@ -32,9 +33,24 @@ public class Application
 
     private List<String> styleSheets;
 
+    private AtomicLong idCount = new AtomicLong(0L);
+
+    private String schema;
+
     public Application()
     {
+    }
 
+
+    public String getSchema()
+    {
+        return schema;
+    }
+
+
+    public void setSchema(String schema)
+    {
+        this.schema = schema;
     }
 
 
@@ -99,6 +115,23 @@ public class Application
     }
 
 
+    public long nextId()
+    {
+        return idCount.incrementAndGet();
+    }
+
+
+    public void setIdCount(long idCount)
+    {
+        this.idCount.set(idCount);
+    }
+
+
+    public long getIdCount()
+    {
+        return idCount.get();
+    }
+
     /**
      * copies the non-app.json data of the give application model into this one.
      *
@@ -107,5 +140,6 @@ public class Application
     public void merge(Application applicationModel)
     {
         this.styleSheets = applicationModel.styleSheets;
+        this.schema = applicationModel.schema;
     }
 }
