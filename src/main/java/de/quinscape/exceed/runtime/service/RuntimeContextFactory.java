@@ -1,6 +1,9 @@
 package de.quinscape.exceed.runtime.service;
 
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.i18n.Translator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
 
@@ -11,8 +14,12 @@ import javax.servlet.http.HttpServletResponse;
 @Service
 public class RuntimeContextFactory
 {
-    public RuntimeContext create(HttpServletRequest request, HttpServletResponse response, ModelMap model, String path)
+    @Autowired
+    private Translator translator;
+
+    public RuntimeContext create(HttpServletRequest request, HttpServletResponse response, ModelMap model, RuntimeApplication
+        runtimeApplication, String path)
     {
-        return new RuntimeContext(request, response, model, path);
+        return new RuntimeContext(request, response, model, runtimeApplication, path, translator);
     }
 }
