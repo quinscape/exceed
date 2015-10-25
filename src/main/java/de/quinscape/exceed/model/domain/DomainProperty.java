@@ -28,6 +28,7 @@ public class DomainProperty
         this.translationNeeded = translationNeeded;
     }
 
+    @JSONProperty(priority = 100)
     public String getType()
     {
         return type;
@@ -38,7 +39,7 @@ public class DomainProperty
         this.type = type;
     }
 
-    @JSONProperty(ignoreIfNull = true)
+    @JSONProperty(ignoreIfNull = true, priority = 60)
     public String getDefaultValue()
     {
         return defaultValue;
@@ -49,6 +50,7 @@ public class DomainProperty
         this.defaultValue = defaultValue;
     }
 
+    @JSONProperty(priority = 80)
     public boolean isRequired()
     {
         return required;
@@ -69,6 +71,7 @@ public class DomainProperty
         this.translationNeeded = translationNeeded;
     }
 
+    @JSONProperty(ignoreIfNull = true, priority = 90)
     public Object getTypeParam()
     {
         return typeParam;
@@ -79,6 +82,7 @@ public class DomainProperty
         this.typeParam = typeParam;
     }
 
+    @JSONProperty(ignoreIfNull = true, priority = 70)
     public int getMaxLength()
     {
         return maxLength;

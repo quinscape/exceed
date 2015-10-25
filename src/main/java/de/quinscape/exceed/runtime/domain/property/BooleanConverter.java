@@ -3,7 +3,7 @@ package de.quinscape.exceed.runtime.domain.property;
 public class BooleanConverter
     extends NullConverter<Boolean>
 {
-    protected BooleanConverter()
+    public BooleanConverter()
     {
         super(Boolean.class);
     }

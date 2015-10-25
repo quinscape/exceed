@@ -1,14 +1,26 @@
 package de.quinscape.exceed.runtime.domain;
 
+import com.google.common.collect.ImmutableMap;
+import de.quinscape.exceed.model.domain.DomainProperty;
+import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.RuntimeContextHolder;
+import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.component.EntityDefinition;
+import de.quinscape.exceed.runtime.component.QueryResult;
+import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
+import de.quinscape.exceed.runtime.expression.query.QueryField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.svenson.AbstractPropertyValueBasedTypeMapper;
 import org.svenson.JSON;
+import org.svenson.JSONCharacterSink;
 import org.svenson.JSONParser;
-import org.svenson.matcher.SubtypeMatcher;
+import org.svenson.SinkAwareJSONifier;
+import org.svenson.util.JSONBeanUtil;
 
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class DomainServiceImpl
@@ -16,28 +28,45 @@ public class DomainServiceImpl
 {
     private static Logger log = LoggerFactory.getLogger(DomainServiceImpl.class);
 
+    private final static JSONBeanUtil util = JSONBeanUtil.defaultUtil();
+
+    private final Map<String, PropertyConverter> propertyConverters;
+
     private JSONParser parser;
 
-    private Map<String,Class<? extends DomainObject>> domainTypes;
-    private Map<String,Class<? extends DomainObject>> domainTypesRO;
+    private JSON generator = JSON.defaultJSON();
 
-    private Registry registry = new Registry(this);
+    private String schema;
 
-    public DomainServiceImpl()
+    private RuntimeApplication runtimeApplication;
+
+
+    public DomainServiceImpl(Map<String, PropertyConverter> propertyConverters)
     {
+
         parser = new JSONParser();
-        parser.setTypeMapper(new DomainMapper());
         parser.addObjectFactory(new DomainFactory(this));
 
-        domainTypes = new HashMap<>();
-        domainTypesRO = Collections.unmodifiableMap(domainTypes);
+        generator = new JSON();
+        generator.registerJSONifier(QueryResult.class, new QueryResultJSONifier());
+
+        this.propertyConverters = ImmutableMap.copyOf(propertyConverters);
     }
 
-    @Override
-    public <D extends DomainObject> String toJSON(D domainObject)
+
+    public void init(RuntimeApplication runtimeApplication, String schema)
     {
-        return JSON.defaultJSON().forValue(domainObject);
+        this.runtimeApplication = runtimeApplication;
+        this.schema = schema;
     }
+
+
+    @Override
+    public String toJSON(RuntimeContext runtimeContext, Object domainObject)
+    {
+        return generator.forValue(domainObject);
+    }
+
 
     /**
      * Converts the given model JSON to a model instance.
@@ -46,83 +75,64 @@ public class DomainServiceImpl
      * @return Model instance of type embedded in JSON
      */
     @Override
-    public DomainObject toDomainObject(String json)
+    public Object toDomainObject(RuntimeContext runtimeContext, String json)
     {
-        return parser.parse(DomainObject.class, json);
+        return parser.parse(GenericDomainObject.class, json);
     }
 
-    /**
-     * Converts the given model JSON to a model instance and validates it to be an expected type.
-     *
-     * @param cls  Expected (super) class.
-     * @param json JSON string. Must have a root "_type" property that contains a valid model name,
-     * @return Model instance of type embedded in JSON
-     */
+
     @Override
-    public <D extends DomainObject> D toDomainObject(Class<D> cls, String json)
+    public DomainType getDomainType(String name)
     {
-        DomainObject domainObject = parser.parse(DomainObject.class, json);
-        if (!cls.isInstance(domainObject))
+        DomainType domainType = runtimeApplication.getApplicationModel().getDomainTypes().get(name);
+        if (domainType == null)
         {
-            throw new IllegalArgumentException("Expected " + cls.getSimpleName() + " but got " + json);
-        }
-        return (D) domainObject;
-    }
-
-    Map<String,Class<? extends DomainObject>> getDomainTypes()
-    {
-        return domainTypes;
-    }
-
-    Map<String, Class<? extends DomainObject>> getDomainTypesRO()
-    {
-        return domainTypesRO;
-    }
-
-    public class DomainMapper
-        extends AbstractPropertyValueBasedTypeMapper
-    {
-        public DomainMapper()
-        {
-            setDiscriminatorField("_type");
-            setPathMatcher(new SubtypeMatcher(DomainObject.class));
+            throw new IllegalArgumentException("Unknown type '" + name + "'");
         }
 
-        @Override
-        protected Class getTypeHintFromTypeProperty(Object o) throws IllegalStateException
-        {
-            Class<? extends DomainObject> cls = domainTypes.get(o.toString());
-            if (cls == null)
-            {
-                throw new DomainTypeNameNotFoundException("Cannot create domain type for unknown name '" + o + "'");
-            }
-            return cls;
-        }
+        return domainType;
     }
 
-    private static class DomainFactory
-        implements org.svenson.ObjectFactory<DomainObject>
-    {
-        private final DomainService domainJSONService;
 
-        private DomainFactory(DomainService domainJSONService)
+    @Override
+    public String getSchema()
+    {
+        return schema;
+    }
+
+
+    public Map<String, DomainType> getDomainTypes()
+    {
+        return runtimeApplication.getApplicationModel().getDomainTypes();
+    }
+
+
+    private class DomainFactory
+        implements org.svenson.ObjectFactory<GenericDomainObject>
+    {
+        private final DomainService domainService;
+
+
+        private DomainFactory(DomainService domainService)
         {
-            if (domainJSONService == null)
+            if (domainService == null)
             {
                 throw new IllegalArgumentException("domainService can't be null");
             }
 
-            this.domainJSONService = domainJSONService;
+            this.domainService = domainService;
         }
 
+
         @Override
-        public boolean supports(Class<DomainObject> cls)
+        public boolean supports(Class<GenericDomainObject> cls)
         {
-            return DomainObject.class.isAssignableFrom(cls);
+            return GenericDomainObject.class.isAssignableFrom(cls);
         }
 
+
         @Override
-        public DomainObject create(Class<DomainObject> cls)
+        public GenericDomainObject create(Class<GenericDomainObject> cls)
         {
             try
             {
@@ -130,8 +140,9 @@ public class DomainServiceImpl
                 {
                     log.debug("Create {}", cls.getName());
                 }
-                DomainObject domainObject = cls.newInstance();
-                domainObject.setDomainService(domainJSONService);
+                GenericDomainObject domainObject = cls.newInstance();
+
+                domainObject.setDomainService(domainService);
                 return domainObject;
             }
             catch (Exception e)
@@ -141,56 +152,149 @@ public class DomainServiceImpl
         }
     }
 
-    private static class Registry
-        implements DomainRegistry
+    /**
+     * JSONifies QueryResult classes with entity definitions, query fields and rows.
+     * <p>
+     * Converts the row values using the RuntimeContextHolder to get the current runtime
+     * context.
+     */
+    private class QueryResultJSONifier
+        implements SinkAwareJSONifier
     {
-        private final DomainServiceImpl domainJSONService;
-
-        public Registry(DomainServiceImpl domainJSONService)
-        {
-            this.domainJSONService = domainJSONService;
-        }
 
         @Override
-        public void register(String name, Class<? extends DomainObject> cls) throws DomainTypeNameCollisionException
+        public String toJSON(Object o)
         {
-            Map<String, Class<? extends DomainObject>> domainTypes = domainJSONService.getDomainTypes();
-
-            Class<? extends DomainObject> existingRegistration = domainTypes.get(name);
-            if (existingRegistration != null)
-            {
-                throw new DomainTypeNameCollisionException("Domain Type '" + name + "' is already defined.");
-            }
-            domainTypes.put(name, cls);
+            throw new UnsupportedOperationException();
         }
+
 
         @Override
-        public void override(String name, Class<? extends DomainObject> cls) throws DomainTypeNameNotFoundException, DomainTypeOverridingException
+        public void writeToSink(JSONCharacterSink sink, Object o)
         {
-            Map<String, Class<? extends DomainObject>> domainTypes = domainJSONService.getDomainTypes();
-            Class<? extends DomainObject> existingRegistration = domainTypes.get(name);
-            if (existingRegistration == null)
+            RuntimeContext runtimeContext = RuntimeContextHolder.get();
+
+            QueryResult queryResult = (QueryResult) o;
+
+            List<EntityDefinition> entityDefinitions = queryResult.getEntityDefinitions();
+            Map<String, Integer> lookup = new HashMap<>();
+            for (int i = 0; i < entityDefinitions.size(); i++)
             {
-                throw new DomainTypeNameNotFoundException("Cannot override non-existing domain Type '" + name + "'.");
-            }
-            if (!existingRegistration.isAssignableFrom(cls))
-            {
-                throw new DomainTypeOverridingException("Cannot override domain type, " + cls + " does not extend " + existingRegistration + "'.");
+                EntityDefinition entityDefinition = entityDefinitions.get(i);
+                lookup.put(entityDefinition.getType(), i);
             }
 
-            domainTypes.put(name, cls);
+            sink.append("{\"entities\":");
+
+            generator.dumpObject(sink, entityDefinitions);
+
+            sink.append(",\"fields\":{");
+
+            Map<String, QueryField> fields = queryResult.getFields();
+            for (Iterator<Map.Entry<String, QueryField>> iterator = fields.entrySet().iterator(); iterator.hasNext(); )
+            {
+                Map.Entry<String, QueryField> entry = iterator.next();
+
+                String localeName = entry.getKey();
+                QueryField queryField = entry.getValue();
+
+                jsonifyQueryField(sink, localeName, queryField, lookup);
+
+                if (iterator.hasNext())
+                {
+                    sink.append(",");
+                }
+            }
+
+            sink.append("},\"rows\":[");
+
+            for (Iterator<? extends DomainObject> iterator = queryResult.getRows().iterator(); iterator.hasNext(); )
+            {
+                DomainObject row = iterator.next();
+
+                jsonifyRow(sink, runtimeContext, queryResult, row);
+
+                if (iterator.hasNext())
+                {
+                    sink.append(",");
+                }
+            }
+
+            sink.append("]}");
         }
 
-        @Override
-        public Map<String, Class<? extends DomainObject>> registrations()
-        {
-            return domainJSONService.getDomainTypesRO();
-        }
-    }
 
-    @Override
-    public DomainRegistry getRegistry()
-    {
-        return registry;
+        private void jsonifyQueryField(JSONCharacterSink sink, String localeName, QueryField queryField, Map<String,
+            Integer> lookup)
+        {
+            generator.quote(sink, localeName);
+            DomainProperty domainProperty = queryField.getDomainProperty();
+            sink.append(":{\"type\":");
+            generator.quote(sink, domainProperty.getType());
+            Object typeParam = domainProperty.getTypeParam();
+            if (typeParam != null)
+            {
+                sink.append(",\"typeParam\":");
+                generator.dumpObject(sink, typeParam);
+            }
+            boolean required = domainProperty.isRequired();
+            if (required)
+            {
+                sink.append(",\"required\":true");
+            }
+            boolean translationNeeded = domainProperty.isTranslationNeeded();
+            if (translationNeeded)
+            {
+                sink.append(",\"translationNeeded\":true");
+            }
+            int maxLength = domainProperty.getMaxLength();
+            if (maxLength > 0)
+            {
+                sink.append(",\"maxLength\":" + maxLength);
+            }
+            String defaultValue = domainProperty.getDefaultValue();
+            if (defaultValue != null)
+            {
+                sink.append(",\"defaultValue\":");
+                generator.dumpObject(sink, defaultValue);
+            }
+            sink.append(",\"entityIndex\":" + lookup.get(queryField.getQueryDomainType().getType().getName()));
+            sink.append(",\"name\":");
+            generator.quote(sink, queryField.getDomainProperty().getName());
+            sink.append(",\"qualifiedName\":");
+            generator.quote(sink, queryField.getQualifiedName());
+            sink.append("}");
+        }
+
+
+        private void jsonifyRow(JSONCharacterSink sink, RuntimeContext runtimeContext, QueryResult queryResult,
+                                DomainObject row)
+        {
+            sink.append("{\"id\":");
+            generator.quote(sink, row.getId());
+
+            for (QueryField field : queryResult.getFields().values())
+            {
+                String localName = field.getLocalName();
+                Object property = row.getProperty(localName);
+
+                DomainProperty domainProperty = field.getDomainProperty();
+                String converterBeanName = domainProperty.getType() + "Converter";
+                PropertyConverter converter = propertyConverters.get(converterBeanName);
+                if (converter == null)
+                {
+                    throw new IllegalStateException("Could not find converter '" + converterBeanName + "'");
+                }
+
+                Object converted = converter.convertToJSON(runtimeContext, property, domainProperty);
+
+                sink.append(",");
+                generator.quote(sink, localName);
+                sink.append(":");
+                generator.dumpObject(sink, converted);
+            }
+
+            sink.append("}");
+        }
     }
 }

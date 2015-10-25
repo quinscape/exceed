@@ -1,15 +1,22 @@
 package de.quinscape.exceed.runtime.domain;
 
+import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.component.QueryResult;
+
 /**
  *  Handles registration of domain types in the system and converts domain objects to JSON and back.
  */
 public interface DomainService
 {
-    <D extends DomainObject> String toJSON(D domainObject);
+    void init(RuntimeApplication runtimeApplication, String schema);
 
-    DomainObject toDomainObject(String json);
+    String toJSON(RuntimeContext runtimeContext, Object domainObject);
 
-    <D extends DomainObject> D toDomainObject(Class<D> cls, String json);
+    Object toDomainObject(RuntimeContext runtimeContext, String json);
 
-    DomainRegistry getRegistry();
+    DomainType getDomainType(String name);
+
+    String getSchema();
 }

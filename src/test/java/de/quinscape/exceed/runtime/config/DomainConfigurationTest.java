@@ -1,7 +1,5 @@
 package de.quinscape.exceed.runtime.config;
 
-import static de.quinscape.exceed.domain.Tables.APP_USER;
-
 import de.quinscape.exceed.domain.tables.pojos.AppUser;
 import de.quinscape.exceed.domain.tables.records.AppUserRecord;
 import org.jooq.DSLContext;
@@ -17,14 +15,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.*;
+import static de.quinscape.exceed.domain.Tables.*;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
     ModelConfiguration.class,
     DomainConfiguration.class,
-    TestConfiguration.class
+    TestConfiguration.class,
+    ServiceConfiguration.class
 })
 @Transactional
 public class DomainConfigurationTest
@@ -58,4 +58,26 @@ public class DomainConfigurationTest
         assertThat(foos.get(0).getPassword(), is("secret"));
 
     }
+
+
+//    @Test
+//    public void testQuery() throws Exception
+//    {
+//
+//        dslContext.select().from(FOO.as("f")).leftOuterJoin(BAR.as("b")).on(field("b.foo_id").eq(field("f.id"))).fetch(new RecordMapper<Record, String>()
+//
+//        {
+//            @Override
+//            public String map(Record record)
+//            {
+//                for (Field f : record.fields())
+//                {
+//                    log.info("{}", f);
+//                }
+//
+//                return "";
+//            }
+//        });
+//
+//    }
 }

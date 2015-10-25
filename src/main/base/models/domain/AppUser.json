@@ -1,8 +1,9 @@
 {
-  "name": "app_user",
+  "name": "AppUser",
   "properties": {
     "id": {
-      "type" : "UUID"
+      "type" : "UUID",
+      "maxLength" : 36
     },
     "login": {
       "type" : "PlainText",

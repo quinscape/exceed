@@ -6,12 +6,16 @@ import de.quinscape.exceed.model.change.CodeChange;
 import de.quinscape.exceed.model.change.Shutdown;
 import de.quinscape.exceed.model.change.StyleChange;
 import de.quinscape.exceed.model.change.Timeout;
+import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.routing.Mapping;
 import de.quinscape.exceed.model.routing.MappingNode;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.component.QueryResult;
+import de.quinscape.exceed.runtime.domain.DomainService;
+import de.quinscape.exceed.runtime.expression.query.QueryField;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.ResourceChangeListener;
@@ -21,9 +25,9 @@ import de.quinscape.exceed.runtime.resource.ResourceWatcher;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.ModuleResourceEvent;
 import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
-import de.quinscape.exceed.runtime.resource.stream.ServletResourceRoot;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
+import de.quinscape.exceed.runtime.service.DomainServiceFactory;
 import de.quinscape.exceed.runtime.service.StyleService;
 import de.quinscape.exceed.runtime.util.FileExtension;
 import de.quinscape.exceed.runtime.view.ComponentData;
@@ -37,10 +41,13 @@ import org.svenson.JSON;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 public class RuntimeApplication
     implements ResourceChangeListener
@@ -61,6 +68,8 @@ public class RuntimeApplication
 
     private final ResourceLoader resourceLoader;
 
+    private final DomainService domainService;
+
     private long lastChange;
 
     private TopLevelModel changeModel = null;
@@ -72,7 +81,8 @@ public class RuntimeApplication
         ComponentRegistry componentRegistry,
         StyleService styleService,
         ModelCompositionService modelCompositionService,
-        List<ResourceRoot> resourceRoots
+        ResourceLoader resourceLoader,
+        DomainServiceFactory domainServiceFactory
     )
     {
         if (servletContext == null)
@@ -85,10 +95,14 @@ public class RuntimeApplication
         this.styleService = styleService;
         this.componentRegistry = componentRegistry;
         this.modelCompositionService = modelCompositionService;
-        this.resourceLoader = new ResourceLoader(resourceRoots);
+        this.resourceLoader = resourceLoader;
 
         //boolean production = ApplicationStatus.from(state) == ApplicationStatus.PRODUCTION;
-        applicationModel = modelCompositionService.compose(resourceLoader.getResourceLocations());
+        applicationModel = new Application();
+
+        domainService = domainServiceFactory.create();
+        modelCompositionService.compose(this, resourceLoader.getResourceLocations(), applicationModel);
+        domainService.init(this, applicationModel.getSchema());
 
         for (ResourceRoot root : resourceLoader.getExtensions())
         {
@@ -98,6 +112,7 @@ public class RuntimeApplication
                 resourceWatcher.register(this);
             }
         }
+
     }
 
 
@@ -134,7 +149,7 @@ public class RuntimeApplication
         ViewData viewData = viewDataService.prepareView(runtimeContext, view);
 
         ModelMap model = runtimeContext.getModel();
-        model.put("viewData", JSON.defaultJSON().forValue(viewData));
+        model.put("viewData", domainService.toJSON(runtimeContext, viewData));
         model.put("viewModel", view.getCachedJSON());
     }
 

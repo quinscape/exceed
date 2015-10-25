@@ -1,9 +1,12 @@
 package de.quinscape.exceed.runtime.service;
 
+import com.google.common.cache.LoadingCache;
 import de.quinscape.exceed.domain.tables.pojos.AppState;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
+import de.quinscape.exceed.runtime.resource.ResourceCacheFactory;
+import de.quinscape.exceed.runtime.resource.ResourceLoader;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.stream.ClassPathResourceRoot;
@@ -41,13 +44,26 @@ public class RuntimeApplicationFactory
     @Autowired
     private ViewDataService viewDataService;
 
+    @Autowired
+    private ResourceCacheFactory resourceCacheFactory;
+
+    @Autowired
+    private DomainServiceFactory domainServiceFactory;
+
     public RuntimeApplication createRuntimeApplication(ServletContext servletContext, AppState state)
     {
         List<ResourceRoot> resourceRoots = configureExtensions(servletContext, state);
 
         log.info("Creating runtime application '{}', roots = {}", state.getName(), resourceRoots);
 
-        return new RuntimeApplication(servletContext, viewDataService, componentRegistry, styleService,  modelCompositionService, resourceRoots);
+        ResourceLoader resourceLoader = new ResourceLoader(resourceRoots);
+        LoadingCache<String, CachedResource> cache = resourceCacheFactory.createCache(resourceLoader);
+        if (cache != null)
+        {
+            resourceLoader.setResourceCache(cache);
+        }
+
+        return new RuntimeApplication(servletContext, viewDataService, componentRegistry, styleService,  modelCompositionService, resourceLoader, domainServiceFactory);
     }
 
     private List<ResourceRoot> configureExtensions(ServletContext servletContext, AppState state)

@@ -2,29 +2,36 @@ package de.quinscape.exceed.runtime.domain.property;
 
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import org.joda.time.LocalDate;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.TimeZone;
 
 public class TimestampConverter
     implements PropertyConverter<Timestamp, String>
 {
-    DateTimeFormatter formatter = ISODateTimeFormat.dateTime();
-
     @Override
-    public Timestamp convertToJava(RuntimeContext runtimeContext, String value, DomainProperty param)
+    public Timestamp convertToJava(RuntimeContext runtimeContext, String value, DomainProperty property)
     {
-        LocalDate localDate = formatter.parseLocalDate(value);
-        return new Timestamp(localDate.toDate().getTime());
+        Instant instant = Instant.parse(value);
+        return new Timestamp(instant.toEpochMilli());
     }
 
     @Override
     public String convertToJSON(RuntimeContext runtimeContext, Timestamp value, DomainProperty property)
     {
+        if (value != null)
+        {
+            TimeZone tz = TimeZone.getTimeZone("UTC");
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+            df.setTimeZone(tz);
 
-        return formatter.print(LocalDate.fromDateFields(value));
+            return df.format(value);
+        }
+
+        return null;
     }
 
     @Override

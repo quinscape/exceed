@@ -116,6 +116,7 @@ public class ModelCompositionService
                     log.debug("Reading {} as DomainType", path);
 
                     DomainType domainType = create(DomainType.class, json, path);
+                    domainType.setDomainService(runtimeApplication.getDomainService());
                     applicationModel.getDomainTypes().put(domainType.getName(), domainType);
                     return domainType;
                 }
