@@ -55,9 +55,9 @@ public class ExpressionParserTest
         testOp("2 >= 1", Operator.GREATER_OR_EQUALS, ASTRelational.class);
 
         testOp("2 + 1", Operator.ADD, ASTAdd.class);
-        testOp("2 - 1", Operator.SUBTRACT, ASTAdd.class);
+        testOp("2 - 1", Operator.SUBTRACT, ASTSub.class);
         testOp("2 * 1", Operator.MULTIPLY, ASTMult.class);
-        testOp("2 / 1", Operator.DIVIDE, ASTMult.class);
+        testOp("2 / 1", Operator.DIVIDE, ASTDiv.class);
 
         ASTEquality eq2 = (ASTEquality) parse("qux == 'abc\\n\\u0020'");
         ASTIdentifier ident = (ASTIdentifier) eq2.jjtGetChild(0);
@@ -122,6 +122,15 @@ public class ExpressionParserTest
             assertThat(i1.getName(), is("a"));
             assertThat(i2.getName(), is("b"));
         }
+
+        {
+            ASTPropertyChain chain = (ASTPropertyChain) parse("domainType().join()");
+
+            ASTFunction i1 = (ASTFunction) chain.jjtGetChild(0);
+            ASTFunction i2 = (ASTFunction) chain.jjtGetChild(1);
+            assertThat(i1.getName(), is("domainType"));
+            assertThat(i2.getName(), is("join"));
+        }
     }
 
 
@@ -141,9 +150,20 @@ public class ExpressionParserTest
 
 
     @Test(expected = ParseException.class)
-    public void testName() throws Exception
+    public void testError() throws Exception
     {
         parse("1 + 2(a)");
+    }
 
+    @Test(expected = ParseException.class)
+    public void testError2() throws Exception
+    {
+        parse("1 < 2 < 3");
+    }
+
+    @Test(expected = ParseException.class)
+    public void testError3() throws Exception
+    {
+        parse("1 == 2 == 3");
     }
 }
