@@ -58,7 +58,7 @@ public class Java7NIOResourceWatcher
         ModuleResourceEvent resourceEvent = ModuleResourceEvent.forWatchEvent(event);
         for (ResourceChangeListener listener : listeners)
         {
-            log.debug("Signaling {} for {}", resourceEvent, resourcePath);
+            log.debug("Signaling {} for {} ({})", listener, resourcePath, resourceEvent);
 
             listener.onResourceChange(resourceEvent, root, resourcePath.substring(basePathLength));
         }

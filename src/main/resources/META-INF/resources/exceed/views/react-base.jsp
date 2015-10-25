@@ -27,18 +27,18 @@
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
-    <script src="${contextPath}/exceed/js/html5shiv.min.js"></script>
-    <script src="${contextPath}/exceed/js/respond.min.js"></script>
+    <script src="${contextPath}/res/${appName}/js/html5shiv.min.js"></script>
+    <script src="${contextPath}/res/${appName}/js/respond.min.js"></script>
     <![endif]-->
     <meta name="token" content="${_csrf.token}"/>
     <meta name="token-type" content="${_csrf.headerName}"/>
 
-    <script src="${contextPath}/exceed/js/${applicationScope.reactVersion}"></script>
-    <script src="${contextPath}/exceed/js/${applicationScope.reactDOMVersion}"></script>
-    <script src="${contextPath}/code/main.js"></script>
+    <script src="${contextPath}/res/${appName}/js/${applicationScope.reactVersion}"></script>
+    <script src="${contextPath}/res/${appName}/js/${applicationScope.reactDOMVersion}"></script>
+    <script src="${contextPath}/res/${appName}/js/main.js"></script>
     <script src="${contextPath}/app.js"></script>
 </head>
-<body data-context-path="${contextPath}" data-app-name="${appName}" data-roles="${user.roles}">
+<body data-context-path="${contextPath}" data-app-name="${appName}" data-roles="${user != 'anonymousUser' ? user.roles : 'ANONYMOUS'}">
 <div class="btn-toolbar exceed-toolbar text-right">
     <sec:authorize  access="hasRole('ROLE_EDITOR')">
         <a class="btn btn-link btn-default" href="${editUrl}">${editText}</a>

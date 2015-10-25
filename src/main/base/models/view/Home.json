@@ -1,21 +1,51 @@
 {
     "root": {
         "name": "div",
-        "attrs": {
-            "className": "bg-success"
-        },
         "kids": [
             {
                 "name": "Heading",
                 "attrs": {
-                    "value": "Foo"
+                    "id": "myHeading",
+                    "value": "{ 'Foo #1' }"
                 }
             },
             {
-                "name": "Counter",
+                "name": "DataGrid",
                 "attrs" : {
-                    "value" : 21
-
+                    "id": "myDG",
+                    "type" : "{ AppUser }"
+                },
+                "kids" : [
+                    {
+                        "name": "DataGrid.Column",
+                        "attrs" : {
+                            "name" : "id"
+                        }
+                    },
+                    {
+                        "name": "DataGrid.Column",
+                        "attrs" : {
+                            "name" : "login"
+                        }
+                    },
+                    {
+                        "name": "DataGrid.Column",
+                        "attrs" : {
+                            "name" : "created"
+                        }
+                    },
+                    {
+                        "name": "DataGrid.Column",
+                        "attrs" : {
+                            "name" : "roles"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Counter",
+                "attrs": {
+                    "value": "{ 0 }"
                 }
             }
         ]

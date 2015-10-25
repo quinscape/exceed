@@ -55,11 +55,18 @@ public class ResourceController
 
         String resourcePath = "/resources/" + request.getRequestURI().substring(request.getContextPath().length() + appName.length() + 6);
 
+
+        int matrixArgs = resourcePath.indexOf(';');
+        if (matrixArgs > 0)
+        {
+            resourcePath = resourcePath.substring(0, matrixArgs);
+        }
+
         log.debug("Serve resource {}:{}", appName, resourcePath);
 
         LoadingCache<String, CachedResource> resourceCache = runtimeApplication.getResourceLoader().getResourceCache();
 
-        if (resourceCache != null)
+        if (resourceCache == null)
         {
             throw new IllegalStateException("Need resource cache");
         }

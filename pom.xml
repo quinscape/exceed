@@ -6,7 +6,7 @@
 
     <groupId>de.quinscape</groupId>
     <artifactId>exceed</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>exceed application engine</name>
@@ -64,12 +64,6 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>15.0</version>
         </dependency>
 
         <!-- TEST DEPENDENCIES -->
@@ -187,11 +181,12 @@
             <version>2.0.2</version>
             <scope>test</scope>
         </dependency>
+        <!-- Logging Target End -->
 
         <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>2.3</version>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
         </dependency>
 
         <dependency>
@@ -199,7 +194,6 @@
             <artifactId>opensaga-dynamic-stylesheets</artifactId>
             <version>3.0.7</version>
         </dependency>
-        <!-- Logging Target End -->
 
     </dependencies>
 
@@ -217,6 +211,12 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.types</include>
+                    <include>**/*.js</include>
+                    <include>**/*.json</include>
+                </includes>
             </resource>
             <resource>
                 <directory>src/main/js/components</directory>

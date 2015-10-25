@@ -1,24 +1,12 @@
 {
   "components": {
     "Heading": {
-      "queries" : {
-        "test" : { "from": "Test" }
-      },
-      "props" : {
-        "value" : {
-          "type" : "PlainText"
-        },
-        "size" : {
-          "type" : "Integer"
-        }
+      "propTypes" : {
+        "value" : { "rule" : "plaintText()" },
+        "size" : { "rule" : "range(1,6)" }
       }
     },
     "Heading.HR": {
-      "props" : {
-        "value" : {
-          "type" : "PlainText"
-        }
-      }
     }
   }
 }

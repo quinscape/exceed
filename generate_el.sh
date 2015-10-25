@@ -9,5 +9,5 @@ fi
 DIR=$(dirname $0)
 
 $JAVACC_HOME/bin/jjtree -OUTPUT_DIRECTORY=$DIR/src/main/java/de/quinscape/exceed/expression $DIR/src/main/resources/Expression.jjt
-$JAVACC_HOME/bin/javacc $DIR/src/main/java/de/quinscape/exceed/expression/Expression.jj
+$JAVACC_HOME/bin/javacc -OUTPUT_DIRECTORY=$DIR/src/main/java/de/quinscape/exceed/expression $DIR/src/main/java/de/quinscape/exceed/expression/Expression.jj
 

@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.resource;
 
 import com.google.common.cache.CacheLoader;
+import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
 import de.quinscape.exceed.runtime.service.CachedResource;
 
 public class ResourceCacheLoader
@@ -18,8 +19,14 @@ public class ResourceCacheLoader
     @Override
     public CachedResource load(String key) throws Exception
     {
-        AppResource resource = resourceLoader.getResourceLocation(key).getHighestPriorityResource();
+        ResourceLocation resourceLocation = resourceLoader.getResourceLocation(key);
 
+        if (resourceLocation == null)
+        {
+            throw new IllegalStateException("Resource " + key + " does not exist.");
+        }
+
+        AppResource resource = resourceLocation.getHighestPriorityResource();
         if (!resource.exists())
         {
             throw new IllegalStateException("Resource " + key + " does not exist.");

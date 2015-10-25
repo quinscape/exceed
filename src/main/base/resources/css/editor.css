@@ -1,3 +1,92 @@
+.editor {
+    display: inline-block;
+    height: 100%;
+    position: absolute;
+    z-index: 100;
+    top: 0;
+}
+
+.editor a{
+    color: #ccf;
+}
+.editor a:visited{
+    color: #dcf;
+}
+.editor a:hover,.editor a:focus{
+    color: #fff;
+}
+
 .editor .editor-tab {
-    color: #f00;
+    display: block;
+    position: relative;
+    top: 0;
+    font-weight: bold;
+    padding: 1ex;
+    width: 32px;
+    height: 32px;
+    line-height: 16px;
+    text-align: center;
+    background: #444;
+    color: white;
+}
+.editor .editor-tab .indicator
+{
+    display: inline-block;
+    position: relative;
+    top: -1em;
+    left: 1.2ex;
+    font-size: 0.7em;
+    line-height: 0.8em;
+    padding: 2px;
+    margin: 0;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}
+
+.editor.inactive
+{
+    right: 0;
+}
+
+.editor.active
+{
+    width: 50%;
+    right: 0;
+}
+
+.editor.inactive .editor-tab
+{
+    left: 0;
+}
+
+
+.editor.active .editor-tab
+{
+    left: -32px;
+}
+
+
+.editor .editor-body
+{
+    background: #444;
+    color: white;
+    overflow: auto;
+}
+
+.editor.inactive .editor-body
+{
+    display: none;
+}
+
+.editor.active .editor-body
+{
+    position: relative;
+    top: -32px;
+}
+
+.editor.active .editor-toolbar
+{
+    height: 32px;
+    line-height: 32px;
 }

@@ -64,14 +64,16 @@ function pollChanges()
 
         if (model._type === "view.View")
         {
-            var ViewComponent = viewService.getViewComponent(model.name, model, true);
 
             if (currentViewName === model.name)
             {
-                ReactDOM.render( React.createElement(ViewComponent, {
+                console.log("currentViewData", currentViewData);
+
+                ReactDOM.render(React.createElement(ViewComponent, {
                     model: model,
                     componentData: currentViewData
-                }), rootElem);
+                }), rootElem, pollChanges);
+                return;
             }
         }
         else if (model._type === "change.Shutdown")
@@ -84,7 +86,7 @@ function pollChanges()
             console.log("CodeChange");
 
             var elem = document.createElement("script");
-            elem.setAttribute("src", contextPath + "/res/" + appName + "/js/main.js");
+            elem.setAttribute("src", timestampURL(contextPath + "/res/" + appName + "/js/main.js"));
 
             var head = document.getElementsByTagName("head")[0];
             head.appendChild(elem);
@@ -99,6 +101,9 @@ function pollChanges()
         }
 
         pollChanges();
+    }).catch(function (err)
+    {
+        console.log("Error update", err);
     })
 }
 domready(function ()
@@ -119,10 +124,13 @@ domready(function ()
     var data = evaluateEmbedded("root-data", "x-ceed/view-data");
 
     currentViewName = model.name;
-    currentViewData = data;
+    currentViewData = data.data;
+
+    console.log("currentViewData", JSON.stringify(currentViewData, null, "  "));
+
     ReactDOM.render( React.createElement(ViewComponent, {
         model: model,
-        componentData: data
+        componentData: currentViewData
     }), rootElem);
 
     pollChanges();

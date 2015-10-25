@@ -1,22 +1,45 @@
 {
     "components": {
         "DataGrid": {
-            "vars": {},
-            "props": {}
+            "vars": {
+                "orderBy": "prop('orderBy')",
+                "filter": "prop('filter')",
+                "offset": "0",
+                "limit": "prop('limit')"
+            },
+            "queries": {
+                "result": "query(prop('type').fields(childModelNames())).filter(prop('filter')).orderBy(var('orderBy')).limit(var('limit')).offset(var('offset'))"
+            },
+            "propTypes": {
+                "type": {
+                    "client": false,
+                    "rule": "queryDefinition()"
+                },
+                "orderBy": {
+                    "client": false,
+                    "rule": "fieldListOf(prop('type'))"
+                },
+                "filter": {
+                    "client": false,
+                    "rule": "filterExpr(prop('type'))"
+                },
+                "limit": {
+                    "client": false,
+                    "rule": "PlainText"
+                }
+            },
+            "contextProvider" : true,
+            "childTypes": [
+                {
+                    "rule": "model('DataGrid.Column')"
+                }
+            ]
         },
         "DataGrid.Column": {
-            "vars": {},
-            "props": {
+            "contextKey" : "name",
+            "propTypes": {
                 "name": {
-                    "type": "ModelReference",
-                    "param": "domain.DomainProperty"
-                },
-                "filterMode": {
-                    "type": "enum",
-                    "param": ""
-                },
-                "value": {
-                    "type": "Any"
+                    "rule": "fieldOf(parent.prop('type'))"
                 }
             }
         }

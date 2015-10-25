@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.controller;
 
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
@@ -48,7 +49,10 @@ public class ApplicationController
                 return null;
             }
 
-            RuntimeContext runtimeContext = runtimeContextFactory.create(request, response, model, "/" + rest);
+            RuntimeContext runtimeContext = runtimeContextFactory.create(request, response, model, runtimeApplication, "/" + rest);
+
+            RuntimeContextHolder.register(runtimeContext);
+
             runtimeApplication.route(runtimeContext);
 
             if (response.isCommitted())
@@ -67,6 +71,10 @@ public class ApplicationController
             log.error("Error rendering application view", e);
             response.sendError(500);
             return null;
+        }
+        finally
+        {
+            RuntimeContextHolder.clear();
         }
     }
 }

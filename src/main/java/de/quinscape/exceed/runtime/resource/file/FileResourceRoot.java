@@ -35,6 +35,8 @@ public class FileResourceRoot
         this.baseDirectory = baseDirectory;
         if (hotReload)
         {
+            log.debug("Registering resource watcher for {}", baseDirectory);
+
             watcher = new Java7NIOResourceWatcher(this);
             watcher.start();
         }

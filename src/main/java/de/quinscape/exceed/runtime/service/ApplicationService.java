@@ -10,10 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.ServletContext;
 import java.util.List;
+import java.util.Set;
 
-/**
- * Created by sven on 10.10.15.
- */
 public interface ApplicationService
     extends ApplicationListener<ContextClosedEvent>
 {
@@ -39,4 +37,6 @@ public interface ApplicationService
     void signalStyleChanges();
 
     void signalCodeChanges();
+
+    void signalComponentChanges(Set<String> componentNames);
 }

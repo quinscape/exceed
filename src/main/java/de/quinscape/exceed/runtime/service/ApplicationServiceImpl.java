@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.ServletContext;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -198,6 +199,21 @@ public class ApplicationServiceImpl
                 runtimeApplication.notifyCodeChange();
             }
         }
+    }
+
+
+    @Override
+    public void signalComponentChanges(Set<String> componentNames)
+    {
+        for (ApplicationHolder holder : applications.values())
+        {
+            RuntimeApplication runtimeApplication = holder.getRuntimeApplication(null);
+            if (runtimeApplication != null)
+            {
+                runtimeApplication.signalComponentChanges(componentNames);
+            }
+        }
+
     }
 
 

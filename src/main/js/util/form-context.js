@@ -4,7 +4,7 @@ var extend = require("extend");
 var ValueLink = require("../util/value-link");
 var cx = require("classnames");
 
-var i18n = require("../helper/i18n");
+var i18n = require("../service/i18n");
 
 function FormContext(formComponent, path, baseId)
 {

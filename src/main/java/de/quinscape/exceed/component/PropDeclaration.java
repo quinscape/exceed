@@ -4,27 +4,29 @@ import org.svenson.JSONParameter;
 
 public class PropDeclaration
 {
-    private final String name;
-    private final String type;
+    private final String ruleExpression;
+    private final boolean client;
 
     public PropDeclaration(
-        @JSONParameter("name")
-        String name,
-        @JSONParameter("type")
-        String type
-    )
+        @JSONParameter("rule")
+        String ruleExpression,
+        @JSONParameter("client")
+        Boolean client)
     {
-        this.type = type;
-        this.name = name;
+        this.ruleExpression = ruleExpression;
+        this.client = client != null ? client : true;
     }
 
-    public String getName()
+    public boolean isClient()
     {
-        return name;
+        return client;
     }
 
-    public String getType()
+
+    public String getRuleExpression()
     {
-        return type;
+        return ruleExpression;
     }
 }
+
+

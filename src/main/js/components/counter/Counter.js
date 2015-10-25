@@ -22,7 +22,7 @@ var Counter = React.createClass({
         return (
             <div className="counter">
                 <h3>{ this.state.count }</h3>
-                <input type="submit" className="btn btn-primary" value="aaa" onClick={ this.onChange } />
+                <input type="submit" className="btn btn-primary" value="++" onClick={ this.onChange } />
             </div>
         );
     }

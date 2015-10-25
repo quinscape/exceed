@@ -1,13 +1,8 @@
 package de.quinscape.exceed.runtime.config;
 
-import de.quinscape.exceed.runtime.resource.ResourceRoot;
-import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
-import de.quinscape.exceed.runtime.resource.stream.ServletResourceRoot;
-import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.util.MediaTypeService;
 import de.quinscape.exceed.runtime.util.MediaTypeServiceImpl;
-import de.quinscape.exceed.runtime.util.Util;
-import de.quinscape.exceed.runtime.component.ComponentDataProvider;
+import de.quinscape.exceed.runtime.component.QueryDataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +17,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import javax.servlet.ServletContext;
-import java.io.File;
-import java.io.IOException;
 
 @ComponentScan({
     "de.quinscape.exceed.runtime.controller"
@@ -81,12 +74,6 @@ public class WebConfiguration
     public void addInterceptors(InterceptorRegistry registry)
     {
         registry.addInterceptor(new CommonVariablesInterceptor());
-    }
-
-    @Bean
-    public ComponentDataProvider defaultDataProvider()
-    {
-        return new ComponentDataProvider();
     }
 
     @Bean

@@ -2,7 +2,7 @@
 
 var extend = require("extend");
 
-var i18n = require("../helper/i18n");
+var i18n = require("../service/i18n");
 
 const DEFAULTS = {
     required: false,

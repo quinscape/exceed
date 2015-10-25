@@ -1,5 +1,8 @@
 package de.quinscape.exceed.runtime;
 
+/**
+ * Generic runtime exception for exceed.
+ */
 public class ExceedRuntimeException
     extends RuntimeException
 {

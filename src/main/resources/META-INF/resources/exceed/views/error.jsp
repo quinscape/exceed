@@ -18,7 +18,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>${title} - react inject base</title>
+    <title>${alias} - react inject base</title>
 
     <!-- Bootstrap -->
     <link href="${contextPath}/css/bootstrap.min.css" rel="stylesheet">

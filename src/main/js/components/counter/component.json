@@ -1,10 +1,8 @@
 {
   "components": {
     "Counter": {
-      "props": {
-        "value" : {
-          "type" : "PlainText"
-        }
+      "propTypes": {
+        "value" : { "rule" : "integer()" }
       }
     }
   }

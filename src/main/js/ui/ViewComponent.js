@@ -5,60 +5,135 @@ var security = require("../service/security");
 
 var InPageEditor = require("../editor/InPageEditor");
 
+var Alert = require("../ui/Alert");
+
 var components = require("../service/component").getComponents();
 
 var expressionRegEx = /^\{\s*(.*?)\s*}$/;
 
-var ViewComponent = React.createClass({
-    renderComponent: function (model, componentData, key)
+function evaluateExpression(value, context)
+{
+    var m;
+    if (typeof value === "string" && (m = expressionRegEx.exec(value)))
     {
-        //console.log("renderComponent", model, componentData, key);
+        return eval(m[1]);
+    }
+    return value;
+}
 
-        var component = model.name;
-
-        var modelAttrs = model.attrs;
-        var modelId = modelAttrs && model.id;
-        if (component <= 'Z')
+var ViewComponent = React.createClass({
+    renderComponent: function (model, componentData, key, context)
+    {
+        try
         {
-            component = components[component].component;
-        }
+            //console.log("renderComponent", model, componentData, key);
 
-        var m;
-        var attrs = {
-            key: key,
-            id: modelId
-        };
+            var descriptor;
+            var callArgs;
+            var component = model.name;
 
-        if(modelAttrs)
-        {
-            for (var name in modelAttrs)
+            if (component === "[String]")
             {
-                if (modelAttrs.hasOwnProperty(name))
+                return evaluateExpression(model.attrs.value, context);
+            }
+
+            var modelAttrs = model.attrs;
+            var attrs = {
+                key: key
+            };
+
+            var modelId = modelAttrs && modelAttrs.id;
+            if (component <= 'Z')
+            {
+                descriptor = components[component];
+
+                //console.log("descriptor = ", descriptor)
+
+                component = descriptor.component;
+
+                attrs.model = model;
+            }
+
+            var m;
+
+            if (modelAttrs)
+            {
+                for (var name in modelAttrs)
                 {
-                    var value = modelAttrs[name];
-                    if (typeof value === "string" && (m = expressionRegEx.exec(value)))
+                    if (modelAttrs.hasOwnProperty(name) && name !== "id")
                     {
-                        value = eval(value);
+                        attrs[name] = evaluateExpression(modelAttrs[name], context);
                     }
-                    attrs[name] = value;
                 }
             }
-        }
-        var modelKids = model.kids;
-        var callArgs = [ component, extend(attrs, modelId && components[modelId]) ];
 
-        if (modelKids)
-        {
-            for (var i = 0; i < modelKids.length; i++)
+            var contextKey = descriptor && descriptor.contextKey;
+            if (contextKey)
             {
-                var kid = modelKids[i];
-
-                callArgs.push(this.renderComponent(kid, componentData, i));
+                context = context[attrs[contextKey]];
             }
-        }
 
-        //console.log("createElement", callArgs, modelKids);
-        return React.createElement.apply(React, callArgs);
+            attrs.context = context;
+
+            var modelKids = model.kids;
+
+            if (modelId)
+            {
+                var dataBlock = componentData[modelId];
+
+                if (dataBlock)
+                {
+                    if (dataBlock.vars)
+                    {
+                        attrs.vars = dataBlock.vars;
+                    }
+
+                    if (dataBlock.data)
+                    {
+                        extend(attrs, dataBlock.data);
+                        //console.log("data = ", JSON.stringify(dataBlock.data, null, "  "));
+                    }
+                }
+            }
+
+            if (descriptor && descriptor.contextProvider && modelKids)
+            {
+                var viewComponent = this;
+
+                attrs.childCount = modelKids.length;
+                attrs.renderChildrenWithContext = function (context)
+                {
+                    var array = [];
+                    for (var i = 0; i < modelKids.length; i++)
+                    {
+                        var kid = modelKids[i];
+                        array[i] = viewComponent.renderComponent(kid, componentData, i, context);
+                    }
+                    return array;
+                };
+                callArgs = [component, attrs];
+            }
+            else
+            {
+                callArgs = [component, attrs];
+                if (modelKids)
+                {
+                    for (var i = 0; i < modelKids.length; i++)
+                    {
+                        var kid = modelKids[i];
+
+                        callArgs.push(this.renderComponent(kid, componentData, i, context));
+                    }
+                }
+            }
+
+            //console.log("createElement", component, JSON.stringify(callArgs[1], function(k,v) { if (k === "model") return undefined; else return v;  }));
+            return React.createElement.apply(React, callArgs);
+        }
+        catch (e)
+        {
+            return ( <Alert message={ "Error rendering <" + model.name + " id='" + modelId + "'/>: " + e  }/> );
+        }
     },
 
     render: function ()
@@ -69,7 +144,7 @@ var ViewComponent = React.createClass({
             <div className="container-fluid">
                 <div className="row">
                     <div className="col-md-12">
-                        { this.renderComponent(model.root, this.props.componentData, "root") }
+                        { this.renderComponent(model.root, this.props.componentData, 0, null) }
                     </div>
                 </div>
                 { security.hasRole("ROLE_EDITOR") && <InPageEditor model={ model } activeLink={ this.props.activeLink } /> }

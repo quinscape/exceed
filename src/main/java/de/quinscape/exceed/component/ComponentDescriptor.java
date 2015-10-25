@@ -2,7 +2,10 @@ package de.quinscape.exceed.component;
 
 import de.quinscape.exceed.runtime.util.Util;
 import org.svenson.JSONParameter;
+import org.svenson.JSONProperty;
+import org.svenson.JSONTypeHint;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -12,15 +15,23 @@ import java.util.Map;
  */
 public class ComponentDescriptor
 {
-    private final Map<String,VarDeclaration> vars;
-    private final Map<String,PropDeclaration> props;
-    private final Map<String, Map<String, Object>> queries;
+    private final Map<String,String> vars;
+    private final Map<String,PropDeclaration> propTypes;
+    private final List<String> childTypes;
+    private final Map<String, Object> queries;
+    private final List<ComponentTemplate> templates;
+    private final String dataProviderName;
+
+    private final Boolean contextProvider;
+
+    private final String contextKey;
 
     private final Map<String,String> queryExecutors;
 
     public ComponentDescriptor(
         @JSONParameter("vars")
-        Map<String, VarDeclaration> vars,
+        Map<String, String> vars,
+
         @JSONParameter("queries")
         Map<String, Object> queries,
 
@@ -40,30 +51,36 @@ public class ComponentDescriptor
 
         @JSONParameter("queryExecutors")
         Map<String, String> queryExecutors,
+
+        @JSONParameter("contextProvider")
+        Boolean contextProvider,
+
+        @JSONParameter("contextKey")
+        String contextKey)
+
     {
         this.vars = vars;
-        this.propTypes = Util.immutableMap(propTypes);
         this.queries = Util.immutableMap(queries);
-        this.childTypes = Util.immutableList(childTypes);
+        this.propTypes = Util.immutableMap(propTypes);
         this.templates = Util.immutableList(templates);
-        this.queryExecutors = Util.immutableMap(queryExecutors);
         this.dataProviderName = dataProviderName;
+        this.childTypes = Util.immutableList(childTypes);
+        this.queryExecutors = Util.immutableMap(queryExecutors);
+        this.contextProvider = contextProvider;
+        this.contextKey = contextKey;
     }
-
-
-
 
     public Map<String, String> getVars()
     {
         return vars;
     }
 
-    public Map<String, PropDeclaration> getProps()
+    public Map<String, PropDeclaration> getPropTypes()
     {
-        return props;
+        return propTypes;
     }
 
-    public Map<String, Map<String, Object>> getQueries()
+    public Map<String, Object> getQueries()
     {
         return queries;
     }
@@ -84,6 +101,19 @@ public class ComponentDescriptor
     public List<String> getChildTypes()
     {
         return childTypes;
+    }
+
+
+    @JSONProperty(ignoreIfNull = true)
+    public boolean isContextProvider()
+    {
+        return contextProvider;
+    }
+
+    @JSONProperty(ignoreIfNull = true)
+    public String getContextKey()
+    {
+        return contextKey;
     }
 
 

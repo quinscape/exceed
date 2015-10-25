@@ -21,15 +21,21 @@
     <title>${title} - react inject base</title>
 
     <!-- Bootstrap -->
-    <link href="${contextPath}/exceed/css/bootstrap.min.css" rel="stylesheet">
-    <link href="${contextPath}/exceed/css/layout.css" rel="stylesheet">
+    <link id="application-styles" href="${contextPath}/style/${appName}.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <script src="${contextPath}/res/${appName}/js/html5shiv.min.js"></script>
+    <script src="${contextPath}/res/${appName}/js/respond.min.js"></script>
     <![endif]-->
+    <meta name="token" content="${_csrf.token}"/>
+    <meta name="token-type" content="${_csrf.headerName}"/>
+
+    <script src="${contextPath}/res/${appName}/js/${applicationScope.reactVersion}"></script>
+    <script src="${contextPath}/res/${appName}/js/${applicationScope.reactDOMVersion}"></script>
+    <script src="${contextPath}/res/${appName}/js/main.js"></script>
+    <script src="${contextPath}/app.js"></script>
 </head>
 <body data-context-path="${contextPath}">
 <div class="container">

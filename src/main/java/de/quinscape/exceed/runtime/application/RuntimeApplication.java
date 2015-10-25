@@ -313,13 +313,20 @@ public class RuntimeApplication
                     {
                         throw new ExceedRuntimeException(e);
                     }
+                    notifyStyleChange();
                 }
             }
-
-            TopLevelModel model = modelCompositionService.update(applicationModel, topResource);
-            if (model != null)
+            else if (modulePath.endsWith(FileExtension.JSON))
             {
-                notifyChange(model);
+                TopLevelModel model = modelCompositionService.update(this, applicationModel, topResource);
+                if (model != null)
+                {
+                    notifyChange(model);
+                }
+            }
+            else if (modulePath.endsWith(FileExtension.JS))
+            {
+                notifyCodeChange();
             }
         }
     }
@@ -371,9 +378,37 @@ public class RuntimeApplication
     }
 
 
+    public DomainService getDomainService()
+    {
+        return domainService;
+    }
+
+
     public void notifyShutdown()
     {
         notifyChange(Shutdown.INSTANCE);
+    }
+
+
+    public void signalComponentChanges(Set<String> componentNames)
+    {
+        for (View view : applicationModel.getViews().values())
+        {
+            modelCompositionService.updateComponentRegistrations(this, view.getRoot(), componentNames);
+        }
+    }
+
+
+    public DomainType getDomainType(String type)
+    {
+        DomainType domainType = applicationModel.getDomainTypes().get(type);
+
+        if (domainType == null)
+        {
+            throw new IllegalArgumentException("Invalid type '" + type + "'");
+        }
+
+        return domainType;
     }
 }
 
