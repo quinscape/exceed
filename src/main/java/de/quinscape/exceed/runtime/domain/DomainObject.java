@@ -1,60 +1,24 @@
-// THIS CLASS GETS DELETED DURING THE JOOQ CODE GENERATION AND THEN RESTORED from src/main/resources/DomainBase.java.
 package de.quinscape.exceed.runtime.domain;
 
-import org.svenson.JSON;
 import org.svenson.JSONProperty;
 
-/**
- * Base class for model classes.
- *
- * Classes that can exist on their own need this base class, sub-structures of these classes can use this
- * base class but don't really need to since the surrounding model class provides the necessary type hints.
- *
- * Optimally, this class should be in {@link de.quinscape.exceed.domain} but JOOQ keeps deleting it, so we keep
- * it here.
- *
- */
-public abstract class DomainObject
+import java.util.Set;
+
+public interface DomainObject
 {
-    private String id;
+    String getId();
 
-    private DomainService domainService;
+    void setId(String id);
 
-    @JSONProperty(value = "_type", readOnly = true, priority = 100)
-    public String getType()
-    {
-        return this.getClass().getSimpleName();
-    }
+    DomainService getDomainService();
 
-    /**
-     * JSONifies the current instance.
-     *
-     * @return JSON string
-     */
-    @Override
-    public String toString()
-    {
-        return JSON.defaultJSON().forValue(this);
-    }
+    void setDomainService(DomainService domainService);
 
-    public String getId()
-    {
-        return id;
-    }
+    String getType();
 
-    public void setId(String id)
-    {
-        this.id = id;
-    }
+    Set<String> propertyNames();
 
-    @JSONProperty(ignore = true)
-    public DomainService getDomainService()
-    {
-        return domainService;
-    }
+    Object getProperty(String name);
 
-    public void setDomainService(DomainService domainService)
-    {
-        this.domainService = domainService;
-    }
+    void setProperty(String name, Object value);
 }

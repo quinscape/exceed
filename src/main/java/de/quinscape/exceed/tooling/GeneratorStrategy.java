@@ -21,7 +21,7 @@ public class GeneratorStrategy
         if (mode == Mode.POJO)
         {
             // can't reference class directly, is not compiled yet.
-            return "de.quinscape.exceed.runtime.domain.DomainObject";
+            return "de.quinscape.exceed.runtime.domain.GeneratedDomainObject";
         }
         return super.getJavaClassExtends(definition, mode);
     }
