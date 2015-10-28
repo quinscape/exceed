@@ -32,8 +32,6 @@ public class SecurityConfiguration
 
                 .antMatchers(
                     "/index.jsp",
-                    "/code/main.js",
-                    "/code/main.js.map",
                     "/res/css/**",
                     "/res/fonts/**",
                     "/res/js/**",
