@@ -12,6 +12,8 @@ import de.quinscape.exceed.expression.ASTIdentifier;
 import de.quinscape.exceed.expression.ASTInteger;
 import de.quinscape.exceed.expression.ASTLogicalAnd;
 import de.quinscape.exceed.expression.ASTLogicalOr;
+import de.quinscape.exceed.expression.ASTMap;
+import de.quinscape.exceed.expression.ASTMapEntry;
 import de.quinscape.exceed.expression.ASTMult;
 import de.quinscape.exceed.expression.ASTNull;
 import de.quinscape.exceed.expression.ASTPropertyChain;
@@ -110,6 +112,11 @@ public abstract class ExpressionEnvironment
      * Whether logical operators are allowed in this environment
      */
     protected boolean logicalOperatorsAllowed = false;
+
+    /**
+     * Whether map literals are allowed in this environment
+     */
+    protected boolean mapLiteralsAllowed = false;
 
 
     /** The name of the environment, used in error messages. */
@@ -922,5 +929,47 @@ public abstract class ExpressionEnvironment
     public Map<Class<?>, Map<String, Method>> getMethodsByContext()
     {
         return methodsByContext;
+    }
+
+
+    @Override
+    public Object visit(ASTMap node, Object data)
+    {
+        if (!mapLiteralsAllowed)
+        {
+            throw new ExpressionEnvironmentException(name + ": Invalid map literal");
+        }
+
+        HashMap<Object, Object> map = new HashMap<>();
+
+        for (int i=0; i < node.jjtGetNumChildren(); i++)
+        {
+            Node kid = node.jjtGetChild(i);
+            kid.jjtAccept(this, map);
+        }
+
+        return map;
+    }
+
+    @Override
+    public Object visit(ASTMapEntry node, Object data)
+    {
+        Node keyNode = node.jjtGetChild(0);
+        Node ValueNode = node.jjtGetChild(1);
+
+        String key;
+        if (keyNode instanceof ASTIdentifier)
+        {
+            key = ((ASTIdentifier) keyNode).getName();
+        }
+        else
+        {
+            key = ((ASTString)keyNode).getValue();
+        }
+
+        Object value = ValueNode.jjtAccept(this, null);
+        ((Map)data).put(key, value);
+
+        return data;
     }
 }

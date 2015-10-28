@@ -7,6 +7,8 @@ import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import org.junit.Test;
 
+import java.util.Map;
+
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
@@ -245,6 +247,27 @@ public class ExpressionEnvironmentTest
     }
 
 
+    @Test
+    public void testMap() throws Exception
+    {
+        {
+            Map result = (Map) transform("{}");
+            assertThat(result.size(), is(0));
+        }
+
+        {
+            Map result = (Map) transform("{ foo: TRUE }");
+            assertThat(result.get("foo"), is(true));
+        }
+
+        {
+            Map result = (Map) transform("{ 'foo': 1, bar: 'abc'}");
+            assertThat(result.get("foo"), is(1));
+            assertThat(result.get("bar"), is("abc"));
+        }
+    }
+
+
     public static class TestEnvironment extends ExpressionEnvironment
     {
         public TestEnvironment()
@@ -252,6 +275,7 @@ public class ExpressionEnvironmentTest
             comparatorsAllowed = true;
             arithmeticOperatorsAllowed = true;
             logicalOperatorsAllowed = true;
+            mapLiteralsAllowed = true;
         }
 
 

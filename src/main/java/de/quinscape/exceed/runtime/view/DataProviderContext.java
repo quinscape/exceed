@@ -154,6 +154,10 @@ public final class DataProviderContext
         public VariableResolutionEnvironment(ComponentModel componentModel)
         {
             this.componentModel = componentModel;
+            mapLiteralsAllowed = true;
+            arithmeticOperatorsAllowed = true;
+            logicalOperatorsAllowed = true;
+            comparatorsAllowed = true;
         }
 
 

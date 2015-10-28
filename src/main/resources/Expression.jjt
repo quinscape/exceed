@@ -271,10 +271,11 @@ void UnaryExpression() : {}
     "(" Expression() ")" |
     LOOKAHEAD(2) Function() |
     Identifier() |
-    Bool() |
-    Integer() |
-    Float() |
     String() |
+    Map() |
+    Float() |
+    Integer() |
+    Bool() |
     Null()
 }
 
@@ -327,6 +328,22 @@ void String() #String :
     {
         jjtThis.setValue(Util.parseSingleQuotedString(t.image));
     }
+}
+
+/** A Map literal. */
+void Map() #Map:
+{
+}
+{
+    "{" ( MapEntry() ( "," MapEntry() )* )? "}"
+}
+
+/** A MapEntry literal. */
+void MapEntry() #MapEntry:
+{
+}
+{
+    ( String() | Identifier() ) ":" Expr()
 }
 
 /** An Floating point number literal. */

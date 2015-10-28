@@ -78,6 +78,9 @@ public interface ExpressionParserConstants {
     "\"(\"",
     "\")\"",
     "\",\"",
+    "\"{\"",
+    "\"}\"",
+    "\":\"",
   };
 
 }

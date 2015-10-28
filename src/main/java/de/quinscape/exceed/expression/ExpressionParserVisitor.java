@@ -18,8 +18,10 @@ public interface ExpressionParserVisitor
   public Object visit(ASTFunction node, Object data);
   public Object visit(ASTInteger node, Object data);
   public Object visit(ASTString node, Object data);
+  public Object visit(ASTMap node, Object data);
+  public Object visit(ASTMapEntry node, Object data);
   public Object visit(ASTFloat node, Object data);
   public Object visit(ASTBool node, Object data);
   public Object visit(ASTNull node, Object data);
 }
-/* JavaCC - OriginalChecksum=f5f9f9abd4721ee12ae446228ca35073 (do not edit this line) */
+/* JavaCC - OriginalChecksum=3ac55b51f87efcd44b8520990e01d219 (do not edit this line) */

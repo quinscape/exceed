@@ -18,9 +18,11 @@ public interface ExpressionParserTreeConstants
   public int JJTFUNCTION = 12;
   public int JJTINTEGER = 13;
   public int JJTSTRING = 14;
-  public int JJTFLOAT = 15;
-  public int JJTBOOL = 16;
-  public int JJTNULL = 17;
+  public int JJTMAP = 15;
+  public int JJTMAPENTRY = 16;
+  public int JJTFLOAT = 17;
+  public int JJTBOOL = 18;
+  public int JJTNULL = 19;
 
 
   public String[] jjtNodeName = {
@@ -39,9 +41,11 @@ public interface ExpressionParserTreeConstants
     "Function",
     "Integer",
     "String",
+    "Map",
+    "MapEntry",
     "Float",
     "Bool",
     "Null",
   };
 }
-/* JavaCC - OriginalChecksum=73764acf1e998e03eedbd6ecbf170835 (do not edit this line) */
+/* JavaCC - OriginalChecksum=2db7e5c7b66221ad6384882a3374b54d (do not edit this line) */

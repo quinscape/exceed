@@ -251,6 +251,32 @@ public class ExpressionDumpVisitor
 
 
     @Override
+    public Object visit(ASTMap node, Object data)
+    {
+        indent();
+        buf.append(node);
+        ++indent;
+        node.childrenAccept(this, data);
+        --indent;
+
+        return data;
+    }
+
+
+    @Override
+    public Object visit(ASTMapEntry node, Object data)
+    {
+        indent();
+        buf.append(node);
+        ++indent;
+        node.childrenAccept(this, data);
+        --indent;
+
+        return data;
+    }
+
+
+    @Override
     public Object visit(ASTFloat node, Object data)
     {
         indent();
