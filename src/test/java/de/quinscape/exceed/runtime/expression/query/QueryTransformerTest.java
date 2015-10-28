@@ -75,7 +75,7 @@ public class QueryTransformerTest
             , is("Baz"));
 
 
-        List<String> list = def.getQueryDomainType().getFieldsInOrder().stream().map(QueryField::getLocalName).collect(Collectors.toList());
+        List<String> list = def.getQueryDomainType().getFieldsInOrder().stream().map(DataField::getLocalName).collect(Collectors.toList());
         // fields in definition order
         assertThat(list, is(Arrays.asList("Foo.value", "Foo.foo", "Bar.value", "Bar.bar", "Baz.value", "Baz.baz")));
 
@@ -88,7 +88,7 @@ public class QueryTransformerTest
         QueryDefinition def = transform("Foo.join(Bar.join(Baz).on(Bar.id == Baz.id)).on(Foo.id == Bar.id)");
         def.getQueryDomainType().setFields(Arrays.asList("foo", "baz", "bar"));
 
-        List<String> list = def.getQueryDomainType().getFieldsInOrder().stream().map(QueryField::getLocalName).collect(Collectors.toList());
+        List<String> list = def.getQueryDomainType().getFieldsInOrder().stream().map(DataField::getLocalName).collect(Collectors.toList());
         // local fields in definition order
         assertThat(list, is(Arrays.asList("foo", "baz", "bar")));
     }
