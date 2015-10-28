@@ -6,10 +6,10 @@ import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
-import de.quinscape.exceed.runtime.component.EntityDefinition;
-import de.quinscape.exceed.runtime.component.QueryResult;
+import de.quinscape.exceed.runtime.component.IdentityDefinition;
+import de.quinscape.exceed.runtime.component.DataList;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
-import de.quinscape.exceed.runtime.expression.query.QueryField;
+import de.quinscape.exceed.runtime.expression.query.DataField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.JSON;
@@ -18,6 +18,7 @@ import org.svenson.JSONParser;
 import org.svenson.SinkAwareJSONifier;
 import org.svenson.util.JSONBeanUtil;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -48,7 +49,7 @@ public class DomainServiceImpl
         parser.addObjectFactory(new DomainFactory(this));
 
         generator = new JSON();
-        generator.registerJSONifier(QueryResult.class, new QueryResultJSONifier());
+        generator.registerJSONifier(DataList.class, new DataListJSONifier());
 
         this.propertyConverters = ImmutableMap.copyOf(propertyConverters);
     }
@@ -158,7 +159,7 @@ public class DomainServiceImpl
      * Converts the row values using the RuntimeContextHolder to get the current runtime
      * context.
      */
-    private class QueryResultJSONifier
+    private class DataListJSONifier
         implements SinkAwareJSONifier
     {
 
@@ -174,31 +175,31 @@ public class DomainServiceImpl
         {
             RuntimeContext runtimeContext = RuntimeContextHolder.get();
 
-            QueryResult queryResult = (QueryResult) o;
+            DataList dataList = (DataList) o;
 
-            List<EntityDefinition> entityDefinitions = queryResult.getEntityDefinitions();
+            List<IdentityDefinition> identityDefinitions = dataList.getEntityDefinitions();
             Map<String, Integer> lookup = new HashMap<>();
-            for (int i = 0; i < entityDefinitions.size(); i++)
+            for (int i = 0; i < identityDefinitions.size(); i++)
             {
-                EntityDefinition entityDefinition = entityDefinitions.get(i);
-                lookup.put(entityDefinition.getType(), i);
+                IdentityDefinition identityDefinition = identityDefinitions.get(i);
+                lookup.put(identityDefinition.getType(), i);
             }
 
             sink.append("{\"entities\":");
 
-            generator.dumpObject(sink, entityDefinitions);
+            generator.dumpObject(sink, identityDefinitions);
 
             sink.append(",\"fields\":{");
 
-            Map<String, QueryField> fields = queryResult.getFields();
-            for (Iterator<Map.Entry<String, QueryField>> iterator = fields.entrySet().iterator(); iterator.hasNext(); )
+            Map<String, DataField> fields = dataList.getFields();
+            for (Iterator<Map.Entry<String, DataField>> iterator = fields.entrySet().iterator(); iterator.hasNext(); )
             {
-                Map.Entry<String, QueryField> entry = iterator.next();
+                Map.Entry<String, DataField> entry = iterator.next();
 
                 String localeName = entry.getKey();
-                QueryField queryField = entry.getValue();
+                DataField dataField = entry.getValue();
 
-                jsonifyQueryField(sink, localeName, queryField, lookup);
+                jsonifyQueryField(sink, localeName, dataField, lookup);
 
                 if (iterator.hasNext())
                 {
@@ -208,11 +209,11 @@ public class DomainServiceImpl
 
             sink.append("},\"rows\":[");
 
-            for (Iterator<? extends DomainObject> iterator = queryResult.getRows().iterator(); iterator.hasNext(); )
+            for (Iterator<? extends DomainObject> iterator = dataList.getRows().iterator(); iterator.hasNext(); )
             {
                 DomainObject row = iterator.next();
 
-                jsonifyRow(sink, runtimeContext, queryResult, row);
+                jsonifyRow(sink, runtimeContext, dataList, row);
 
                 if (iterator.hasNext())
                 {
@@ -224,11 +225,11 @@ public class DomainServiceImpl
         }
 
 
-        private void jsonifyQueryField(JSONCharacterSink sink, String localeName, QueryField queryField, Map<String,
+        private void jsonifyQueryField(JSONCharacterSink sink, String localeName, DataField dataField, Map<String,
             Integer> lookup)
         {
             generator.quote(sink, localeName);
-            DomainProperty domainProperty = queryField.getDomainProperty();
+            DomainProperty domainProperty = dataField.getDomainProperty();
             sink.append(":{\"type\":");
             generator.quote(sink, domainProperty.getType());
             Object typeParam = domainProperty.getTypeParam();
@@ -258,22 +259,24 @@ public class DomainServiceImpl
                 sink.append(",\"defaultValue\":");
                 generator.dumpObject(sink, defaultValue);
             }
-            sink.append(",\"entityIndex\":" + lookup.get(queryField.getQueryDomainType().getType().getName()));
+            sink.append(",\"entityIndex\":" + lookup.get(dataField.getQueryDomainType().getType().getName()));
             sink.append(",\"name\":");
-            generator.quote(sink, queryField.getDomainProperty().getName());
+            generator.quote(sink, dataField.getDomainProperty().getName());
             sink.append(",\"qualifiedName\":");
-            generator.quote(sink, queryField.getQualifiedName());
+            generator.quote(sink, dataField.getQualifiedName());
             sink.append("}");
         }
 
 
-        private void jsonifyRow(JSONCharacterSink sink, RuntimeContext runtimeContext, QueryResult queryResult,
+        private void jsonifyRow(JSONCharacterSink sink, RuntimeContext runtimeContext, DataList dataList,
                                 DomainObject row)
         {
             sink.append("{\"id\":");
             generator.quote(sink, row.getId());
 
-            for (QueryField field : queryResult.getFields().values())
+            Collection<DataField> dataFields = dataList.getFields().values();
+
+            for (DataField field : dataFields)
             {
                 String localName = field.getLocalName();
                 Object property = row.getProperty(localName);

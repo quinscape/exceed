@@ -22,15 +22,15 @@ public class QueryDomainType
 
     private JoinDefinition joinedType;
 
-    private List<QueryField> fields;
+    private List<DataField> fields;
 
-    private List<QueryField> domainTypeFields;
+    private List<DataField> domainTypeFields;
 
     private QueryDomainType joinedWith;
 
-    private List<QueryField> joinedFields;
+    private List<DataField> joinedFields;
 
-    private Map<String, QueryField> fieldMap;
+    private Map<String, DataField> fieldMap;
 
 
     public QueryDomainType(DomainType type)
@@ -47,8 +47,8 @@ public class QueryDomainType
         Map<String, DomainProperty> properties = this.getType().getProperties();
         for (DomainProperty domainProperty : properties.values())
         {
-            QueryField queryField = new QueryField(this, domainProperty);
-            joinedFields.add(queryField);
+            DataField dataField = new DataField(this, domainProperty);
+            joinedFields.add(dataField);
         }
 
         domainTypeFields = ImmutableList.copyOf(joinedFields);
@@ -91,32 +91,32 @@ public class QueryDomainType
 
     public void setFields(List<String> fields)
     {
-        List<QueryField> queryFields = new ArrayList<>();
+        List<DataField> dataFields = new ArrayList<>();
         for (int i = 0; i < fields.size(); i++)
         {
             String field = fields.get(i);
             if (field.indexOf('.') < 0)
             {
-                QueryField queryField = resolveField(field).clone();
-                queryField.setLocalName(field);
-                queryFields.add(queryField);
+                DataField dataField = resolveField(field).clone();
+                dataField.setLocalName(field);
+                dataFields.add(dataField);
             }
             else
             {
-                QueryField typeForField = findTypeForField(field);
+                DataField typeForField = findTypeForField(field);
                 if (typeForField == null)
                 {
                     throw new IllegalArgumentException("Unknown field '" + field + "'");
                 }
 
-                queryFields.add(typeForField);
+                dataFields.add(typeForField);
             }
         }
-        this.fields = queryFields;
+        this.fields = dataFields;
     }
 
 
-    private QueryField findTypeForField(String field)
+    private DataField findTypeForField(String field)
     {
         int dotPos = field.indexOf('.');
         if (dotPos < 0)
@@ -129,11 +129,11 @@ public class QueryDomainType
 
         do
         {
-            Map<String, QueryField> fields = current.getFields();
-            QueryField queryField;
-            if ((queryField = fields.get(field)) != null)
+            Map<String, DataField> fields = current.getFields();
+            DataField dataField;
+            if ((dataField = fields.get(field)) != null)
             {
-                return queryField;
+                return dataField;
             }
 
             if (current.getJoinedType() != null)
@@ -151,33 +151,33 @@ public class QueryDomainType
     }
 
 
-    public List<QueryField> getDomainTypeFields()
+    public List<DataField> getDomainTypeFields()
     {
         return domainTypeFields;
     }
 
 
-    private QueryField resolveField(final String field)
+    private DataField resolveField(final String field)
     {
         QueryDomainType current = this;
 
-        QueryField queryField = null;
+        DataField dataField = null;
         do
         {
-            List<QueryField> domainTypeFields = current.getDomainTypeFields();
+            List<DataField> domainTypeFields = current.getDomainTypeFields();
 
-            for (QueryField f : domainTypeFields)
+            for (DataField f : domainTypeFields)
             {
                 if (f.getDomainProperty().getName().equals(field))
                 {
-                    if (queryField != null)
+                    if (dataField != null)
                     {
                         throw new AmbiguousFieldReferenceException("Ambiguous field reference '" + field + "': exists at least in " +
                             "both "
-                            + queryField.getQueryDomainType().getType() + " and " + current.getType());
+                            + dataField.getQueryDomainType().getType() + " and " + current.getType());
                     }
 
-                    queryField = f;
+                    dataField = f;
                 }
             }
 
@@ -192,27 +192,27 @@ public class QueryDomainType
 
         } while (current != null);
 
-        if (queryField == null)
+        if (dataField == null)
         {
             throw new InvalidFieldReferenceException("Invalid field reference '" + field + "' is not any of the joined domain types");
         }
 
-        return queryField;
+        return dataField;
     }
 
-    public List<QueryField> getFieldsInOrder()
+    public List<DataField> getFieldsInOrder()
     {
         return this.fields != null ? this.fields : joinedFields;
     }
 
     @JSONProperty(ignore = true)
-    public Map<String, QueryField> getFields()
+    public Map<String, DataField> getFields()
     {
         if (fieldMap == null)
         {
-            List<QueryField> fields = getFieldsInOrder();
+            List<DataField> fields = getFieldsInOrder();
             fieldMap = new HashMap<>();
-            for (QueryField field : fields)
+            for (DataField field : fields)
             {
                 fieldMap.put(field.getLocalName(), field);
             }
@@ -252,7 +252,7 @@ public class QueryDomainType
 
 
     @JSONProperty(ignore = true)
-    public List<QueryField> getJoinedFields()
+    public List<DataField> getJoinedFields()
     {
         return joinedFields;
     }

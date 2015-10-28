@@ -5,7 +5,10 @@ import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import org.svenson.JSONProperty;
 
-public class QueryField
+/**
+ * Represents a data field inside a
+ */
+public class DataField
     implements Cloneable
 {
     private final QueryDomainType queryDomainType;
@@ -19,7 +22,7 @@ public class QueryField
     private String nameFromStrategy;
 
 
-    public QueryField(QueryDomainType queryDomainType, DomainProperty domainProperty)
+    public DataField(QueryDomainType queryDomainType, DomainProperty domainProperty)
     {
         this.queryDomainType = queryDomainType;
         this.domainProperty = domainProperty;
@@ -70,12 +73,12 @@ public class QueryField
     }
 
     @Override
-    protected QueryField clone()
+    protected DataField clone()
     {
-        QueryField clone = null;
+        DataField clone = null;
         try
         {
-            clone = (QueryField) super.clone();
+            clone = (DataField) super.clone();
             return clone;
         }
         catch (CloneNotSupportedException e)

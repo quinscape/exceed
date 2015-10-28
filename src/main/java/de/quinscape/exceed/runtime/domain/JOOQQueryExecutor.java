@@ -4,11 +4,11 @@ import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.SimpleNode;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.runtime.component.QueryExecutor;
-import de.quinscape.exceed.runtime.component.QueryResult;
+import de.quinscape.exceed.runtime.component.DataList;
 import de.quinscape.exceed.runtime.expression.query.JoinDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryDomainType;
-import de.quinscape.exceed.runtime.expression.query.QueryField;
+import de.quinscape.exceed.runtime.expression.query.DataField;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -46,7 +46,7 @@ public class JOOQQueryExecutor
 
 
     @Override
-    public Object execute(QueryDefinition queryDefinition)
+    public DataList<DomainObject> execute(QueryDefinition queryDefinition)
     {
         QueryDomainType queryDomainType = queryDefinition.getQueryDomainType();
 
@@ -127,7 +127,7 @@ public class JOOQQueryExecutor
             }
         }
 
-        List rows = builder.fetch(new QueryMapper(queryDefinition));
+        List<DomainObject> rows = builder.fetch(new QueryMapper(queryDefinition));
 
         int rowCount;
         if (pagedQuery)
@@ -138,13 +138,13 @@ public class JOOQQueryExecutor
         {
             rowCount = rows.size();
         }
-        return new QueryResult(queryDefinition, rows, rowCount);
+        return new DataList<DomainObject>(queryDefinition, rows, rowCount);
     }
 
 
-    private Field<Object> jooqField(QueryField queryField)
+    private Field<Object> jooqField(DataField dataField)
     {
-        return field(queryField.getNameFromStrategy(namingStrategy));
+        return field(dataField.getNameFromStrategy(namingStrategy));
     }
 
 
@@ -167,11 +167,11 @@ public class JOOQQueryExecutor
 
 
     private class QueryMapper
-        implements RecordMapper<Record, GenericDomainObject>
+        implements RecordMapper<Record, DomainObject>
     {
         private final QueryDefinition queryDefinition;
 
-        private final List<QueryField> fields;
+        private final List<DataField> fields;
 
 
         public QueryMapper(QueryDefinition queryDefinition)
@@ -184,7 +184,7 @@ public class JOOQQueryExecutor
         public GenericDomainObject map(Record record)
         {
             GenericDomainObject domainObject = new GenericDomainObject();
-            for (QueryField field : fields)
+            for (DataField field : fields)
             {
                 QueryDomainType queryDomainType = field.getQueryDomainType();
                 Object value = record.getValue(field.getNameFromStrategy(namingStrategy));
