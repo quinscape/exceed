@@ -1,5 +1,15 @@
 "use strict";
 
+/**
+ * Create a new Enum type based on the given map.
+ *
+ * The values in the map are irrelevant, they get replaced by the key as 
+ * per js enum pattern.
+ *
+ * @param map
+ * @returns {Enum}
+ * @constructor
+ */
 function Enum(map)
 {
     if (!(this instanceof Enum))
