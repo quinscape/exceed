@@ -120,7 +120,7 @@ public abstract class ExpressionEnvironment
 
 
     /** The name of the environment, used in error messages. */
-    protected final String name;
+    protected String name;
 
 
     protected ExpressionEnvironment()
@@ -180,20 +180,35 @@ public abstract class ExpressionEnvironment
     @Override
     public Object visit(ASTPropertyChain node, Object data)
     {
-
         Object chainObject = null;
         for (int i = 0; i < node.jjtGetNumChildren(); i++)
         {
             Node kid = node.jjtGetChild(i);
-            if (kid instanceof ASTIdentifier)
-            {
-                chainObject = kid.jjtAccept(this, data);
-            }
-            if (kid instanceof ASTFunction)
-            {
-                chainObject = kid.jjtAccept(this, chainObject);
+            chainObject = propertyChainPart(kid, chainObject, i);
+        }
+        return chainObject;
+    }
 
-            }
+
+    /**
+     * Called once for every child of an ASTPropertyChain.
+     *
+     * @param kid           current child
+     * @param chainObject   current property chain object
+     * @param index         index of the current child within the property chain
+     *
+     * @return  new / changed property chain object
+     */
+    protected Object propertyChainPart(Node kid, Object chainObject, int index)
+    {
+        if (kid instanceof ASTIdentifier)
+        {
+            chainObject = kid.jjtAccept(this, null);
+        }
+        if (kid instanceof ASTFunction)
+        {
+            chainObject = kid.jjtAccept(this, chainObject);
+
         }
         return chainObject;
     }
@@ -940,7 +955,7 @@ public abstract class ExpressionEnvironment
             throw new ExpressionEnvironmentException(name + ": Invalid map literal");
         }
 
-        HashMap<Object, Object> map = new HashMap<>();
+        Map<Object, Object> map = (Map)data;
 
         for (int i=0; i < node.jjtGetNumChildren(); i++)
         {

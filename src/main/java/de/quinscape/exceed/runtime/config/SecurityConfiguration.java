@@ -32,6 +32,9 @@ public class SecurityConfiguration
 
                 .antMatchers(
                     "/index.jsp",
+                    "/action/**",
+                    "/actions/**",
+                    "/res/css/**",
                     "/res/css/**",
                     "/res/fonts/**",
                     "/res/js/**",

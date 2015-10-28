@@ -11,7 +11,7 @@ var components = require("../service/component").getComponents();
 
 var expressionRegEx = /^\{\s*(.*?)\s*}$/;
 
-function evaluateExpression(value, context)
+function evaluateExpression(value, context, props, vars)
 {
     var m;
     if (typeof value === "string" && (m = expressionRegEx.exec(value)))
@@ -38,11 +38,10 @@ var ViewComponent = React.createClass({
             }
 
             var modelAttrs = model.attrs;
-            var attrs = {
+            var componentProps = {
                 key: key
             };
 
-            var modelId = modelAttrs && modelAttrs.id;
             if (component <= 'Z')
             {
                 descriptor = components[component];
@@ -51,31 +50,10 @@ var ViewComponent = React.createClass({
 
                 component = descriptor.component;
 
-                attrs.model = model;
+                componentProps.model = model;
             }
 
-            var m;
-
-            if (modelAttrs)
-            {
-                for (var name in modelAttrs)
-                {
-                    if (modelAttrs.hasOwnProperty(name) && name !== "id")
-                    {
-                        attrs[name] = evaluateExpression(modelAttrs[name], context);
-                    }
-                }
-            }
-
-            var contextKey = descriptor && descriptor.contextKey;
-            if (contextKey)
-            {
-                context = context[attrs[contextKey]];
-            }
-
-            attrs.context = context;
-
-            var modelKids = model.kids;
+            var modelId = modelAttrs && modelAttrs.id;
 
             if (modelId)
             {
@@ -85,23 +63,43 @@ var ViewComponent = React.createClass({
                 {
                     if (dataBlock.vars)
                     {
-                        attrs.vars = dataBlock.vars;
+                        componentProps.vars = dataBlock.vars;
                     }
 
                     if (dataBlock.data)
                     {
-                        extend(attrs, dataBlock.data);
+                        extend(componentProps, dataBlock.data);
                         //console.log("data = ", JSON.stringify(dataBlock.data, null, "  "));
                     }
                 }
             }
 
+            var contextKey = descriptor && descriptor.contextKey;
+            if (contextKey)
+            {
+                context = context[componentProps[contextKey]];
+            }
+
+            if (modelAttrs)
+            {
+                for (var name in modelAttrs)
+                {
+                    if (modelAttrs.hasOwnProperty(name) && name !== "id")
+                    {
+                        componentProps[name] = evaluateExpression(modelAttrs[name], context, componentProps, componentProps.vars);
+                    }
+                }
+            }
+
+            componentProps.context = context;
+
+            var modelKids = model.kids;
             if (descriptor && descriptor.contextProvider && modelKids)
             {
                 var viewComponent = this;
 
-                attrs.childCount = modelKids.length;
-                attrs.renderChildrenWithContext = function (context)
+                componentProps.childCount = modelKids.length;
+                componentProps.renderChildrenWithContext = function (context)
                 {
                     var array = [];
                     for (var i = 0; i < modelKids.length; i++)
@@ -111,11 +109,11 @@ var ViewComponent = React.createClass({
                     }
                     return array;
                 };
-                callArgs = [component, attrs];
+                callArgs = [component, componentProps];
             }
             else
             {
-                callArgs = [component, attrs];
+                callArgs = [component, componentProps];
                 if (modelKids)
                 {
                     for (var i = 0; i < modelKids.length; i++)

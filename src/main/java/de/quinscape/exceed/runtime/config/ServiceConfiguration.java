@@ -1,7 +1,12 @@
 package de.quinscape.exceed.runtime.config;
 
+import de.quinscape.exceed.model.action.ActionModel;
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.action.Action;
 import de.quinscape.exceed.runtime.component.QueryDataProvider;
 import de.quinscape.exceed.runtime.component.QueryExecutor;
+import de.quinscape.exceed.runtime.controller.ActionRegistry;
+import de.quinscape.exceed.runtime.controller.DefaultActionRegistry;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.JOOQQueryExecutor;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
@@ -17,12 +22,17 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-@ComponentScan({
+@ComponentScan(value = {
+    "de.quinscape.exceed.runtime.action",
     "de.quinscape.exceed.runtime.service"
+}, includeFilters = {
+    @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = Action.class)
 })
 public class ServiceConfiguration
 {
@@ -69,6 +79,31 @@ public class ServiceConfiguration
         Map<String, QueryExecutor> executors = applicationContext.getBeansOfType(QueryExecutor.class);
         return new QueryDataProvider(dslContext, new QueryTransformer(), executors, DEFAULT_QUERY_EXECUTOR);
     }
+
+    @Bean
+    public ActionRegistry actionRegistry()
+    {
+        Map<String, Action> actions = new HashMap<>();
+
+        for (Action action : applicationContext.getBeansOfType(Action.class).values())
+        {
+            // instantiate the action model per mandatory default constructor
+            ActionModel actionModel = null;
+            try
+            {
+                actionModel = (ActionModel) action.getActionModelClass().newInstance();
+            }
+            catch (Exception e)
+            {
+                throw new ExceedRuntimeException("Error creating action model for " + action );
+            }
+            // .. and register the action under the name provided by the model.
+            actions.put(actionModel.getAction(), action);
+        }
+
+        return new DefaultActionRegistry(actions);
+    }
+
     @Bean
     public Translator translator()
     {
