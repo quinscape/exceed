@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.model;
 
 import de.quinscape.exceed.model.Application;
+import de.quinscape.exceed.model.Layout;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.change.CodeChange;
@@ -40,6 +41,8 @@ public class ModelCompositionService
     public static final String DOMAIN_PROPERTY_MODEL_PREFIX = "/models/domain/property";
 
     public static final String VIEW_MODEL_PREFIX = "/models/view/";
+
+    public static final String DOMAIN_LAYOUT_NAME = "/layout/domain.json";
 
     private static Logger log = LoggerFactory.getLogger(ModelCompositionService.class);
 
@@ -130,6 +133,15 @@ public class ModelCompositionService
 
                 applicationModel.getViews().put(view.getName(), view);
                 return view;
+            }
+            else if (path.equals(DOMAIN_LAYOUT_NAME))
+            {
+                log.debug("Reading {} as Domain Layout", path);
+                Layout view = create(Layout.class, json, path);
+
+                applicationModel.setDomainLayout(view);
+                return view;
+
             }
             else
             {

@@ -37,8 +37,12 @@ public class Application
 
     private String schema;
 
+    private Layout domainLayout;
+
     public Application()
     {
+        domainLayout = new Layout();
+        domainLayout.setName("domain");
     }
 
 
@@ -132,6 +136,7 @@ public class Application
         return idCount.get();
     }
 
+
     /**
      * copies the non-app.json data of the give application model into this one.
      *
@@ -141,5 +146,17 @@ public class Application
     {
         this.styleSheets = applicationModel.styleSheets;
         this.schema = applicationModel.schema;
+    }
+
+
+    public void setDomainLayout(Layout domainLayout)
+    {
+        this.domainLayout = domainLayout;
+    }
+
+
+    public Layout getDomainLayout()
+    {
+        return domainLayout;
     }
 }
