@@ -170,13 +170,17 @@ module.exports = function(opts)
             {
                 return;
             }
-            if (xhr.status != 200 && xhr.status != 304)
+            if (xhr.status !== 200 && xhr.status !== 304)
             {
-                reject({
-                    status: xhr.status,
-                    xhr: xhr,
-                    error: "HTTP error " + xhr.status
-                });
+
+                if (xhr.status !== 0)
+                {
+                    reject({
+                        status: xhr.status,
+                        xhr: xhr,
+                        error: "HTTP error " + xhr.status
+                    });
+                }
                 return;
             }
 
