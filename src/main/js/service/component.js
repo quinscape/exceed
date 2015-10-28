@@ -5,13 +5,6 @@ var components = {};
 
 var React = require("react/addons");
 
-if (typeof window.componentProxies === "undefined")
-{
-    window.componentProxies = {};
-}
-
-var componentProxies =  window.componentProxies;
-
 function registerMapRecursively(map)
 {
     //console.debug("registerMapRecursively", componentsMap, path);
@@ -37,37 +30,6 @@ function registerMapRecursively(map)
         }
     }
 }
-
-function createProxy(name, component)
-{
-
-
-    var ProxyClass = componentProxies[name];
-
-    if (!ProxyClass)
-    {
-        ProxyClass = React.createClass({
-            displayName: "Proxy_" + name,
-            statics: {
-                component: component
-            },
-            render: function ()
-            {
-                return React.createElement(ProxyClass.component, extend({}, this.props));
-            }
-        });
-
-        componentProxies[name] = ProxyClass;
-    }
-    else
-    {
-        console.debug("Updating proxy from %o to %o", ProxyClass.component, component);
-        ProxyClass.component = component;
-    }
-
-    return ProxyClass;
-}
-
 
 var ComponentService = {
     getComponents: function ()
@@ -103,7 +65,7 @@ var ComponentService = {
                 }
 
                 components[name] = extend({
-                    component : createProxy(name, component)
+                    component : component
                 }, componentDef);
             }
         }
