@@ -58,6 +58,8 @@ module.exports = {
             try
             {
                 var container = document.createElement("div");
+                container.style.position = "absolute";
+                container.style.left = "-2000px";
                 document.body.appendChild(container);
 
                 var SvgLayout = React.createClass({
@@ -76,6 +78,7 @@ module.exports = {
                         }
 
                         ReactDOM.unmountComponentAtNode(container);
+                        document.body.removeChild(container);
 
                         console.info("svg layout done in %sms", Date.now() - start);
                         resolve(exampleTextSizes = sizes);
