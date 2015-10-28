@@ -1,6 +1,8 @@
 var React = require("react/addons");
 var ReactDOM = require("react-dom");
 
+var Promise = require("es6-promise").Promise;
+
 var bulk = require("bulk-require");
 var componentService = require("./service/component");
 var viewService = require("./service/view");
@@ -9,6 +11,8 @@ var security = require("./service/security");
 
 var ValueLink = require("./util/value-link");
 
+var svgLayout = require("./util/svg-layout");
+
 var Alert = require("./ui/Alert");
 var ViewComponent = require("./ui/ViewComponent");
 
@@ -16,7 +20,8 @@ var componentsMap = bulk(__dirname, ["components/**/*.json", "components/**/*.js
 
 componentService.registerBulk(componentsMap);
 
-console.dir(componentService.getComponents());
+// log available components
+//console.dir(componentService.getComponents());
 
 
 var domready = require("domready");
@@ -126,12 +131,18 @@ domready(function ()
     currentViewName = model.name;
     currentViewData = data.data;
 
-    console.log("currentViewData", JSON.stringify(currentViewData, null, "  "));
+    //console.log("currentViewData", JSON.stringify(currentViewData, null, "  "));
 
-    ReactDOM.render( React.createElement(ViewComponent, {
-        model: model,
-        componentData: currentViewData
-    }), rootElem);
+    Promise.all([
+        svgLayout.init()
+    ]).then(function (sizes)
+    {
+        ReactDOM.render( React.createElement(ViewComponent, {
+            model: model,
+            componentData: currentViewData
+        }), rootElem);
 
-    pollChanges();
+        pollChanges();
+    });
+
 });
