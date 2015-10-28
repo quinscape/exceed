@@ -124,6 +124,9 @@ module.exports = function(opts)
             });
             return;
         }
+
+        //console.debug("AJAX", JSON.stringify(opts));
+
         var method = opts.method.toUpperCase();
         xhr.open(method, opts.url, true);
         xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
@@ -150,7 +153,14 @@ module.exports = function(opts)
             data = opts.data || "";
             if (typeof data !== "string")
             {
-                data = serialize(data);
+                if (opts.contentType === "application/json")
+                {
+                    data = JSON.stringify(data);
+                }
+                else
+                {
+                    data = serialize(data);
+                }
             }
         }
 
