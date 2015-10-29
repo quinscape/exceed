@@ -19,19 +19,19 @@ public class ExpressionEnvironmentTest
     public void testLogical() throws Exception
     {
         {
-            Boolean result = (Boolean) transform("TRUE && true");
+            Boolean result = (Boolean) transform("IDENT_TRUE && true");
             assertThat(result.booleanValue(), is(true));
         }
         {
-            Boolean result = (Boolean) transform("true && FALSE");
+            Boolean result = (Boolean) transform("true && IDENT_FALSE");
             assertThat(result.booleanValue(), is(false));
         }
         {
-            Boolean result = (Boolean) transform("TRUE || false");
+            Boolean result = (Boolean) transform("IDENT_TRUE || false");
             assertThat(result.booleanValue(), is(true));
         }
         {
-            Boolean result = (Boolean) transform("FALSE || false");
+            Boolean result = (Boolean) transform("IDENT_FALSE || false");
             assertThat(result.booleanValue(), is(false));
         }
     }
@@ -49,11 +49,11 @@ public class ExpressionEnvironmentTest
             assertThat(result, is("xyz"));
         }
         {
-            Boolean result = (Boolean) transform("TRUE");
+            Boolean result = (Boolean) transform("IDENT_TRUE");
             assertThat(result, is(true));
         }
         {
-            Boolean result = (Boolean) transform("FALSE");
+            Boolean result = (Boolean) transform("IDENT_FALSE");
             assertThat(result, is(false));
         }
     }
@@ -256,7 +256,7 @@ public class ExpressionEnvironmentTest
         }
 
         {
-            Map result = (Map) transform("{ foo: TRUE }");
+            Map result = (Map) transform("{ foo: IDENT_TRUE }");
             assertThat(result.get("foo"), is(true));
         }
 
@@ -290,9 +290,9 @@ public class ExpressionEnvironmentTest
                     return "abc";
                 case "value2":
                     return "xyz";
-                case "TRUE":
+                case "IDENT_TRUE":
                     return true;
-                case "FALSE":
+                case "IDENT_FALSE":
                     return false;
                 default:
                     throw new ExceedRuntimeException("Unknown identifier: " + name);
