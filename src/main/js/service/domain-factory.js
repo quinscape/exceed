@@ -1,6 +1,6 @@
 "use strict";
 
-var Promise = require("es6-promise").Promise;
+var Promise = require("es6-promise-polyfill").Promise;
 
 var uuid = require("node-uuid");
 

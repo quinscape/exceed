@@ -4,7 +4,7 @@ var ajax = require("./../service/ajax");
 var cando = require("../cando");
 var parseXML = require("./parseXML");
 
-var Promise = require("es6-promise").Promise;
+var Promise = require("es6-promise-polyfill").Promise;
 
 var nameSpacesToClean = {
     "http://www.inkscape.org/namespaces/inkscape" : 0,

@@ -1,4 +1,4 @@
-var Promise = require("es6-promise").Promise;
+var Promise = require("es6-promise-polyfill").Promise;
 var extend = require("extend");
 var cando = require("../cando");
 

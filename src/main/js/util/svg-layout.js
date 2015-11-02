@@ -1,6 +1,6 @@
 var React = require("react/addons");
 var ReactDOM = require("react-dom");
-var Promise = require("es6-promise").Promise;
+var Promise = require("es6-promise-polyfill").Promise;
 var Enum = require("./enum");
 
 const TEST_PHRASE = "THEqUICKbROWNFOXjUMpSOVERTHELAZydOg";

@@ -1,7 +1,7 @@
 var React = require("react/addons");
 var ReactDOM = require("react-dom");
 
-var Promise = require("es6-promise").Promise;
+var Promise = require("es6-promise-polyfill").Promise;
 
 var bulk = require("bulk-require");
 var componentService = require("./service/component");

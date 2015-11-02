@@ -3,7 +3,7 @@
 var ajax = require("./ajax");
 var uri = require("../util/uri");
 
-var Promise = require("es6-promise").Promise;
+var Promise = require("es6-promise-polyfill").Promise;
 
 var clientActions = {
 
