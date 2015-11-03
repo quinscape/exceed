@@ -64,8 +64,8 @@ public class WebConfiguration
         resolver.setAlwaysInclude(false);
 
         // TODO: change this based on prod/dev
-        servletContext.setAttribute("reactVersion", "react-with-addons-0.14.0.js");
-        servletContext.setAttribute("reactDOMVersion", "react-dom-0.14.0.js");
+        servletContext.setAttribute("reactVersion", "react-with-addons-0.14.2.js");
+        servletContext.setAttribute("reactDOMVersion", "react-dom-0.14.2.js");
 
         registry.viewResolver(resolver);
     }
