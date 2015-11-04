@@ -1,21 +1,20 @@
 package de.quinscape.exceed.model;
 
 import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.model.domain.PropertyType;
 import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.View;
 import org.svenson.JSONProperty;
-import org.svenson.JSONTypeHint;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Encapsulates the general application configuration.
- *
+ * <p>
  * The JSON-ignored properties contain models that live in their resource locations.
  *
  * @see de.quinscape.exceed.runtime.model.ModelCompositionService
@@ -29,6 +28,8 @@ public class Application
 
     private Map<String, PropertyType> propertyTypes = new HashMap<>();
 
+    private Map<String, EnumModel> enums;
+
     private Map<String, View> views = new HashMap<>();
 
     private List<String> styleSheets;
@@ -38,6 +39,7 @@ public class Application
     private String schema;
 
     private Layout domainLayout;
+
 
     public Application()
     {
@@ -64,10 +66,12 @@ public class Application
         return routingTable;
     }
 
+
     public void setRoutingTable(RoutingTable routingTable)
     {
         this.routingTable = routingTable;
     }
+
 
     @JSONProperty(ignore = true)
     public Map<String, DomainType> getDomainTypes()
@@ -75,10 +79,12 @@ public class Application
         return domainTypes;
     }
 
+
     public void setDomainTypes(Map<String, DomainType> domainTypes)
     {
         this.domainTypes = domainTypes;
     }
+
 
     @JSONProperty(ignore = true)
     public Map<String, PropertyType> getPropertyTypes()
@@ -86,10 +92,12 @@ public class Application
         return propertyTypes;
     }
 
+
     public void setPropertyTypes(Map<String, PropertyType> propertyTypes)
     {
         this.propertyTypes = propertyTypes;
     }
+
 
     @JSONProperty(ignore = true)
     public Map<String, View> getViews()
@@ -97,20 +105,24 @@ public class Application
         return views;
     }
 
+
     public void setViews(Map<String, View> views)
     {
         this.views = views;
     }
+
 
     public List<String> getStyleSheets()
     {
         return styleSheets;
     }
 
+
     public void setStyleSheets(List<String> styleSheets)
     {
         this.styleSheets = styleSheets;
     }
+
 
     @Override
     public String getName()
@@ -140,7 +152,7 @@ public class Application
     /**
      * copies the non-app.json data of the give application model into this one.
      *
-     * @param applicationModel      application model
+     * @param applicationModel application model
      */
     public void merge(Application applicationModel)
     {
@@ -158,5 +170,17 @@ public class Application
     public Layout getDomainLayout()
     {
         return domainLayout;
+    }
+
+
+    public Map<String, EnumModel> getEnums()
+    {
+        return enums;
+    }
+
+
+    public void setEnums(Map<String, EnumModel> enums)
+    {
+        this.enums = enums;
     }
 }

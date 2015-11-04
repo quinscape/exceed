@@ -7,6 +7,7 @@ import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.change.CodeChange;
 import de.quinscape.exceed.model.change.StyleChange;
 import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.model.domain.PropertyType;
 import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.ComponentModel;
@@ -39,6 +40,8 @@ public class ModelCompositionService
     public static final String DOMAIN_MODEL_PREFIX = "/models/domain/";
 
     public static final String DOMAIN_PROPERTY_MODEL_PREFIX = "/models/domain/property";
+
+    public static final String ENUM_MODEL_PREFIX = "/models/domain/enum/";
 
     public static final String VIEW_MODEL_PREFIX = "/models/view/";
 
@@ -113,6 +116,12 @@ public class ModelCompositionService
                     PropertyType propertyType = create(PropertyType.class, json, path);
                     applicationModel.getPropertyTypes().put(propertyType.getName(), propertyType);
                     return propertyType;
+                }
+                if (path.startsWith(ENUM_MODEL_PREFIX))
+                {
+                    EnumModel enumModel = create(EnumModel.class, json, path);
+                    applicationModel.getEnums().put(enumModel.getName(), enumModel);
+                    return enumModel;
                 }
                 else
                 {
