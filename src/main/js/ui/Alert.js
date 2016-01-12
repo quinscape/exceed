@@ -1,4 +1,4 @@
-var React = require("react/addons");
+var React = require("react");
 
 var Alert = React.createClass({
     propTypes: React.PropTypes.string.isRequired,

@@ -387,8 +387,8 @@
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <nodeVersion>v0.12.0</nodeVersion>
-                            <npmVersion>2.5.1</npmVersion>
+                            <nodeVersion>v5.4.0</nodeVersion>
+                            <npmVersion>3.3.12</npmVersion>
                             <!-- optional: where to download node and npm from. Defaults to http://nodejs.org/dist/ -->
                             <!--downloadRoot>http://myproxy.example.org/nodejs/dist/</downloadRoot-->
                         </configuration>

@@ -3,7 +3,7 @@ var extend = require("extend");
 
 var components = {};
 
-var React = require("react/addons");
+var React = require("react");
 
 function registerMapRecursively(map)
 {
@@ -72,6 +72,9 @@ var ComponentService = {
     }
 };
 
-window.ComponentService = ComponentService;
+if (typeof window !== "undefined")
+{
+    window.ComponentService = ComponentService;
+}
 
 module.exports = ComponentService;

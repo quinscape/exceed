@@ -1,6 +1,6 @@
 "use strict";
 
-var React = require("react/addons");
+var React = require("react");
 var extend = require("extend");
 var ajax = require("./service/ajax");
 

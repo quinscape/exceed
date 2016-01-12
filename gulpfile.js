@@ -5,7 +5,6 @@ var path = require("path");
 var browserify = require("browserify");
 var buffer = require("vinyl-buffer");
 var chalk = require("chalk");
-var espower = require("gulp-espower");
 var extend = require("extend");
 var gulpif = require("gulp-if");
 var gulp = require("gulp");
@@ -37,24 +36,25 @@ var sourcemaps = require("gulp-sourcemaps");
 var source = require("vinyl-source-stream");
 var babelify = require("babelify");
 
-var BABEL_JS_WHITELIST = [
-
-    // SUPPORTED TRANSFORMS / JS EXTENSIONS:
+var BABEL_PLUGINS = [
 
     // JSX support
-    "react", "react.displayName",
+    "transform-react-jsx",
+    "transform-react-display-name",
 
     // var obj = { [computed] : true }
-    "es6.properties.computed",
+    "transform-es2015-computed-properties",
 
     // const MY_CONSTANT = 1 ( const -> let -> var )
-    "es6.constants", "es6.blockScoping",
+    "check-es2015-constants", "transform-es2015-block-scoping",
 
     // if (process.env.NODE_ENV !== "production")
-    "utility.inlineEnvironmentVariables",
+    "transform-inline-environment-variables",
+
+    "transform-es2015-arrow-functions",
 
     // auto "use strict";
-    "strict"
+    "transform-strict-mode"
 ];
 
 gulp.task("build", function(cb) {
@@ -84,17 +84,15 @@ function bundle(watch, cb) {
         });
     } else {
         bro = browserify(MAIN_FILE, {
-            debug: true,
-            fullPaths: true
+            debug: true
         });
     }
 
     bro.transform(
         // Babel js transpiler
         babelify.configure({
-            externalHelpers: true,
             sourceRoot: path.resolve("./src/main/js"),
-            whitelist: BABEL_JS_WHITELIST
+ 	        plugins: BABEL_PLUGINS
         }))
         .transform("bulkify")
         .transform("browserify-shim");
@@ -108,7 +106,12 @@ function bundle(watch, cb) {
             .pipe(sourcemaps.init({
                 loadMaps: true
             }))
-            .pipe(gulpif(compress, streamify(uglify())))
+            .pipe(gulpif(compress, streamify(uglify(/*{
+                mangle: {
+                    // TODO: Remember to update this when the js expression environments change
+                    except: ['none']
+                }
+            }*/))))
             .pipe(sourcemaps.write(".")) // writes .map file
             .pipe(gulp.dest("./src/main/base/resources/js"));
     }
@@ -118,13 +121,18 @@ function bundle(watch, cb) {
 
 gulp.task("test", function ()
 {
+    var usePoweredAsserts = !process.env.NO_POWER_ASSERT;
+
     // do babeljs runtime registration via require hook with our settings.
     require("babel-core/register")({
-        whitelist: BABEL_JS_WHITELIST
+        plugins:
+            ( usePoweredAsserts ?
+                BABEL_PLUGINS.concat("babel-plugin-espower") :
+                BABEL_PLUGINS
+            )
     });
 
     gulp.src("./src/test/js/**/*.js")
-        .pipe(espower())
         .pipe(gulp.dest("./target/js/tests"))
         .pipe(mocha({
             reporter: "spec"

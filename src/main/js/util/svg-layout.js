@@ -1,4 +1,4 @@
-var React = require("react/addons");
+var React = require("react");
 var ReactDOM = require("react-dom");
 var Promise = require("es6-promise-polyfill").Promise;
 var Enum = require("./enum");

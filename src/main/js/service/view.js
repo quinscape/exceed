@@ -1,6 +1,6 @@
 var componentService = require("./component");
 
-var React = require("react/addons");
+var React = require("react");
 var extend = require("extend");
 
 var components = componentService.getComponents();
