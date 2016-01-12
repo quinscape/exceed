@@ -113,7 +113,7 @@ function pollChanges()
 }
 domready(function ()
 {
-    security.init();
+    security.init(document.body.dataset.roles);
 
     var contextPath = document.body.dataset.contextPath;
     var appName = document.body.dataset.appName;

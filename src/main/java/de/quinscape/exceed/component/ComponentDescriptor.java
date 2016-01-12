@@ -26,6 +26,8 @@ public class ComponentDescriptor
 
     private final String contextKey;
 
+    private final boolean modelAware;
+
     private final Map<String,String> queryExecutors;
 
     public ComponentDescriptor(
@@ -56,10 +58,14 @@ public class ComponentDescriptor
         Boolean contextProvider,
 
         @JSONParameter("contextKey")
-        String contextKey)
+        String contextKey,
+
+        @JSONParameter("modelAware")
+        Boolean modelAware)
 
     {
         this.vars = vars;
+        this.modelAware = modelAware != null && modelAware;
         this.queries = Util.immutableMap(queries);
         this.propTypes = Util.immutableMap(propTypes);
         this.templates = Util.immutableList(templates);
@@ -120,5 +126,11 @@ public class ComponentDescriptor
     public Map<String, String> getQueryExecutors()
     {
         return queryExecutors;
+    }
+
+
+    public boolean isModelAware()
+    {
+        return modelAware;
     }
 }

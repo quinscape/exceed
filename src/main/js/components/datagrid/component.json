@@ -33,7 +33,8 @@
                 {
                     "rule": "model('DataGrid.Column')"
                 }
-            ]
+            ],
+            "modelAware" : true
         },
         "DataGrid.Column": {
             "contextKey" : "name",

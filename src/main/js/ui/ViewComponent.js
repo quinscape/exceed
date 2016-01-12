@@ -11,16 +11,30 @@ var components = require("../service/component").getComponents();
 
 var expressionRegEx = /^\{\s*(.*?)\s*}$/;
 
-function evaluateExpression(value, context, props, vars)
-{
-    var m;
-    if (typeof value === "string" && (m = expressionRegEx.exec(value)))
-    {
-        return eval(m[1]);
-    }
-    return value;
-}
 
+/**
+ * A generic view component that renders a component tree based on a JSON view notation.
+ *
+ * {
+ *     "root": {
+ *         "name": "Bootstrap.Grid",
+ *         "attrs": {
+ *             "fluid": "{ true }"
+ *         },
+ *         "kids": [ … ]
+ * }
+ *
+ * "root" contains the root component. For each component there can be 3 properties:
+ *
+ * "name" contains the component name as registered in the exceed build, parallel to React conventions we reserve
+ * lowercase names for normal HTML elements. String children use the name "[String]".
+ *
+ * "attrs" contains a map of attributes that are either string values or an expression string wrapped in {}. ViewComponent
+ * just evaluates the expression in a special environment relying on server-side validation to make sure that the
+ * expression string is actually valid.
+ *
+ *
+ */
 var ViewComponent = React.createClass({
     renderComponent: function (model, componentData, key, context)
     {
@@ -34,7 +48,7 @@ var ViewComponent = React.createClass({
 
             if (component === "[String]")
             {
-                return evaluateExpression(model.attrs.value, context);
+                return evaluateExpression(model.attrs.value, context, model, null, null);
             }
 
             var modelAttrs = model.attrs;
@@ -42,7 +56,7 @@ var ViewComponent = React.createClass({
                 key: key
             };
 
-            if (component <= 'Z')
+            if (isComponent(component))
             {
                 descriptor = components[component];
 
@@ -50,11 +64,13 @@ var ViewComponent = React.createClass({
 
                 component = descriptor.component;
 
-                componentProps.model = model;
+                if (descriptor.modelAware)
+                {
+                    componentProps.model = model;
+                }
             }
 
             var modelId = modelAttrs && modelAttrs.id;
-
             if (modelId)
             {
                 var dataBlock = componentData[modelId];
@@ -77,7 +93,14 @@ var ViewComponent = React.createClass({
             var contextKey = descriptor && descriptor.contextKey;
             if (contextKey)
             {
-                context = context[componentProps[contextKey]];
+                var k = modelAttrs[contextKey];
+                context = context[k];
+            }
+
+            if (context && (descriptor.context || descriptor.contextKey))
+            {
+                var contextProperty =  typeof descriptor.context === "string" ? descriptor.context : "context";
+                componentProps[contextProperty] = context;
             }
 
             if (modelAttrs)
@@ -86,12 +109,10 @@ var ViewComponent = React.createClass({
                 {
                     if (modelAttrs.hasOwnProperty(name) && name !== "id")
                     {
-                        componentProps[name] = evaluateExpression(modelAttrs[name], context, componentProps, componentProps.vars);
+                        componentProps[name] = evaluateExpression(modelAttrs[name], context, model, componentProps, componentProps.vars);
                     }
                 }
             }
-
-            componentProps.context = context;
 
             var modelKids = model.kids;
             if (descriptor && descriptor.contextProvider && modelKids)
@@ -109,11 +130,11 @@ var ViewComponent = React.createClass({
                     }
                     return array;
                 };
-                callArgs = [component, componentProps];
+                callArgs = [ component, componentProps ];
             }
             else
             {
-                callArgs = [component, componentProps];
+                callArgs = [ component, componentProps ];
                 if (modelKids)
                 {
                     for (var i = 0; i < modelKids.length; i++)
@@ -150,5 +171,20 @@ var ViewComponent = React.createClass({
         );
     }
 });
+
+function evaluateExpression(value, context, model, props, vars)
+{
+    var m;
+    if (typeof value === "string" && (m = expressionRegEx.exec(value)))
+    {
+        return eval("(" + m[1] + ")");
+    }
+    return value;
+}
+
+function isComponent(component)
+{
+    return component <= 'Z';
+}
 
 module.exports = ViewComponent;

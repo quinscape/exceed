@@ -1,9 +1,16 @@
-var roles = {};
+var roles;
 
 module.exports = {
-    init: function ()
+    init: function (rolesString)
     {
-        var rolesArray = document.body.dataset.roles.replace(" ", "").split(",");
+        if (!rolesString)
+        {
+            throw new Error("No roles");
+        }
+
+        roles = {};
+
+        var rolesArray = rolesString.replace(" ", "").split(",");
         for (var i = 0; i < rolesArray.length; i++)
         {
             roles[rolesArray[i]] = true;
@@ -11,6 +18,6 @@ module.exports = {
     },
     hasRole: function (role)
     {
-        return !!roles[role];
+        return roles.hasOwnProperty(role) && !!roles[role];
     }
 };
