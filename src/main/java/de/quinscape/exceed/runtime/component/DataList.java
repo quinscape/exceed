@@ -1,15 +1,15 @@
 package de.quinscape.exceed.runtime.component;
 
-import de.quinscape.exceed.runtime.domain.DomainObject;
+import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.runtime.domain.GenericDomainObject;
+import de.quinscape.exceed.runtime.expression.query.DataField;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryDomainType;
-import de.quinscape.exceed.runtime.expression.query.DataField;
 import org.svenson.JSONParameter;
 import org.svenson.JSONTypeHint;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,44 +17,47 @@ import java.util.Map;
  * Is a loosely typed set of data rows with a meta data block linking the fields of those rows by name to
  * either entity or model identities.
  *
- * The entities data lists are JSONified by {@link de.quinscape.exceed.runtime.domain.DomainServiceImpl.DataListJSONifier}
+ * This the java side of the primary data transport from the server to the client as JSON and back.
  *
- * @param <T>   common type for all rows
+ * The entities data lists are JSONified by {@link de.quinscape.exceed.runtime.datalist.DataListService.DataListJSONifier}
  */
-public class DataList<T>
+public class DataList
 {
-    private final List<IdentityDefinition> identities;
+//    private final List<IdentityDefinition> identities;
+//
+    private final static List<String> ID_PK_LIST = Collections.singletonList("id");
 
     private final Map<String, DataField> fields;
 
-    private final List<T> rows;
+    private final Map<String, DomainType> types;
+    private final List<?> rows;
 
     private final int rowCount;
 
 
     public DataList(
-        @JSONParameter("identities")
-        @JSONTypeHint(IdentityDefinition.class)
-        List<IdentityDefinition> identities,
+        @JSONParameter("types")
+        @JSONTypeHint(DomainType.class)
+        Map<String, DomainType> types,
 
-        @JSONParameter("identities")
-        @JSONTypeHint(DataField.class)
+        @JSONParameter("fields")
         Map<String, DataField> fields,
 
         @JSONParameter("rows")
         @JSONTypeHint(GenericDomainObject.class)
-        List<T> rows,
+        List rows,
 
         @JSONParameter("rowCount")
-        Integer rowCount)
+        Integer rowCount
+    )
     {
-        this.identities = identities;
+        this.types = types;
         this.fields = fields;
         this.rows = rows;
         this.rowCount = rowCount != null ? rowCount: 0;
     }
 
-    public DataList(QueryDefinition queryDefinition, List<T> rows, int rowCount)
+    public DataList(QueryDefinition queryDefinition, List<?> rows, int rowCount)
     {
         if (queryDefinition == null)
         {
@@ -68,22 +71,27 @@ public class DataList<T>
 
         this.rows = rows;
         this.rowCount = rowCount;
-        this.identities = createEntityDefinitions(queryDefinition);
+        this.types = collectDomainTypes(queryDefinition);
         this.fields = queryDefinition.getQueryDomainType().getFields();
-
     }
 
 
-    private List<IdentityDefinition> createEntityDefinitions(QueryDefinition queryDefinition)
+    /**
+     * Creates a map mapping the query definition aliases to the type definitions for the query.
+     *
+     * @param queryDefinition   query definition
+     *
+     * @return map mapping the aliases to the type definitions
+     */
+    private Map<String, DomainType> collectDomainTypes(QueryDefinition queryDefinition)
     {
-        List<IdentityDefinition> list = new ArrayList<>();
+        Map<String, DomainType> map = new HashMap<>();
 
         QueryDomainType current = queryDefinition.getQueryDomainType();
-
-        DataField dataField = null;
         do
         {
-            list.add(new IdentityDefinition(current.getType().getName(), Collections.singletonList("id")));
+            DomainType type = current.getType();
+            map.put(current.getAlias(), type);
 
             if (current.getJoinedType() != null)
             {
@@ -96,11 +104,33 @@ public class DataList<T>
 
         } while (current != null);
 
-        return list;
+        return map;
     }
 
 
-    public List<T> getRows()
+    /**
+     * Returns a map mapping the local name of a field to a data field definition.
+     *
+     * @return
+     */
+    public Map<String, DataField> getFields()
+    {
+        return fields;
+    }
+
+
+    /**
+     * Returns a map mapping the local name of a type to the type definition.
+     *
+     * @return
+     */
+    public Map<String, DomainType> getTypes()
+    {
+        return types;
+    }
+
+
+    public List<?> getRows()
     {
         return rows;
     }
@@ -111,15 +141,4 @@ public class DataList<T>
         return rowCount;
     }
 
-
-    public List<IdentityDefinition> getEntityDefinitions()
-    {
-        return identities;
-    }
-
-
-    public Map<String, DataField> getFields()
-    {
-        return fields;
-    }
 }

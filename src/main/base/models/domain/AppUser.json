@@ -1,27 +1,28 @@
 {
   "name": "AppUser",
-  "properties": {
-    "id": {
+  "properties": [
+    { "name": "id",
       "type" : "UUID",
       "maxLength" : 36
     },
-    "login": {
+    { "name": "login",
       "type" : "PlainText",
       "maxLength" : 64
     },
-    "password": {
+    { "name": "password",
       "type" : "PlainText",
       "maxLength" : 255
     },
-    "created": {
+    { "name": "created",
       "type" : "Timestamp"
     },
-    "last_login": {
+    { "name": "last_login",
       "type" : "Timestamp"
     },
-    "roles": {
+    {
+      "name": "roles",
       "type" : "PlainText",
       "maxLength" : 255
     }
-  }
+  ]
 }

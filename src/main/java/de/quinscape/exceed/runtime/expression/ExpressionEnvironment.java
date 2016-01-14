@@ -955,7 +955,7 @@ public abstract class ExpressionEnvironment
             throw new ExpressionEnvironmentException(name + ": Invalid map literal");
         }
 
-        Map<Object, Object> map = (Map)data;
+        Map<Object, Object> map = (Map)new HashMap<>();
 
         for (int i=0; i < node.jjtGetNumChildren(); i++)
         {

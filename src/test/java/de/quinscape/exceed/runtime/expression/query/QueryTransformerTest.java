@@ -113,14 +113,14 @@ public class QueryTransformerTest
 
 
         @Override
-        public String toJSON(RuntimeContext runtimeContext, Object domainObject)
+        public String toJSON(Object domainObject)
         {
             return null;
         }
 
 
         @Override
-        public Object toDomainObject(RuntimeContext runtimeContext, String json)
+        public Object toDomainObject(String json)
         {
             return null;
         }
@@ -132,12 +132,11 @@ public class QueryTransformerTest
             DomainType domainType = new DomainType();
             domainType.setName(name);
             domainType.setAnnotation("Test domain type " + name);
-            LinkedHashMap<String, DomainProperty> map = new LinkedHashMap<>();
-            map.put("value", new DomainProperty("value", "PlainText", null, false, false));
-            String prop = name.toLowerCase();
-            map.put(prop, new DomainProperty(prop, "PlainText", null, false, false));
 
-            domainType.setProperties(map);
+            domainType.setProperties(Arrays.asList(
+                new DomainProperty("value", "PlainText", null, false),
+                new DomainProperty(name.toLowerCase(), "PlainText", null, false)
+            ));
             return domainType;
         }
 

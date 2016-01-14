@@ -52,6 +52,7 @@ public class EditorController
         data.put("domainTypes", applicationModel.getDomainTypes());
         data.put("propertyTypes", applicationModel.getPropertyTypes());
         data.put("domainLayout", applicationModel.getDomainLayout());
+        data.put("enums", applicationModel.getEnums());
 
         response.setContentType(ContentType.JSON);
         return JSON.defaultJSON().forValue(data);

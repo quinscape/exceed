@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.service;
 
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.datalist.DataListService;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.DomainServiceImpl;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
@@ -20,31 +21,15 @@ import java.util.Map;
  */
 @Service
 public class DomainServiceFactory
-    implements ApplicationContextAware
-
 {
     private static Logger log = LoggerFactory.getLogger(DomainServiceFactory.class);
 
-
     @Autowired
-    private DSLContext dslContext;
-
-    private ApplicationContext applicationContext;
-
-    private Map<String, PropertyConverter> propertyTypes;
+    private DataListService dataListService;
 
     public DomainService create()
     {
-        return new DomainServiceImpl(propertyTypes);
+        return new DomainServiceImpl(dataListService);
     }
 
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
-
-        propertyTypes = applicationContext.getBeansOfType(PropertyConverter.class);
-
-    }
 }

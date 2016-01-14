@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.config;
 
 import de.quinscape.exceed.domain.tables.pojos.AppUser;
 import de.quinscape.exceed.domain.tables.records.AppUserRecord;
+import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import org.jooq.DSLContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,7 +25,7 @@ import static org.hamcrest.Matchers.*;
     ModelConfiguration.class,
     DomainConfiguration.class,
     TestConfiguration.class,
-    ServiceConfiguration.class
+    ServiceConfiguration.class,
 })
 @Transactional
 public class DomainConfigurationTest

@@ -132,8 +132,7 @@ public class ActionController
     {
         if (DataList.class.isAssignableFrom(inputClass))
         {
-            return runtimeContext.getRuntimeApplication().getDomainService().toDomainObject(runtimeContext,
-                dataJSON);
+            return runtimeContext.getRuntimeApplication().getDomainService().toDomainObject(dataJSON);
         }
         return dataParser.parse(inputClass, dataJSON);
     }

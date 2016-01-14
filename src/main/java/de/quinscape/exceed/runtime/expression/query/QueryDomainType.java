@@ -44,8 +44,8 @@ public class QueryDomainType
 
         joinedFields = new ArrayList<>();
 
-        Map<String, DomainProperty> properties = this.getType().getProperties();
-        for (DomainProperty domainProperty : properties.values())
+        List<DomainProperty> properties = this.getType().getProperties();
+        for (DomainProperty domainProperty : properties)
         {
             DataField dataField = new DataField(this, domainProperty);
             joinedFields.add(dataField);
@@ -173,8 +173,8 @@ public class QueryDomainType
                     if (dataField != null)
                     {
                         throw new AmbiguousFieldReferenceException("Ambiguous field reference '" + field + "': exists at least in " +
-                            "both "
-                            + dataField.getQueryDomainType().getType() + " and " + current.getType());
+                            "both\n"
+                            + dataField.getQueryDomainType().getType() + "\nand\n" + current.getType());
                     }
 
                     dataField = f;

@@ -11,9 +11,9 @@ public interface DomainService
 {
     void init(RuntimeApplication runtimeApplication, String schema);
 
-    String toJSON(RuntimeContext runtimeContext, Object domainObject);
+    String toJSON(Object domainObject);
 
-    Object toDomainObject(RuntimeContext runtimeContext, String json);
+    Object toDomainObject(String json);
 
     DomainType getDomainType(String name);
 

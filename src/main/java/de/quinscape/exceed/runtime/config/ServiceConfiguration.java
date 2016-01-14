@@ -7,8 +7,10 @@ import de.quinscape.exceed.runtime.component.QueryDataProvider;
 import de.quinscape.exceed.runtime.component.QueryExecutor;
 import de.quinscape.exceed.runtime.controller.ActionRegistry;
 import de.quinscape.exceed.runtime.controller.DefaultActionRegistry;
+import de.quinscape.exceed.runtime.datalist.DataListService;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.JOOQQueryExecutor;
+import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
 import de.quinscape.exceed.runtime.i18n.DefaultTranslator;
 import de.quinscape.exceed.runtime.i18n.Translator;
@@ -108,5 +110,18 @@ public class ServiceConfiguration
     public Translator translator()
     {
         return new DefaultTranslator();
+    }
+
+    @Bean
+    public DataListService dataListService(ApplicationContext applicationContext)
+    {
+        if (applicationContext == null)
+        {
+            throw new IllegalArgumentException("applicationContext can't be null");
+        }
+
+
+        Map<String, PropertyConverter> propertyTypes = applicationContext.getBeansOfType(PropertyConverter.class);
+        return new DataListService(propertyTypes);
     }
 }

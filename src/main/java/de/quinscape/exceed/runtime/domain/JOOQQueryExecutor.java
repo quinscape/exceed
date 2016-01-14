@@ -46,7 +46,7 @@ public class JOOQQueryExecutor
 
 
     @Override
-    public DataList<DomainObject> execute(QueryDefinition queryDefinition)
+    public DataList execute(QueryDefinition queryDefinition)
     {
         QueryDomainType queryDomainType = queryDefinition.getQueryDomainType();
 
@@ -138,7 +138,7 @@ public class JOOQQueryExecutor
         {
             rowCount = rows.size();
         }
-        return new DataList<DomainObject>(queryDefinition, rows, rowCount);
+        return new DataList(queryDefinition, rows, rowCount);
     }
 
 

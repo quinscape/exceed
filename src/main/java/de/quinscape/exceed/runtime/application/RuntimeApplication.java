@@ -142,7 +142,7 @@ public class RuntimeApplication
         ViewData viewData = viewDataService.prepareView(runtimeContext, view);
 
         ModelMap model = runtimeContext.getModel();
-        model.put("viewData", domainService.toJSON(runtimeContext, viewData));
+        model.put("viewData", domainService.toJSON( viewData));
         model.put("viewModel", view.getCachedJSON());
     }
 
