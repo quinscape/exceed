@@ -49,7 +49,7 @@ var BABEL_PLUGINS = [
     "check-es2015-constants", "transform-es2015-block-scoping",
 
     // if (process.env.NODE_ENV !== "production")
-    "transform-inline-environment-variables",
+    "transform-node-env-inline",
 
     "transform-es2015-arrow-functions",
 
@@ -69,6 +69,7 @@ function bundle(watch, cb) {
     var bro;
 
     var compress = !process.env.NO_UGLIFY;
+    var productionBuild = process.env.NODE_ENV === "production";
 
     if (watch) {
         bro = watchify(browserify(MAIN_FILE,
@@ -86,6 +87,11 @@ function bundle(watch, cb) {
         bro = browserify(MAIN_FILE, {
             debug: true
         });
+    }
+
+    if (productionBuild)
+    {
+        bro.exclude("./src/main/js/editor/InPageEditor.js");
     }
 
     bro.transform(

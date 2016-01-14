@@ -20,7 +20,7 @@
     "babel-plugin-transform-es2015-arrow-functions": "^6.3.13",
     "babel-plugin-transform-es2015-block-scoping": "^6.3.13",
     "babel-plugin-transform-es2015-computed-properties": "^6.3.13",
-    "babel-plugin-transform-inline-environment-variables": "^6.3.13",
+    "babel-plugin-transform-node-env-inline": "^6.3.13",
     "babel-plugin-transform-react-display-name": "^6.3.13",
     "babel-plugin-transform-react-jsx": "^6.3.13",
     "babel-plugin-transform-strict-mode": "^6.3.13",

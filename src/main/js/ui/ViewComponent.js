@@ -3,7 +3,11 @@ var extend = require("extend");
 
 var security = require("../service/security");
 
-var InPageEditor = require("../editor/InPageEditor");
+var InPageEditor;
+if (process.env.NODE_ENV !== "production")
+{
+    InPageEditor = require("../editor/InPageEditor");
+}
 
 var Alert = require("../ui/Alert");
 
