@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.application;
 
-import de.quinscape.exceed.model.Application;
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.change.CodeChange;
 import de.quinscape.exceed.model.change.Shutdown;
@@ -49,7 +49,7 @@ public class RuntimeApplication
 
     private final ServletContext servletContext;
 
-    private final Application applicationModel;
+    private final ApplicationModel applicationModel;
 
     private final ViewDataService viewDataService;
 
@@ -91,7 +91,7 @@ public class RuntimeApplication
         this.resourceLoader = resourceLoader;
 
         //boolean production = ApplicationStatus.from(state) == ApplicationStatus.PRODUCTION;
-        applicationModel = new Application();
+        applicationModel = new ApplicationModel();
 
         domainService = domainServiceFactory.create();
         modelCompositionService.compose(this, resourceLoader.getResourceLocations(), applicationModel);
@@ -115,7 +115,7 @@ public class RuntimeApplication
     }
 
 
-    public Application getApplicationModel()
+    public ApplicationModel getApplicationModel()
     {
         return applicationModel;
     }
@@ -230,7 +230,7 @@ public class RuntimeApplication
     }
 
 
-    private void collectComponentStyles(Application applicationModel, StringBuilder out)
+    private void collectComponentStyles(ApplicationModel applicationModel, StringBuilder out)
     {
         Set<String> usedComponents = findUsedComponents(applicationModel);
         for (String name : usedComponents)
@@ -260,7 +260,7 @@ public class RuntimeApplication
     }
 
 
-    private Set<String> findUsedComponents(Application applicationModel)
+    private Set<String> findUsedComponents(ApplicationModel applicationModel)
     {
         Set<String> usedComponents = new HashSet<>();
         for (View view : applicationModel.getViews().values())

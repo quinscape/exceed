@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.controller;
 
-import de.quinscape.exceed.model.Application;
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.Layout;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.service.ApplicationService;
@@ -48,7 +48,7 @@ public class EditorController
 
         Map<String, Object> data = new HashMap<>();
 
-        Application applicationModel = runtimeApplication.getApplicationModel();
+        ApplicationModel applicationModel = runtimeApplication.getApplicationModel();
         data.put("domainTypes", applicationModel.getDomainTypes());
         data.put("propertyTypes", applicationModel.getPropertyTypes());
         data.put("domainLayout", applicationModel.getDomainLayout());
@@ -73,7 +73,7 @@ public class EditorController
 
         Map<String,Object> data = JSONParser.defaultJSONParser().parse(Map.class, json);
 
-        Application applicationModel = runtimeApplication.getApplicationModel();
+        ApplicationModel applicationModel = runtimeApplication.getApplicationModel();
         synchronized (applicationModel)
         {
             Layout domainLayout = applicationModel.getDomainLayout();

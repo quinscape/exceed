@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.model;
 
-import de.quinscape.exceed.model.Application;
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.Layout;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
@@ -60,7 +60,7 @@ public class ModelCompositionService
 
 
     public void compose(RuntimeApplication runtimeApplication, Map<String, ResourceLocation> resourceLocations,
-                        Application applicationModel)
+                        ApplicationModel applicationModel)
     {
 
         for (ResourceLocation resource : resourceLocations.values())
@@ -70,7 +70,7 @@ public class ModelCompositionService
     }
 
 
-    public TopLevelModel update(RuntimeApplication runtimeApplication, Application applicationModel, AppResource
+    public TopLevelModel update(RuntimeApplication runtimeApplication, ApplicationModel applicationModel, AppResource
         resource)
     {
         String path = resource.getRelativePath();
@@ -94,7 +94,7 @@ public class ModelCompositionService
         {
             if (path.equals(APP_MODEL_NAME))
             {
-                Application newAppModel = create(Application.class, json, APP_MODEL_NAME);
+                ApplicationModel newAppModel = create(ApplicationModel.class, json, APP_MODEL_NAME);
                 applicationModel.merge(newAppModel);
                 return applicationModel;
             }

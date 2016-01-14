@@ -1,5 +1,6 @@
 package de.quinscape.exceed.model;
 
+import de.quinscape.exceed.model.domain.DomainPropertyServiceModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.model.domain.PropertyType;
@@ -19,16 +20,19 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @see de.quinscape.exceed.runtime.model.ModelCompositionService
  */
-public class Application
+public class ApplicationModel
     extends TopLevelModel
 {
     private RoutingTable routingTable;
 
     private Map<String, DomainType> domainTypes = new HashMap<>();
 
+
     private Map<String, PropertyType> propertyTypes = new HashMap<>();
 
-    private Map<String, EnumModel> enums;
+    private Map<String, EnumModel> enums = new HashMap<>();
+
+    private Map<String, DomainPropertyServiceModel> domainServices = new HashMap<>();
 
     private Map<String, View> views = new HashMap<>();
 
@@ -41,7 +45,7 @@ public class Application
     private Layout domainLayout;
 
 
-    public Application()
+    public ApplicationModel()
     {
         domainLayout = new Layout();
         domainLayout.setName("domain");
@@ -154,7 +158,7 @@ public class Application
      *
      * @param applicationModel application model
      */
-    public void merge(Application applicationModel)
+    public void merge(ApplicationModel applicationModel)
     {
         this.styleSheets = applicationModel.styleSheets;
         this.schema = applicationModel.schema;
