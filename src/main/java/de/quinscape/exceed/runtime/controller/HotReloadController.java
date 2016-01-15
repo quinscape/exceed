@@ -4,6 +4,7 @@ import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.runtime.service.ApplicationService;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +66,15 @@ public class HotReloadController
         response.setContentLength(data.length);
 
         ServletOutputStream os = response.getOutputStream();
-        os.write(data);
-        os.flush();
+        try
+        {
+            os.write(data);
+            os.flush();
+        }
+        catch(IOException e)
+        {
+            log.debug("Error writing response", e);
+            IOUtils.closeQuietly(os);
+        }
     }
 }
