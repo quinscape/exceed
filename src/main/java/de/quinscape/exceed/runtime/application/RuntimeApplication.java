@@ -317,8 +317,9 @@ public class RuntimeApplication
                     notifyChange(model);
                 }
             }
-            else if (modulePath.endsWith(FileExtension.JS))
+            else if (modulePath.equals("/resources/js/main.js"))
             {
+                log.debug("Reload js: {}", modulePath);
                 notifyCodeChange();
             }
         }
