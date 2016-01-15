@@ -81,6 +81,8 @@ public class ModelCompositionService
 
         if (path.endsWith(FileExtension.JS))
         {
+            log.info("CODE CHANGE: {}", path);
+
             return CodeChange.INSTANCE;
         }
 
@@ -146,10 +148,10 @@ public class ModelCompositionService
             else if (path.equals(DOMAIN_LAYOUT_NAME))
             {
                 log.debug("Reading {} as Domain Layout", path);
-                Layout view = create(Layout.class, json, path);
+                Layout layout = create(Layout.class, json, path);
 
-                applicationModel.setDomainLayout(view);
-                return view;
+                applicationModel.setDomainLayout(layout);
+                return layout;
 
             }
             else
