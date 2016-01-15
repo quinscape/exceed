@@ -88,14 +88,12 @@ public class ViewDataService
                         prepareRecursive(context, kid);
                     }
                 }
+                return;
             }
         }
-        else
+        for (ComponentModel kid : element.children())
         {
-            for (ComponentModel kid : element.children())
-            {
-                prepareRecursive(context, kid);
-            }
+            prepareRecursive(context, kid);
         }
     }
 }
