@@ -15,7 +15,6 @@ var components = require("../service/component").getComponents();
 
 var expressionRegEx = /^\{\s*(.*?)\s*}$/;
 
-
 /**
  * A generic view component that renders a component tree based on a JSON view notation.
  *
@@ -164,18 +163,27 @@ var ViewComponent = React.createClass({
         var model = this.props.model;
 
         return (
-            <div className="container-fluid">
-                <div className="row">
-                    <div className="col-md-12">
-                        { this.renderComponent(model.root, this.props.componentData, 0, null) }
-                    </div>
-                </div>
-                { security.hasRole("ROLE_EDITOR") && <InPageEditor model={ model } activeLink={ this.props.activeLink } /> }
+            <div>
+                { this.renderComponent(model.root, this.props.componentData, 0, null) }
+                { security.hasRole("ROLE_EDITOR") && InPageEditor && <InPageEditor model={ model } activeLink={ this.props.activeLink } /> }
             </div>
         );
     }
 });
 
+/**
+ * Expression evaluation wrapper function.
+ *
+ * Evaluates the given expression value with the given parameters or returns it as-is if it's not an expression string.
+ *
+ * @param value     attribute value or component child value
+ * @param context   context provided by the parent component or null
+ * @param model     component model
+ * @param props     component props
+ * @param vars      component vars
+ *
+ * @returns {*} evaluated expression or value as-is.
+ */
 function evaluateExpression(value, context, model, props, vars)
 {
     var m;
@@ -186,6 +194,12 @@ function evaluateExpression(value, context, model, props, vars)
     return value;
 }
 
+/**
+ * Returns true if the given component name is a valid react component name.
+ *
+ * @param component
+ * @returns {boolean}
+ */
 function isComponent(component)
 {
     return component <= 'Z';

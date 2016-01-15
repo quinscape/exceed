@@ -101,7 +101,11 @@ function bundle(watch, cb) {
  	        plugins: BABEL_PLUGINS
         }))
         .transform("bulkify")
-        .transform("browserify-shim");
+        .transform("browserify-shim", {
+            // we need browserify-shim to be global so that it will correctly replace our shimed scripts in the code
+            // we include from libraries like react-bootstrap that have them as peer dependencies.
+            global: true
+        });
 
     function rebundle(bundler) {
         return bundler.bundle()
