@@ -3,9 +3,10 @@
 package de.quinscape.exceed.expression;
 
 public
-class ASTLogicalAnd extends SimpleNode {
+class ASTLogicalAnd extends OperatorNode {
   public ASTLogicalAnd(int id) {
     super(id);
+    setOperator(Operator.AND);
   }
 
   public ASTLogicalAnd(ExpressionParser p, int id) {

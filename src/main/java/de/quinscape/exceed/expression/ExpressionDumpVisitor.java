@@ -49,10 +49,10 @@ public class ExpressionDumpVisitor
 {
     private int indent = 0;
 
-    private StringBuilder buf;
+    protected StringBuilder buf = new StringBuilder();
 
 
-    private void indent()
+    protected void indent()
     {
         for (int i = 0; i < indent; ++i)
         {
@@ -201,6 +201,45 @@ public class ExpressionDumpVisitor
 
     @Override
     public Object visit(ASTPropertyChain node, Object data)
+    {
+        indent();
+        buf.append(node);
+        ++indent;
+        node.childrenAccept(this, data);
+        --indent;
+
+        return data;
+    }
+
+
+    @Override
+    public Object visit(ASTComputedPropertyChain node, Object data)
+    {
+        indent();
+        buf.append(node);
+        ++indent;
+        node.childrenAccept(this, data);
+        --indent;
+
+        return data;
+    }
+
+
+    @Override
+    public Object visit(ASTNot node, Object data)
+    {
+        indent();
+        buf.append(node);
+        ++indent;
+        node.childrenAccept(this, data);
+        --indent;
+
+        return data;
+    }
+
+
+    @Override
+    public Object visit(ASTNegate node, Object data)
     {
         indent();
         buf.append(node);

@@ -252,8 +252,26 @@ void DivisionExpression() :
 }
 {
   (
-    PropertyChainExpression() ( "/" PropertyChainExpression() )*
+    NotExpression() ( "/" NotExpression() )*
   ) #Div(>1)
+}
+
+/** A Not Expression. */
+void NotExpression() :
+{
+    Token op = null;
+}
+{
+    (( op = "!" )? NegateExpression() ) #Not(op != null)
+}
+
+/** A Negate Expression. */
+void NegateExpression() :
+{
+    Token op = null;
+}
+{
+    (( op = "-" )? PropertyChainExpression() ) #Negate(op != null)
 }
 
 /** A Property Access. */
@@ -261,12 +279,28 @@ void PropertyChainExpression() : {}
 {
     (
         // property access and methods
-        UnaryExpression() ("." UnaryExpression() )*
+        ComputedPropertyChainExpression() ("." PropertyAccessor() )*
     ) #PropertyChain(>1)
 }
 
+void PropertyAccessor() : {}
+{
+    LOOKAHEAD(2) Function() |
+    Identifier()
+}
+
+/** A Property Access. */
+void ComputedPropertyChainExpression() : {}
+{
+    (
+        // property access and methods
+        ValueExpression() ("[" Expr() "]" )*
+    ) #ComputedPropertyChain(>1)
+}
+
+
 /** A Unary Expression. */
-void UnaryExpression() : {}
+void ValueExpression() : {}
 {
     "(" Expression() ")" |
     LOOKAHEAD(2) Function() |

@@ -13,16 +13,19 @@ public interface ExpressionParserTreeConstants
   public int JJTSUB = 7;
   public int JJTMULT = 8;
   public int JJTDIV = 9;
-  public int JJTPROPERTYCHAIN = 10;
-  public int JJTIDENTIFIER = 11;
-  public int JJTFUNCTION = 12;
-  public int JJTINTEGER = 13;
-  public int JJTSTRING = 14;
-  public int JJTMAP = 15;
-  public int JJTMAPENTRY = 16;
-  public int JJTFLOAT = 17;
-  public int JJTBOOL = 18;
-  public int JJTNULL = 19;
+  public int JJTNOT = 10;
+  public int JJTNEGATE = 11;
+  public int JJTPROPERTYCHAIN = 12;
+  public int JJTCOMPUTEDPROPERTYCHAIN = 13;
+  public int JJTIDENTIFIER = 14;
+  public int JJTFUNCTION = 15;
+  public int JJTINTEGER = 16;
+  public int JJTSTRING = 17;
+  public int JJTMAP = 18;
+  public int JJTMAPENTRY = 19;
+  public int JJTFLOAT = 20;
+  public int JJTBOOL = 21;
+  public int JJTNULL = 22;
 
 
   public String[] jjtNodeName = {
@@ -36,7 +39,10 @@ public interface ExpressionParserTreeConstants
     "Sub",
     "Mult",
     "Div",
+    "Not",
+    "Negate",
     "PropertyChain",
+    "ComputedPropertyChain",
     "Identifier",
     "Function",
     "Integer",
@@ -48,4 +54,4 @@ public interface ExpressionParserTreeConstants
     "Null",
   };
 }
-/* JavaCC - OriginalChecksum=2db7e5c7b66221ad6384882a3374b54d (do not edit this line) */
+/* JavaCC - OriginalChecksum=a24920f7765225796aead15e3158ab69 (do not edit this line) */
