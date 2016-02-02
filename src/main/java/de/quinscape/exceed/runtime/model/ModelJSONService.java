@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.model;
 
 import de.quinscape.exceed.model.Model;
+import de.quinscape.exceed.model.view.View;
 
 /**
  * Converts model classes to JSON and back.
@@ -22,17 +23,13 @@ public interface ModelJSONService
     String toJSON(Object model);
 
     /**
-     * Converts the given model to an external cleaned format.
+     * Converts the given view model to JSON.
      *
-     * Some model properties are only needed for the internal operation of the server-side application engine and
-     * communication with the client-side code.
+     * @param model     view model
      *
-     * This method returns JSON without those properties.
-     *
-     * @param model     model or collection of models
      * @return  JSON string
      */
-    String toExternalJSON(Object model);
+    String toJSON(View model, JSONFormat jsonFormat);
 
     /**
      * Converts the given JSON to the corresponding model.

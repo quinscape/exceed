@@ -1,11 +1,10 @@
 package de.quinscape.exceed.model.view;
 
 import de.quinscape.exceed.expression.ParseException;
-import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONParameters;
 import org.svenson.JSONProperty;
-import org.svenson.JSONable;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -61,17 +60,13 @@ public class Attributes
                 attrValue = new AttributeValue(AttributeValueType.STRING, value);
             }
         }
-        else if (value instanceof Long || value instanceof Integer)
+        else if (value instanceof Long || value instanceof Integer || value instanceof Boolean)
         {
-            attrValue = new AttributeValue(AttributeValueType.NUMBER, value);
+            attrValue = new AttributeValue(AttributeValueType.STRING,  String.valueOf(value));
         }
-        else if (value instanceof Boolean)
+        else if (value instanceof Collection || value instanceof Map)
         {
-            attrValue = new AttributeValue(AttributeValueType.BOOLEAN, value);
-        }
-        else if (value instanceof Map)
-        {
-            attrValue = new AttributeValue(AttributeValueType.COMPLEX, value);
+            throw new IllegalArgumentException("Invalid complex attribute value: " + value);
         }
         else
         {
@@ -83,16 +78,6 @@ public class Attributes
     public void setAttribute(String name, String value) throws ParseException
     {
         setAttribute(name, convertValue(value));
-    }
-
-    public void setAttribute(String name, int value) throws ParseException
-    {
-        setAttribute(name, new AttributeValue(AttributeValueType.NUMBER, value));
-    }
-
-    public void setAttribute(String name, boolean value) throws ParseException
-    {
-        setAttribute(name, new AttributeValue(AttributeValueType.BOOLEAN, value));
     }
 
     public void setAttribute(String name, Object value) throws ParseException

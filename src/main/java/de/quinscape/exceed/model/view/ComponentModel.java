@@ -1,6 +1,7 @@
 package de.quinscape.exceed.model.view;
 
 import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.util.Util;
 import org.svenson.JSON;
@@ -13,6 +14,9 @@ import java.util.List;
 
 public class ComponentModel
 {
+
+    public static final String STRING_MODEL_NAME = "[String]";
+
     private String name;
 
     private Attributes attrs;
@@ -51,13 +55,7 @@ public class ComponentModel
             Object o = kids.get(i);
             if (o instanceof String)
             {
-                ComponentModel model = new ComponentModel();
-                model.setName("[String]");
-                Attributes attrs = new Attributes(null);
-                attrs.setAttribute("value", o);
-                model.setAttrs(attrs);
-
-                kids.set(i, model);
+                kids.set(i, ComponentModel.forString((String)o));
             }
             else if (!(o instanceof ComponentModel))
             {
@@ -104,6 +102,11 @@ public class ComponentModel
 
     public AttributeValue getAttribute(String key)
     {
+        if (attrs == null)
+        {
+            return null;
+        }
+
         return attrs.getAttribute(key);
     }
 
@@ -132,11 +135,7 @@ public class ComponentModel
                 AttributeValue attribute = attrs.getAttribute(name);
                 AttributeValueType type = attribute.getType();
                 Object value = attribute.getValue();
-                if (type == AttributeValueType.COMPLEX)
-                {
-                    JSON.defaultJSON().dumpObject(sb, value);
-                }
-                else if (type == AttributeValueType.STRING)
+                if (type == AttributeValueType.STRING)
                 {
                     JSON.defaultJSON().quote(sb, (String) value);
                 }
@@ -193,6 +192,37 @@ public class ComponentModel
     public int hashCode()
     {
         return Util.hashcodeOver(getComponentId());
+    }
+
+
+    /**
+     * Creates a model wrapper for a string or expression value that can be used as a component child in view models.
+     *
+     * @param value String or expression content
+     *
+     * @return component with {@link #STRING_MODEL_NAME} as name and the content as "value" attribute.
+     */
+    public static ComponentModel forString(String value)
+    {
+        try
+        {
+            ComponentModel model = new ComponentModel();
+            model.setName(STRING_MODEL_NAME);
+            Attributes attrs = new Attributes(null);
+            attrs.setAttribute("value", value);
+            model.setAttrs(attrs);
+
+            return model;
+        }
+        catch (ParseException e)
+        {
+            throw new ExceedRuntimeException("Error creating string model", e);
+        }
+    }
+
+    public static boolean isTextNode(ComponentModel componentModel)
+    {
+        return componentModel instanceof TextNode;
     }
 }
 

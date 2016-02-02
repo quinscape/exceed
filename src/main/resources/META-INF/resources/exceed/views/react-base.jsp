@@ -1,18 +1,8 @@
-<%@ page import="org.svenson.JSON" %>
-<%@page pageEncoding="UTF-8"%>
-<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<%@taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
-<sec:authentication var="user" property="principal" />
-<c:choose>
-    <c:when test="${user != 'anonymousUser'}">
-        <c:set var="userName" value="${user.username}"/>
-    </c:when>
-    <c:otherwise>
-        <c:set var="userName" value="Anonymous"/>
-    </c:otherwise>
-</c:choose>
-<!DOCTYPE html>
+<%@page pageEncoding="UTF-8"
+%><%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"
+%><%@taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"
+%><%@taglib prefix="sec" uri="http://www.springframework.org/security/tags"
+%><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -36,13 +26,14 @@
     <script src="${contextPath}/res/${appName}/js/${applicationScope.reactVersion}"></script>
     <script src="${contextPath}/res/${appName}/js/${applicationScope.reactDOMVersion}"></script>
     <script src="${contextPath}/res/${appName}/js/main.js"></script>
-    <script src="${contextPath}/app.js"></script>
 </head>
-<body data-context-path="${contextPath}" data-app-name="${appName}" data-roles="${user != 'anonymousUser' ? user.roles : 'ANONYMOUS'}">
+<body data-context-path="${contextPath}" data-app-name="${appName}" data-roles="${userRoles}">
 <div class="btn-toolbar exceed-toolbar text-right">
     <sec:authorize  access="hasRole('ROLE_EDITOR')">
         <a class="btn btn-link btn-default" href="${editUrl}">${editText}</a>
     </sec:authorize>
+</div>
+<div id="errors" class="bg-danger hidden">
 </div>
 <div id="root">
 </div>
@@ -51,6 +42,9 @@
 </script>
 <script id="root-data" type="x-ceed/view-data">
     ${viewData}
+</script>
+<script id="system-info" type="x-ceed/system-info">
+    ${systemInfo}
 </script>
 <footer>
     <c:choose>

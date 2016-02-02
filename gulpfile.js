@@ -36,6 +36,10 @@ var sourcemaps = require("gulp-sourcemaps");
 var source = require("vinyl-source-stream");
 var babelify = require("babelify");
 
+var PRODUCTION = process.env.NODE_ENV === "production";
+
+var REACT_CATCH_ERRORS = !PRODUCTION && !process.env.NO_CATCH_ERRORS;
+
 var BABEL_PLUGINS = [
 
     // JSX support
@@ -53,9 +57,12 @@ var BABEL_PLUGINS = [
 
     "transform-es2015-arrow-functions",
 
+    "transform-es2015-modules-commonjs",
+
     // auto "use strict";
     "transform-strict-mode"
 ];
+
 
 gulp.task("build", function(cb) {
     bundle(false, cb);
@@ -69,13 +76,13 @@ function bundle(watch, cb) {
     var bro;
 
     var compress = !process.env.NO_UGLIFY;
-    var productionBuild = process.env.NODE_ENV === "production";
 
     if (watch) {
         bro = watchify(browserify(MAIN_FILE,
             // Assigning debug to have sourcemaps
             extend(watchify.args, {
-                debug: true
+                debug: true,
+                fullPaths: true
             })));
         bro.on("update", function() {
             rebundle(bro);
@@ -85,20 +92,63 @@ function bundle(watch, cb) {
         });
     } else {
         bro = browserify(MAIN_FILE, {
-            debug: true
+            debug: true,
+            fullPaths: true
         });
     }
 
-    if (productionBuild)
+    if (PRODUCTION)
     {
         bro.exclude("./src/main/js/editor/InPageEditor.js");
     }
+
+    //// TODO: expose services for project components / actions
+    //bro.require("./src/service/services", {
+    //    expose: "exceed-services"
+    //});
+
 
     bro.transform(
         // Babel js transpiler
         babelify.configure({
             sourceRoot: path.resolve("./src/main/js"),
- 	        plugins: BABEL_PLUGINS
+
+            // we exclude all files *.es5.js from babel. Mostly to escape a cyclic transformation issue in
+            // react-transform-catch-errors. Might also be useful otherwise, hence the wildcard.
+            ignore: [ "*.es5.js" ],
+ 	        plugins: REACT_CATCH_ERRORS ?
+
+                // Conditionally add react-transfro
+                BABEL_PLUGINS.concat(
+
+                [["react-transform", {
+                    "transforms": [{
+                        "transform": "react-transform-catch-errors",
+                        // now go the imports!
+                        "imports": [
+
+                            // the first import is your React distribution
+                            // (if you use React Native, pass "react-native" instead)
+
+                            "react",
+
+                            // the second import is the React component to render error
+                            // (it can be a local path too, like "./src/ErrorReporter")
+
+                            path.resolve("./src/main/js/ui/ErrorReport.es5.js")
+                            // the third import is OPTIONAL!
+                            // when specified, its export is used as options to the reporter.
+                            // see specific reporter's docs for the options it needs.
+
+                            // it will be imported from different files so it either has to be a Node module
+                            // or a file that you configure with Webpack/Browserify/SystemJS to resolve correctly.
+                            // for example, see https://github.com/gaearon/babel-plugin-react-transform/pull/28#issuecomment-144536185
+
+                            // , "my-reporter-options"
+                        ]
+                    }]
+                }]]
+            ) : BABEL_PLUGINS
         }))
         .transform("bulkify")
         .transform("browserify-shim", {
@@ -116,9 +166,12 @@ function bundle(watch, cb) {
             .pipe(sourcemaps.init({
                 loadMaps: true
             }))
-            .pipe(gulpif(compress, streamify(uglify(/*{
+            .pipe(gulpif(compress, streamify(uglify(
+                /*{
+                output: {
+                    beautify: true
+                },
                 mangle: {
-                    // TODO: Remember to update this when the js expression environments change
                     except: ['none']
                 }
             }*/))))

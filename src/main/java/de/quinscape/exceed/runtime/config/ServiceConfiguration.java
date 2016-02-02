@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,9 +41,6 @@ public class ServiceConfiguration
 {
     @Autowired
     private ComponentRegistry componentRegistry;
-
-    @Autowired
-    private DSLContext dslContext;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -70,13 +68,13 @@ public class ServiceConfiguration
     private final static String DEFAULT_QUERY_EXECUTOR = "jooqQueryExecutor";
 
     @Bean(name = DEFAULT_QUERY_EXECUTOR)
-    public JOOQQueryExecutor defaultQueryExecutor()
+    public JOOQQueryExecutor defaultQueryExecutor(DSLContext dslContext)
     {
         return new JOOQQueryExecutor(dslContext, new DefaultNamingStrategy());
     }
 
     @Bean
-    public QueryDataProvider defaultDataProvider(ApplicationContext applicationContext)
+    public QueryDataProvider defaultDataProvider(ApplicationContext applicationContext, DSLContext dslContext)
     {
         Map<String, QueryExecutor> executors = applicationContext.getBeansOfType(QueryExecutor.class);
         return new QueryDataProvider(dslContext, new QueryTransformer(), executors, DEFAULT_QUERY_EXECUTOR);
@@ -93,11 +91,16 @@ public class ServiceConfiguration
             ActionModel actionModel = null;
             try
             {
-                actionModel = (ActionModel) action.getActionModelClass().newInstance();
+                Class actionModelClass = action.getActionModelClass();
+                if (actionModelClass == null)
+                {
+                    throw new IllegalStateException(action + " returns invalid action model class null");
+                }
+                actionModel = (ActionModel) actionModelClass.newInstance();
             }
             catch (Exception e)
             {
-                throw new ExceedRuntimeException("Error creating action model for " + action );
+                throw new ExceedRuntimeException("Error creating empty action model for " + action, e);
             }
             // .. and register the action under the name provided by the model.
             actions.put(actionModel.getAction(), action);

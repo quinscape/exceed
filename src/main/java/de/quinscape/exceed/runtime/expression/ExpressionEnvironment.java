@@ -3,6 +3,7 @@ package de.quinscape.exceed.runtime.expression;
 import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.expression.ASTAdd;
 import de.quinscape.exceed.expression.ASTBool;
+import de.quinscape.exceed.expression.ASTComputedPropertyChain;
 import de.quinscape.exceed.expression.ASTDiv;
 import de.quinscape.exceed.expression.ASTEquality;
 import de.quinscape.exceed.expression.ASTExpression;
@@ -15,6 +16,8 @@ import de.quinscape.exceed.expression.ASTLogicalOr;
 import de.quinscape.exceed.expression.ASTMap;
 import de.quinscape.exceed.expression.ASTMapEntry;
 import de.quinscape.exceed.expression.ASTMult;
+import de.quinscape.exceed.expression.ASTNegate;
+import de.quinscape.exceed.expression.ASTNot;
 import de.quinscape.exceed.expression.ASTNull;
 import de.quinscape.exceed.expression.ASTPropertyChain;
 import de.quinscape.exceed.expression.ASTRelational;
@@ -195,7 +198,6 @@ public abstract class ExpressionEnvironment
      *
      * @param kid           current child
      * @param chainObject   current property chain object
-     * @param index         index of the current child within the property chain
      *
      * @return  new / changed property chain object
      */
@@ -987,4 +989,70 @@ public abstract class ExpressionEnvironment
 
         return data;
     }
+
+
+    @Override
+    public Object visit(ASTNot node, Object data)
+    {
+        Object operand = node.jjtGetChild(0).jjtAccept(this, null);
+
+        if (operand instanceof Boolean)
+        {
+            return !(Boolean) operand;
+        }
+        else if (operand instanceof Number)
+        {
+            return ((Number) operand).doubleValue() == 0;
+        }
+        else if (operand instanceof String)
+        {
+            return ((String) operand).length() == 0;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+
+    @Override
+    public Object visit(ASTNegate node, Object data)
+    {
+        Object operand = node.jjtGetChild(0).jjtAccept(this, null);
+
+        if (operand instanceof Boolean)
+        {
+            return -((Boolean) operand ? 1: 0);
+        }
+        if (operand instanceof Integer)
+        {
+            return -((Integer) operand);
+        }
+        else if (operand instanceof Long)
+        {
+            return -((Long) operand);
+        }
+        else if (operand instanceof Double)
+        {
+            return -((Double) operand);
+        }
+        else
+        {
+            return Double.NaN;
+        }
+    }
+
+
+    @Override
+    public Object visit(ASTComputedPropertyChain node, Object data)
+    {
+        Object chainObject = null;
+        for (int i = 0; i < node.jjtGetNumChildren(); i++)
+        {
+            Node kid = node.jjtGetChild(i);
+            chainObject = kid.jjtAccept(this, chainObject);
+        }
+        return chainObject;
+    }
+
 }

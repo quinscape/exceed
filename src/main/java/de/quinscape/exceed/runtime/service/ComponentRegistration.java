@@ -20,7 +20,7 @@ public class ComponentRegistration
     private final DataProvider dataProvider;
 
 
-    ComponentRegistration(String componentName, ComponentDescriptor descriptor, String styles,
+    public ComponentRegistration(String componentName, ComponentDescriptor descriptor, String styles,
                           DataProvider dataProvider)
     {
         if (componentName == null)

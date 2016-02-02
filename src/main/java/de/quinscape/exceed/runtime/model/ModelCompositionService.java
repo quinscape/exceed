@@ -4,6 +4,7 @@ import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.Layout;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.VersionedModel;
 import de.quinscape.exceed.model.change.CodeChange;
 import de.quinscape.exceed.model.change.StyleChange;
 import de.quinscape.exceed.model.domain.DomainType;
@@ -18,6 +19,7 @@ import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
+import de.quinscape.exceed.runtime.util.ComponentUtil;
 import de.quinscape.exceed.runtime.util.FileExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class ModelCompositionService
@@ -49,23 +52,26 @@ public class ModelCompositionService
 
     private static Logger log = LoggerFactory.getLogger(ModelCompositionService.class);
 
-    @Autowired
     private ModelJSONService modelJSONService;
+
+    @Autowired
+    public void setModelJSONService(ModelJSONService modelJSONService)
+    {
+        this.modelJSONService = modelJSONService;
+    }
 
     @Autowired
     private ComponentRegistry componentRegistry;
 
-    @Autowired
-    private QueryTransformer queryTransformer;
-
-
     public void compose(RuntimeApplication runtimeApplication, Map<String, ResourceLocation> resourceLocations,
                         ApplicationModel applicationModel)
     {
-
         for (ResourceLocation resource : resourceLocations.values())
         {
-            update(runtimeApplication, applicationModel, resource.getHighestPriorityResource());
+            if (resource.getRelativePath().endsWith(FileExtension.JSON))
+            {
+                updateInternal(runtimeApplication, applicationModel, resource.getHighestPriorityResource());
+            }
         }
     }
 
@@ -74,23 +80,20 @@ public class ModelCompositionService
         resource)
     {
         String path = resource.getRelativePath();
-        if (path.endsWith(FileExtension.CSS))
-        {
-            return StyleChange.INSTANCE;
-        }
-
-        if (path.endsWith(FileExtension.JS))
-        {
-            log.info("CODE CHANGE: {}", path);
-
-            return CodeChange.INSTANCE;
-        }
 
         if (!path.endsWith(FileExtension.JSON))
         {
-            return null;
+            throw new IllegalArgumentException(resource + " is not a JSON resource");
         }
 
+        return updateInternal(runtimeApplication, applicationModel, resource);
+    }
+
+
+    private TopLevelModel updateInternal(RuntimeApplication runtimeApplication, ApplicationModel applicationModel,
+                                         AppResource resource)
+    {
+        String path = resource.getRelativePath();
         String json = new String(resource.read(), UTF8);
         try
         {
@@ -138,9 +141,7 @@ public class ModelCompositionService
             else if (path.startsWith(VIEW_MODEL_PREFIX))
             {
                 log.debug("Reading {} as View", path);
-                View view = create(View.class, json, path);
-                updateComponentRegistrations(runtimeApplication, view.getRoot(), null);
-                view.setCachedJSON(modelJSONService.toJSON(view));
+                View view = createViewModel(path, json);
 
                 applicationModel.getViews().put(view.getName(), view);
                 return view;
@@ -167,46 +168,12 @@ public class ModelCompositionService
     }
 
 
-    /**
-     * Updates the application component registration for the given component model and its children
-     *
-     * @param runtimeApplication runtime application
-     * @param elem               component model
-     * @param componentNames     component names to update or <code>null</code> or empty to update all components.
-     */
-    public void updateComponentRegistrations(RuntimeApplication runtimeApplication, ComponentModel elem, Set<String>
-        componentNames)
+    public View createViewModel(String path, String json)
     {
-        if (componentNames != null && componentNames.size() == 0)
-        {
-            componentNames = null;
-        }
-        updateComponentRegistrationsRecursive(runtimeApplication, elem, componentNames);
-    }
-
-    private void updateComponentRegistrationsRecursive(RuntimeApplication runtimeApplication, ComponentModel elem, Set<String>
-        componentNames)
-    {
-        if (elem.isComponent() && (componentNames == null || componentNames.contains(elem.getName())))
-        {
-            ComponentRegistration registration = componentRegistry.getComponentRegistration(elem.getName());
-
-            if (registration == null)
-            {
-                throw new IllegalStateException("No component registered for name '" + elem.getName() + "'");
-            }
-
-            if (registration.getDataProvider() != null && elem.getComponentId() == null)
-            {
-                throw new ModelCompositionException(elem + " must have a id attribute");
-            }
-            elem.setComponentRegistration(registration);
-        }
-
-        for (ComponentModel componentModel : elem.children())
-        {
-            updateComponentRegistrationsRecursive(runtimeApplication, componentModel, componentNames);
-        }
+        View view = create(View.class, json, path);
+        ComponentUtil.updateComponentRegistrations(componentRegistry, view.getRoot(), null);
+        view.setCachedJSON(modelJSONService.toJSON(view, JSONFormat.CLIENT));
+        return view;
     }
 
 
@@ -225,6 +192,10 @@ public class ModelCompositionService
             {
                 namedModel.setName(nameFromPath);
             }
+        }
+        if (m instanceof VersionedModel)
+        {
+            ((VersionedModel) m).setVersion(UUID.randomUUID().toString());
         }
 
         return m;
@@ -245,4 +216,5 @@ public class ModelCompositionService
         }
         return path.substring(start + 1, end);
     }
+
 }

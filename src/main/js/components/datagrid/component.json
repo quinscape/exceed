@@ -37,10 +37,13 @@
             "modelAware" : true
         },
         "DataGrid.Column": {
-            "contextKey" : "name",
+            "contextProvider" : true,
             "propTypes": {
                 "name": {
                     "rule": "fieldOf(parent.prop('type'))"
+                },
+                "context" : {
+                    "context": "context[props.name]"
                 }
             }
         }

@@ -17,12 +17,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.svenson.JSON;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 @Service
@@ -49,6 +53,7 @@ public class RuntimeApplicationFactory
 
     @Autowired
     private DomainServiceFactory domainServiceFactory;
+
 
     public RuntimeApplication createRuntimeApplication(ServletContext servletContext, AppState state)
     {

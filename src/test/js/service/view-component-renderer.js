@@ -1,55 +1,30 @@
-var testDom = require("./test-dom");
+var testDom = require("../ui/test-dom").setup();
 var React = require("react");
 var ReactDOM = require("react-dom");
 var expect = require("expect");
 var createRenderer = require("react-addons-test-utils").createRenderer;
 var renderIntoDocument = require("react-addons-test-utils").renderIntoDocument;
 var expectJSX = require("expect-jsx");
+
+var assert = require("power-assert");
+var Promise = require("es6-promise-polyfill").Promise;
 var sinon = require("sinon");
 var proxyquire = require("proxyquire");
-var assert = require("power-assert");
 
-var security = require("../../../../src/main/js/service/security");
-
-var InPageEditor = require("../../../../src/main/js/editor/InPageEditor");
-var ValueLink = require("../../../../src/main/js/util/value-link");
 expect.extend(expectJSX);
-
-var renderer = createRenderer();
-
-var simpleView = {
-    root: {
-        name: "Foo",
-        kids: [
-            {
-                name: "Bar",
-                kids: [
-                    {
-                        name: "[String]",
-                        attrs: {
-                            "value": "abc123"
-                        }
-                    }
-                ]
-            }
-
-        ]
-    }
-};
-
 
 
 var Foo = React.createClass({
     render: function ()
     {
-        return <div className="foo">{ this.props. children }</div>;
+        return <div className="foo">{ this.props.children }</div>;
     }
 });
 
 var Bar = React.createClass({
     render: function ()
     {
-        return <div className="bar">{ this.props. children }</div>;
+        return <div className="bar">{ this.props.children }</div>;
     }
 });
 
@@ -81,11 +56,8 @@ var Injected = React.createClass({
     }
 });
 
-
-//security.init("ROLE_EDITOR");
-
-var ViewComponent = proxyquire("../../../../src/main/js/ui/ViewComponent", {
-    "../service/component" : {
+var ViewComponentRenderer = proxyquire("../../../../src/main/js/service/view-component-renderer", {
+    "./component" : {
         getComponents: function()
         {
             return {
@@ -102,72 +74,78 @@ var ViewComponent = proxyquire("../../../../src/main/js/ui/ViewComponent", {
                 },
                 Consumer: {
                     component: Consumer,
-                    context: true
+                    "context" : {
+                        "context": "context[props.name]"
+                    }
                 },
                 Injected: {
-                    component: Injected
+                    component: Injected,
+                    queries: {
+                        value : {}
+                    }
                 },
                 KeyedConsumer: {
                     component: KeyedConsumer,
-                    contextKey: "name",
-                    context: "customContextProp"
+                    contextProvider: true,
+                    propTypes: {
+                        "customContextProp": "context[props.name]"
+                    }
                 }
             }
         }
     }
 });
 
-var activeLink = new ValueLink(false, sinon.spy());
 
-describe("ViewComponent", function ()
+// View Model client format with "exprs" and transformed expressions
+var simpleView = {
+    name: "SimpleTestView",
+    version: "00000000-0000-0000-0000-000000000000",
+    root: {
+        name: "Foo",
+        exprs: {
+            model: "_v.root"
+        },
+        kids: [
+            {
+                name: "Bar",
+                kids: [
+                    {
+                        name: "[String]",
+                        attrs: {
+                            "value": "abc123"
+                        }
+                    }
+                ]
+            }
+
+        ]
+    }
+};
+
+describe("View Components", function ()
 {
-    beforeEach(function ()
-    {
-        security.init("ROLE_USER");
-    });
 
-    it("renders a component tree", function ()
+    it("render a component tree", function ()
     {
+        var ViewComponent = ViewComponentRenderer.createComponent(simpleView);
+
+        var renderer = createRenderer();
         renderer.render(<ViewComponent
             model={ simpleView }
             componentData={{}}
-            activeLink={ activeLink }
         />);
 
         expect(renderer.getRenderOutput()).toEqualJSX(
-            <div>
-                <Foo model={ simpleView.root }>
-                    <Bar>
-                        abc123
-                    </Bar>
-                </Foo>
-            </div>
+            <Foo model={ simpleView.root }>
+                <Bar>
+                    abc123
+                </Bar>
+            </Foo>
         );
+
     });
-
-    it("renders the inline editor on ROLE_EDITOR", function ()
-    {
-        security.init("ROLE_EDITOR");
-
-        renderer.render(<ViewComponent
-            model={ simpleView }
-            componentData={{}}
-            activeLink={ activeLink }
-        />);
-
-        expect(renderer.getRenderOutput()).toEqualJSX(
-            <div>
-                <Foo model={ simpleView.root }>
-                    <Bar>
-                        abc123
-                    </Bar>
-                </Foo>
-                <InPageEditor activeLink={ activeLink } model={ simpleView } />
-            </div>
-        );
-    });
-
-    it("injects vars and query data", function ()
+    it("inject vars and query data", function ()
     {
         var view = {
             root: {
@@ -178,30 +156,28 @@ describe("ViewComponent", function ()
             }
         };
 
+        var ViewComponent = ViewComponentRenderer.createComponent(view);
         var payload = { value : "injected value" };
 
+        var renderer = createRenderer();
         renderer.render(
             <ViewComponent
                 model={ view }
                 componentData={{
                     'i-1' : {
-                        vars: { foo: 12},
+                        vars: { foo: 12 },
                         data: { value : payload }
                     }
                 }}
-                activeLink={ activeLink }
             />
         );
 
         expect(renderer.getRenderOutput()).toEqualJSX(
-            <div>
                 <Injected value={ payload } vars={{foo: 12}}/>
-            </div>
         );
 
     });
-
-    it("renders components with context", function (done)
+    it("render components with context", function (done)
     {
         var view = {
             root: {
@@ -214,18 +190,22 @@ describe("ViewComponent", function ()
                         name: "Consumer",
                         attrs: {
                             "expr": "{ context }"
+                        },
+                        exprs: {
+                            "expr" : "context"
                         }
                     }
-
                 ]
             }
         };
 
+        var ViewComponent = ViewComponentRenderer.createComponent(view);
+
         testDom.render(<ViewComponent
             model={ view }
             componentData={{}}
-            activeLink={ activeLink }
-        />, function ()
+        />,
+        function ()
         {
             //console.log("HTML", document.body.innerHTML);
             var providerElem = document.querySelector(".provider");
@@ -238,20 +218,22 @@ describe("ViewComponent", function ()
         });
     });
 
-    it("renders components with keyed context", function (done)
+    it("render components with keyed context", function (done)
     {
-
         var view = {
             root: {
                 name: "Provider",
-                attrs: {
-                    "context": { foo: "value for 'foo'"}
+                exprs: {
+                    "context": "{ foo: 'value for \\'foo\\''}"
                 },
                 kids: [
                     {
                         name: "KeyedConsumer",
                         attrs: {
                             "name": "foo"
+                        },
+                        exprs: {
+                            customContextProp: "context[\"foo\"]"
                         }
                     }
 
@@ -259,10 +241,11 @@ describe("ViewComponent", function ()
             }
         };
 
+        var ViewComponent = ViewComponentRenderer.createComponent(view);
+
         testDom.render(<ViewComponent
             model={ view }
             componentData={{}}
-            activeLink={ activeLink }
         />, function ()
         {
             //console.log("HTML", document.body.innerHTML);
@@ -279,6 +262,7 @@ describe("ViewComponent", function ()
 
     after(function ()
     {
-        assert(activeLink.requestChange.callCount == 0);
+        testDom.cleanup();
     })
 });
+

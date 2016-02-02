@@ -10,6 +10,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Locale;
 
+/**
+ * Contains information about the current request and the context in which it happens.
+ *
+ * @see RuntimeContextHolder#get()
+ */
 public class RuntimeContext
 {
     private final HttpServletRequest request;

@@ -1,15 +1,16 @@
 {
+    "comments" : ["Head Comment", null, "Tail Comment"],
     "root": {
-        "name": "Bootstrap.Grid",
+        "name": "Grid",
         "attrs": {
             "fluid": "{ true }"
         },
         "kids": [
             {
-                "name": "Bootstrap.Row",
+                "name": "Row",
                 "kids": [
                     {
-                        "name": "Bootstrap.Col",
+                        "name": "Col",
                         "attrs": {
                             "md": "{ 12 }"
                         },
@@ -18,7 +19,7 @@
                                 "name": "Heading",
                                 "attrs": {
                                     "id": "myHeading",
-                                    "value": "{ 'Foo #1' }"
+                                    "value": "{ 'Heading: ' + props.id }"
                                 }
                             },
                             {
@@ -49,8 +50,17 @@
                                     {
                                         "name": "DataGrid.Column",
                                         "attrs": {
+                                            "var" : "field",
                                             "name": "roles"
-                                        }
+                                        },
+                                        "kids" : [
+                                            {
+                                                "name": "[String]",
+                                                "attrs": {
+                                                    "value": "{ field }"
+                                                }
+                                            }
+                                        ]
                                     }
                                 ]
                             },

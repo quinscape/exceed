@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.config;
 
+import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.model.ModelFactory;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
@@ -23,4 +24,13 @@ public class ModelConfiguration
     {
         return new ModelFactory();
     }
+
+
+    @Bean
+    public ModelCompositionService modelCompositionService()
+    {
+        ModelCompositionService svc = new ModelCompositionService();
+        return svc;
+    }
+
 }

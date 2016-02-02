@@ -4,8 +4,8 @@ package de.quinscape.exceed.model.view;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.expression.TokenMgrError;
 import org.svenson.JSON;
-import org.svenson.JSONParameter;
 import org.svenson.JSONProperty;
 import org.svenson.JSONable;
 
@@ -18,30 +18,53 @@ public class AttributeValue
 
     private final ASTExpression astExpression;
 
+    private final Throwable expressionError;
 
     public AttributeValue(
         AttributeValueType type,
         Object value) throws ParseException
     {
-        this.type = type;
         this.value = value;
 
         if (type == AttributeValueType.EXPRESSION)
         {
             String expr = (String) value;
-            this.astExpression = ExpressionParser.parse(expr.substring(1, expr.length() - 1));
+            ASTExpression astExpression = null;
+            Throwable exception = null;
+            try
+            {
+                astExpression = ExpressionParser.parse(expr.substring(1, expr.length() - 1));
+            }
+            catch(TokenMgrError | ParseException e)
+            {
+                type = AttributeValueType.EXPRESSION_ERROR;
+                astExpression = null;
+                exception = e;
+            }
+
+            this.expressionError = exception;
+            this.astExpression = astExpression;
         }
         else
         {
             this.astExpression = null;
+            this.expressionError = null;
         }
-
+        this.type = type;
     }
 
 
     public AttributeValueType getType()
     {
         return type;
+    }
+
+
+
+    @JSONProperty(ignore = true)
+    public Throwable getExpressionError()
+    {
+        return expressionError;
     }
 
 
@@ -78,6 +101,5 @@ public class AttributeValue
             + ", value = '" + value + '\''
             ;
     }
-
 }
 

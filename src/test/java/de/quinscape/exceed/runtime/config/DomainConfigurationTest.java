@@ -4,6 +4,7 @@ import de.quinscape.exceed.domain.tables.pojos.AppUser;
 import de.quinscape.exceed.domain.tables.records.AppUserRecord;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import org.jooq.DSLContext;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;

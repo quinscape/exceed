@@ -53,6 +53,9 @@ public class ApplicationController
 
             RuntimeContextHolder.register(runtimeContext);
 
+            model.put("title", "Application View");
+            model.put("appName", appName);
+
             runtimeApplication.route(runtimeContext);
 
             if (response.isCommitted())
@@ -61,8 +64,6 @@ public class ApplicationController
             }
             else
             {
-                model.put("title", "Application View");
-                model.put("appName", appName);
                 return "react-base";
             }
         }

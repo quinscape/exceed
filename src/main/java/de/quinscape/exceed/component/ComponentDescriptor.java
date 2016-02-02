@@ -24,8 +24,6 @@ public class ComponentDescriptor
 
     private final Boolean contextProvider;
 
-    private final String contextKey;
-
     private final boolean modelAware;
 
     private final Map<String,String> queryExecutors;
@@ -57,9 +55,6 @@ public class ComponentDescriptor
         @JSONParameter("contextProvider")
         Boolean contextProvider,
 
-        @JSONParameter("contextKey")
-        String contextKey,
-
         @JSONParameter("modelAware")
         Boolean modelAware)
 
@@ -73,7 +68,6 @@ public class ComponentDescriptor
         this.childTypes = Util.immutableList(childTypes);
         this.queryExecutors = Util.immutableMap(queryExecutors);
         this.contextProvider = contextProvider;
-        this.contextKey = contextKey;
     }
 
     public Map<String, String> getVars()
@@ -113,15 +107,8 @@ public class ComponentDescriptor
     @JSONProperty(ignoreIfNull = true)
     public boolean isContextProvider()
     {
-        return contextProvider;
+        return contextProvider != null && contextProvider;
     }
-
-    @JSONProperty(ignoreIfNull = true)
-    public String getContextKey()
-    {
-        return contextKey;
-    }
-
 
     public Map<String, String> getQueryExecutors()
     {

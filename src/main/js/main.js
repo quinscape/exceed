@@ -1,31 +1,30 @@
 var React = require("react");
-var ReactDOM = require("react-dom");
 
 var Promise = require("es6-promise-polyfill").Promise;
 
 var bulk = require("bulk-require");
+var domready = require("domready");
+
 var componentService = require("./service/component");
-var viewService = require("./service/view");
+var actionService = require("./service/action");
 var ajax = require("./service/ajax");
 var security = require("./service/security");
+var render = require("./service/render");
 
 var ValueLink = require("./util/value-link");
 
 var svgLayout = require("./util/svg-layout");
 
 var Alert = require("./ui/Alert");
-var ViewComponent = require("./ui/ViewComponent");
 
 var componentsMap = bulk(__dirname, ["components/**/*.json", "components/**/*.js"]);
-
 componentService.registerBulk(componentsMap);
 
-// log available components
-//console.dir(componentService.getComponents());
+var clientActionMap = bulk(__dirname, ["action/**/*.js"]);
+actionService.registerBulk(clientActionMap.action);
 
+const ACTIVITY_TIMEOUT = 60000;
 
-var domready = require("domready");
-window.domready = domready;
 function evaluateEmbedded(elemId, mediaType)
 {
     var elem = document.getElementById(elemId);
@@ -37,10 +36,14 @@ function evaluateEmbedded(elemId, mediaType)
     return JSON.parse(elem.innerHTML);
 }
 
-var rootElem;
 var currentViewName;
 var currentViewData;
+var pollingEnabled = false;
 
+// are we currently waiting for a poll response?
+var polling = false;
+var timeout = false;
+var lastActivity = 0;
 
 function timestampURL(href)
 {
@@ -58,91 +61,160 @@ function timestampURL(href)
     return href;
 }
 
-
-function pollChanges()
+if (process.env.NODE_ENV !== "production" )
 {
-    ajax({
-        url: contextPath + "/reload/" + appName
-    }).then(function (model)
+    var pollChanges = function()
     {
-        //alert("CHANGE" + JSON.stringify(model));
-
-        if (model._type === "view.View")
+        if (!pollingEnabled || polling)
         {
-
-            if (currentViewName === model.name)
-            {
-                console.log("currentViewData", currentViewData);
-
-                ReactDOM.render(React.createElement(ViewComponent, {
-                    model: model,
-                    componentData: currentViewData
-                }), rootElem, pollChanges);
-                return;
-            }
-        }
-        else if (model._type === "change.Shutdown")
-        {
-            alert("Server has been shut down.\nYou might want to reload");
             return;
         }
-        else if (model._type === "change.CodeChange")
+
+        polling = true;
+        ajax({
+            url: contextPath + "/reload/" + appName
+        }).then(function (model)
         {
-            console.log("CodeChange");
+            polling = false;
+            //alert("CHANGE" + JSON.stringify(model));
 
-            var elem = document.createElement("script");
-            elem.setAttribute("src", timestampURL(contextPath + "/res/" + appName + "/js/main.js"));
+            if (model._type === "view.View")
+            {
 
-            var head = document.getElementsByTagName("head")[0];
-            head.appendChild(elem);
+                if (render.getViewModel().name === model.name)
+                {
+                    console.log("currentViewData", currentViewData);
+                    render.render(model, currentViewData)
+                        .then(pollChanges)
+                        .catch(function (e)
+                        {
+                            console.error(e);
+                        });
+                    return;
+                }
+            }
+            else if (model._type === "change.Shutdown")
+            {
+                pollingEnabled = false;
+                alert("Server has been shut down.\nYou might want to reload");
+                return;
+            }
+            else if (model._type === "change.CodeChange")
+            {
+                console.log("CodeChange");
 
-        }
-        else if (model._type === "change.StyleChange")
+                var elem = document.createElement("script");
+                elem.setAttribute("src", timestampURL(contextPath + "/res/" + appName + "/js/main.js"));
+
+                var head = document.getElementsByTagName("head")[0];
+                head.appendChild(elem);
+
+            }
+            else if (model._type === "change.StyleChange")
+            {
+                var link = document.getElementById("application-styles");
+                link.href = timestampURL(link.href);
+
+                console.log("StyleChange")
+            }
+
+            var now = Date.now();
+            if (now - lastActivity < ACTIVITY_TIMEOUT)
+            {
+                pollChanges();
+            }
+            else
+            {
+                console.info("activity timeout, polling stops..");
+                timeout = true;
+            }
+
+        }).catch(function (err)
         {
-            var link = document.getElementById("application-styles");
-            link.href = timestampURL(link.href);
+            console.log(err);
+        })
+    };
 
-            console.log("StyleChange")
+    var activity = function(ev)
+    {
+        lastActivity = Date.now();
+        if (timeout)
+        {
+            timeout = false;
+            console.info("Resuming polling on activity..");
+            pollChanges();
         }
+    }
+
+}
+function enablePolling()
+{
+    if (process.env.NODE_ENV !== "production" )
+    {
+        pollingEnabled = true;
+
+        document.body.addEventListener("keydown", activity, true);
+        document.body.addEventListener("mousemove", activity, true);
 
         pollChanges();
-    }).catch(function (err)
-    {
-        console.log("Error update", err);
-    })
+    }
 }
+
 domready(function ()
 {
     security.init(document.body.dataset.roles);
 
     var contextPath = document.body.dataset.contextPath;
-    var appName = document.body.dataset.appName;
 
-    rootElem = document.getElementById("root");
-
-    window.appName = appName;
+    window.appName = document.body.dataset.appName;
     window.contextPath = contextPath;
-
-    var path = location.pathname.substring(contextPath.length);
 
     var model = evaluateEmbedded("root-model", "x-ceed/view-model");
     var data = evaluateEmbedded("root-data", "x-ceed/view-data");
+    var systemInfo  = evaluateEmbedded("system-info", "x-ceed/system-info");
 
     currentViewName = model.name;
     currentViewData = data.data;
 
     //console.log("currentViewData", JSON.stringify(currentViewData, null, "  "));
 
+    var serverActions = systemInfo.actions;
+    console.info("Server actions", serverActions);
+
+    actionService.initServerActions(serverActions);
+
+    //actionService.execute([
+    //    {
+    //        action: "pong",
+    //        increment: 1
+    //    },
+    //    {
+    //        action: "ping"
+    //    },
+    //    {
+    //        action: "pong",
+    //        increment: 2
+    //    },
+    //    {
+    //        action: "ping"
+    //    }
+    //], {value:1})
+
+    // async setup
     Promise.all([
         svgLayout.init()
-    ]).then(function (sizes)
+    ]).then(function ()
     {
-        ReactDOM.render( React.createElement(ViewComponent, {
-            model: model,
-            componentData: currentViewData
-        }), rootElem);
+        if (process.env.NODE_ENV !== "production" && security.hasRole("ROLE_EDITOR"))
+        {
+            enablePolling();
+        }
 
-        pollChanges();
+        return render.render(model, currentViewData);
+    })
+    .catch(function (e)
+    {
+        console.error(e);
     });
-
 });
+

@@ -36,23 +36,25 @@ var Column = React.createClass({
     },
     render: function ()
     {
-        var kids = this.props.children;
-
-        if (React.Children.count(kids) === 0)
+        var renderKids = this.props.renderChildrenWithContext;
+        if (!renderKids)
         {
             return (
                 <td>
                     <p className="form-control-static">
-                        { "" + this.props.context }
+                        { String(this.props.context) }
                     </p>
                 </td>
             );
         }
-        return (
-            <td>
-                { kids }
-            </td>
-        );
+        else
+        {
+            return (
+                <td>
+                    { renderKids(this.props.context) }
+                </td>
+            );
+        }
     }
 });
 
@@ -161,12 +163,7 @@ var DataGrid = React.createClass({
 
     renderHeader: function ()
     {
-        var colCount = 0;
-
-        var type = this.props.type;
-
         var currentSortLink = new ValueLink( this.props.vars.orderBy, this.changeSort);
-
 
         var kids = this.props.model.kids;
         var headers = [];
@@ -182,11 +179,12 @@ var DataGrid = React.createClass({
 
             //console.log("kid", name, kid);
 
+            var column = this.props.result.columns[name];
             headers.push(
                 <Header
                     key={ i }
                     currentSortLink={ currentSortLink }
-                    heading={ i18n(this.props.result.fields[name].qualifiedName) }
+                    heading={ i18n(column.domainType + "." + column.name) }
                     sort={ name }
                     />
             );
@@ -204,8 +202,6 @@ var DataGrid = React.createClass({
     {
         //console.log("COUNT", this.props.count);
 
-        var colCount;
-        var rowCount = 0;
         var queryResult = this.props.result;
 
         var rows = queryResult.rows.map(function (row, idx)

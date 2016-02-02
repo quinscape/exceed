@@ -6,7 +6,7 @@ import de.quinscape.exceed.runtime.resource.stream.ClassPathResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.stream.ServletResourceRoot;
 import de.quinscape.exceed.runtime.service.ApplicationService;
-import de.quinscape.exceed.runtime.service.ComponentRegistry;
+import de.quinscape.exceed.runtime.service.ComponentRegistryImpl;
 import de.quinscape.exceed.runtime.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ public class DefaultAppConfiguration
     private ApplicationService applicationService;
 
     @Autowired
-    private ComponentRegistry componentRegistry;
+    private ComponentRegistryImpl componentRegistry;
 
     @PostConstruct
     public void initialize() throws IOException

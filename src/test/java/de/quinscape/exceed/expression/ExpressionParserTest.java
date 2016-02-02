@@ -131,6 +131,79 @@ public class ExpressionParserTest
             assertThat(i1.getName(), is("domainType"));
             assertThat(i2.getName(), is("join"));
         }
+
+        {
+            ASTComputedPropertyChain chain = (ASTComputedPropertyChain) parse("context[props.name]");
+
+            ASTIdentifier i1 = (ASTIdentifier) chain.jjtGetChild(0);
+            assertThat(i1.getName(), is("context"));
+            ASTPropertyChain i2 = (ASTPropertyChain) chain.jjtGetChild(1);
+            ASTIdentifier i3 = (ASTIdentifier) i2.jjtGetChild(0);
+            ASTIdentifier i4 = (ASTIdentifier) i2.jjtGetChild(1);
+            assertThat(i3.getName(), is("props"));
+            assertThat(i4.getName(), is("name"));
+        }
+
+        {
+            ASTNegate chain = (ASTNegate) parse("-10");
+            ASTInteger i1 = (ASTInteger) chain.jjtGetChild(0);
+            assertThat(i1.getValue(), is(10));
+        }
+
+        {
+            ASTNot not = (ASTNot) parse("!true");
+            ASTBool i1 = (ASTBool) not.jjtGetChild(0);
+            assertThat(i1.getValue(), is(true));
+
+            Node n = parse("!foo.bar");
+            log.info(dump(n));
+            not = (ASTNot) n;
+
+            ASTPropertyChain chain = (ASTPropertyChain) not.jjtGetChild(0);
+            ASTIdentifier i3 = (ASTIdentifier) chain.jjtGetChild(0);
+            ASTIdentifier i4 = (ASTIdentifier) chain.jjtGetChild(1);
+            assertThat(i3.getName(), is("foo"));
+            assertThat(i4.getName(), is("bar"));
+        }
+    }
+
+
+    @Test
+    public void testIt() throws Exception
+    {
+        Node node = parse("1 + (2 * 3)");
+
+        log.info(dump(node));
+
+    }
+
+
+    private String dump(Node node)
+    {
+        StringBuilder sb = new StringBuilder();
+        dumpRec(sb, node, 0);
+        return "\n" + sb.toString();
+    }
+
+
+    private void dumpRec(StringBuilder sb, Node node, int level)
+    {
+        indent(sb, level);
+        sb.append(node).append("\n");
+
+        for (int i=0; i < node.jjtGetNumChildren(); i++)
+        {
+            dumpRec( sb, node.jjtGetChild(i), level + 1);
+        }
+    }
+
+
+    private void indent(StringBuilder sb, int level)
+    {
+        for (int i=0; i < level; i++)
+        {
+            sb.append("  ");
+        }
     }
 
 

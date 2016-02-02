@@ -6,6 +6,7 @@ import de.quinscape.exceed.runtime.component.QueryDataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +34,9 @@ public class WebConfiguration
     @Autowired
     private ServletContext servletContext;
 
+    @Autowired
+    private ApplicationContext applicationContext;
+
 //    @Autowired
 //    private ApplicationService applicationService;
 //
@@ -55,6 +59,7 @@ public class WebConfiguration
 //    }
 //
 
+
     @Override
     public void configureViewResolvers(ViewResolverRegistry registry)
     {
@@ -70,11 +75,15 @@ public class WebConfiguration
         registry.viewResolver(resolver);
     }
 
+
     @Override
     public void addInterceptors(InterceptorRegistry registry)
     {
-        registry.addInterceptor(new CommonVariablesInterceptor());
+        // unfortunately trying to inject the action registry here creates some kind of cyclic dependency messing
+        // up dslContext creation :\ we delay that until first use
+        registry.addInterceptor(new CommonVariablesInterceptor(applicationContext));
     }
+
 
     @Bean
     public MediaTypeService mediaTypeService()

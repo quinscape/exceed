@@ -125,25 +125,112 @@ public class RuntimeApplication
     {
         RoutingResult result = resolve(runtimeContext.getPath());
 
+
+        HttpServletRequest request = runtimeContext.getRequest();
+
+
         String viewName = result.getMapping().getViewName();
 
         log.debug("Routing chose view '{}'", viewName);
 
         View view;
+        HttpServletResponse response = runtimeContext.getResponse();
         if (viewName == null || (view = applicationModel.getViews().get(viewName)) == null)
         {
-            runtimeContext.getResponse().sendError(HttpServletResponse.SC_NOT_FOUND, "View " + viewName + " not found" +
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "View " + viewName + " not found" +
                 ".");
             return;
         }
 
+        ModelMap model = runtimeContext.getModel();
+        boolean isAjaxRequest = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+        if (isAjaxRequest)
+        {
+            if (request.getMethod().equals("POST") && "true".equals(request.getHeader("X-ceed-Preview")))
+            {
+                String json = IOUtils.toString(request.getInputStream(), UTF_8);
+                View previewView = modelCompositionService.createViewModel("preview/" + view.getName(), json);
+
+                List<ExpressionError> errors = new ArrayList<>();
+
+                collectErrors(errors, previewView.getRoot(), 0);
+                if (errors.size() == 0)
+                {
+                    view = previewView;
+                }
+                else
+                {
+                    model.put("expressionErrors", errors);
+                    sendJSON(response, JSON.defaultJSON().forValue(model));
+                    return;
+                }
+            }
+        }
         runtimeContext.setView(view);
 
         ViewData viewData = viewDataService.prepareView(runtimeContext, view);
 
-        ModelMap model = runtimeContext.getModel();
-        model.put("viewData", domainService.toJSON( viewData));
-        model.put("viewModel", view.getCachedJSON());
+        String viewDataJSON = domainService.toJSON(viewData);
+        String viewModelJSON = view.getCachedJSON();
+
+        if (!isAjaxRequest)
+        {
+            model.put("viewData", viewDataJSON);
+            model.put("viewModel", viewModelJSON);
+        }
+        else
+        {
+            JSON gen = JSON.defaultJSON();
+            String json = "{\n" +
+                "    \"appName\" : " + gen.forValue(model.get("appName")) + ",\n" +
+                "    \"title\" : " + gen.forValue(model.get("title")) + ",\n" +
+                "    \"viewData\" : " + viewDataJSON + ",\n" +
+                "    \"viewModel\": " + viewModelJSON + "\n" +
+                "}";
+            sendJSON(response, json);
+        }
+    }
+
+
+    private int collectErrors(List<ExpressionError> errors, ComponentModel model, int id)
+    {
+        Attributes attrs = model.getAttrs();
+        if (attrs != null)
+        {
+            for (String name : attrs.getNames())
+            {
+                AttributeValue attributeValue = attrs.getAttribute(name);
+                if (attributeValue.getType() == AttributeValueType.EXPRESSION_ERROR)
+                {
+                    errors.add(new ExpressionError((String) attributeValue.getValue(), attributeValue.getExpressionError(), id, name));
+                }
+            }
+        }
+
+        id++;
+
+        List<ComponentModel> kids = model.getKids();
+        if (kids != null)
+        {
+            for (ComponentModel kid : kids)
+            {
+                id = collectErrors(errors, kid, id);
+            }
+        }
+
+        return id;
+    }
+
+
+    private void sendJSON(HttpServletResponse response, String json) throws IOException
+    {
+        byte[] data = json.getBytes(UTF_8);
+
+        response.setContentType(ContentType.JSON);
+        response.setContentLength(data.length);
+        PrintWriter pw = response.getWriter();
+        IOUtils.write(data, pw, UTF_8);
+        pw.flush();
     }
 
 
@@ -388,7 +475,7 @@ public class RuntimeApplication
     {
         for (View view : applicationModel.getViews().values())
         {
-            modelCompositionService.updateComponentRegistrations(this, view.getRoot(), componentNames);
+            ComponentUtil.updateComponentRegistrations(componentRegistry, view.getRoot(), componentNames);
         }
     }
 

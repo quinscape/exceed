@@ -3,9 +3,12 @@ package de.quinscape.exceed.runtime.config;
 import com.jolbox.bonecp.BoneCPDataSource;
 import de.quinscape.exceed.runtime.db.JOOQConfigFactory;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DataSourceConnectionProvider;
 import org.jooq.impl.DefaultDSLContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -26,6 +29,9 @@ import java.util.concurrent.TimeUnit;
 @PropertySource(value = "classpath:application.properties")
 public class DomainConfiguration
 {
+    private static Logger log = LoggerFactory.getLogger(DomainConfiguration.class);
+
+
     @Bean
     public JdbcTemplate jdbcTemplate(DataSource dataSource)
     {
@@ -61,10 +67,14 @@ public class DomainConfiguration
 
 
     @Bean
-    public DefaultDSLContext dslContext(JOOQConfigFactory configFactory)
+    public DSLContext dslContext(JOOQConfigFactory configFactory)
     {
         org.jooq.Configuration configuration = configFactory.create();
-        return new DefaultDSLContext(configuration);
+        DefaultDSLContext defaultDSLContext = new DefaultDSLContext(configuration);
+
+        log.info("Created DSLContext", defaultDSLContext);
+
+        return defaultDSLContext;
     }
 
 
@@ -92,14 +102,6 @@ public class DomainConfiguration
         JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
         tokenRepository.setDataSource(dataSource);
         return tokenRepository;
-    }
-
-
-    @Bean
-    public ModelCompositionService modelCompositionService()
-    {
-        ModelCompositionService svc = new ModelCompositionService();
-        return svc;
     }
 
 

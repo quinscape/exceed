@@ -40,6 +40,16 @@ public class JOOQQueryExecutor
 
     public JOOQQueryExecutor(DSLContext dslContext, NamingStrategy namingStrategy)
     {
+        if (dslContext == null)
+        {
+            throw new IllegalArgumentException("dslContext can't be null");
+        }
+
+        if (namingStrategy == null)
+        {
+            throw new IllegalArgumentException("namingStrategy can't be null");
+        }
+
         this.dslContext = dslContext;
         this.namingStrategy = namingStrategy;
     }
