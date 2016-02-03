@@ -3,6 +3,8 @@ package de.quinscape.exceed.model.action;
 import org.springframework.util.StringUtils;
 import org.svenson.JSONProperty;
 
+import java.beans.Introspector;
+
 /**
  * Implemented by classes that parametrize {@link de.quinscape.exceed.runtime.action.Action} invocations.
  *
@@ -28,13 +30,13 @@ public abstract class ActionModel
         }
         else
         {
-            String className = this.getClass().getSimpleName();
-            if (className.endsWith(ACTION_SUFFIX))
+            String name = this.getClass().getSimpleName();
+            if (name.endsWith(ACTION_SUFFIX))
             {
-                className = className.substring(0, className.length() - ACTION_SUFFIX.length());
+                name = name.substring(0, name.length() - ACTION_SUFFIX.length());
             }
 
-            this.action = className.toLowerCase();
+            this.action = Introspector.decapitalize(name);
         }
     }
 

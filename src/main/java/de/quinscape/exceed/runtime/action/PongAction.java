@@ -6,14 +6,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PongAction
-    implements Action<PongActionModel, Integer>
+    implements Action<PongActionModel, PongData>
 {
     private static Logger log = LoggerFactory.getLogger(PongAction.class);
 
     @Override
-    public Integer execute(RuntimeContext runtimeContext, PongActionModel model, Integer count)
+    public PongData execute(RuntimeContext runtimeContext, PongActionModel model, PongData pongData)
     {
-        return count + model.getIncrement();
+        return new PongData(pongData.getValue() + model.getIncrement());
     }
 
 
@@ -25,8 +25,8 @@ public class PongAction
 
 
     @Override
-    public Class<Integer> getInputClass()
+    public Class<PongData> getInputClass()
     {
-        return Integer.class;
+        return PongData.class;
     }
 }

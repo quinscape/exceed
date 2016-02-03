@@ -9,10 +9,14 @@ import de.quinscape.exceed.model.change.Timeout;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.routing.Mapping;
 import de.quinscape.exceed.model.routing.MappingNode;
+import de.quinscape.exceed.model.view.AttributeValue;
+import de.quinscape.exceed.model.view.AttributeValueType;
+import de.quinscape.exceed.model.view.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.controller.ActionRegistry;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.resource.AppResource;
@@ -27,25 +31,36 @@ import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.service.DomainServiceFactory;
 import de.quinscape.exceed.runtime.service.StyleService;
+import de.quinscape.exceed.runtime.util.ComponentUtil;
+import de.quinscape.exceed.runtime.util.ContentType;
 import de.quinscape.exceed.runtime.util.FileExtension;
 import de.quinscape.exceed.runtime.util.RequestUtil;
 import de.quinscape.exceed.runtime.view.ViewData;
 import de.quinscape.exceed.runtime.view.ViewDataService;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.ModelMap;
 import org.svenson.JSON;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
 public class RuntimeApplication
     implements ResourceChangeListener
 {
+    private static final Charset UTF_8 = Charset.forName("UTF-8");
+
     private static Logger log = LoggerFactory.getLogger(RuntimeApplication.class);
 
     private final ServletContext servletContext;

@@ -90,3 +90,35 @@ div.notification
 @-moz-document url-prefix() {
     fieldset { display: table-cell; }
 }
+
+.throbber
+{
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255,255,255,0.75);
+    z-index: 200;
+    cursor: wait;
+}
+
+.throbber-body
+{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 240px;
+    height: 32px;
+    margin-left: -120px;
+    font-variant: small-caps;
+    text-align: center;
+    opacity: 1;
+}
+
+.throbber-body h3
+{
+    font-weight: bold;
+    font-size: 24pt;
+    color: #444;
+}

@@ -3,6 +3,8 @@ var Promise = require("es6-promise-polyfill").Promise;
 
 var viewAPI = require("./view-api");
 
+var ThrobberComponent = require("../ui/throbber").ThrobberComponent;
+
 var viewComponentRenderer = require("./view-component-renderer");
 
 var currentViewModel = {
@@ -64,6 +66,7 @@ module.exports = {
                     <div>
                         <ViewComponent model={ currentViewModel } componentData={ currentViewData } />
                         { viewAPI.editor( currentViewModel) }
+                        <ThrobberComponent/>
                     </div>,
                     rootElem,
                     resolve

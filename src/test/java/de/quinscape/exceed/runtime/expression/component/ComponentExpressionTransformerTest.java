@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.Set;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
@@ -79,13 +80,6 @@ public class ComponentExpressionTransformerTest
     private class TestRegistry
         implements ActionRegistry
     {
-        @Override
-        public ActionModel resolve(String actionJSON)
-        {
-            throw new UnsupportedOperationException("Not supported in test");
-        }
-
-
         @Override
         public Set<String> getActionNames()
         {

@@ -12,7 +12,7 @@ import de.quinscape.exceed.runtime.RuntimeContext;
  */
 public interface Action<M extends ActionModel, I>
 {
-    Object execute(RuntimeContext runtimeContext, M model, I input);
+    Object execute(RuntimeContext runtimeContext, M model, I input) throws Exception;
 
     Class<M> getActionModelClass();
 

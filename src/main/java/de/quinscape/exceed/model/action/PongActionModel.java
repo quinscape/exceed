@@ -5,7 +5,6 @@ public class PongActionModel
 {
     private int increment;
 
-
     public int getIncrement()
     {
         return increment;

@@ -15,7 +15,8 @@
     "node-uuid": "^1.4.3",
     "react": "^0.14.6",
     "react-bootstrap": "^0.28.2",
-    "react-dom": "^0.14.6"
+    "react-dom": "^0.14.6",
+    "react-overlays": "^0.5.4"
   },
   "devDependencies": {
     "babel-plugin-check-es2015-constants": "^6.3.13",
