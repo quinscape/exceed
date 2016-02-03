@@ -27,14 +27,15 @@ public class RuntimeContext
 
     private final RuntimeApplication runtimeApplication;
 
-    private Locale locale;
+    private final Locale locale;
 
-    private Translator translator;
+    private final Translator translator;
 
     private View view;
 
 
-    public RuntimeContext(HttpServletRequest request, HttpServletResponse response, ModelMap model, RuntimeApplication runtimeApplication,
+    public RuntimeContext(HttpServletRequest request, HttpServletResponse response, ModelMap model,
+                          RuntimeApplication runtimeApplication,
                           String path, Translator translator)
     {
         this.request = request;
@@ -80,12 +81,6 @@ public class RuntimeContext
     public Locale getLocale()
     {
         return locale;
-    }
-
-
-    public void setLocale(Locale locale)
-    {
-        this.locale = locale;
     }
 
 

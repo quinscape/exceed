@@ -7,7 +7,6 @@ var i18n = require("../../service/i18n");
 var ValueLink = require("../../util/value-link");
 
 var DebounceMixin = require("../../mixin/debounce-mixin");
-var ComplexComponent = require("../../mixin/complex-component");
 var StatelessComponent = require("../../mixin/stateless-component");
 
 var PagingComponent = require("../../ui/PagingComponent");
@@ -132,7 +131,7 @@ var DataGrid = React.createClass({
             rows: React.PropTypes.object
     },
 
-    mixins: [ ComplexComponent, StatelessComponent ],
+    mixins: [ StatelessComponent ],
 
     changeSort: function (newValue)
     {

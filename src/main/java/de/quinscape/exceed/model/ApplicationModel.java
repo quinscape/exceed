@@ -1,6 +1,5 @@
 package de.quinscape.exceed.model;
 
-import de.quinscape.exceed.model.domain.DomainPropertyServiceModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.model.domain.PropertyType;
@@ -31,8 +30,6 @@ public class ApplicationModel
     private Map<String, PropertyType> propertyTypes = new HashMap<>();
 
     private Map<String, EnumModel> enums = new HashMap<>();
-
-    private Map<String, DomainPropertyServiceModel> domainServices = new HashMap<>();
 
     private Map<String, View> views = new HashMap<>();
 
