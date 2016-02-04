@@ -34,6 +34,9 @@
 <body data-context-path="${contextPath}">
 <div class="container">
     <h1>Error</h1>
+    ${timestamp}
+    There was an unexpected error (type=${error}, status=${status}).
+    ${message}
 </div>
 <footer>
     <hr>
