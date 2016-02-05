@@ -2,7 +2,7 @@
     display: inline-block;
     height: 100%;
     position: absolute;
-    z-index: 100;
+    z-index: 50;
     top: 0;
 }
 
@@ -89,4 +89,133 @@
 {
     height: 32px;
     line-height: 32px;
+}
+
+#focus-proxy-container {
+    position: absolute;
+    left: -2000px;
+}
+
+.entity thead tr {
+    border-bottom: 1px solid #888;
+}
+
+
+/* to enable absolute-relative positioning of gui elements */
+.gui-container {
+    position: relative;
+    overflow: auto;
+}
+
+.domain-type
+{
+    padding-left: 1em;
+    font-size: 0.5em;
+}
+
+#exceed-popup-overlay
+{
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.75);
+    z-index: 90;
+}
+
+#exceed-popup
+{
+    position: absolute;
+    width: 750px;
+    top: 40px;
+    left: 50%;
+    margin-left: -375px;
+    padding-bottom: 5px;
+    background-color: #ddd;
+    z-index: 100;
+
+    border-radius: 10px 10px 10px 10px;
+    -moz-border-radius: 10px 10px 10px 10px;
+    -webkit-border-radius: 10px 10px 10px 10px;
+    border: 2px solid #ccc;
+
+    -webkit-box-shadow: 0px 0px 10px 10px rgba(255,255,255,0.25);
+    -moz-box-shadow: 0px 0px 10px 10px rgba(255,255,255,0.25);
+    box-shadow: 0px 0px 10px 10px rgba(255,255,255,0.25);
+
+}
+
+.exceed-popup-body div.align
+{
+    line-height: 4em;
+}
+
+.exceed-popup-body hr
+{
+    border: none;
+    border-top: 1px solid #bbb;
+    margin: 0.5em 0;
+}
+.exceed-popup-body .exceed-list-editor .form-group
+{
+}
+
+
+/* CodeEditor */
+
+.code-editor {
+    width: 100%;
+    height: 600px;
+}
+
+/** Extra rules to visually disambiguate both expressions from string attributes and identifiers and special
+identifiers within the expression. Also for a harmonic overall look */
+
+.ace_expression-open,.ace_expression-close {
+    color: #000;
+    font-weight: bold;
+}
+
+.ace_variable.ace_language {
+    color: #0066cc;
+    font-weight: bold;
+}
+
+.ace-tm .ace_constant.ace_language.ace_boolean {
+    color: #0066cc;
+}
+
+.ace_identifier {
+    color: #00d;
+}
+
+.ace_attribute-name {
+    color: #008;
+}
+
+.ace-tm .ace_meta.ace_tag-open.ace_xml
+{
+    color: #000;
+}
+.ace-tm .ace_meta.ace_tag-name.ace_xml
+{
+    color: #08f;
+}
+
+.ace-tm .ace_string.ace_xml
+{
+    color: #800;
+}
+
+.error-report
+{
+    max-height: 12em;
+    overflow: auto;
+    padding: 0.5em 1ex;
+}
+
+.error-report ul {
+    list-style: none;
+    padding-left: 2em;
 }
