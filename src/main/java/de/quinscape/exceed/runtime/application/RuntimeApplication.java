@@ -28,6 +28,7 @@ import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.service.DomainServiceFactory;
 import de.quinscape.exceed.runtime.service.StyleService;
 import de.quinscape.exceed.runtime.util.FileExtension;
+import de.quinscape.exceed.runtime.util.RequestUtil;
 import de.quinscape.exceed.runtime.view.ViewData;
 import de.quinscape.exceed.runtime.view.ViewDataService;
 import org.slf4j.Logger;
@@ -143,12 +144,12 @@ public class RuntimeApplication
         }
 
         ModelMap model = runtimeContext.getModel();
-        boolean isAjaxRequest = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+        boolean isAjaxRequest = RequestUtil.isAjaxRequest(request);
         if (isAjaxRequest)
         {
             if (request.getMethod().equals("POST") && "true".equals(request.getHeader("X-ceed-Preview")))
             {
-                String json = IOUtils.toString(request.getInputStream(), UTF_8);
+                String json = RequestUtil.readRequestBody(request); ;
                 View previewView = modelCompositionService.createViewModel("preview/" + view.getName(), json);
 
                 List<ExpressionError> errors = new ArrayList<>();
@@ -161,7 +162,7 @@ public class RuntimeApplication
                 else
                 {
                     model.put("expressionErrors", errors);
-                    sendJSON(response, JSON.defaultJSON().forValue(model));
+                    RequestUtil.sendJSON(response, JSON.defaultJSON().forValue(model));
                     return;
                 }
             }
@@ -187,7 +188,8 @@ public class RuntimeApplication
                 "    \"viewData\" : " + viewDataJSON + ",\n" +
                 "    \"viewModel\": " + viewModelJSON + "\n" +
                 "}";
-            sendJSON(response, json);
+
+            RequestUtil.sendJSON(response, json);
         }
     }
 
@@ -220,19 +222,6 @@ public class RuntimeApplication
 
         return id;
     }
-
-
-    private void sendJSON(HttpServletResponse response, String json) throws IOException
-    {
-        byte[] data = json.getBytes(UTF_8);
-
-        response.setContentType(ContentType.JSON);
-        response.setContentLength(data.length);
-        PrintWriter pw = response.getWriter();
-        IOUtils.write(data, pw, UTF_8);
-        pw.flush();
-    }
-
 
     private RoutingResult resolve(String path)
     {

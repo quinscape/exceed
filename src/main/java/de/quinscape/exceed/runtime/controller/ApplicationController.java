@@ -2,27 +2,35 @@ package de.quinscape.exceed.runtime.controller;
 
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
+import de.quinscape.exceed.runtime.application.ApplicationNotFoundException;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
+import de.quinscape.exceed.runtime.util.ContentType;
+import de.quinscape.exceed.runtime.util.RequestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.svenson.JSON;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 @Controller
 public class ApplicationController
 {
     private static Logger log = LoggerFactory.getLogger(ApplicationController.class);
-
 
     @Autowired
     private ServletContext servletContext;
@@ -38,8 +46,9 @@ public class ApplicationController
         @PathVariable("name") String appName,
         HttpServletRequest request, HttpServletResponse response, ModelMap model) throws IOException
     {
-        String rest = request.getRequestURI().substring(request.getContextPath().length() + appName.length() + 6);
-        log.debug("showApplicationView: app = {} path = {}", appName, rest);
+        String inAppURI = RequestUtil.getRemainingURI( request, appName.length() + 5);
+
+        log.debug("showApplicationView: app = {} path = {}", appName, inAppURI);
         try
         {
             RuntimeApplication runtimeApplication = applicationService.getRuntimeApplication(servletContext, appName);
@@ -49,7 +58,7 @@ public class ApplicationController
                 return null;
             }
 
-            RuntimeContext runtimeContext = runtimeContextFactory.create(request, response, model, runtimeApplication, "/" + rest);
+            RuntimeContext runtimeContext = runtimeContextFactory.create(request, response, model, runtimeApplication, inAppURI);
 
             RuntimeContextHolder.register(runtimeContext);
 
@@ -67,6 +76,20 @@ public class ApplicationController
                 return "react-base";
             }
         }
+        catch(ApplicationNotFoundException e)
+        {
+            if (RequestUtil.isAjaxRequest(request))
+            {
+                response.setContentType(ContentType.JSON);
+                RequestUtil.sendJSON(response, "{\"ok\":false,\"error\":" + JSON.defaultJSON().quote(e.getMessage()) + "}");
+                return null;
+            }
+            else
+            {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Application '" + appName + "' not found");
+                return null;
+            }
+        }
         catch(Exception e)
         {
             log.error("Error rendering application view", e);
@@ -78,4 +101,6 @@ public class ApplicationController
             RuntimeContextHolder.clear();
         }
     }
+
+
 }
