@@ -57,10 +57,14 @@ var BABEL_PLUGINS = [
 
     "transform-es2015-arrow-functions",
 
+    // ES2015 module imports
     "transform-es2015-modules-commonjs",
 
     // auto "use strict";
-    "transform-strict-mode"
+    "transform-strict-mode",
+
+    // ... Spread operator
+    "transform-object-rest-spread"
 ];
 
 
