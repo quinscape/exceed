@@ -70,7 +70,7 @@ function serialize(data)
  * @param opts.dataType     {string} expected data type of the resonse (default = "JSON")
  * @param opts.contentType  [string} POST content type. data should be a string in this case.
  *
- * @returns promise resolving to the requested data in the type corresponding to the dataType option.
+ * @returns {Promise} resolving to the requested data in the type corresponding to the dataType option.
  */
 module.exports = function(opts)
 {
@@ -114,6 +114,18 @@ module.exports = function(opts)
             return;
         }
 
+        var method = opts.method.toUpperCase();
+
+        if (method === "POST" && opts.data === undefined)
+        {
+            reject({
+                status: 0,
+                error: "No data for POST request",
+                xhr: null
+            });
+            return;
+        }
+
         var xhr = createXMLHTTPObject();
         if (!xhr)
         {
@@ -127,7 +139,6 @@ module.exports = function(opts)
 
         //console.debug("AJAX", JSON.stringify(opts));
 
-        var method = opts.method.toUpperCase();
         xhr.open(method, opts.url, true);
         xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
         xhr.setRequestHeader("Accept", contentType[opts.dataType]);
@@ -150,7 +161,8 @@ module.exports = function(opts)
             xhr.setRequestHeader(csrfTokenHeader, csrfToken);
             xhr.setRequestHeader("Content-type", opts.contentType || "application/x-www-form-urlencoded");
 
-            data = opts.data || "";
+            data = opts.data;
+
             if (typeof data !== "string")
             {
                 if (opts.contentType === "application/json")
