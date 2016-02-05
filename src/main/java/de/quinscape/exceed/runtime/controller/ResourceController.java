@@ -7,6 +7,7 @@ import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.service.CachedResource;
 import de.quinscape.exceed.runtime.util.MediaTypeService;
+import de.quinscape.exceed.runtime.util.RequestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +24,15 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.concurrent.ExecutionException;
 
 @Controller
 public class ResourceController
 {
     private static Logger log = LoggerFactory.getLogger(ResourceController.class);
+
+    private final static Charset UTF_8 = Charset.forName("UTF-8");
 
     @Autowired
     private ApplicationService applicationService;
@@ -53,8 +57,23 @@ public class ResourceController
             return null;
         }
 
-        String resourcePath = "/resources/" + request.getRequestURI().substring(request.getContextPath().length() + appName.length() + 6);
+        String resourceURI = RequestUtil.getRemainingURI(request, appName.length() + 5);
 
+        if (resourceURI.equals("/style/" + appName + ".css"))
+        {
+            byte[] data = runtimeApplication.getCollectedStyles().getBytes(UTF_8);
+
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("text/css");
+            response.setContentLength(data.length);
+
+            ServletOutputStream os = response.getOutputStream();
+            os.write(data);
+            os.flush();
+            return null;
+        }
+
+        String resourcePath = "/resources" + resourceURI;
 
         int matrixArgs = resourcePath.indexOf(';');
         if (matrixArgs > 0)

@@ -28,12 +28,10 @@ public class SecurityConfiguration
     private final static String[] PUBLIC_URIS = new String[]
         {
             "/index.jsp",
-            "/action/**",
-            "/actions/**",
-            "/res/css/**",
-            "/res/fonts/**",
-            "/res/js/**",
-            "/res/media/**",
+            "/res/*/style/**",
+            "/res/*/fonts/**",
+            "/res/*/js/**",
+            "/res/*/media/**",
             //"/signup",
             "/"
         };
@@ -46,7 +44,6 @@ public class SecurityConfiguration
             .antMatchers(
                 PUBLIC_URIS
             ).permitAll()
-
                 .antMatchers("/editor/**").hasRole("EDITOR")
                 .anyRequest()
                 .hasRole("USER")
@@ -54,7 +51,7 @@ public class SecurityConfiguration
                 .formLogin()
                 .loginPage("/login")
                 .loginProcessingUrl("/login_check")
-                .defaultSuccessUrl("/")
+                .defaultSuccessUrl("/app/exceed")
                 .permitAll()
             .and()
                 .logout()

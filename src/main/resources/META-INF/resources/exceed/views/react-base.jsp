@@ -12,7 +12,7 @@
     <title>${title} - local base</title>
 
     <!-- Bootstrap -->
-    <link id="application-styles" href="${contextPath}/style/${appName}.css" rel="stylesheet">
+    <link id="application-styles" href="${contextPath}/res/${appName}/style/${appName}.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -28,13 +28,6 @@
     <script src="${contextPath}/res/${appName}/js/main.js"></script>
 </head>
 <body data-context-path="${contextPath}" data-app-name="${appName}" data-roles="${userRoles}">
-<div class="btn-toolbar exceed-toolbar text-right">
-    <sec:authorize  access="hasRole('ROLE_EDITOR')">
-        <a class="btn btn-link btn-default" href="${editUrl}">${editText}</a>
-    </sec:authorize>
-</div>
-<div id="errors" class="bg-danger hidden">
-</div>
 <div id="root">
 </div>
 <script id="root-model" type="x-ceed/view-model">
