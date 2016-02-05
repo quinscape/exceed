@@ -33,7 +33,7 @@ var csrfTokenHeader;
 
 function logError(err)
 {
-    var s = [];
+    var l = [];
     for (var name in err)
     {
         if (err.hasOwnProperty(name))
