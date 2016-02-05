@@ -1,6 +1,6 @@
 "use strict";
 
-var contextPath = null;
+/* global: contextPath */
 
 function evaluateParams(params)
 {
@@ -37,33 +37,11 @@ function uri(location, params)
 {
     location = replacePathVariables(location, params);
 
-    if (contextPath === null)
-    {
-        if (typeof document !== "undefined")
-        {
-            contextPath = document.body && document.body.dataset && document.body.dataset.contextPath;
-
-            if (typeof contextPath !== "string")
-            {
-                throw new Error("Context path not initialized");
-            }
-            //console.log("context-path from body[data-context-path] = " + contextPath);
-        }
-    }
-
     var result = contextPath + location + evaluateParams(params);
 
     //console.log("URI:", result);
 
     return result;
 }
-
-uri._init_context_path  = function(cp)
-{
-    if (!contextPath)
-    {
-        contextPath = cp;
-    }
-};
 
 module.exports = uri;
