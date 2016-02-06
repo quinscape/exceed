@@ -13,6 +13,8 @@ var PagingComponent = require("../../ui/PagingComponent");
 
 var Enum = require("../../util/enum");
 
+var immutableUpdate = require("react-addons-update");
+
 const MAX = 1<<31;
 
 var FilterMode = new Enum({
@@ -144,7 +146,7 @@ var DataGrid = React.createClass({
     {
         var vars = this.getVars();
 
-        this.setVars(React.addons.update(vars, {
+        this.setVars(immutableUpdate(vars, {
             filter: {
                 [v.name]: { $set: v.value }
             },
