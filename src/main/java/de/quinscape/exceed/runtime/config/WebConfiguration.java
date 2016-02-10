@@ -81,7 +81,7 @@ public class WebConfiguration
     {
         // unfortunately trying to inject the action registry here creates some kind of cyclic dependency messing
         // up dslContext creation :\ we delay that until first use
-        registry.addInterceptor(new CommonVariablesInterceptor(applicationContext));
+        registry.addInterceptor(new CommonVariablesInterceptor(applicationContext, servletContext));
     }
 
 

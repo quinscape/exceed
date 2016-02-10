@@ -15,6 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import org.svenson.JSON;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -39,12 +40,25 @@ public class CommonVariablesInterceptor
 
     private final ApplicationContext applicationContext;
 
+    private final ServletContext servletContext;
+
     private volatile String systemInfo;
 
 
-    public CommonVariablesInterceptor(ApplicationContext applicationContext)
+    public CommonVariablesInterceptor(ApplicationContext applicationContext, ServletContext servletContext)
     {
+        if (applicationContext == null)
+        {
+            throw new IllegalArgumentException("applicationContext can't be null");
+        }
+
+        if (servletContext == null)
+        {
+            throw new IllegalArgumentException("servletContext can't be null");
+        }
+
         this.applicationContext = applicationContext;
+        this.servletContext = servletContext;
     }
 
 
@@ -101,6 +115,7 @@ public class CommonVariablesInterceptor
         Map<String,Object> info = new HashMap<>();
 
         info.put("actions", getServerSideActionsInSystem());
+        info.put("contextPath", servletContext.getContextPath());
 
         return info;
     }

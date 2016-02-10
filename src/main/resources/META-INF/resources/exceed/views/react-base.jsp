@@ -27,7 +27,7 @@
     <script src="${contextPath}/res/${appName}/js/${applicationScope.reactDOMVersion}"></script>
     <script src="${contextPath}/res/${appName}/js/main.js"></script>
 </head>
-<body data-context-path="${contextPath}" data-app-name="${appName}" data-roles="${userRoles}">
+<body data-app-name="${appName}" data-roles="${userRoles}">
 <div id="root">
 </div>
 <script id="root-model" type="x-ceed/view-model">

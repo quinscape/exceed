@@ -44,7 +44,7 @@ domready(function ()
     var data = evaluateEmbedded("root-data", "x-ceed/view-data");
     var systemInfo  = evaluateEmbedded("system-info", "x-ceed/system-info");
 
-    sys.init( bodyData.contextPath, bodyData.appName);
+    sys.init( systemInfo.contextPath, bodyData.appName);
 
     currentViewName = model.name;
     currentViewData = data.data;
