@@ -1,6 +1,6 @@
 "use strict";
 
-/* global: contextPath */
+var sys = require("../sys");
 
 function evaluateParams(params)
 {
@@ -37,7 +37,7 @@ function uri(location, params)
 {
     location = replacePathVariables(location, params);
 
-    var result = contextPath + location + evaluateParams(params);
+    var result = sys.contextPath + location + evaluateParams(params);
 
     //console.log("URI:", result);
 

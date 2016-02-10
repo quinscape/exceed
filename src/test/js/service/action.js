@@ -3,8 +3,8 @@ var Promise = require("es6-promise-polyfill").Promise;
 var sinon = require("sinon");
 var proxyquire = require("proxyquire");
 
-global.contextPath = "/test-context";
-global.appName = "TestApp";
+var sys = require("../../../../src/main/js/sys");
+sys.init("/test-context", "TestApp");
 
 var actionService = proxyquire("../../../../src/main/js/service/action", {
     "./ajax" : function(opts)
@@ -32,7 +32,7 @@ var actionService = proxyquire("../../../../src/main/js/service/action", {
             return Promise.resolve(opts.data);
         }
 
-        return Promise.reject(new Error("Unhandled ajax test opts"));
+        return Promise.reject(new Error("Unhandled ajax test opts" + JSON.stringify(opts)));
     }
 
 });

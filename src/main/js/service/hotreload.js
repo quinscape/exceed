@@ -1,3 +1,5 @@
+var sys = require("../sys");
+
 var pollingEnabled = false;
 
 const ACTIVITY_TIMEOUT = 60000;
@@ -38,7 +40,7 @@ if (process.env.NODE_ENV !== "production")
 
         polling = true;
         ajax({
-            url: contextPath + "/reload/" + appName
+            url: sys.contextPath + "/reload/" + sys.appName
         }).then(function (model)
         {
             polling = false;
@@ -70,7 +72,7 @@ if (process.env.NODE_ENV !== "production")
                 console.log("CodeChange");
 
                 var elem = document.createElement("script");
-                elem.setAttribute("src", timestampURL(contextPath + "/res/" + appName + "/js/main.js"));
+                elem.setAttribute("src", timestampURL(sys.contextPath + "/res/" + sys.appName + "/js/main.js"));
 
                 var head = document.getElementsByTagName("head")[0];
                 head.appendChild(elem);

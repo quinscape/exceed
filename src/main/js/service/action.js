@@ -1,5 +1,6 @@
 var ajax = require("./ajax");
 var uri = require("../util/uri");
+var sys = require("../sys");
 
 var enableThrobber = require("../cando").ajax;
 
@@ -58,7 +59,7 @@ function executeAction(actionModel, data)
 
     return ajax({
         url: uri("/action/{app}/{action}", {
-                app: appName,
+                app: sys.appName,
                 action: actionModel.action,
                 model: JSON.stringify(actionModel)
             }),
@@ -156,6 +157,8 @@ var ActionService = {
      */
     initServerActions: function (actionNames)
     {
+        console.info("Server actions", actionNames);
+
         for (var i = 0; i < actionNames.length; i++)
         {
             var name = actionNames[i];

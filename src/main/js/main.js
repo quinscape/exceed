@@ -3,6 +3,8 @@ var Promise = require("es6-promise-polyfill").Promise;
 var bulk = require("bulk-require");
 var domready = require("domready");
 
+var sys = require("./sys");
+
 var componentService = require("./service/component");
 var actionService = require("./service/action");
 var security = require("./service/security");
@@ -34,26 +36,22 @@ var currentViewData;
 
 domready(function ()
 {
-    security.init(document.body.dataset.roles);
+    var bodyData = document.body.dataset;
+    security.init(bodyData.roles);
 
-    var contextPath = document.body.dataset.contextPath;
-
-    window.appName = document.body.dataset.appName;
-    window.contextPath = contextPath;
 
     var model = evaluateEmbedded("root-model", "x-ceed/view-model");
     var data = evaluateEmbedded("root-data", "x-ceed/view-data");
     var systemInfo  = evaluateEmbedded("system-info", "x-ceed/system-info");
+
+    sys.init( bodyData.contextPath, bodyData.appName);
 
     currentViewName = model.name;
     currentViewData = data.data;
 
     //console.log("currentViewData", JSON.stringify(currentViewData, null, "  "));
 
-    var serverActions = systemInfo.actions;
-    console.info("Server actions", serverActions);
-
-    actionService.initServerActions(serverActions);
+    actionService.initServerActions(systemInfo.actions);
 
     //actionService.execute([
     //    {

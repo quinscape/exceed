@@ -1,3 +1,5 @@
+var sys = require("../sys");
+
 var React = require("react");
 
 var classes = require("classnames");
@@ -151,7 +153,7 @@ var DomainEditor = React.createClass({
         {
             var component = this;
             ajax({
-                url : contextPath + "/editor/" + appName + "/domain",
+                url : sys.contextPath + "/editor/" + sys.appName + "/domain",
                 contentType: "application/json"
             }).then(function (data)
             {
@@ -181,7 +183,7 @@ var DomainEditor = React.createClass({
         {
             ajax({
                 method: "POST",
-                url : contextPath + "/editor/" + appName + "/domain/type",
+                url : sys.contextPath + "/editor/" + sys.appName + "/domain/type",
                 contentType: "application/json",
                 data: {
                     name: model.name,
@@ -221,7 +223,7 @@ var DomainEditor = React.createClass({
         {
             return ajax({
                 method: "POST",
-                url : contextPath + "/editor/" + appName + "/domain/layout",
+                url : sys.contextPath + "/editor/" + sys.appName + "/domain/layout",
                 contentType: "application/json",
                 data: {
                     name: name,
