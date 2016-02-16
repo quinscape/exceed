@@ -29,6 +29,10 @@ public class ExpressionParser
 
     public static ASTExpression parse(String expression) throws ParseException
     {
+        if (expression == null || expression.length() == 0)
+        {
+            return null;
+        }
         return parse(new StringReader(expression));
     }
 

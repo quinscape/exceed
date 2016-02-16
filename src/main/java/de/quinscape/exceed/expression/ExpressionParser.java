@@ -21,6 +21,10 @@ public class ExpressionParser/*@bgen(jjtree)*/implements ExpressionParserTreeCon
 
     public static ASTExpression parse(String expression) throws ParseException
     {
+        if (expression == null || expression.length() == 0)
+        {
+            return null;
+        }
         return parse(new StringReader(expression));
     }
 
@@ -976,6 +980,12 @@ if (jjtc000) {
     finally { jj_save(1, xla); }
   }
 
+  private boolean jj_3_2()
+ {
+    if (jj_3R_11()) return true;
+    return false;
+  }
+
   private boolean jj_3R_11()
  {
     if (jj_scan_token(IDENTIFIER)) return true;
@@ -984,12 +994,6 @@ if (jjtc000) {
   }
 
   private boolean jj_3_1()
- {
-    if (jj_3R_11()) return true;
-    return false;
-  }
-
-  private boolean jj_3_2()
  {
     if (jj_3R_11()) return true;
     return false;
