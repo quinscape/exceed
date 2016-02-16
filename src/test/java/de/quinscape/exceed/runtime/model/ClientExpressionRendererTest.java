@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.svenson.JSONParser;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,17 +32,9 @@ public class ClientExpressionRendererTest
     @Before
     public void setupComponent() throws ParseException
     {
-        ComponentDescriptor componentDescriptor = new ComponentDescriptor(
-            ImmutableMap.of("myVar", "myVarValue"),
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            false,
-            false
-        );
+        ComponentDescriptor componentDescriptor = JSONParser.defaultJSONParser().parse(ComponentDescriptor.class, "{\n" +
+            "    \"vars\" : { \"myVar\": \"myVarValue\"}\n" +
+            "}");
 
         componentModel = new ComponentModel();
         componentModel.setName("TestComponent");

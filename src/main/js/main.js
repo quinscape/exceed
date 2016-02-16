@@ -9,6 +9,7 @@ var componentService = require("./service/component");
 var actionService = require("./service/action");
 var security = require("./service/security");
 var render = require("./service/render");
+var hub = require("./service/hub");
 
 var svgLayout = require("./util/svg-layout");
 
@@ -51,6 +52,8 @@ domready(function ()
 
     //console.log("currentViewData", JSON.stringify(currentViewData, null, "  "));
 
+    console.info("Server actions", systemInfo.actions);
+
     actionService.initServerActions(systemInfo.actions);
 
     //actionService.execute([
@@ -65,13 +68,54 @@ domready(function ()
 
     // async setup
     Promise.all([
-        svgLayout.init()
+        svgLayout.init(),
+        hub.init(bodyData.connectionId)
     ]).then(function ()
     {
-        if (process.env.NODE_ENV !== "production" && security.hasRole("ROLE_EDITOR"))
-        {
-            hotReload.enablePolling();
-        }
+        //if (process.env.NODE_ENV !== "production" && security.hasRole("ROLE_EDITOR"))
+        //{
+        //    hotReload.enablePolling();
+        //}
+
+        //var group = hub.createGroup();
+        //
+        //group.request({
+        //    type: "message.TestRequest",
+        //    value: "Hello from js"
+        //}).then(function (data)
+        //{
+        //    console.log("DATA", data);
+        //
+        //}).catch(function (err)
+        //{
+        //    console.error(err);
+        //});
+        //
+        //group.request({
+        //    type: "message.TestRequest",
+        //    value: "2nd"
+        //}).then(function (data)
+        //{
+        //    console.log("DATA 2 ", data);
+        //
+        //}).catch(function (err)
+        //{
+        //    console.error(err);
+        //});
+        //
+        //group.close();
+        //
+        //hub.request({
+        //    type: "message.TestRequest",
+        //    value: "single"
+        //}).then(function (data)
+        //{
+        //    console.log("DATA", data);
+        //
+        //}).catch(function (err)
+        //{
+        //    console.error(err);
+        //});
 
         return render.render(model, currentViewData);
     })

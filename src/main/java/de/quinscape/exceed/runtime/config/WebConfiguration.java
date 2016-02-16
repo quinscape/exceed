@@ -1,8 +1,15 @@
 package de.quinscape.exceed.runtime.config;
 
+import de.quinscape.exceed.message.IncomingMessage;
+import de.quinscape.exceed.message.Message;
+import de.quinscape.exceed.runtime.model.ModelJSONService;
+import de.quinscape.exceed.runtime.service.websocket.EditorMessageHandler;
+import de.quinscape.exceed.runtime.service.websocket.EditorWebSocketHandler;
+import de.quinscape.exceed.runtime.service.websocket.MessageHubRegistry;
+import de.quinscape.exceed.runtime.service.websocket.MessageHubRegistryImpl;
+import de.quinscape.exceed.runtime.service.websocket.WebSocketServerFactory;
 import de.quinscape.exceed.runtime.util.MediaTypeService;
 import de.quinscape.exceed.runtime.util.MediaTypeServiceImpl;
-import de.quinscape.exceed.runtime.component.QueryDataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +17,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.context.support.ServletContextResource;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -18,10 +26,18 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import javax.servlet.ServletContext;
+import java.util.HashMap;
+import java.util.Map;
 
-@ComponentScan({
-    "de.quinscape.exceed.runtime.controller"
-})
+@ComponentScan(
+    value = {
+        "de.quinscape.exceed.runtime.controller",
+        "de.quinscape.exceed.runtime.editor"
+    },
+    includeFilters = {
+        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = EditorMessageHandler.class)
+    }
+)
 @PropertySource({
     "/WEB-INF/profiles/${spring.profiles.active}.properties"
 })
@@ -84,10 +100,41 @@ public class WebConfiguration
         registry.addInterceptor(new CommonVariablesInterceptor(applicationContext, servletContext));
     }
 
-
+    @Bean
+    public MessageHubRegistry messageHubRegistry(EditorWebSocketHandler editorWebSocketHandler)
+    {
+        MessageHubRegistryImpl registry = new MessageHubRegistryImpl();
+        registry.setEditorMessageHub(editorWebSocketHandler);
+        return registry;
+    }
     @Bean
     public MediaTypeService mediaTypeService()
     {
         return new MediaTypeServiceImpl(new ServletContextResource(servletContext, "/WEB-INF/mime.types"));
+    }
+
+    @Bean
+    public EditorWebSocketHandler editorWebSocketHandler(ModelJSONService modelJSONService)
+    {
+        Map<String, EditorMessageHandler<? extends IncomingMessage>> handlers = new HashMap<>();
+
+        for (EditorMessageHandler editorMessageHandler : applicationContext.getBeansOfType(EditorMessageHandler
+            .class).values())
+        {
+            String name = Message.MESSAGE_PREFIX + editorMessageHandler.getMessageType().getSimpleName();
+            EditorMessageHandler<? extends IncomingMessage> old = handlers.put(name, editorMessageHandler);
+
+            if (old != null)
+            {
+                throw new IllegalStateException("Message name '" + name + "' is associated with both " + old + " and " + editorMessageHandler);
+            }
+        }
+
+        return new EditorWebSocketHandler(handlers);
+    }
+    @Bean
+    public WebSocketServerFactory webSocketServerFactory(EditorWebSocketHandler editorWebSocketHandler)
+    {
+        return new WebSocketServerFactory(editorWebSocketHandler);
     }
 }

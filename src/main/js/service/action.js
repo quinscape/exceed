@@ -157,8 +157,6 @@ var ActionService = {
      */
     initServerActions: function (actionNames)
     {
-        console.info("Server actions", actionNames);
-
         for (var i = 0; i < actionNames.length; i++)
         {
             var name = actionNames[i];

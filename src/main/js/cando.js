@@ -20,7 +20,7 @@ module.exports = {
     {
         try
         {
-            return typeof window !== "undefined" && "localStorage" in window && window["localStorage"] !== null;
+            return typeof window !== "undefined" && "localStorage" in window && window["localStorage"];
         }
         catch (e)
         {
@@ -32,7 +32,7 @@ module.exports = {
     {
         try
         {
-            return typeof window !== "undefined" &&"sessionStorage" in window && window["sessionStorage"] !== null;
+            return typeof window !== "undefined" &&"sessionStorage" in window && window["sessionStorage"];
         }
         catch (e)
         {
@@ -47,6 +47,18 @@ module.exports = {
             return typeof document !== "undefined" && !!document.createElementNS && !!document.createElementNS('http://www.w3.org/2000/svg', "svg").createSVGRect;
         }
         catch (e)
+        {
+            return false;
+        }
+    })(),
+
+    webSockets: (function ()
+    {
+        try
+        {
+            return typeof window !== "undefined" && "WebSocket" in window && window["WebSocket"];
+        }
+        catch(e)
         {
             return false;
         }
