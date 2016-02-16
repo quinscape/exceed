@@ -42,6 +42,8 @@ var REACT_CATCH_ERRORS = !PRODUCTION && !process.env.NO_CATCH_ERRORS;
 
 var BABEL_PLUGINS = [
 
+    "transform-es2015-arrow-functions",
+
     // JSX support
     "transform-react-jsx",
     "transform-react-display-name",
@@ -54,8 +56,6 @@ var BABEL_PLUGINS = [
 
     // if (process.env.NODE_ENV !== "production")
     "transform-node-env-inline",
-
-    "transform-es2015-arrow-functions",
 
     // ES2015 module imports
     "transform-es2015-modules-commonjs",
