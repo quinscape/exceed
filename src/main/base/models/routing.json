@@ -1,7 +1,15 @@
 {
-  "rootNode" : {
-    "mapping" : {
-      "viewName" : "Home"
+    "rootNode": {
+        "kids": [
+            {
+                "name": "detail",
+                "mapping": {
+                    "viewName": "Detail"
+                }
+            }
+        ],
+        "mapping": {
+            "viewName": "Home"
+        }
     }
-  }
 }
