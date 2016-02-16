@@ -21,7 +21,7 @@ var componentService = require("./component");
 var React = require("react");
 var components = componentService.getComponents();
 
-var viewAPI = require("./view-api");
+var rtViewAPI = require("./runtime-view-api");
 
 function RenderContext(out)
 {
@@ -85,6 +85,7 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
         }
 
         component = JSON.stringify(name);
+        //console.log("builtin", component, components);
     }
 
     var attrs = componentModel.attrs;
@@ -185,7 +186,7 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
             ctx.out.push("vars: _v.data[\"" + attrs.id + "\"].vars");
         }
 
-        if (kids && componentDescriptor.contextProvider)
+        if (kids && componentDescriptor.providesContext)
         {
             var newContextName = (attrs && attrs.var) || "context";
             ctx.contexts.unshift(newContextName);
@@ -234,7 +235,7 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
         }
     }
 
-    if (kids && (!componentDescriptor || !componentDescriptor.contextProvider))
+    if (kids && (!componentDescriptor || !componentDescriptor.providesContext))
     {
         for (i = 0; i < kids.length; i++)
         {
@@ -251,36 +252,14 @@ function renderViewComponentSource(viewModel)
 {
     var buf = [];
 
-    if (process.env.NODE_ENV !== "production" && !process.env.NO_CATCH_ERRORS)
-    {
-        buf.push(
-            "var _components = { _component: {  }};\n\n",
-            "var _transformCatchErrors = (0, _catchErrors)({\n",
-            "    filename: \"/exceed/view/" + viewModel.name + "/" + viewModel.version +"\",\n",
-            "    components: _components,\n",
-            "    locals: [],\n",
-            "    imports: [_React, _ErrorReport]\n",
-            "});\n"
-        );
-        buf.push(
-            "\nreturn _transformCatchErrors(");
-    }
-    else
-    {
-        buf.push(
-            "\nreturn ");
-    }
-
     buf.push(
-        "_React.createClass({\n  displayName: \"View." + viewModel.name + "\",\n  statics: { version: \"" + viewModel.version + "\"},\n\n",
-        "  render: function ()\n  {\n",
-        "    var _v= new _view.RTView(this.props.model, this.props.componentData);\n",
-        "    return (\n\n"
+        "var _v= new _RTView(this.props.model, this.props.componentData);\n",
+        "return (\n\n"
     );
 
     var ctx = new RenderContext(buf);
 
-    renderRecursively(ctx, viewModel.root, 4);
+    renderRecursively(ctx, viewModel.root, 1);
 
     var usedComponents = ctx.usedComponents;
     for (var componentName in usedComponents)
@@ -292,24 +271,24 @@ function renderViewComponentSource(viewModel)
     }
 
     buf.push(
-        "\n    );",
-        "\n  }",
-        "\n})"
+        "\n);"
     );
-
-    if (process.env.NODE_ENV !== "production" && !process.env.NO_CATCH_ERRORS)
-    {
-        buf.push(", \"_component\")");
-    }
 
     return buf.join("");
 }
 
 module.exports = {
-    createComponent : function(viewModel)
+    createRenderFunction : function(viewModel)
     {
+        //console.log("\nVIEWMODEL:\n", JSON.stringify(viewModel, null, "  "));
         var code = renderViewComponentSource(viewModel);
-        //console.log("\nVIEW-COMPONENT:\n", code);
-        return new Function("_React", "_components", "_view", "_catchErrors", "_ErrorReport", code)(React, components, viewAPI, catchErrors, ErrorReport);
+        //console.log("\nRENDER-FN:\n", code);
+
+        var renderFn = new Function("_React", "_components", "_RTView", "_catchErrors", "_ErrorReport", code);
+
+        return function (component)
+        {
+            return renderFn.call(component, React, components, rtViewAPI, catchErrors, ErrorReport);
+        };
     }
 };

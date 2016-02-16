@@ -1,6 +1,5 @@
 var testDom = require("../ui/test-dom").setup();
 var React = require("react");
-var ReactDOM = require("react-dom");
 var expect = require("expect");
 var createRenderer = require("react-addons-test-utils").createRenderer;
 var renderIntoDocument = require("react-addons-test-utils").renderIntoDocument;
@@ -56,7 +55,8 @@ var Injected = React.createClass({
     }
 });
 
-var ViewComponentRenderer = proxyquire("../../../../src/main/js/service/view-component-renderer", {
+
+var ViewComponentRenderer = proxyquire("../../../../src/main/js/service/view-renderer", {
     "./component" : {
         getComponents: function()
         {
@@ -96,6 +96,7 @@ var ViewComponentRenderer = proxyquire("../../../../src/main/js/service/view-com
     }
 });
 
+var ViewComponent = require("../../../../src/main/js/service/render").ViewComponent;
 
 // View Model client format with "exprs" and transformed expressions
 var simpleView = {
@@ -128,8 +129,6 @@ describe("View Components", function ()
 
     it("render a component tree", function ()
     {
-        var ViewComponent = ViewComponentRenderer.createComponent(simpleView);
-
         var renderer = createRenderer();
         renderer.render(<ViewComponent
             model={ simpleView }
@@ -148,6 +147,8 @@ describe("View Components", function ()
     it("inject vars and query data", function ()
     {
         var view = {
+            name: "InjectionView",
+            version: "00000000-0000-0000-0000-000000000000",
             root: {
                 name: "Injected",
                 attrs: {
@@ -156,7 +157,6 @@ describe("View Components", function ()
             }
         };
 
-        var ViewComponent = ViewComponentRenderer.createComponent(view);
         var payload = { value : "injected value" };
 
         var renderer = createRenderer();
@@ -180,6 +180,8 @@ describe("View Components", function ()
     it("render components with context", function (done)
     {
         var view = {
+            name: "Test-Component-Context",
+            version: "00000000-0000-0000-0000-000000000000",
             root: {
                 name: "Provider",
                 attrs: {
@@ -199,7 +201,6 @@ describe("View Components", function ()
             }
         };
 
-        var ViewComponent = ViewComponentRenderer.createComponent(view);
 
         testDom.render(<ViewComponent
             model={ view }
@@ -220,7 +221,10 @@ describe("View Components", function ()
 
     it("render components with keyed context", function (done)
     {
+
         var view = {
+            name: "Test-Keyed-Component-Context",
+            version: "00000000-0000-0000-0000-000000000000",
             root: {
                 name: "Provider",
                 exprs: {
@@ -241,8 +245,6 @@ describe("View Components", function ()
             }
         };
 
-        var ViewComponent = ViewComponentRenderer.createComponent(view);
-
         testDom.render(<ViewComponent
             model={ view }
             componentData={{}}
@@ -251,7 +253,10 @@ describe("View Components", function ()
             //console.log("HTML", document.body.innerHTML);
             var providerElem = document.querySelector(".provider");
             assert(providerElem);
+
+
             var consumerElem = providerElem.querySelector(".keyed-consumer");
+            assert(consumerElem);
             assert(consumerElem.innerHTML === "value for 'foo'");
 
             testDom.cleanup();
