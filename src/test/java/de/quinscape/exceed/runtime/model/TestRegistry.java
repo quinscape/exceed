@@ -1,11 +1,18 @@
 package de.quinscape.exceed.runtime.model;
 
 import de.quinscape.exceed.component.ComponentDescriptor;
+import de.quinscape.exceed.component.ComponentPackageDescriptor;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
+import org.svenson.JSONParser;
+import org.svenson.tokenize.InputStreamSource;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class TestRegistry
     implements ComponentRegistry
@@ -29,10 +36,27 @@ public class TestRegistry
         this.componentRegistrations = m;
     }
 
+    public static TestRegistry loadComponentPackages(String... componentNames) throws FileNotFoundException
+    {
+        Map<String, ComponentDescriptor> map = new HashMap<>();
+        for (String componentName : componentNames)
+        {
+            ComponentPackageDescriptor pkg = JSONParser.defaultJSONParser().parse(ComponentPackageDescriptor.class, new InputStreamSource(new FileInputStream(new File("./src/main/js/components/" + componentName + "/component.json")), true));
+            map.putAll(pkg.getComponents());
+        }
+        return new TestRegistry(map);
+    }
 
     @Override
     public ComponentRegistration getComponentRegistration(String name)
     {
         return componentRegistrations.get(name);
+    }
+
+
+    @Override
+    public Set<String> getComponentNames()
+    {
+        return componentRegistrations.keySet();
     }
 }

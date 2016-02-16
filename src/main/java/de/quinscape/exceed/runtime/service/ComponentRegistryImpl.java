@@ -44,8 +44,14 @@ public class ComponentRegistryImpl
 
     private JSONParser parser;
 
-    @Autowired
     private StyleService styleService;
+
+    @Autowired
+    public void setStyleService(StyleService styleService)
+    {
+        this.styleService = styleService;
+    }
+
 
     @Autowired
     private ApplicationService applicationService;
@@ -178,6 +184,12 @@ public class ComponentRegistryImpl
 
 
     @Override
+    public Set<String> getComponentNames()
+    {
+        return components.keySet();
+    }
+
+    @Override
     public void onResourceChange(ModuleResourceEvent resourceEvent, FileResourceRoot root, String resourcePath)
     {
         /*
@@ -230,6 +242,6 @@ public class ComponentRegistryImpl
     {
         this.applicationContext = applicationContext;
 
-        this.dataProviders = ImmutableMap.copyOf(applicationContext.getBeansOfType(DataProvider.class));
+        this.dataProviders = ImmutableMap.copyOf(this.applicationContext.getBeansOfType(DataProvider.class));
     }
 }
