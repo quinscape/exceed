@@ -122,3 +122,11 @@ div.notification
     font-size: 24pt;
     color: #444;
 }
+
+.error-report {
+    color: #000;
+}
+
+.error-report a {
+    color: #008;
+}
