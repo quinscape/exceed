@@ -1,11 +1,13 @@
 package de.quinscape.exceed.runtime.expression.query;
 
+import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.expression.ASTEquality;
 import de.quinscape.exceed.expression.ASTInteger;
 import de.quinscape.exceed.expression.ASTPropertyChain;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DomainService;
@@ -17,6 +19,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.*;
@@ -97,8 +101,7 @@ public class QueryTransformerTest
     private QueryDefinition transform(String query) throws ParseException
     {
         TestDomainService domainService = new TestDomainService();
-        QueryDefinition ast = transformer.transform(domainService, query, null, null, null);
-        return ast;
+        return transformer.transform(domainService, query, null, null);
     }
 
 
@@ -145,6 +148,20 @@ public class QueryTransformerTest
         public String getSchema()
         {
             return "test";
+        }
+
+
+        @Override
+        public Set<String> getDomainTypeNames()
+        {
+            return ImmutableSet.of("Foo", "Bar", "Baz");
+        }
+
+
+        @Override
+        public Map<String, EnumModel> getEnums()
+        {
+            return Collections.emptyMap();
         }
     }
 }

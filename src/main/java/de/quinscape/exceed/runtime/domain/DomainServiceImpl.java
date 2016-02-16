@@ -1,13 +1,16 @@
 package de.quinscape.exceed.runtime.domain;
 
 import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.datalist.DataListService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.JSONParser;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 public class DomainServiceImpl
     implements DomainService
@@ -50,7 +53,7 @@ public class DomainServiceImpl
     /**
      * Converts the given model JSON to a model instance.
      *
-     * @param json JSON string. Must have a root "_type" property that contains a valid model name,
+     * @param json JSON string. Must have a root "type" property that contains a valid model name,
      * @return Model instance of type embedded in JSON
      */
     @Override
@@ -77,6 +80,13 @@ public class DomainServiceImpl
     public String getSchema()
     {
         return schema;
+    }
+
+
+    @Override
+    public Set<String> getDomainTypeNames()
+    {
+        return Collections.unmodifiableSet(runtimeApplication.getApplicationModel().getDomainTypes().keySet());
     }
 
 
@@ -129,5 +139,11 @@ public class DomainServiceImpl
                 throw new DomainObjectCreationException("Error creating domain object", e);
             }
         }
+    }
+
+    @Override
+    public Map<String,EnumModel> getEnums()
+    {
+        return runtimeApplication.getApplicationModel().getEnums();
     }
 }
