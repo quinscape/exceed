@@ -106,10 +106,9 @@ function bundle(watch, cb) {
         bro.exclude("./src/main/js/editor/InPageEditor.js");
     }
 
-    //// TODO: expose services for project components / actions
-    //bro.require("./src/service/services", {
-    //    expose: "exceed-services"
-    //});
+    bro.require("./src/main/js/services", {
+        expose: "exceed-services"
+    });
 
 
     bro.transform(
