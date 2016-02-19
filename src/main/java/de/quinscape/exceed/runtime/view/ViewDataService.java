@@ -79,7 +79,9 @@ public class ViewDataService
 
 
                 ViewData viewData = context.getViewData();
-                viewData.provide(element.getComponentId(), vars.size() > 0 ? vars : false, componentDataMap != null ? componentDataMap :false);
+                String componentId = element.getComponentId();
+
+                viewData.provide(componentId, vars.size() > 0 ? vars : false, componentDataMap != null ? componentDataMap :false);
 
                 if (context.isContinueOnChildren())
                 {

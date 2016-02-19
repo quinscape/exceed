@@ -32,23 +32,24 @@ describe("Tokens Module", function(){
         //console.log("XML", xmlDoc);
 
         var result = locate("<Grid");
-        assert(result.models[0].model === testView.root);
+        assert(result.parentPath[0].model === testView.root);
         assert(!result.attr);
         assert(!result.attrValue);
 
         result = locate("luid");
-        assert(result.models[0].model === testView.root);
+        assert(result.parentPath[0].model === testView.root);
         assert(result.attr === "fluid");
         assert(!result.attrValue);
 
         result = locate("true");
-        assert(result.models[0].model === testView.root);
+        assert(result.parentPath[0].model === testView.root);
         assert(result.attr === "fluid");
         assert(result.attrValue);
         assert(result.expression);
 
         result = locate("login");
-        assert(result.models[0].model === testView.root.kids[0].kids[0].kids[1].kids[1]);
+        //console.log("RESULT", JSON.stringify(result, null, "  "));
+        assert(result.parentPath[0].model.kids[result.parentPath[0].index - 1] === testView.root.kids[0].kids[0].kids[1].kids[1]);
         assert(result.attr === "name");
         assert(result.attrValue);
         assert(!result.expression);
@@ -61,7 +62,7 @@ describe("Tokens Module", function(){
         testView = { root: { name: "Root"} };
 
         var result = locate("<", 1);
-        assert(result.models[0].model === testView.root);
+        assert(result.parentPath[0].model === testView.root);
         assert(!result.attr);
         assert(!result.attrValue);
     });

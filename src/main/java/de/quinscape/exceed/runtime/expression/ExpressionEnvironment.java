@@ -29,6 +29,7 @@ import de.quinscape.exceed.expression.Operator;
 import de.quinscape.exceed.expression.SimpleNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.svenson.util.JSONBeanUtil;
 import org.svenson.util.Util;
 
 import java.lang.reflect.InvocationTargetException;
@@ -55,7 +56,7 @@ import java.util.concurrent.ConcurrentMap;
  * </p>
  * <p>
  * <pre>
- * public static String foo(ASTNode node)
+ * public static String foo(ASTFunction node)
  * {
  * return "foo";
  * }
@@ -65,22 +66,21 @@ import java.util.concurrent.ConcurrentMap;
  * would be called by a foo(...) expression whereas
  * </p>
  * <pre>
- * public static MyContext context(ASTNode MyContext)
+ * public static MyContext context(ASTFunction node)
  * {
- * return new MyContext();
+ *     return new MyContext();
  * }
  *
- * public static MyContext foo(ASTNode MyContext, MyContext myContext)
+ * public static MyContext foo(ASTFunction node, MyContext myContext)
  * {
- * // do something with myContext
- *
- * return myContext;
+ *     // do something with myContext
+ *     return myContext;
  * }
  * </pre>
  * <p>
  * <p>
  * Would allow context() to create a context which is then chained to a foo() call for further manipulation. (e.g.
- * context('bla'").foo(12))
+ * context('bla').foo(12))
  * </p>
  */
 public abstract class ExpressionEnvironment
@@ -123,14 +123,14 @@ public abstract class ExpressionEnvironment
 
 
     /** The name of the environment, used in error messages. */
-    protected String name;
+    protected String environmentName;
 
 
     protected ExpressionEnvironment()
     {
         Class<? extends ExpressionEnvironment> implementationClass = this.getClass();
 
-        this.name = implementationClass.getSimpleName();
+        this.environmentName = implementationClass.getSimpleName();
 
         if ((implementationClass.getModifiers() & Modifier.PUBLIC) == 0)
         {
@@ -183,10 +183,14 @@ public abstract class ExpressionEnvironment
     @Override
     public Object visit(ASTPropertyChain node, Object data)
     {
-        Object chainObject = null;
-        for (int i = 0; i < node.jjtGetNumChildren(); i++)
+
+        Node kid = node.jjtGetChild(0);
+
+        Object chainObject = kid.jjtAccept(this, null);
+
+        for (int i = 1; i < node.jjtGetNumChildren(); i++)
         {
-            Node kid = node.jjtGetChild(i);
+            kid = node.jjtGetChild(i);
             chainObject = propertyChainPart(kid, chainObject, i);
         }
         return chainObject;
@@ -205,7 +209,13 @@ public abstract class ExpressionEnvironment
     {
         if (kid instanceof ASTIdentifier)
         {
-            chainObject = kid.jjtAccept(this, null);
+            String name = ((ASTIdentifier) kid).getName();
+            if (chainObject == null)
+            {
+                throw new IllegalStateException("Cannot access property '" + name + "' of null");
+            }
+
+            chainObject = JSONBeanUtil.defaultUtil().getProperty(chainObject, name);
         }
         if (kid instanceof ASTFunction)
         {
@@ -227,7 +237,7 @@ public abstract class ExpressionEnvironment
         Map<String, Method> fnMap = methodsByContext.get(context);
         if (fnMap == null)
         {
-            throw new UnknownContextException("Environment " + this.name + " has no operations for context " +
+            throw new UnknownContextException("Environment " + this.environmentName + " has no operations for context " +
                 chainObject);
         }
 
@@ -256,12 +266,11 @@ public abstract class ExpressionEnvironment
         }
         catch (IllegalAccessException e)
         {
-            throw new ExpressionEnvironmentException(this.name + ": error accessing " + method.getName());
+            throw new ExpressionEnvironmentException(this.environmentName + ": error accessing " + method.getName());
         }
         catch (InvocationTargetException e)
         {
-            throw new ExpressionEnvironmentException(operatorName + ": error calling operation '" + operatorName, e
-                .getTargetException());
+            throw new ExpressionEnvironmentException(operatorName + ": " + e.getTargetException().getMessage());
         }
     }
 
@@ -278,7 +287,7 @@ public abstract class ExpressionEnvironment
      */
     protected Object undefinedOperation(ASTFunction node, Object chainObject)
     {
-        throw new UnknownOperationException("Unknown operation for environment " + this.name + ", context = " + chainObject + ": " + node.getName());
+        throw new UnknownOperationException("Unknown operation for environment " + this.environmentName + ", context = " + chainObject + ": " + node.getName());
     }
 
 
@@ -372,7 +381,7 @@ public abstract class ExpressionEnvironment
     {
         if (!logicalOperatorsAllowed)
         {
-            throw new ExpressionEnvironmentException(name + ": Logical or operators not allowed in query expressions");
+            throw new ExpressionEnvironmentException(environmentName + ": Logical or operators not allowed in query expressions");
         }
 
         int numKids = node.jjtGetNumChildren();
@@ -391,7 +400,7 @@ public abstract class ExpressionEnvironment
             }
             else
             {
-                throw new ExpressionEnvironmentException(name + ": Cannot apply logical or to : " + result);
+                throw new ExpressionEnvironmentException(environmentName + ": Cannot apply logical or to : " + result);
             }
         }
         return false;
@@ -403,7 +412,7 @@ public abstract class ExpressionEnvironment
     {
         if (!logicalOperatorsAllowed)
         {
-            throw new ExpressionEnvironmentException(name + ": Logical and operators not allowed in query expressions");
+            throw new ExpressionEnvironmentException(environmentName + ": Logical and operators not allowed in query expressions");
         }
 
         int numKids = node.jjtGetNumChildren();
@@ -422,7 +431,7 @@ public abstract class ExpressionEnvironment
             }
             else
             {
-                throw new ExpressionEnvironmentException(name + ": Cannot apply logical and to : " + result);
+                throw new ExpressionEnvironmentException(environmentName + ": Cannot apply logical and to : " + result);
             }
         }
         return true;
@@ -434,7 +443,7 @@ public abstract class ExpressionEnvironment
     {
         if (!comparatorsAllowed)
         {
-            throw new ExpressionEnvironmentException(name + ": Equality operators not allowed in query expressions");
+            throw new ExpressionEnvironmentException(environmentName + ": Equality operators not allowed in query expressions");
         }
 
         Object lft = node.jjtGetChild(0).jjtAccept(this, null);
@@ -570,7 +579,7 @@ public abstract class ExpressionEnvironment
     {
         if (!comparatorsAllowed)
         {
-            throw new ExpressionEnvironmentException(name + ": Relational operators not allowed in query expressions");
+            throw new ExpressionEnvironmentException(environmentName + ": Relational operators not allowed in query expressions");
         }
 
         Object lft = node.jjtGetChild(0).jjtAccept(this, null);
@@ -592,7 +601,7 @@ public abstract class ExpressionEnvironment
     {
         if (!arithmeticOperatorsAllowed)
         {
-            throw new ExpressionEnvironmentException(name + ": Addition operators not allowed in query expressions");
+            throw new ExpressionEnvironmentException(environmentName + ": Addition operators not allowed in query expressions");
         }
 
         boolean stringAdd = false;
@@ -692,7 +701,7 @@ public abstract class ExpressionEnvironment
     {
         if (!arithmeticOperatorsAllowed)
         {
-            throw new ExpressionEnvironmentException(name + ": Addition operators not allowed in query expressions");
+            throw new ExpressionEnvironmentException(environmentName + ": Addition operators not allowed in query expressions");
         }
 
         boolean floatPrecision = false;
@@ -746,7 +755,7 @@ public abstract class ExpressionEnvironment
     {
         if (!arithmeticOperatorsAllowed)
         {
-            throw new ExpressionEnvironmentException(name + ": Addition operators not allowed in query expressions");
+            throw new ExpressionEnvironmentException(environmentName + ": Addition operators not allowed in query expressions");
         }
 
         boolean floatPrecision = false;
@@ -799,7 +808,7 @@ public abstract class ExpressionEnvironment
     {
         if (!arithmeticOperatorsAllowed)
         {
-            throw new ExpressionEnvironmentException(name + ": Addition operators not allowed in query expressions");
+            throw new ExpressionEnvironmentException(environmentName + ": Addition operators not allowed in query expressions");
         }
 
         boolean floatPrecision = false;
@@ -831,7 +840,7 @@ public abstract class ExpressionEnvironment
             }
             else
             {
-                throw new ExpressionEnvironmentException(name + ": Cannot multiply " + operand +
+                throw new ExpressionEnvironmentException(environmentName + ": Cannot multiply " + operand +
                     (operand != null ? "( " + operand.getClass() + ")" : ""));
             }
 
@@ -954,7 +963,7 @@ public abstract class ExpressionEnvironment
     {
         if (!mapLiteralsAllowed)
         {
-            throw new ExpressionEnvironmentException(name + ": Invalid map literal");
+            throw new ExpressionEnvironmentException(environmentName + ": Invalid map literal");
         }
 
         Map<Object, Object> map = (Map)new HashMap<>();
@@ -1046,13 +1055,40 @@ public abstract class ExpressionEnvironment
     @Override
     public Object visit(ASTComputedPropertyChain node, Object data)
     {
-        Object chainObject = null;
-        for (int i = 0; i < node.jjtGetNumChildren(); i++)
+        Node kid = node.jjtGetChild(0);
+
+        Object chainObject = kid.jjtAccept(this, null);
+
+        for (int i = 1; i < node.jjtGetNumChildren(); i++)
         {
-            Node kid = node.jjtGetChild(i);
-            chainObject = kid.jjtAccept(this, chainObject);
+            kid = node.jjtGetChild(i);
+            Object key = kid.jjtAccept(this, chainObject);
+
+            chainObject = JSONBeanUtil.defaultUtil().getProperty(chainObject, key.toString());
         }
         return chainObject;
     }
 
+
+    protected <T> T getArg(ASTFunction node, int index, Class<T> expected)
+    {
+        Object arg = node.jjtGetChild(index).jjtAccept(this, null);
+        if (arg == null || expected.isInstance(arg))
+        {
+            return (T)arg;
+        }
+        throw new IllegalStateException(node.getName() + ", argument #" + index + ", expected = " + expected.getName() + ", got: " + arg);
+    }
+
+
+    /**
+     * Take a permissive approach to operator enabling and allow everything.
+     */
+    protected void allowEverything()
+    {
+        arithmeticOperatorsAllowed = true;
+        comparatorsAllowed = true;
+        logicalOperatorsAllowed = true;
+        mapLiteralsAllowed = true;
+    }
 }

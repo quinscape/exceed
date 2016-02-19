@@ -14,17 +14,11 @@ import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.runtime.action.Action;
 import de.quinscape.exceed.runtime.controller.ActionNotFoundException;
 import de.quinscape.exceed.runtime.controller.ActionRegistry;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironmentException;
 import org.svenson.JSON;
-import org.svenson.StringBuilderSink;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
 
 public class ComponentExpressionTransformer
 {
@@ -148,7 +142,7 @@ public class ComponentExpressionTransformer
                 Node kid = node.jjtGetChild(0);
                 if (!(kid instanceof ASTMap))
                 {
-                    throw new ExpressionEnvironmentException(this.name + ": Action parameter must be map literal");
+                    throw new ExpressionEnvironmentException(this.environmentName + ": Action parameter must be map literal");
                 }
                 else
                 {

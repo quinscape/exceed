@@ -26,7 +26,7 @@
                                 "name": "DataGrid",
                                 "attrs": {
                                     "id": "myDG",
-                                    "type": "{ AppUser }"
+                                    "type": "{ Foo }"
                                 },
                                 "kids": [
                                     {
@@ -38,37 +38,16 @@
                                     {
                                         "name": "DataGrid.Column",
                                         "attrs": {
-                                            "name": "login"
+                                            "name": "name"
                                         }
                                     },
                                     {
                                         "name": "DataGrid.Column",
                                         "attrs": {
-                                            "name": "created"
+                                            "name": "type"
                                         }
-                                    },
-                                    {
-                                        "name": "DataGrid.Column",
-                                        "attrs": {
-                                            "var" : "field",
-                                            "name": "roles"
-                                        },
-                                        "kids" : [
-                                            {
-                                                "name": "[String]",
-                                                "attrs": {
-                                                    "value": "{ field }"
-                                                }
-                                            }
-                                        ]
                                     }
                                 ]
-                            },
-                            {
-                                "name": "Counter",
-                                "attrs": {
-                                    "value": "{ 0 }"
-                                }
                             }
                         ]
                     }

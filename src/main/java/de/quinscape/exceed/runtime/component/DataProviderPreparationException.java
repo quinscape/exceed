@@ -7,21 +7,25 @@ public class DataProviderPreparationException
 {
     private static final long serialVersionUID = 4152963296696015103L;
 
+    private final String id;
 
-    public DataProviderPreparationException(String message)
+
+    public DataProviderPreparationException(String id, String message)
     {
         super(message);
+        this.id = id;
     }
 
 
-    public DataProviderPreparationException(String message, Throwable cause)
+    public DataProviderPreparationException(String id, String message, Throwable cause)
     {
         super(message, cause);
+        this.id = id;
     }
 
 
-    public DataProviderPreparationException(Throwable cause)
+    public String getId()
     {
-        super(cause);
+        return id;
     }
 }

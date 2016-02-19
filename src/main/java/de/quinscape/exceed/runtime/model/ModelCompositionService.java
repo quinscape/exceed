@@ -5,19 +5,14 @@ import de.quinscape.exceed.model.Layout;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.VersionedModel;
-import de.quinscape.exceed.model.change.CodeChange;
-import de.quinscape.exceed.model.change.StyleChange;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.model.domain.PropertyType;
 import de.quinscape.exceed.model.routing.RoutingTable;
-import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
-import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
-import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
 import de.quinscape.exceed.runtime.util.FileExtension;
@@ -28,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.Charset;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -141,7 +135,7 @@ public class ModelCompositionService
             else if (path.startsWith(VIEW_MODEL_PREFIX))
             {
                 log.debug("Reading {} as View", path);
-                View view = createViewModel(path, json);
+                View view = createViewModel(path, json, false);
 
                 applicationModel.getViews().put(view.getName(), view);
                 return view;
@@ -168,10 +162,11 @@ public class ModelCompositionService
     }
 
 
-    public View createViewModel(String path, String json)
+    public View createViewModel(String path, String json, boolean preview)
     {
         View view = create(View.class, json, path);
-        ComponentUtil.updateComponentRegistrations(componentRegistry, view.getRoot(), null);
+        ComponentUtil.updateComponentRegsAndParents(componentRegistry, view, null);
+        view.setPreview(preview);
         view.setCachedJSON(modelJSONService.toJSON(view, JSONFormat.CLIENT));
         return view;
     }

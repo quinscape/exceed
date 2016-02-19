@@ -1,0 +1,29 @@
+{
+    "root": {
+        "name": "DataGrid",
+        "attrs": {
+            "id": "myDG",
+            "type": "{ Foo }"
+        },
+        "kids": [
+            {
+                "name": "DataGrid.Column",
+                "attrs": {
+                    "name": "value"
+                }
+            },
+            {
+                "name": "DataGrid.Column",
+                "attrs": {
+                    "name": "foo"
+                }
+            },
+            {
+                "name": "DataGrid.Column",
+                "attrs": {
+                    "name": "xxx"
+                }
+            }
+        ]
+    }
+}

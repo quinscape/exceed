@@ -17,11 +17,19 @@ import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import org.svenson.JSON;
 
 /**
- * Renders view model expressions
+ * Renders transformed view model expressions.
+ *
+ *
  */
 public class ClientExpressionRenderer
     extends ExpressionRenderer
 {
+    /**
+     * Number of characters below which references to string props will be inlined into the expression instead of going
+     * all the way over all the parents to the props.
+     */
+    public static final int STRING_INLINE_LIMIT = 120;
+
     private final ComponentModel componentModel;
 
     private final String componentId;
@@ -151,7 +159,7 @@ public class ClientExpressionRenderer
         {
             String str = (String) attribute.getValue();
             // only inline shortish strings
-            if (str.length() < 120)
+            if (str.length() < STRING_INLINE_LIMIT)
             {
                 buf.append(generator.quote(str));
                 return true;

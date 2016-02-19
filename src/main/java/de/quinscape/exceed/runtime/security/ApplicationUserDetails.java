@@ -1,14 +1,15 @@
 package de.quinscape.exceed.runtime.security;
 
+import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.domain.tables.pojos.AppUser;
 import de.quinscape.exceed.runtime.util.Util;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.svenson.JSON;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ApplicationUserDetails
@@ -20,7 +21,9 @@ public class ApplicationUserDetails
     private final String password;
     private final List<GrantedAuthority> authorities;
 
-    private final String roles;
+    private final String rolesString;
+
+    private final Set<String> roles;
 
 
     public ApplicationUserDetails(AppUser appUser)
@@ -28,11 +31,9 @@ public class ApplicationUserDetails
         username = appUser.getLogin();
         password = appUser.getPassword();
 
-        List<String> strings = Util.splitAtComma(appUser.getRoles());
-
-        roles = appUser.getRoles();
-
-        authorities = strings.stream()
+        rolesString = appUser.getRoles();
+        roles = ImmutableSet.copyOf(Util.splitToSet(rolesString, ","));
+        authorities = roles.stream()
             .map(SimpleGrantedAuthority::new)
             .collect(Collectors.toList());
     }
@@ -81,6 +82,12 @@ public class ApplicationUserDetails
 
 
     public String getRoles()
+    {
+        return rolesString;
+    }
+
+
+    public Set<String> roles()
     {
         return roles;
     }

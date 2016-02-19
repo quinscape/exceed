@@ -7,6 +7,7 @@ import de.quinscape.exceed.runtime.component.QueryDataProvider;
 import de.quinscape.exceed.runtime.component.QueryExecutor;
 import de.quinscape.exceed.runtime.controller.ActionRegistry;
 import de.quinscape.exceed.runtime.controller.DefaultActionRegistry;
+import de.quinscape.exceed.runtime.editor.completion.CompletionService;
 import de.quinscape.exceed.runtime.datalist.DataListService;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.JOOQQueryExecutor;
@@ -25,7 +26,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
-import org.springframework.context.annotation.Import;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -74,10 +74,10 @@ public class ServiceConfiguration
     }
 
     @Bean
-    public QueryDataProvider defaultDataProvider(ApplicationContext applicationContext, DSLContext dslContext)
+    public QueryDataProvider defaultDataProvider(ApplicationContext applicationContext)
     {
         Map<String, QueryExecutor> executors = applicationContext.getBeansOfType(QueryExecutor.class);
-        return new QueryDataProvider(dslContext, new QueryTransformer(), executors, DEFAULT_QUERY_EXECUTOR);
+        return new QueryDataProvider(new QueryTransformer(), executors, DEFAULT_QUERY_EXECUTOR);
     }
 
     @Bean
@@ -126,5 +126,11 @@ public class ServiceConfiguration
 
         Map<String, PropertyConverter> propertyTypes = applicationContext.getBeansOfType(PropertyConverter.class);
         return new DataListService(propertyTypes);
+    }
+
+    @Bean
+    public CompletionService completionService()
+    {
+        return new CompletionService();
     }
 }

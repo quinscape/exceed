@@ -1,29 +1,56 @@
 package de.quinscape.exceed.component;
 
 import de.quinscape.exceed.model.view.ComponentModel;
+import org.svenson.JSONParameter;
 
 public class ComponentTemplate
 {
-    private final String name;
+    private final String description;
 
     private final ComponentModel componentModel;
+    private final String wizard;
+
+    private final String title;
 
 
-    public ComponentTemplate(String name, ComponentModel componentModel)
+    public ComponentTemplate(
+
+        @JSONParameter("desc")
+        String description,
+        @JSONParameter("title")
+        String title,
+        @JSONParameter("model")
+        ComponentModel componentModel,
+        @JSONParameter("wizard")
+        String wizard
+    )
     {
-        this.name = name;
+        this.description = description;
+        this.title = title;
         this.componentModel = componentModel;
+        this.wizard = wizard;
     }
 
-
-    public String getName()
+    public String getDescription()
     {
-        return name;
+        return description;
     }
 
 
     public ComponentModel getComponentModel()
     {
         return componentModel;
+    }
+
+
+    public String getWizard()
+    {
+        return wizard;
+    }
+
+
+    public String getTitle()
+    {
+        return title;
     }
 }

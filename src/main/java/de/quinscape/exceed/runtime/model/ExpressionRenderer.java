@@ -257,4 +257,17 @@ public class ExpressionRenderer
         return buf.toString();
     }
 
+
+    /**
+     * Convenience method to turn an ASTExpression back into a string
+     *
+     * @param astExpression expression
+     * @return expression string
+     */
+    public static String render(ASTExpression astExpression)
+    {
+        ExpressionRenderer renderer = new ExpressionRenderer();
+        astExpression.jjtAccept(renderer, null);
+        return renderer.getOutput();
+    }
 }

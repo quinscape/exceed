@@ -11,6 +11,8 @@ import org.svenson.StringBuilderSink;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class ComponentModel
 {
@@ -25,6 +27,8 @@ public class ComponentModel
 
     private ComponentRegistration componentRegistration;
 
+
+    private ComponentModel parent;
 
     @JSONProperty(priority = 10)
     public String getName()
@@ -223,6 +227,54 @@ public class ComponentModel
     public static boolean isTextNode(ComponentModel componentModel)
     {
         return componentModel instanceof TextNode;
+    }
+
+
+    public ComponentModel getParent()
+    {
+        return parent;
+    }
+
+
+    @JSONProperty(ignore = true)
+    public void setParent(ComponentModel parent)
+    {
+        this.parent = parent;
+    }
+
+
+    public ComponentModel find(Predicate<ComponentModel> predicate)
+    {
+        if (predicate.test(this))
+        {
+            return this;
+        }
+
+        if (kids != null)
+        {
+            for (ComponentModel kid : kids)
+            {
+                ComponentModel found = kid.find(predicate);
+                if (found != null)
+                {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
+
+    public void walk(Consumer<ComponentModel> c)
+    {
+        c.accept(this);
+        if (kids != null)
+        {
+            for (ComponentModel kid : kids)
+            {
+                kid.walk(c);
+            }
+        }
     }
 }
 

@@ -17,12 +17,12 @@ public abstract class Model
 
 
     /**
-     * Provides a read-only "_type" property with the path relative to this package which is used by {@link ModelJSONServiceImpl}
+     * Provides a read-only "type" property with the path relative to this package which is used by {@link ModelJSONServiceImpl}
      * to parse JSON into the correct java type.
      *
      * @return
      */
-    @JSONProperty(value = "_type", readOnly = true, priority = 90)
+    @JSONProperty(value = "type", readOnly = true, priority = 90)
     public String getType()
     {
         return ModelJSONServiceImpl.getType(this.getClass());

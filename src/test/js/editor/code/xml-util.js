@@ -19,6 +19,7 @@ describe("XML Util", function ()
     it("converts JSON view models to XML notation", function ()
     {
         var xmlDoc = xmlUtil.toXml({
+            type: "view.View",
             root: {
                 name: "Tag",
                 attrs: {
@@ -35,9 +36,10 @@ describe("XML Util", function ()
             }
         });
 
-        assert(xmlDoc === "<Tag value=\"foo\">\n    Hello World\n</Tag>");
+        assert(xmlDoc === "<Tag value=\"foo\">\r\n    Hello World\r\n</Tag>");
 
         xmlDoc = xmlUtil.toXml({
+            type: "view.View",
             root: {
                 name: "Tag",
                 attrs: {
@@ -54,7 +56,7 @@ describe("XML Util", function ()
             }
         });
 
-        assert(xmlDoc === "<Tag value=\"foo\">\n    <Child value=\"{ context }\"/>\n</Tag>");
+        assert(xmlDoc === "<Tag value=\"foo\">\r\n    <Child value=\"{ context }\"/>\r\n</Tag>");
 
     });
 });

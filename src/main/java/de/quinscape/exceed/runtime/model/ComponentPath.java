@@ -7,6 +7,9 @@ public class ComponentPath
     private String contextName;
     private int index;
 
+    private String providedContext;
+
+
     public ComponentPath()
     {
         this( null, 0);
@@ -66,5 +69,17 @@ public class ComponentPath
         }
 
         return "_v.root" + chain;
+    }
+
+
+    public void setProvidedContext(String providedContext)
+    {
+        this.providedContext = providedContext;
+    }
+
+
+    public String getProvidedContext()
+    {
+        return providedContext;
     }
 }

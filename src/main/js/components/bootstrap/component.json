@@ -1,10 +1,39 @@
 {
     "components": {
-        "Col": {
-        },
         "Grid": {
+            "classes" : [ "toplevel" ],
+
+            "childRule": "component('Row')",
+            "templates": [
+                {
+                    "desc": "Default Grid",
+                    "model": {
+                        "name": "Grid",
+                        "attrs": {
+                            "fluid": "{ true }"
+                        },
+                        "kids": [
+                            {
+                                "name": "Row",
+                                "kids": [
+                                    {
+                                        "name": "Col",
+                                        "attrs": {
+                                            "md": "{ 12 }"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
         },
         "Row": {
+            "childRule": "component('Col')"
+        },
+        "Col": {
+            "childRule": "hasClass('element')"
         }
     }
 }

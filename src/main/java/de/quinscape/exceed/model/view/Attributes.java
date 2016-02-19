@@ -3,6 +3,8 @@ package de.quinscape.exceed.model.view;
 import de.quinscape.exceed.expression.ParseException;
 import org.svenson.JSONParameters;
 import org.svenson.JSONProperty;
+import org.svenson.JSONable;
+import org.svenson.util.JSONBuilder;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -10,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class Attributes
+    implements JSONable
 {
 
     private Map<String,AttributeValue> attrs;
@@ -116,5 +119,19 @@ public class Attributes
     public Set<String> getNames()
     {
         return attrs.keySet();
+    }
+
+
+    @Override
+    public String toJSON()
+    {
+        JSONBuilder b = JSONBuilder.buildObject();
+
+        for (Map.Entry<String, AttributeValue> entry : attrs.entrySet())
+        {
+            b.property(entry.getKey(), entry.getValue());
+        }
+
+        return b.output();
     }
 }

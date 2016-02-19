@@ -263,6 +263,12 @@ ace.define('ace/mode/exceed_view',["require","exports","module"], function(ace_r
 
             worker.on("error", (e) =>
             {
+                if (session.suppressPreviewOnce)
+                {
+                    session.suppressPreviewOnce = false;
+                    return;
+                }
+
                 var annos = session.getAnnotations();
 
                 if (!annos.length)
@@ -275,7 +281,7 @@ ace.define('ace/mode/exceed_view',["require","exports","module"], function(ace_r
 
                         fetchView(model).then(function (data)
                         {
-                            var expressionErrors = data.expressionErrors;
+                            var expressionErrors = data.previewErrors;
                             if (expressionErrors)
                             {
                                 Tokens.fillInErrorLocations(session, expressionErrors);
@@ -285,7 +291,7 @@ ace.define('ace/mode/exceed_view',["require","exports","module"], function(ace_r
                             {
                                 if (!worker.first)
                                 {
-                                    console.log("render after fetchView", data);
+                                    //console.log("render after fetchView", data);
 
                                     // avoid cyclic dependency
                                     var render = require("../../service/render");
@@ -300,7 +306,8 @@ ace.define('ace/mode/exceed_view',["require","exports","module"], function(ace_r
                         })
                         .catch(function (e)
                         {
-                            console.error("Error during preview", e);
+                            var render = require("../../service/render");
+                            return render.renderError(new Error(JSON.stringify(e)), true);
                         });
                     }
                 }

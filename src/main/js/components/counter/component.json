@@ -1,9 +1,12 @@
 {
-  "components": {
-    "Counter": {
-      "propTypes": {
-        "value" : { "rule" : "integer()" }
-      }
+    "components": {
+        "Counter": {
+            "classes": ["element"],
+            "propTypes": {
+                "value": {
+                    "rule": "integer()"
+                }
+            }
+        }
     }
-  }
 }

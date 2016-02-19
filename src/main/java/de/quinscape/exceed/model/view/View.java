@@ -5,6 +5,7 @@ import de.quinscape.exceed.model.VersionedModel;
 import org.svenson.JSONProperty;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 public class View
     extends TopLevelModel
@@ -14,6 +15,8 @@ public class View
 
     private List<String> comments;
 
+    private boolean preview;
+
     /**
      *  cached JSON for the view itself. We need the view as view model, but we don't
      *  want to to keep converting it back to json for the client,
@@ -21,7 +24,6 @@ public class View
     private String cachedJSON;
 
     private String version;
-
 
     public ComponentModel getRoot()
     {
@@ -70,4 +72,31 @@ public class View
     {
         this.version = version;
     }
+
+
+    public boolean isPreview()
+    {
+        return preview;
+    }
+
+
+    public void setPreview(boolean preview)
+    {
+        this.preview = preview;
+    }
+
+
+    /**
+     * Returns the first component model in pre-order traversal
+     * that matches the given predicate.
+     *
+     * @param predicate predicate
+     *
+     * @return first component model that matches the predicate
+     */
+    public ComponentModel find(Predicate<ComponentModel> predicate)
+    {
+        return root.find(predicate);
+    }
+
 }

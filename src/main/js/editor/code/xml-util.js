@@ -39,17 +39,17 @@ function dump(lines, model, indent)
     var attrs = model.attrs;
     if (attrs)
     {
-        if (attrs.id)
+        if (attrs.id !== undefined)
         {
             line += attr(attrs, "id");
         }
 
-        if (attrs.var)
+        if (attrs.var !== undefined)
         {
             line += attr(attrs, "var");
         }
 
-        if (attrs.name)
+        if (attrs.name !== undefined)
         {
             line += attr(attrs, "name");
         }
@@ -91,29 +91,35 @@ module.exports = {
     toXml: function (model)
     {
         var l = [];
-
-        var pos, comments = model.comments;
-        if (comments)
+        if (model.type !== "view.View")
         {
-            for (pos = 0; pos < comments.length; pos++)
-            {
-                var s = comments[pos];
-                if (s === null)
-                {
-                    dump(l, model.root, "");
-                }
-                else if (typeof s == "string")
-                {
-                    l.push("<!--\n" + reindent(s, "    ") + "\n-->");
-                }
-            }
+            dump(l, model, "");
         }
         else
         {
-            dump(l, model.root, "");
+            var pos, comments = model.comments;
+            if (comments)
+            {
+                for (pos = 0; pos < comments.length; pos++)
+                {
+                    var s = comments[pos];
+                    if (s === null)
+                    {
+                        dump(l, model.root, "");
+                    }
+                    else if (typeof s == "string")
+                    {
+                        l.push("<!--\n" + reindent(s, "    ") + "\n-->");
+                    }
+                }
+            }
+            else
+            {
+                dump(l, model.root, "");
+            }
         }
 
-        return l.join("\n");
+        return l.join("\r\n");
     },
     reindent: reindent
 };

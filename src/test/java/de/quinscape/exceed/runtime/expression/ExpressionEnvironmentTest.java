@@ -275,6 +275,21 @@ public class ExpressionEnvironmentTest
     }
 
 
+    @Test
+    public void testPropertyChain() throws Exception
+    {
+        assertThat(transform("({foo: 12 }).foo"), is(12));
+        assertThat(transform("({foo: { bar : 123} }).foo.bar"), is(123));
+    }
+
+    @Test
+    public void testComputedPropertyChain() throws Exception
+    {
+        assertThat(transform("({foo: 12 })['foo']"), is(12));
+        assertThat(transform("({foo: { bar : 123} })['f' + 'o' + 'o']['bar']"), is(123));
+    }
+
+
     public static class TestEnvironment extends ExpressionEnvironment
     {
         public TestEnvironment()
@@ -313,7 +328,7 @@ public class ExpressionEnvironmentTest
 
         public Foo name(ASTFunction node, Foo foo)
         {
-            foo.setName((String) visitOneChildOf(node, ASTString.class));
+            foo.setName(getArg(node, 0, String.class));
             return foo;
         }
     }

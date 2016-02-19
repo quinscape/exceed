@@ -4,7 +4,7 @@ var React = require("react");
 
 var classes = require("classnames");
 var ValueLink = require("../util/value-link");
-var ajax = require("../service/ajax");
+var hub = require("../service/hub");
 
 var Promise = require("es6-promise-polyfill").Promise;
 
@@ -16,6 +16,8 @@ var UIState = require("./gui/ui-state");
 var EntityModal = require("./EntityModal");
 
 var svgLayout = require("../util/svg-layout");
+
+var immutableUpdate = require("react-addons-update");
 
 var TextSize = svgLayout.TextSize;
 
@@ -152,13 +154,12 @@ var DomainEditor = React.createClass({
         if (this.state.domainModels == null)
         {
             var component = this;
-            ajax({
-                url : sys.contextPath + "/editor/" + sys.appName + "/domain",
-                contentType: "application/json"
+            hub.request({
+                type: "message.DomainTypeQuery"
             }).then(function (data)
             {
 
-                //console.log("DOMAIN", data);
+                console.log("DOMAIN", data);
 
                 component.setState({
                     domainModels: data
@@ -192,7 +193,7 @@ var DomainEditor = React.createClass({
             }).then(function()
             {
                 domainEditor.setState({
-                    domainModels: React.addons.update(domainEditor.state.domainModels, {
+                    domainModels: immutableUpdate(domainEditor.state.domainModels, {
                         domainTypes: {
                             $apply: function(domainTypes)
                             {
@@ -234,7 +235,7 @@ var DomainEditor = React.createClass({
                 //console.log(data);
 
                 var partialState = {
-                    domainModels: React.addons.update(domainEditor.state.domainModels, {
+                    domainModels: immutableUpdate(domainEditor.state.domainModels, {
                         domainLayout: {
                             $apply: function(domainLayout)
                             {
@@ -368,7 +369,7 @@ var DomainEditor = React.createClass({
                         { entities }
                         { relations }
                     </GUIContainer>
-                    {  <EntityModal openLink={ openLink } modelLink={ this.createDomainModelLink(this.state.activeEdit) } enums={ domainModels.enums } propertyTypes={ domainModels.propertyTypes }/> }
+                    <EntityModal openLink={ openLink } modelLink={ this.createDomainModelLink(this.state.activeEdit) } enums={ domainModels.enums } propertyTypes={ domainModels.propertyTypes }/>
                 </div>
             );
 

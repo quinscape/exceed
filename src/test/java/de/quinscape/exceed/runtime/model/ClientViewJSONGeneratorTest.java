@@ -1,8 +1,6 @@
 package de.quinscape.exceed.runtime.model;
 
-import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.component.ComponentDescriptor;
-import de.quinscape.exceed.component.PropDeclaration;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
@@ -11,49 +9,60 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.svenson.JSON;
 import org.svenson.JSONParser;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
 
 
 
-public class ModelJSONServiceImplTest
+public class ClientViewJSONGeneratorTest
 {
-    private static Logger log = LoggerFactory.getLogger(ModelJSONServiceImplTest.class);
+    private static Logger log = LoggerFactory.getLogger(ClientViewJSONGeneratorTest.class);
 
-    private ModelJSONService modelJSONService = new ModelJSONServiceImpl(new ModelFactory());
+    private ModelJSONService modelJSONService = new ModelJSONServiceImpl();
+
+    private ClientViewJSONGenerator viewJSONGenerator = new ClientViewJSONGenerator();
+
 
     @Test
-    public void testViewModelClientJSON() throws Exception
+    public void testViewModelClientTransformation() throws Exception
     {
-        String json = FileUtils.readFileToString(new File("./src/test/java/de/quinscape/exceed/runtime/model/test-views/client-json-1.json"));
-
-        // external view json
-        View view = modelJSONService.toModel(View.class, json);
-        // to client format
         Map<String, ComponentDescriptor> descriptors = new HashMap<>();
 
-        descriptors.put("Provider", new ComponentDescriptor(null, null, null, null, null, null, null, true, false));
-        descriptors.put("Consumer", new ComponentDescriptor(null, null, ImmutableMap.of("ctx", new PropDeclaration("", false, true)), null, null, null, null, true, false));
-        descriptors.put("ComputedConsumer", new ComponentDescriptor(null, null, ImmutableMap.of("ctx", new PropDeclaration("", false, "context[props.name]")), null, null, null, null, true, false));
-        descriptors.put("Grid", new ComponentDescriptor(null, null,null, null, null, null, null, true, false));
-        descriptors.put("Row", new ComponentDescriptor(null, null,null, null, null, null, null, true, false));
-        descriptors.put("Col", new ComponentDescriptor(null, null,null, null, null, null, null, true, false));
-        descriptors.put("Heading", new ComponentDescriptor(null, null,null, null, null, null, null, true, false));
-        descriptors.put("Foo", new ComponentDescriptor(null, null,null, null, null, null, null, false, true));
+        descriptors.put("Provider", descriptor("{'providesContext': 'Test'}"));
+        descriptors.put("AnotherProvider", descriptor("{'providesContext' : 'AnotherContext'}"));
+        descriptors.put("Consumer", descriptor("{ 'providesContext': 'Test.Deriv', 'propTypes': { 'ctx': { 'context': true, 'contextType': 'Test'} } }"));
+        descriptors.put("ComputedConsumer", descriptor("{ 'providesContext': 'Test.Deriv2', 'propTypes': { 'ctx': { 'context': 'context[props.name]'} } }"));
+
+        ComponentDescriptor defaultDescriptor = descriptor("{}");
+        descriptors.put("Grid", defaultDescriptor);
+        descriptors.put("Row", defaultDescriptor);
+        descriptors.put("Col", defaultDescriptor);
+        descriptors.put("Heading", defaultDescriptor);
+        descriptors.put("Foo", descriptor("{'modelAware': true}"));
         ComponentRegistry registry = new TestRegistry(descriptors);
 
-        ComponentUtil.updateComponentRegistrations(registry, view.getRoot(), null);
-        String out = modelJSONService.toJSON(view, JSONFormat.CLIENT);
 
-        log.info(JSON.formatJSON(out));
+
+        String json = FileUtils.readFileToString(new File("./src/test/java/de/quinscape/exceed/runtime/model/test-views/client-json-1.json"));
+        // external view json
+        View view = modelJSONService.toModel(View.class, json);
+
+        ComponentUtil.updateComponentRegsAndParents(registry, view, null);
+
+        //log.info("FLAT: {}", view.getRoot().flattened().map(ComponentModel::getName).collect(Collectors.toList()));
+
+        // to client format
+        String out = viewJSONGenerator.toJSON(view, JSONFormat.CLIENT);
+
+        //log.info(JSON.formatJSON(out));
 
         // .. and then parsed as Map for testing ( the client format is only used on the client side )
 
@@ -105,10 +114,44 @@ public class ModelJSONServiceImplTest
             assertThat(expr(exprComputed, "ctx"),is("customContext.foo[\"ccName2\"]"));
         }
 
+        {
+            Map<String, Object> foo = kid(col, 2);
+            assertThat(foo.get("name"),is("Foo"));
+            assertThat(expr(foo, "model"),is("_v.root.kids[0].kids[0].kids[2]"));
+        }
 
-        Map<String, Object> foo = kid(col, 2);
-        assertThat(foo.get("name"),is("Foo"));
-        assertThat(expr(foo, "model"),is("_v.root.kids[0].kids[0].kids[2]"));
+        {
+            Map<String, Object> provider = kid(col, 3);
+            assertThat(provider.get("name"), is("Provider"));
+            assertThat(attr(provider, "var"),is("customContext"));
+
+            Map<String, Object> provider2 = kid(provider, 0);
+            assertThat(provider2.get("name"), is("AnotherProvider"));
+            assertThat(attr(provider2, "var"),is("anotherContext"));
+
+            Map<String, Object> typedConsumer = kid(provider2, 0);
+            assertThat(typedConsumer.get("name"),is("Consumer"));
+            assertThat(expr(typedConsumer, "ctx"),is("customContext"));
+
+            Map<String, Object> untypedConsumer = kid(provider2, 1);
+            assertThat(untypedConsumer.get("name"),is("ComputedConsumer"));
+            assertThat(expr(untypedConsumer, "ctx"),is("anotherContext[\"ccName3\"]"));
+        }
+    }
+
+    private final static JSONParser jsonParser;
+
+
+    static
+    {
+        jsonParser = new JSONParser();
+        jsonParser.setAllowSingleQuotes(true);
+    }
+
+
+    private ComponentDescriptor descriptor(String json)
+    {
+        return jsonParser.parse(ComponentDescriptor.class, json);
     }
 
 

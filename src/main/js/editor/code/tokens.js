@@ -18,7 +18,7 @@ function ModelLocation()
      *
      * @type Array
      */
-    this.models = [];
+    this.parentPath = [];
 
     /**
      * current attribute or null
@@ -74,13 +74,19 @@ module.exports = {
 
         var loc = new ModelLocation();
 
-        var stack = loc.models;
+        var stack = loc.parentPath;
 
         var start = session.getTokenAt(row, column);
 
         var tokenStart = start.start;
 
-        //console.log("start token", start);
+        var startTokenLen = start.value.length;
+
+        //console.log("start token", start, column);
+        if ((start.type === "meta.tag.punctuation.tag-close.xml" || start.type === "meta.tag.punctuation.end-tag-open.xml") && column < start.start + startTokenLen)
+        {
+            return null;
+        }
 
         var token, last;
 
@@ -95,6 +101,8 @@ module.exports = {
                 {
                     break;
                 }
+
+                loc.valid = false;
 
                 if (!stack.length)
                 {
@@ -124,9 +132,14 @@ module.exports = {
             {
                 loc.expression = false;
             }
+            else if (token.type === "text.tag-whitespace.xml")
+            {
+                loc.attr = null;
+            }
             else if (token.type === "meta.tag.punctuation.tag-close.xml")
             {
                 loc.attr = null;
+                loc.valid = true;
 
                 if (token.value === "/>")
                 {
@@ -139,7 +152,7 @@ module.exports = {
                 loc.attr = null;
             }
 
-            loc.attrValue = start.type === "string.attribute-value.xml" || loc.expression;
+            loc.attrValue = (start.type === "string.attribute-value.xml" &&  column < start.start + startTokenLen) || loc.expression;
 
             var currentRow = iterator.getCurrentTokenRow();
             var currentColumn = iterator.getCurrentTokenColumn();
@@ -148,10 +161,20 @@ module.exports = {
 
             if (currentRow === row && currentColumn === tokenStart)
             {
-                // if we did not parse any tag-names yet, we just before or on the tag open of the root model
-                if (!loc.models.length)
+                if (!loc.valid)
                 {
-                    loc.models = [{
+                    // if the location is marked not valid, we have an incomplete tag which we remove from the
+                    // stack
+                    var removed = loc.parentPath.shift();
+                    //console.log("Remove invalid parent", removed);
+                }
+
+                // if we did not parse any tag-names yet, we just before or on the tag open of the root model
+                if (!loc.parentPath.length)
+                {
+
+                    //console.log("Add root to empty path");
+                    loc.parentPath = [{
                         model: model.root,
                         index: 0
                     }];
@@ -316,6 +339,7 @@ module.exports = {
      */
     fillInErrorLocations: function(session, expressionErrors)
     {
+        var row, column;
         var iterator = new TokenIterator(session, 0, 0);
 
         var pos = 0;
@@ -361,6 +385,15 @@ module.exports = {
 
             if (componentIndex === currentError.componentIndex)
             {
+                if (!currentError.attrName)
+                {
+                    row = iterator.getCurrentTokenRow();
+                    column = iterator.getCurrentTokenColumn();
+                    currentError.row = row;
+                    currentError.column = column;
+                    return;
+                }
+
                 if (token.type === "entity.other.attribute-name.xml")
                 {
                     attrName = token.value;
@@ -369,8 +402,8 @@ module.exports = {
                 {
                     if (currentError.attrName === attrName)
                     {
-                        var row = iterator.getCurrentTokenRow();
-                        var column = iterator.getCurrentTokenColumn();
+                        row = iterator.getCurrentTokenRow();
+                        column = iterator.getCurrentTokenColumn();
                         currentError.row = row;
                         currentError.column = column;
 
@@ -380,6 +413,7 @@ module.exports = {
                         });
 
                         currentError = expressionErrors[++pos];
+                        return;
                     }
                 }
             }

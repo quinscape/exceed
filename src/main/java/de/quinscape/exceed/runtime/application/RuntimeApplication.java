@@ -16,7 +16,7 @@ import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.controller.ActionRegistry;
+import de.quinscape.exceed.runtime.component.DataProviderPreparationException;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.resource.AppResource;
@@ -32,25 +32,22 @@ import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.service.DomainServiceFactory;
 import de.quinscape.exceed.runtime.service.StyleService;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
-import de.quinscape.exceed.runtime.util.ContentType;
 import de.quinscape.exceed.runtime.util.FileExtension;
 import de.quinscape.exceed.runtime.util.RequestUtil;
 import de.quinscape.exceed.runtime.view.ViewData;
 import de.quinscape.exceed.runtime.view.ViewDataService;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.ModelMap;
 import org.svenson.JSON;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,7 +56,7 @@ import java.util.StringTokenizer;
 public class RuntimeApplication
     implements ResourceChangeListener
 {
-    private static final Charset UTF_8 = Charset.forName("UTF-8");
+    public static final String PREVIEW_HEADER_NAME = "X-ceed-Preview";
 
     private static Logger log = LoggerFactory.getLogger(RuntimeApplication.class);
 
@@ -121,7 +118,6 @@ public class RuntimeApplication
                 resourceWatcher.register(this);
             }
         }
-
     }
 
 
@@ -160,12 +156,14 @@ public class RuntimeApplication
 
         ModelMap model = runtimeContext.getModel();
         boolean isAjaxRequest = RequestUtil.isAjaxRequest(request);
+        boolean isPreview = false;
         if (isAjaxRequest)
         {
-            if (request.getMethod().equals("POST") && "true".equals(request.getHeader("X-ceed-Preview")))
+            isPreview = request.getMethod().equals("POST") && "true".equals(request.getHeader(PREVIEW_HEADER_NAME));
+            if (isPreview)
             {
                 String json = RequestUtil.readRequestBody(request); ;
-                View previewView = modelCompositionService.createViewModel("preview/" + view.getName(), json);
+                View previewView = modelCompositionService.createViewModel("preview/" + viewName, json, true);
 
                 List<ExpressionError> errors = new ArrayList<>();
 
@@ -176,7 +174,7 @@ public class RuntimeApplication
                 }
                 else
                 {
-                    model.put("expressionErrors", errors);
+                    model.put("previewErrors", errors);
                     RequestUtil.sendJSON(response, JSON.defaultJSON().forValue(model));
                     return;
                 }
@@ -184,28 +182,66 @@ public class RuntimeApplication
         }
         runtimeContext.setView(view);
 
-        ViewData viewData = viewDataService.prepareView(runtimeContext, view);
-
-        String viewDataJSON = domainService.toJSON(viewData);
-        String viewModelJSON = view.getCachedJSON();
-
-        if (!isAjaxRequest)
+        try
         {
-            model.put("viewData", viewDataJSON);
-            model.put("viewModel", viewModelJSON);
-        }
-        else
-        {
-            JSON gen = JSON.defaultJSON();
-            String json = "{\n" +
-                "    \"appName\" : " + gen.forValue(model.get("appName")) + ",\n" +
-                "    \"title\" : " + gen.forValue(model.get("title")) + ",\n" +
-                "    \"viewData\" : " + viewDataJSON + ",\n" +
-                "    \"viewModel\": " + viewModelJSON + "\n" +
-                "}";
+            ViewData viewData = viewDataService.prepareView(runtimeContext, view);
+            String viewDataJSON = domainService.toJSON(viewData);
+            String viewModelJSON = view.getCachedJSON();
 
-            RequestUtil.sendJSON(response, json);
+            if (!isAjaxRequest)
+            {
+                model.put("viewData", viewDataJSON);
+                model.put("viewModel", viewModelJSON);
+            }
+            else
+            {
+                JSON gen = JSON.defaultJSON();
+                String json = "{\n" +
+                    "    \"appName\" : " + gen.forValue(model.get("appName")) + ",\n" +
+                    "    \"title\" : " + gen.forValue(model.get("title")) + ",\n" +
+                    "    \"viewData\" : " + viewDataJSON + ",\n" +
+                    "    \"viewModel\": " + viewModelJSON + "\n" +
+                    "}";
+
+                RequestUtil.sendJSON(response, json);
+            }
         }
+        catch(DataProviderPreparationException e)
+        {
+            if (isPreview)
+            {
+                int index = ComponentUtil.findFlatIndex(view, e.getId());
+                model.put("previewErrors", Collections.singletonList(new ProviderError(e.getCause().getMessage(), index)));
+                RequestUtil.sendJSON(response, JSON.defaultJSON().forValue(model));
+                return;
+            }
+            else
+            {
+                throw new ExceedRuntimeException("Error providing data to view", e);
+            }
+        }
+    }
+
+
+    private int findComponentIndex(ComponentModel model, String componentId, int id)
+    {
+        if (componentId.equals(model.getComponentId()))
+        {
+            return id;
+        }
+
+        id++;
+
+        List<ComponentModel> kids = model.getKids();
+        if (kids != null)
+        {
+            for (ComponentModel kid : kids)
+            {
+                id = findComponentIndex(kid, componentId, id);
+            }
+        }
+
+        return id;
     }
 
 
@@ -479,7 +515,7 @@ public class RuntimeApplication
     {
         for (View view : applicationModel.getViews().values())
         {
-            ComponentUtil.updateComponentRegistrations(componentRegistry, view.getRoot(), componentNames);
+            ComponentUtil.updateComponentRegsAndParents(componentRegistry, view, componentNames);
         }
     }
 
@@ -494,6 +530,12 @@ public class RuntimeApplication
         }
 
         return domainType;
+    }
+
+
+    public String getName()
+    {
+        return applicationModel.getName();
     }
 }
 

@@ -1,6 +1,9 @@
 {
     "components": {
         "DataGrid": {
+
+            "classes" : [ "element" ],
+
             "vars": {
                 "orderBy": "prop('orderBy')",
                 "filter": "prop('filter')",
@@ -8,44 +11,56 @@
                 "limit": "prop('limit')"
             },
             "queries": {
-                "result": "query(prop('type').fields(childModelNames())).filter(prop('filter')).orderBy(var('orderBy')).limit(var('limit')).offset(var('offset'))"
+                "result": "query( prop('type').fields(childModelNames()) ).filter( prop('filter') ).orderBy( var('orderBy') ).limit( var('limit') ).offset( var('offset'))"
             },
             "propTypes": {
                 "type": {
                     "client": false,
-                    "rule": "queryDefinition()"
+                    "type" : "QUERY_EXPRESSION",
+                    "rule" : "domainType()"
                 },
                 "orderBy": {
                     "client": false,
-                    "rule": "fieldListOf(prop('type'))"
+                    "rule": "fieldListOf(query(prop('type')))"
                 },
                 "filter": {
                     "client": false,
-                    "rule": "filterExpr(prop('type'))"
+                    "rule": "filterExpr(query(prop('type')))"
                 },
                 "limit": {
                     "client": false,
-                    "rule": "PlainText"
+                    "type": "INTEGER"
                 }
             },
-            "contextProvider" : true,
-            "childTypes": [
-                {
-                    "rule": "model('DataGrid.Column')"
+            "propWizards" : {
+                "type": {
+                    "wizard": "DataGridTypeWizard",
+                    "title": "Configure Query",
+                    "description": "Open Query join dialog for complex queries"
                 }
-            ],
+            },
+            "providesContext" : "DataGrid.Row",
+            "childRule" : "component('DataGrid.Column')",
             "modelAware" : true
         },
         "DataGrid.Column": {
-            "contextProvider" : true,
+            "providesContext" : "DataGrid.Field",
             "propTypes": {
                 "name": {
-                    "rule": "fieldOf(parent.prop('type'))"
+                    "rule": "fieldOf(parent.prop('type'))",
+                    "required" : true
                 },
                 "context" : {
-                    "context": "context[props.name]"
+                    "context": "context[props.name]",
+                    "contextType" : "DataGrid.Row"
                 }
-            }
+            },
+            "templates" : [{
+                "wizard" : "DataGridColumnWizard",
+                "title" : "configure..."
+
+            }],
+            "childRule" : "hasClass('element')"
         }
     }
 }

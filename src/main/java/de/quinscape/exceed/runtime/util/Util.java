@@ -3,16 +3,22 @@ package de.quinscape.exceed.runtime.util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.security.ApplicationUserDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -118,6 +124,17 @@ public final class Util
             list.add(tokenizer.nextToken().trim());
         }
         return list;
+    }
+
+    public static Set<String> splitToSet(String s, String separator)
+    {
+        StringTokenizer tokenizer = new StringTokenizer(s, separator);
+        Set<String> set = new HashSet<>();
+        while (tokenizer.hasMoreElements())
+        {
+            set.add(tokenizer.nextToken().trim());
+        }
+        return set;
     }
 
 
@@ -273,4 +290,11 @@ public final class Util
     {
         return list != null ? ImmutableList.copyOf(list) : Collections.emptyList() ;
     }
+
+
+    public static Set<String> immutableSet(List<String> set)
+    {
+        return set != null ? ImmutableSet.copyOf(set) : Collections.emptySet();
+    }
+
 }

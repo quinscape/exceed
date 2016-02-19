@@ -4,6 +4,7 @@ import de.quinscape.exceed.expression.TokenMgrError;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
+import de.quinscape.exceed.runtime.expression.query.QueryTransformationException;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.view.DataProviderContext;
@@ -20,7 +21,6 @@ public class QueryDataProvider
 {
     private static Logger log = LoggerFactory.getLogger(QueryDataProvider.class);
 
-    private final DSLContext dslContext;
     private final QueryTransformer queryTransformer;
 
     private final Map<String, QueryExecutor> queryExecutors;
@@ -28,10 +28,9 @@ public class QueryDataProvider
     private final String defaultExecutor;
 
 
-    public QueryDataProvider(DSLContext dslContext, QueryTransformer queryTransformer, Map<String, QueryExecutor>
+    public QueryDataProvider(QueryTransformer queryTransformer, Map<String, QueryExecutor>
         queryExecutors, String defaultExecutor)
     {
-        this.dslContext = dslContext;
         this.queryTransformer = queryTransformer;
         this.queryExecutors = queryExecutors;
         this.defaultExecutor = defaultExecutor;
@@ -49,7 +48,7 @@ public class QueryDataProvider
             return null;
         }
 
-        Map<String, QueryDefinition> runtimeQueries = prepare(dataProviderContext, componentRegistration, componentModel, vars);
+        Map<String, QueryDefinition> runtimeQueries = prepare(dataProviderContext, componentModel, vars);
         if (runtimeQueries == null)
         {
             return null;
@@ -83,9 +82,10 @@ public class QueryDataProvider
     }
 
 
-    private Map<String, QueryDefinition> prepare(DataProviderContext dataProviderContext, ComponentRegistration registration, ComponentModel elem, Map<String,
+    private Map<String, QueryDefinition> prepare(DataProviderContext dataProviderContext, ComponentModel elem, Map<String,
         Object> vars)
     {
+        ComponentRegistration registration = elem.getComponentRegistration();
         Map<String, Object> queries = registration.getDescriptor().getQueries();
         if (queries == null)
         {
@@ -109,16 +109,20 @@ public class QueryDataProvider
             {
                 DomainService domainService = dataProviderContext.getRuntimeContext().getRuntimeApplication()
                     .getDomainService();
-                QueryDefinition definition = queryTransformer.transform(domainService, queryExpression, registration, elem, vars);
+                QueryDefinition definition = queryTransformer.transform(domainService, queryExpression, elem, vars);
                 preparedQueries.put(name, definition);
+            }
+            catch(QueryTransformationException e)
+            {
+                throw new DataProviderPreparationException(elem.getComponentId(), "Error parsing expression '" + name + "' = " + queryExpression + " of " + elem, e.getCause());
             }
             catch(Exception e)
             {
-                throw new DataProviderPreparationException("Error parsing expression '" + name + "' = " + queryExpression + " of " + elem, e);
+                throw new DataProviderPreparationException(elem.getComponentId(), "Error parsing expression '" + name + "' = " + queryExpression + " of " + elem, e);
             }
             catch(TokenMgrError e)
             {
-                throw new DataProviderPreparationException("Token error parsing expression '" + name + "' = " + queryExpression + " of " + elem, e);
+                throw new DataProviderPreparationException(elem.getComponentId(), "Token error parsing expression '" + name + "' = " + queryExpression + " of " + elem, e);
             }
 
         }

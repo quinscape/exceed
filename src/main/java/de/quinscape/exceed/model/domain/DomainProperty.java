@@ -4,7 +4,6 @@ import de.quinscape.exceed.model.Model;
 import org.svenson.JSONProperty;
 
 public class DomainProperty
-    extends Model
 {
     private String name;
 

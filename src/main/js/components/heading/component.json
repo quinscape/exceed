@@ -1,12 +1,14 @@
 {
   "components": {
     "Heading": {
+      "classes" : [ "element" ],
       "propTypes" : {
         "value" : { "rule" : "plaintText()" },
         "size" : { "rule" : "range(1,6)" }
       }
     },
     "Heading.HR": {
+      "classes" : [ "element" ]
     }
   }
 }

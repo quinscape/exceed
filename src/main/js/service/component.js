@@ -31,9 +31,52 @@ function registerMapRecursively(map)
     }
 }
 
+function resolveWizardComponents(componentDef, bulkDir, componentName)
+{
+    var componentClass;
+    var templates = componentDef.templates;
+    if (templates)
+    {
+        for (var i = 0; i < templates.length; i++)
+        {
+            var template = templates[i];
+            if (template.wizard)
+            {
+                componentClass = bulkDir[template.wizard];
+
+                if (!componentClass)
+                {
+                    throw new Error("Wizard component '" + template.wizard + "' not found for component '" + componentName + "'")
+                }
+                template.wizardComponent = componentClass;
+            }
+        }
+    }
+
+    var propWizards = componentDef.propWizards;
+    if (propWizards)
+    {
+        for (var propName in propWizards)
+        {
+            if (propWizards.hasOwnProperty(propName))
+            {
+                var entry = propWizards[propName];
+
+                componentClass = bulkDir[entry.wizard];
+                if (!componentClass)
+                {
+                    throw new Error("Wizard prop component '" + entry.wizard + "' not found for component '" + componentName + "'")
+                }
+
+                entry.wizardComponent = componentClass;
+            }
+        }
+    }
+}
 var ComponentService = {
     getComponents: function ()
     {
+        console.log("get real components");
         return components;
     },
 
@@ -41,32 +84,34 @@ var ComponentService = {
     {
         registerMapRecursively(bulkMap);
     },
-    register: function(dir, def)
+    register: function(bulkDir, def)
     {
-        //console.log("register def", dir.DataGrid, def);
+        //console.log("register def", bulkDir.DataGrid, def);
 
-        var subComponents = def.components;
-        for (var name in subComponents)
+        var i, subComponents = def.components;
+        for (var componentName in subComponents)
         {
-            if (subComponents.hasOwnProperty(name))
+            if (subComponents.hasOwnProperty(componentName))
             {
-                var componentDef = subComponents[name];
+                var componentDef = subComponents[componentName];
 
-                var parts = name.split(".");
+                var parts = componentName.split(".");
 
-                var component = dir;
-                for (var i = 0; i < parts.length; i++)
+                var component = bulkDir;
+                for (i = 0; i < parts.length; i++)
                 {
                     component = component[parts[i]];
                     if (!component)
                     {
-                        throw new Error("Cannot find module for declared component '" + name + "'");
+                        throw new Error("Cannot find module for declared component '" + componentName + "'");
                     }
                 }
 
-                components[name] = extend({
-                    component : component
-                }, componentDef);
+                componentDef.component  = component;
+
+                resolveWizardComponents(componentDef, bulkDir, componentName);
+
+                components[componentName] = componentDef;
             }
         }
     }

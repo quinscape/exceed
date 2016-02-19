@@ -6,6 +6,8 @@ var UIState = require("./ui-state");
 
 var Enum = require("../../util/enum");
 
+var immutableUpdate = require("react-addons-update");
+
 /**
  *
  * @type
@@ -112,7 +114,7 @@ var SVGElement = React.createClass({
             var x = ev.pageX - this.offsetX;
             var y = ev.pageY - this.offsetY;
 
-            link.requestChange(React.addons.update(layout, {
+            link.requestChange(immutableUpdate(layout, {
                 x: {$set: x},
                 y: {$set: y}
             })).then(function ()

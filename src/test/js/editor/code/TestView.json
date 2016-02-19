@@ -1,4 +1,5 @@
 {
+    "type": "view.View",
     "comments" : ["Head Comment", null, "Tail Comment"],
     "root": {
         "name": "Grid",

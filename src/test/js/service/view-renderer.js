@@ -70,7 +70,7 @@ var ViewComponentRenderer = proxyquire("../../../../src/main/js/service/view-ren
                 },
                 Provider: {
                     component: Provider,
-                    contextProvider: true
+                    providesContext: "Test"
                 },
                 Consumer: {
                     component: Consumer,
@@ -86,7 +86,7 @@ var ViewComponentRenderer = proxyquire("../../../../src/main/js/service/view-ren
                 },
                 KeyedConsumer: {
                     component: KeyedConsumer,
-                    contextProvider: true,
+                    providesContext: "Test.Deriv",
                     propTypes: {
                         "customContextProp": "context[props.name]"
                     }

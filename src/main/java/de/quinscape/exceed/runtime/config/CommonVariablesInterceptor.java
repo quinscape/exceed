@@ -1,16 +1,16 @@
 package de.quinscape.exceed.runtime.config;
 
-import de.quinscape.dss.util.Util;
 import de.quinscape.exceed.runtime.controller.ActionRegistry;
 import de.quinscape.exceed.runtime.security.ApplicationUserDetails;
+import de.quinscape.exceed.runtime.service.websocket.MessageHubRegistry;
+import de.quinscape.exceed.runtime.util.AppAuthentication;
+import de.quinscape.exceed.runtime.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import org.svenson.JSON;
@@ -19,16 +19,13 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class CommonVariablesInterceptor
     extends HandlerInterceptorAdapter
 {
     private static Logger log = LoggerFactory.getLogger(CommonVariablesInterceptor.class);
-
 
     public final static String CONTEXT_PATH = "contextPath";
 
@@ -38,14 +35,19 @@ public class CommonVariablesInterceptor
 
     public final static String SYSTEM_INFO = "systemInfo";
 
+    public final static String CONNECTION_ID = "connectionId";
+
     private final ApplicationContext applicationContext;
 
     private final ServletContext servletContext;
 
+
     private volatile String systemInfo;
 
 
-    public CommonVariablesInterceptor(ApplicationContext applicationContext, ServletContext servletContext)
+    public CommonVariablesInterceptor(ApplicationContext applicationContext,
+                                      ServletContext servletContext
+    )
     {
         if (applicationContext == null)
         {
@@ -68,28 +70,14 @@ public class CommonVariablesInterceptor
     {
         if (modelAndView != null)
         {
+            AppAuthentication auth = AppAuthentication.get();
             modelAndView.addObject(CONTEXT_PATH, request.getContextPath());
-
-            SecurityContext context = SecurityContextHolder.getContext();
-
-            Authentication authentication = context.getAuthentication();
-            if (authentication != null && authentication.getPrincipal() instanceof ApplicationUserDetails)
-
-            {
-                ApplicationUserDetails userDetails = (ApplicationUserDetails) authentication.getPrincipal();
-
-                modelAndView.addObject("userName", userDetails.getUsername());
-                modelAndView.addObject("userRoles", userDetails.getRoles());
-            }
-            else
-            {
-                modelAndView.addObject(USER_NAME, "Anonymous");
-                modelAndView.addObject(USER_ROLES, "ANONYMOUS");
-            }
-
-            modelAndView.addObject("systemInfo", getSystemInfo());
+            modelAndView.addObject(USER_NAME, auth.getUserName());
+            modelAndView.addObject(USER_ROLES, auth.getRoles());
+            modelAndView.addObject(SYSTEM_INFO, getSystemInfo());
         }
     }
+
 
     public String getSystemInfo()
     {
@@ -112,7 +100,7 @@ public class CommonVariablesInterceptor
 
     private Map<String, Object> createSystemInfo()
     {
-        Map<String,Object> info = new HashMap<>();
+        Map<String, Object> info = new HashMap<>();
 
         info.put("actions", getServerSideActionsInSystem());
         info.put("contextPath", servletContext.getContextPath());
