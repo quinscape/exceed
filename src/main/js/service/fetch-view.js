@@ -20,7 +20,8 @@ module.exports = function(model)
     if (isPreview)
     {
         opts.method =  "POST";
-        opts.data = JSON.stringify(model);
+        opts.contentType = "application/json";
+        opts.data = model;
         opts.headers = {
             "X-ceed-Preview" : "true"
         }
