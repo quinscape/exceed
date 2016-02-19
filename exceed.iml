@@ -10,6 +10,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/base" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/js/components" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/js" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
@@ -30,7 +31,7 @@
     <orderEntry type="library" name="Maven: org.jooq:jooq:3.6.2" level="project" />
     <orderEntry type="library" name="Maven: org.jooq:jooq-codegen:3.6.2" level="project" />
     <orderEntry type="library" name="Maven: org.jooq:jooq-meta:3.6.2" level="project" />
-    <orderEntry type="library" name="Maven: com.google.code.svenson:svenson:1.5.1-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: com.google.code.svenson:svenson:1.5.2-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: commons-beanutils:commons-beanutils:1.9.2" level="project" />
     <orderEntry type="library" name="Maven: commons-collections:commons-collections:3.2.1" level="project" />
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.4" level="project" />
@@ -45,7 +46,7 @@
     <orderEntry type="library" name="Maven: aopalliance:aopalliance:1.0" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-aop:4.1.4.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.security:spring-security-config:3.2.5.RELEASE" level="project" />
-    <orderEntry type="library" scope="PROVIDED" name="Maven: javax.servlet:servlet-api:2.5" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: javax.servlet:javax.servlet-api:3.0.1" level="project" />
     <orderEntry type="library" name="Maven: javax.validation:validation-api:1.1.0.Final" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.7" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.slf4j:jcl-over-slf4j:1.7.7" level="project" />
@@ -59,5 +60,7 @@
     <orderEntry type="library" name="Maven: net.sourceforge.cssparser:cssparser:0.9.6" level="project" />
     <orderEntry type="library" name="Maven: commons-cli:commons-cli:1.2" level="project" />
     <orderEntry type="library" name="Maven: javax.activation:activation:gnu:1.1" level="project" />
+    <orderEntry type="library" name="Maven: org.webbitserver:webbit:0.4.15" level="project" />
+    <orderEntry type="library" name="Maven: io.netty:netty:3.5.5.Final" level="project" />
   </component>
 </module>
