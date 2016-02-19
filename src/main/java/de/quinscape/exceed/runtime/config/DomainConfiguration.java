@@ -167,4 +167,10 @@ public class DomainConfiguration
         return new UUIDConverter();
     }
 
+
+    @Bean
+    public ObjectConverter ObjectConverter()
+    {
+        return new ObjectConverter();
+    }
 }

@@ -15,6 +15,7 @@ public class GenericDomainObject
 
 
     @Override
+    @JSONProperty(ignore = true)
     public String getId()
     {
         return (String) getProperty("id");
@@ -25,7 +26,6 @@ public class GenericDomainObject
     public void setId(String id)
     {
         setProperty("id", id);
-
     }
 
     @Override

@@ -1,12 +1,19 @@
 package de.quinscape.exceed.runtime.expression.query;
 
 import de.quinscape.exceed.expression.SimpleNode;
+import de.quinscape.exceed.model.domain.DomainProperty;
+import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.runtime.component.ColumnDescriptor;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class QueryDefinition
 {
     private final QueryDomainType queryDomainType;
+
     private List<String> orderBy;
 
     private int limit = 20, offset = 0;
@@ -84,5 +91,51 @@ public class QueryDefinition
             + ", offset = " + offset
             + ", filter = " + filter
             ;
+    }
+
+
+    public Map<String, DomainType> createDomainTypeMap()
+    {
+        Map<String, DomainType> map = new HashMap<>();
+
+        QueryDomainType current = queryDomainType;
+        do
+        {
+            DomainType type = current.getType();
+            map.put(current.getAlias(), type);
+
+            if (current.getJoinedType() != null)
+            {
+                current = current.getJoinedType().getRight();
+            }
+            else
+            {
+                current = null;
+            }
+
+        } while (current != null);
+
+        return map;
+    }
+
+
+    public Map<String, ColumnDescriptor> createColumnDescriptorMap()
+    {
+        Map<String, ColumnDescriptor> map = new HashMap<>();
+        Map<String, DataField> fields = queryDomainType.getFields();
+        for (Map.Entry<String, DataField> entry : fields.entrySet())
+        {
+            String localName = entry.getKey();
+            DataField dataField = entry.getValue();
+
+            DomainProperty domainProperty = dataField.getDomainProperty();
+
+            map.put(localName, new ColumnDescriptor(
+                dataField.getQueryDomainType().getType().getName(),
+                domainProperty.getName()
+            ));
+        }
+
+        return map;
     }
 }

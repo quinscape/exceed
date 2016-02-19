@@ -194,7 +194,7 @@ public class QueryDomainType
 
         if (dataField == null)
         {
-            throw new InvalidFieldReferenceException("Invalid field reference '" + field + "' is not any of the joined domain types");
+            throw new InvalidFieldReferenceException("Invalid field reference '" + field + "' is not in any of the joined domain types");
         }
 
         return dataField;

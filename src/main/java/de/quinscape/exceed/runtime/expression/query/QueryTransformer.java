@@ -17,7 +17,6 @@ import de.quinscape.exceed.expression.LogicalOperatorNode;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.expression.SimpleNode;
-import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.ComponentModel;
@@ -41,41 +40,45 @@ public class QueryTransformer
     private static final String FILTER_MARKER = QueryTransformer.class.getName() + ":filter";
 
 
-    public QueryDefinition transform(DomainService domainService, String expression, ComponentRegistration componentRegistration, ComponentModel
+    public QueryDefinition transform(DomainService domainService, String expression, ComponentModel
         componentModel, Map<String, Object> vars) throws ParseException
     {
         ASTExpression astExpression = ExpressionParser.parse(expression);
 
-        try
+        Object o = evaluate(domainService, astExpression,
+            componentModel, vars);
+
+        if (o instanceof QueryDefinition)
         {
-
-            QueryTransformerEnvironment visitor = new QueryTransformerEnvironment(domainService, componentRegistration,
-                componentModel, vars);
-            Object o = astExpression.jjtAccept(visitor, null);
-
-            if (o instanceof QueryDefinition)
-            {
-                return (QueryDefinition) o;
-            }
-            if (o instanceof QueryDomainType)
-            {
-                return new QueryDefinition((QueryDomainType) o);
-            }
-
-            throw new QueryTransformationException("Expression evaluated to invalid result: " + o);
+            return (QueryDefinition) o;
         }
-        catch (Exception e)
+        if (o instanceof QueryDomainType)
         {
-            throw new QueryTransformationException("Error transforming expression '" + expression + "'", e);
+            return new QueryDefinition((QueryDomainType) o);
         }
+        throw new QueryTransformationException("Expression evaluated to invalid result: " + o);
+    }
+
+
+    /**
+     * Evaluates the given ASTExpression in the query transformer environment.
+     *
+     * @param domainService     domain service
+     * @param astExpression     ast expression
+     * @param componentModel    component model
+     * @param vars              vars for this component model
+     * @return
+     */
+    public Object evaluate(DomainService domainService, ASTExpression astExpression, ComponentModel componentModel, Map<String, Object> vars)
+    {
+        QueryTransformerEnvironment visitor = new QueryTransformerEnvironment(domainService, componentModel, vars);
+        return astExpression.jjtAccept(visitor, null);
     }
 
 
     public static class QueryTransformerEnvironment
         extends ExpressionEnvironment
     {
-
-        private final ComponentRegistration componentRegistration;
 
         private final ComponentModel componentModel;
 
@@ -84,11 +87,10 @@ public class QueryTransformer
         private final DomainService domainService;
 
 
-        private QueryTransformerEnvironment(DomainService domainService, ComponentRegistration componentRegistration, ComponentModel
+        private QueryTransformerEnvironment(DomainService domainService, ComponentModel
             componentModel, Map<String, Object> vars)
         {
             this.domainService = domainService;
-            this.componentRegistration = componentRegistration;
             this.componentModel = componentModel;
             this.vars = vars;
         }
@@ -96,13 +98,15 @@ public class QueryTransformer
 
         public Object var(ASTFunction node)
         {
-            return null;
+            String name = getArg(node, 0, String.class);
+            return vars.get(name);
         }
 
 
         public Object prop(ASTFunction node)
         {
-            AttributeValue attribute = componentModel.getAttribute((String) visitOneChildOf(node, ASTString.class));
+            String name = getArg(node, 0, String.class);
+            AttributeValue attribute = componentModel.getAttribute(name);
             if (attribute == null)
             {
                 return null;
@@ -459,6 +463,5 @@ public class QueryTransformer
                 throw new QueryTransformationException("Invalid node in orderBy arguments: " + n);
             }
         }
-
     }
 }

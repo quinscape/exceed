@@ -18,6 +18,11 @@ public class DateConverter
     @Override
     public Date convertToJava(RuntimeContext runtimeContext, String value, DomainProperty param)
     {
+        if (value == null)
+        {
+            return null;
+        }
+
         Instant instant = Instant.parse(value);
         return new Date(instant.toEpochMilli());
     }
@@ -25,6 +30,10 @@ public class DateConverter
     @Override
     public String convertToJSON(RuntimeContext runtimeContext, Date value, DomainProperty property)
     {
+        if (value == null)
+        {
+            return null;
+        }
 
         TimeZone tz = TimeZone.getTimeZone("UTC");
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'00:00'Z'");

@@ -17,6 +17,7 @@ public class DomainProperty
 
     private int maxLength;
 
+    private Object data;
 
     public DomainProperty()
     {
@@ -26,10 +27,19 @@ public class DomainProperty
 
     public DomainProperty(String name, String type, String defaultValue, boolean required)
     {
+        this(name, type, defaultValue, required, null, 0);
+    }
+
+
+    public DomainProperty(String name, String type, String defaultValue, boolean required, Object typeParam, int
+        maxLength)
+    {
         this.name = name;
         this.type = type;
+        this.typeParam = typeParam;
         this.defaultValue = defaultValue;
         this.required = required;
+        this.maxLength = maxLength;
     }
 
 
@@ -107,5 +117,32 @@ public class DomainProperty
     public void setDefaultValue(String defaultValue)
     {
         this.defaultValue = defaultValue;
+    }
+
+
+    public Object getData()
+    {
+        return data;
+    }
+
+
+    public void setData(Object data)
+    {
+        this.data = data;
+    }
+
+
+    @Override
+    public String toString()
+    {
+        return super.toString() + ": "
+            + "name = '" + name + '\''
+            + ", type = '" + type + '\''
+            + ", typeParam = " + typeParam
+            + ", defaultValue = '" + defaultValue + '\''
+            + ", required = " + required
+            + ", maxLength = " + maxLength
+            + ", data = " + data
+            ;
     }
 }

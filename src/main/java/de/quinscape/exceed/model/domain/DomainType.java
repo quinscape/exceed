@@ -20,7 +20,6 @@ public class DomainType
 
     private DomainService domainService;
 
-
     @JSONTypeHint(DomainProperty.class)
     public void setProperties(List<DomainProperty> properties)
     {
@@ -70,8 +69,8 @@ public class DomainType
     public String toString()
     {
         return super.toString() + ": "
-            + "name = " + getName()
-            + "properties = " + properties
+            + "pkFields = " + pkFields
+            + ", properties = " + properties
             ;
     }
 }

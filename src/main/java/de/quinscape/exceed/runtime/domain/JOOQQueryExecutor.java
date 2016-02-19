@@ -3,8 +3,8 @@ package de.quinscape.exceed.runtime.domain;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.SimpleNode;
 import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.runtime.component.QueryExecutor;
 import de.quinscape.exceed.runtime.component.DataList;
+import de.quinscape.exceed.runtime.component.QueryExecutor;
 import de.quinscape.exceed.runtime.expression.query.JoinDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryDomainType;
@@ -28,7 +28,6 @@ import static org.jooq.impl.DSL.*;
 
 /**
  * JOOQ-based query executor.
- *
  */
 @Transactional
 public class JOOQQueryExecutor
@@ -37,6 +36,7 @@ public class JOOQQueryExecutor
     private final DSLContext dslContext;
 
     private final NamingStrategy namingStrategy;
+
 
     public JOOQQueryExecutor(DSLContext dslContext, NamingStrategy namingStrategy)
     {
@@ -61,10 +61,10 @@ public class JOOQQueryExecutor
         QueryDomainType queryDomainType = queryDefinition.getQueryDomainType();
 
         SelectJoinStep<Record> builder = dslContext.select(
-                queryDomainType.getFieldsInOrder().stream()
-                    .map(this::jooqField)
-                    .collect(Collectors.toList())
-            )
+            queryDomainType.getFieldsInOrder().stream()
+                .map(this::jooqField)
+                .collect(Collectors.toList())
+        )
             .from(jooqTableFor(queryDomainType));
 
         SelectJoinStep<Record1<Integer>> countBuilder = null;
@@ -148,8 +148,19 @@ public class JOOQQueryExecutor
         {
             rowCount = rows.size();
         }
-        return new DataList(queryDefinition, rows, rowCount);
+        return createDataList(queryDefinition, rows, rowCount);
     }
+
+
+    private DataList createDataList(QueryDefinition queryDefinition, List<DomainObject> rows, int rowCount)
+    {
+        return new DataList(
+            queryDefinition.createDomainTypeMap(),
+            queryDefinition.createColumnDescriptorMap(),
+            rows
+        );
+    }
+
 
 
     private Field<Object> jooqField(DataField dataField)
@@ -171,9 +182,8 @@ public class JOOQQueryExecutor
         DomainType type = queryDomainType.getType();
         DomainService domainService = type.getDomainService();
         String schema = domainService.getSchema();
-        return DSL.table(namingStrategy.getTableName(schema , type)).as(queryDomainType.getAlias());
+        return DSL.table(namingStrategy.getTableName(schema, type)).as(queryDomainType.getAlias());
     }
-
 
 
     private class QueryMapper
@@ -189,6 +199,7 @@ public class JOOQQueryExecutor
             this.queryDefinition = queryDefinition;
             this.fields = queryDefinition.getQueryDomainType().getFieldsInOrder();
         }
+
 
         @Override
         public GenericDomainObject map(Record record)

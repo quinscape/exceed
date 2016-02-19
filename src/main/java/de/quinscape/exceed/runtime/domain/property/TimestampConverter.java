@@ -1,5 +1,7 @@
 package de.quinscape.exceed.runtime.domain.property;
 
+import de.quinscape.exceed.expression.ExpressionParser;
+import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.runtime.RuntimeContext;
 
@@ -22,6 +24,7 @@ public class TimestampConverter
     @Override
     public String convertToJSON(RuntimeContext runtimeContext, Timestamp value, DomainProperty property)
     {
+
         if (value != null)
         {
             TimeZone tz = TimeZone.getTimeZone("UTC");
@@ -30,6 +33,8 @@ public class TimestampConverter
 
             return df.format(value);
         }
+
+        ;
 
         return null;
     }

@@ -2,24 +2,30 @@ package de.quinscape.exceed.runtime.datalist;
 
 import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.model.domain.DomainProperty;
+import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
+import de.quinscape.exceed.runtime.component.ColumnDescriptor;
 import de.quinscape.exceed.runtime.component.DataList;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
-import de.quinscape.exceed.runtime.expression.query.DataField;
 import org.svenson.JSON;
 import org.svenson.JSONCharacterSink;
 import org.svenson.JSONParser;
+import org.svenson.JSONifier;
 import org.svenson.SinkAwareJSONifier;
 import org.svenson.util.JSONBeanUtil;
+import org.svenson.util.JSONBuilder;
 
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class DataListService
 {
     private final Map<String, PropertyConverter> propertyConverters;
+
+    private final DataListJSONifier jsonifier;
 
     private JSON generator = JSON.defaultJSON();
 
@@ -33,8 +39,10 @@ public class DataListService
         this.propertyConverters = ImmutableMap.copyOf(propertyConverters);
 
         generator = new JSON();
-        generator.registerJSONifier(DataList.class, new DataListJSONifier());
+        jsonifier = new DataListJSONifier();
+        generator.registerJSONifier(DataList.class, jsonifier);
     }
+
 
     public String toJSON(Object domainObject)
     {
@@ -52,6 +60,9 @@ public class DataListService
         implements SinkAwareJSONifier
     {
 
+        private static final String PROPERTY_COMPLEX_NAME = "value";
+
+
         @Override
         public String toJSON(Object o)
         {
@@ -66,89 +77,332 @@ public class DataListService
 
             DataList dataList = (DataList) o;
 
-            sink.append("{\"types\":");
 
-            generator.dumpObject(sink, dataList.getTypes());
+            JSONBuilder b = JSONBuilder.buildObject(generator, sink);
 
-            sink.append(",\"columns\":{");
+            b.property("types", dataList.getTypes());
+            b.property("columns", dataList.getColumns());
+            b.arrayProperty("rows");
 
-            Map<String, DataField> fields = dataList.getFields();
-            for (Iterator<Map.Entry<String, DataField>> iterator = fields.entrySet().iterator(); iterator.hasNext(); )
-            {
-                Map.Entry<String, DataField> entry = iterator.next();
-
-                String localName = entry.getKey();
-                DataField dataField = entry.getValue();
-
-                generator.quote(sink, localName);
-                DomainProperty domainProperty = dataField.getDomainProperty();
-                sink.append(":{\"domainType\":");
-                generator.quote(sink, dataField.getQueryDomainType().getType().getName());
-                sink.append(",\"name\":");
-                generator.dumpObject(sink, domainProperty.getName());
-                sink.append("}");
-
-                if (iterator.hasNext())
-                {
-                    sink.append(",");
-                }
-            }
-
-            sink.append("},\"rows\":[");
+            Map<String, PropertyLookup> lookups = lookupConverters(dataList);
 
             for (Iterator<?> iterator = dataList.getRows().iterator(); iterator.hasNext(); )
             {
                 Object row = iterator.next();
 
-                jsonifyRow(sink, runtimeContext, dataList, row);
-
-                if (iterator.hasNext())
-                {
-                    sink.append(",");
-                }
+                convertRow(b, runtimeContext, dataList, row, lookups);
             }
 
-            sink.append("]}");
+            b.closeAll();
         }
 
 
-        private void jsonifyRow(JSONCharacterSink sink, RuntimeContext runtimeContext, DataList dataList,
-                                Object row)
+        private Map<String, PropertyLookup> lookupConverters(DataList dataList)
         {
-            sink.append("{\"id\":");
-
-            generator.dumpObject(sink, util.getProperty(row, "id"));
-
-            Collection<DataField> dataFields = dataList.getFields().values();
-
-            for (DataField field : dataFields)
+            Map<String, PropertyLookup> converters = new HashMap<>();
+            for (Map.Entry<String, ColumnDescriptor> entry : dataList.getColumns().entrySet())
             {
-                String localName = field.getLocalName();
+                ColumnDescriptor descriptor = entry.getValue();
 
-                if (localName.equals("id"))
+                List<DomainProperty> properties = dataList.getTypes().get(descriptor.getDomainType()).getProperties();
+                PropertyLookup lookup = null;
+                for (DomainProperty property : properties)
                 {
-                    continue;
+                    if (property.getName().equals(descriptor.getName()))
+                    {
+                        lookup = createLookup(dataList, property);
+                        break;
+                    }
                 }
+                if (lookup == null)
+                {
+                    throw new IllegalStateException(descriptor.getDomainType() + " has no property descriptor for '"
+                        + descriptor.getName() + "'");
+                }
+                converters.put(entry.getKey(), lookup);
+            }
+            return converters;
+        }
 
-                Object property = util.getProperty(row, localName);
 
-                DomainProperty domainProperty = field.getDomainProperty();
-                String converterBeanName = domainProperty.getType() + "Converter";
-                PropertyConverter converter = propertyConverters.get(converterBeanName);
+        private PropertyLookup createLookup(DataList dataList, DomainProperty property)
+        {
+            PropertyLookup lookup;
+            String type = property.getType();
+
+            if (isComplexType(type))
+            {
+                String name = (String) property.getTypeParam();
+
+                DomainType domainType = dataList.getTypes().get(name);
+                if (domainType != null)
+                {
+                    lookup = new PropertyLookup(property, null, createSubLookup(dataList, domainType), false);
+                }
+                else
+                {
+                    PropertyConverter propertyConverter = propertyConverters.get(getConverterName(name));
+                    if (propertyConverter != null)
+                    {
+                        lookup = new PropertyLookup(property, null, ImmutableMap.of(PROPERTY_COMPLEX_NAME, new
+                            PropertyLookup(new DomainProperty(type + "Property", name, null, false),
+                            propertyConverter)), true);
+                    }
+                    else
+                    { // list of simple properties
+                        throw new IllegalStateException("Cannot find domain type or property type for complex " +
+                            "property " + property + " in  " + dataList);
+                    }
+                }
+            }
+            else
+            {
+                String converterName = getConverterName(type);
+                PropertyConverter converter = propertyConverters.get(converterName);
+
                 if (converter == null)
                 {
-                    throw new IllegalStateException("Could not find converter '" + converterBeanName + "'");
+                    throw new IllegalStateException("Cannot find converter '" + converterName + "'");
                 }
 
-                Object converted = converter.convertToJSON(runtimeContext, property, domainProperty);
+                lookup = new PropertyLookup(property, converter);
+            }
+            return lookup;
+        }
 
-                sink.append(",");
-                generator.quote(sink, localName);
-                sink.append(":");
-                generator.dumpObject(sink, converted);
+
+        private Map<String, PropertyLookup> createSubLookup(DataList dataList, DomainType property)
+        {
+            HashMap<String, PropertyLookup> map = new HashMap<>();
+            for (DomainProperty domainProperty : property.getProperties())
+            {
+                map.put(domainProperty.getName(), createLookup(dataList, domainProperty));
+            }
+            return map;
+        }
+
+
+        private void convertRow(JSONBuilder b, RuntimeContext runtimeContext, DataList dataList,
+                                Object row, Map<String, PropertyLookup> lookups)
+        {
+            b.objectElement();
+
+            for (Map.Entry<String, PropertyLookup> entry : lookups.entrySet())
+            {
+                String localName = entry.getKey();
+                Object value = util.getProperty(row, localName);
+
+                convertValue(b, runtimeContext, dataList, localName, entry.getValue(), value);
             }
 
-            sink.append("}");
+            b.close();
+        }
+
+
+        private void convertValue(JSONBuilder b, RuntimeContext runtimeContext, DataList dataList, String localName,
+                                  PropertyLookup
+            lookup, Object value)
+        {
+
+            if (lookup.getPropertyConverter() == null)
+            {
+
+                DomainProperty domainProperty = lookup.getDomainProperty();
+                String domainPropertyType = domainProperty.getType();
+                switch (domainPropertyType)
+                {
+                    case "List":
+                    {
+                        List list = (List) value;
+
+                        if (localName != null)
+                        {
+                            b.arrayProperty(localName);
+                        }
+                        else
+                        {
+                            b.arrayElement();
+                        }
+
+                        for (Object o : list)
+                        {
+                            Map<String, PropertyLookup> subLookup = lookup.getSubLookup();
+
+                            if (lookup.isPropertyComplexValue())
+                            {
+                                convertValue(b, runtimeContext, dataList, null, subLookup.get(PROPERTY_COMPLEX_NAME),
+                                    o);
+                            }
+                            else
+                            {
+                                b.objectElement();
+                                convertInnerObject(b, runtimeContext, dataList, o, subLookup);
+                                b.close();
+                            }
+                        }
+                        b.close();
+                        break;
+                    }
+                    case "Map":
+                    {
+                        Map<String, Object> map = (Map) value;
+
+                        if (localName != null)
+                        {
+                            b.objectProperty(localName);
+                        }
+                        else
+                        {
+                            b.objectElement();
+                        }
+
+                        for (Map.Entry<String, Object> mapEntry : map.entrySet())
+                        {
+                            String mapKey = mapEntry.getKey();
+                            Object mapValue = mapEntry.getValue();
+
+                            Map<String, PropertyLookup> subLookup = lookup.getSubLookup();
+
+
+                            if (lookup.isPropertyComplexValue())
+                            {
+                                convertValue(b, runtimeContext, dataList, mapKey, subLookup.get
+                                    (PROPERTY_COMPLEX_NAME), mapValue);
+                            }
+                            else
+                            {
+                                b.objectProperty(mapKey);
+                                convertInnerObject(b, runtimeContext, dataList, mapValue, subLookup);
+                                b.close();
+                            }
+
+                        }
+                        b.close();
+                        break;
+                    }
+                    default:
+                        throw new IllegalStateException("Unknown domain property type '" + domainPropertyType + "'");
+                }
+            }
+            else
+            {
+                Object converted = lookup.convert(runtimeContext, value);
+                if (localName != null)
+                {
+                    b.property(localName, converted);
+                }
+                else
+                {
+                    b.element(converted);
+                }
+            }
+        }
+
+
+        private void convertInnerObject(JSONBuilder b, RuntimeContext runtimeContext, DataList dataList, Object o,
+                                        Map<String, PropertyLookup> subLookup)
+        {
+            for (Map.Entry<String, PropertyLookup> e : subLookup.entrySet())
+            {
+                String name = e.getKey();
+                PropertyLookup propertyLookup = e.getValue();
+                Object propertyValue = util.getProperty(o, name);
+                convertValue(b, runtimeContext, dataList, name, propertyLookup, propertyValue);
+            }
+        }
+    }
+
+
+    private String getConverterName(String type)
+    {
+        return type + "Converter";
+    }
+
+
+    private boolean isComplexType(String type)
+    {
+        if (type == null)
+        {
+            throw new IllegalArgumentException("type can't be null");
+        }
+
+
+        return type.equals("List") || type.equals("Map");
+    }
+
+
+    public JSONifier getJSONifier()
+    {
+        return jsonifier;
+    }
+
+
+    private class PropertyLookup
+    {
+        private final DomainProperty domainProperty;
+
+        private final PropertyConverter propertyConverter;
+
+        private final Map<String, PropertyLookup> subLookup;
+
+        private final boolean propertyComplexValue;
+
+
+        public PropertyLookup(DomainProperty domainProperty, PropertyConverter propertyConverter)
+        {
+            this(domainProperty, propertyConverter, null);
+        }
+
+
+        public PropertyLookup(DomainProperty domainProperty, PropertyConverter propertyConverter, Map<String,
+            PropertyLookup> subLookup)
+        {
+            this(domainProperty, propertyConverter, subLookup, false);
+        }
+
+
+        public PropertyLookup(DomainProperty domainProperty, PropertyConverter propertyConverter, Map<String,
+            PropertyLookup> subLookup, boolean propertyComplexValue)
+        {
+            if (domainProperty == null)
+            {
+                throw new IllegalArgumentException("domainProperty can't be null");
+            }
+
+            this.domainProperty = domainProperty;
+            this.propertyConverter = propertyConverter;
+            this.subLookup = subLookup;
+            this.propertyComplexValue = propertyComplexValue;
+        }
+
+
+        public DomainProperty getDomainProperty()
+        {
+            return domainProperty;
+        }
+
+
+        public PropertyConverter getPropertyConverter()
+        {
+            return propertyConverter;
+        }
+
+
+        public Map<String, PropertyLookup> getSubLookup()
+        {
+            return subLookup;
+        }
+
+
+        public Object convert(RuntimeContext runtimeContext, Object value)
+        {
+            return propertyConverter.convertToJSON(runtimeContext, value, domainProperty);
+        }
+
+
+        public boolean isPropertyComplexValue()
+        {
+            return propertyComplexValue;
         }
     }
 }
