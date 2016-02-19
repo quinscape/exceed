@@ -31,7 +31,7 @@ contentType[DataType.TEXT] = "text/plain";
 var csrfToken;
 var csrfTokenHeader;
 
-function logError(err)
+function logError(opts, err)
 {
     var l = [];
     for (var name in err)
@@ -41,8 +41,7 @@ function logError(err)
             l.push(name + " = " + err[name] );
         }
     }
-
-    console.error("Request failed: %s", l.join(", "));
+    console.error("AJAX ERROR", opts.url, " => ", l.join(", "), opts);
 }
 
 function serialize(data)
@@ -228,7 +227,10 @@ module.exports = function(opts)
     });
 
     // install default error logger
-    promise.then(null, logError);
+    promise.then(null, function (err)
+    {
+        logError(opts, err);
+    });
 
     return promise;
 };
