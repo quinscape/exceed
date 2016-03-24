@@ -13,16 +13,4 @@ var Heading = React.createClass({
     }
 });
 
-var HR = React.createClass({
-
-    render: function ()
-    {
-        return (
-            <hr/>
-        )
-    }
-});
-
-Heading.HR = HR;
-
 module.exports = Heading;

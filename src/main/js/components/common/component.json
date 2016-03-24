@@ -1,0 +1,32 @@
+{
+    "components": {
+        "Heading": {
+            "classes": ["element"],
+            "propTypes": {
+                "value": {
+                    "rule": "plaintText()"
+                },
+                "size": {
+                    "rule": "range(1,6)"
+                }
+            }
+        },
+        "Link": {
+            "classes": ["element"],
+            "propTypes": {
+                "location": {
+                    "rule": "location()"
+                },
+                "params": {
+                }
+            },
+            "propWizards" : {
+                "params": {
+                    "wizard": "LinkParamsWizard",
+                    "title": "Configure Params",
+                    "description": "Configure declared location parameters"
+                }
+            }
+        }
+    }
+}
