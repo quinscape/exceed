@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
@@ -80,7 +81,14 @@ public class ModelCompositionService
             throw new IllegalArgumentException(resource + " is not a JSON resource");
         }
 
-        return updateInternal(runtimeApplication, applicationModel, resource);
+        TopLevelModel topLevelModel = updateInternal(runtimeApplication, applicationModel, resource);
+
+        if (topLevelModel instanceof View)
+        {
+            postProcessView(runtimeApplication, (View) topLevelModel);
+        }
+
+        return topLevelModel;
     }
 
 
@@ -167,7 +175,6 @@ public class ModelCompositionService
         View view = create(View.class, json, path);
         ComponentUtil.updateComponentRegsAndParents(componentRegistry, view, null);
         view.setPreview(preview);
-        view.setCachedJSON(modelJSONService.toJSON(view, JSONFormat.CLIENT));
         return view;
     }
 
@@ -212,4 +219,32 @@ public class ModelCompositionService
         return path.substring(start + 1, end);
     }
 
+
+    /**
+     * Called at the end of the runtime application initialization process.
+     *
+     * Allows models to be initialized after all models have been read.
+     *
+     * @param application
+     * @param applicationModel
+     */
+    public void postProcess(RuntimeApplication application, ApplicationModel applicationModel)
+    {
+        for (View view : applicationModel.getViews().values())
+        {
+            postProcessView(application, view);
+        }
+    }
+
+
+    private void postProcessView(RuntimeApplication application, View view)
+    {
+        view.setCachedJSON(modelJSONService.toJSON(application, view, JSONFormat.CLIENT));
+    }
+
+
+    public ModelJSONService getModelJSONService()
+    {
+        return modelJSONService;
+    }
 }
