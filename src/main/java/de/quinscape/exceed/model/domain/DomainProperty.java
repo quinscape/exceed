@@ -119,7 +119,7 @@ public class DomainProperty
         this.defaultValue = defaultValue;
     }
 
-
+    @JSONProperty(ignoreIfNull = true, priority = 40)
     public Object getData()
     {
         return data;

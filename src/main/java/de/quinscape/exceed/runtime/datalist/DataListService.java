@@ -103,22 +103,36 @@ public class DataListService
             for (Map.Entry<String, ColumnDescriptor> entry : dataList.getColumns().entrySet())
             {
                 ColumnDescriptor descriptor = entry.getValue();
+                String columnName = descriptor.getName();
 
-                List<DomainProperty> properties = dataList.getTypes().get(descriptor.getDomainType()).getProperties();
+                DomainType type = dataList.getTypes().get(descriptor.getType());
+
                 PropertyLookup lookup = null;
-                for (DomainProperty property : properties)
+
+                if (type.getPkFields().contains(columnName))
                 {
-                    if (property.getName().equals(descriptor.getName()))
+                    // TODO: non-string PKs
+                    lookup = new PropertyLookup((PropertyConverter) converters.get("UUIDConverter"));
+                }
+                else
+                {
+                    List<DomainProperty> properties = type.getProperties();
+                    for (DomainProperty property : properties)
                     {
-                        lookup = createLookup(dataList, property);
-                        break;
+                        if (property.getName().equals(columnName))
+                        {
+                            lookup = createLookup(dataList, property);
+                            break;
+                        }
                     }
                 }
+
                 if (lookup == null)
                 {
-                    throw new IllegalStateException(descriptor.getDomainType() + " has no property descriptor for '"
-                        + descriptor.getName() + "'");
+                    throw new IllegalStateException(descriptor.getType() + " has no property descriptor for '"
+                        + columnName + "'");
                 }
+
                 converters.put(entry.getKey(), lookup);
             }
             return converters;
@@ -190,9 +204,18 @@ public class DataListService
             for (Map.Entry<String, PropertyLookup> entry : lookups.entrySet())
             {
                 String localName = entry.getKey();
-                Object value = util.getProperty(row, localName);
+                PropertyLookup lookup = entry.getValue();
 
-                convertValue(b, runtimeContext, dataList, localName, entry.getValue(), value);
+                Object value = util.getProperty(row, localName);
+                if (lookup.isPKField())
+                {
+                    b.property(localName, value);
+                }
+                else
+                {
+                    convertValue(b, runtimeContext, dataList, localName, lookup, value);
+                }
+
             }
 
             b.close();
@@ -348,6 +371,11 @@ public class DataListService
         private final boolean propertyComplexValue;
 
 
+        public PropertyLookup(PropertyConverter propertyConverter)
+        {
+            this(null, propertyConverter, null);
+        }
+
         public PropertyLookup(DomainProperty domainProperty, PropertyConverter propertyConverter)
         {
             this(domainProperty, propertyConverter, null);
@@ -364,11 +392,6 @@ public class DataListService
         public PropertyLookup(DomainProperty domainProperty, PropertyConverter propertyConverter, Map<String,
             PropertyLookup> subLookup, boolean propertyComplexValue)
         {
-            if (domainProperty == null)
-            {
-                throw new IllegalArgumentException("domainProperty can't be null");
-            }
-
             this.domainProperty = domainProperty;
             this.propertyConverter = propertyConverter;
             this.subLookup = subLookup;
@@ -403,6 +426,12 @@ public class DataListService
         public boolean isPropertyComplexValue()
         {
             return propertyComplexValue;
+        }
+
+        public boolean isPKField()
+        {
+            return domainProperty == null;
+
         }
     }
 }

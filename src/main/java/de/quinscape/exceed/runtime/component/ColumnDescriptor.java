@@ -1,10 +1,13 @@
 package de.quinscape.exceed.runtime.component;
 
+import org.svenson.JSONParameter;
+import org.svenson.JSONProperty;
+
 public class ColumnDescriptor
 {
-    private String domainType;
+    private final String type;
 
-    private String name;
+    private final String name;
 
 
     public ColumnDescriptor()
@@ -13,22 +16,22 @@ public class ColumnDescriptor
     }
 
 
-    public ColumnDescriptor(String domainType, String name)
+    public ColumnDescriptor(
+        @JSONParameter("type")
+        String type,
+        @JSONParameter("name")
+        String name
+    )
     {
-        this.domainType = domainType;
+        this.type = type;
         this.name = name;
     }
 
 
-    public String getDomainType()
+    @JSONProperty(priority = 1)
+    public String getType()
     {
-        return domainType;
-    }
-
-
-    public void setDomainType(String domainType)
-    {
-        this.domainType = domainType;
+        return type;
     }
 
 
@@ -37,9 +40,4 @@ public class ColumnDescriptor
         return name;
     }
 
-
-    public void setName(String name)
-    {
-        this.name = name;
-    }
 }
