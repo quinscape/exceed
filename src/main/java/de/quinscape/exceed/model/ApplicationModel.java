@@ -3,8 +3,10 @@ package de.quinscape.exceed.model;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.model.domain.PropertyType;
+import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.View;
+import org.springframework.cglib.beans.BeanMap;
 import org.svenson.JSONProperty;
 
 import java.util.HashMap;
@@ -33,13 +35,16 @@ public class ApplicationModel
 
     private Map<String, View> views = new HashMap<>();
 
-    private List<String> styleSheets;
+    private Map<String, Process> processes = new HashMap<>();
 
     private AtomicLong idCount = new AtomicLong(0L);
+
+    private List<String> styleSheets;
 
     private String schema;
 
     private Layout domainLayout;
+
 
 
     public ApplicationModel()
@@ -183,5 +188,17 @@ public class ApplicationModel
     public void setEnums(Map<String, EnumModel> enums)
     {
         this.enums = enums;
+    }
+
+
+    public Map<String, Process> getProcesses()
+    {
+        return processes;
+    }
+
+
+    public void setProcesses(Map<String, Process> processes)
+    {
+        this.processes = processes;
     }
 }

@@ -13,4 +13,11 @@ public class ParentRuleOperations
     {
         return ctx.getEnv().getParentClasses().contains(cls);
     }
+
+    @Operation
+    public boolean viewInProcess(ExpressionContext<ParentRuleEnvironment> ctx)
+    {
+        ParentRuleEnvironment env = ctx.getEnv();
+        return env.getViewModel().isContainedInProcess();
+    }
 }

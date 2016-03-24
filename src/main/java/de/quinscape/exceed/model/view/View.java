@@ -17,6 +17,8 @@ public class View
 
     private boolean preview;
 
+    private String processName;
+
     /**
      *  cached JSON for the view itself. We need the view as view model, but we don't
      *  want to to keep converting it back to json for the client,
@@ -99,4 +101,20 @@ public class View
         return root.find(predicate);
     }
 
+
+    public String getProcessName()
+    {
+        return processName;
+    }
+
+
+    public void setProcessName(String processName)
+    {
+        this.processName = processName;
+    }
+
+    public boolean isContainedInProcess()
+    {
+        return getProcessName() != null;
+    }
 }

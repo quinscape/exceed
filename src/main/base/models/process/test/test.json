@@ -1,0 +1,20 @@
+{
+    "states" : {
+        "start" : {
+            "type" : "process.StartState",
+            "transitions" : {
+                "start" : {
+                    "to" : "ProcessView"
+                }
+            }
+        },
+        "processView" : {
+            "type" : "process.ViewState",
+            "transitions" : {
+                "start" : {
+                    "to" : "ProcessView"
+                }
+            }
+        }
+    }
+}

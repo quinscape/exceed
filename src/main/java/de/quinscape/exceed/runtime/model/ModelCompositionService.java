@@ -8,6 +8,9 @@ import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.model.domain.PropertyType;
+import de.quinscape.exceed.model.process.Process;
+import de.quinscape.exceed.model.process.ProcessState;
+import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
@@ -42,9 +45,12 @@ public class ModelCompositionService
 
     public static final String VIEW_MODEL_PREFIX = "/models/view/";
 
+    public static final String PROCESS_MODEL_PREFIX = "/models/process/";
+
     public static final String DOMAIN_LAYOUT_NAME = "/layout/domain.json";
 
     private final static Logger log = LoggerFactory.getLogger(ModelCompositionService.class);
+
 
     private ModelJSONService modelJSONService;
 
@@ -141,11 +147,33 @@ public class ModelCompositionService
             }
             else if (path.startsWith(VIEW_MODEL_PREFIX))
             {
+
                 log.debug("Reading {} as View", path);
                 View view = createViewModel(runtimeApplication, path, json, false);
 
                 applicationModel.getViews().put(view.getName(), view);
                 return view;
+            }
+
+            else if (path.startsWith(PROCESS_MODEL_PREFIX))
+            {
+                int nameStart = PROCESS_MODEL_PREFIX.length();
+                String processName = path.substring(nameStart, path.indexOf('/', nameStart));
+
+                if (path.contains("/view/"))
+                {
+                    log.debug("Reading {} as Process View", path);
+                    View view = createViewModel(runtimeApplication, path, json, false);
+                    view.setProcessName(processName);
+                    applicationModel.getViews().put( processName + "/" + view.getName(), view);
+                    return view;
+                }
+
+                log.debug("Reading {} as Process", path);
+                Process process = create(Process.class, json , path);
+                process.setName(processName);
+                applicationModel.getProcesses().put( process.getName(), process);
+                return process;
             }
             else if (path.equals(DOMAIN_LAYOUT_NAME))
             {
@@ -233,6 +261,39 @@ public class ModelCompositionService
         for (View view : applicationModel.getViews().values())
         {
             postProcessView(application, view);
+        }
+
+        validateProcesses(applicationModel);
+    }
+
+
+    private void validateProcesses(ApplicationModel applicationModel)
+    {
+        for (Process process : applicationModel.getProcesses().values())
+        {
+            String start = process.getStart();
+            if (start == null)
+            {
+                throw new IllegalStateException("Process '" + process.getName() + "' defines no start");
+            }
+
+            ProcessState processState = process.getStates().get(start);
+            if (processState == null)
+            {
+                throw new IllegalStateException("Process '" + process.getName() + "' defines a non existing start-state: '" + start + "' does not exist");
+            }
+
+            for (ProcessState state : process.getStates().values())
+            {
+                if (state instanceof ViewState)
+                {
+                    View view = applicationModel.getViews().get(process.getName() + "/" + state.getName());
+                    if (view == null)
+                    {
+                        throw new IllegalStateException("Process '" + process.getName() + "' defines a view state '" + state +"' but no such view model exists");
+                    }
+                }
+            }
         }
     }
 
