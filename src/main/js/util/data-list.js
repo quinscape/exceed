@@ -36,7 +36,7 @@ function DataList(dataList, onChange)
     this.columns = dataList.columns;
     this.rows = dataList.rows;
     this.propertyLookup = createPropertyLookup(this.types);
-    this.onChange = onChange.bind(this);
+    this.onChange = onChange;
 }
 
 DataList.prototype.lookupProperty = function (key)
@@ -230,6 +230,7 @@ DataListCursor.prototype.get = function (path)
     return obj;
 };
 
+// Create an immutable update method for every command supported by "react-addons-update"
 (function (cursorProto)
 {
     var operations = [
@@ -281,8 +282,7 @@ DataListCursor.prototype.get = function (path)
 DataListCursor.prototype.update = function (spec, path)
 {
     var newRows = immutableUpdate(this.dataList.rows, spec);
-    this.dataList.onChange(newRows, path);
-
+    this.dataList.onChange.call(this, newRows, path);
     this.dataList.rows = newRows;
 };
 
