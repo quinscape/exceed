@@ -55,7 +55,8 @@ public class DataListServiceTest
                 ImmutableMap.of(
                     "name", "MyFoo", "created", new Date(0)
                 )
-            ));
+            ),
+            1);
 
 
         String json = dataListService.toJSON(dataList);
@@ -90,7 +91,7 @@ public class DataListServiceTest
                     "created", new Date(TimeUnit.DAYS.toMillis(1)),
                     "barCreated", new Timestamp(TimeUnit.DAYS.toMillis(2))
                 )
-            ));
+            ), 1);
 
 
         String json = dataListService.toJSON(dataList);
@@ -135,7 +136,7 @@ public class DataListServiceTest
                         )
                     )
                 )
-            ));
+            ), 1);
 
 
         String json = dataListService.toJSON(dataList);
@@ -175,7 +176,7 @@ public class DataListServiceTest
                         new Date(TimeUnit.DAYS.toMillis(6))
                     )
                 )
-            ));
+            ), 1);
 
 
         String json = dataListService.toJSON(dataList);
@@ -221,7 +222,7 @@ public class DataListServiceTest
                         )
                     )
                 )
-            ));
+            ), 1);
 
 
         String json = dataListService.toJSON(dataList);
@@ -261,7 +262,7 @@ public class DataListServiceTest
                         "Event2", new Date(TimeUnit.DAYS.toMillis(8))
                     )
                 )
-            ));
+            ), 1);
 
 
         String json = dataListService.toJSON(dataList);

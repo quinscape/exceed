@@ -81,6 +81,7 @@ public class DataListService
             JSONBuilder b = JSONBuilder.buildObject(generator, sink);
 
             b.property("types", dataList.getTypes());
+            b.property("enums", dataList.getEnums());
             b.property("columns", dataList.getColumns());
             b.arrayProperty("rows");
 
@@ -89,9 +90,12 @@ public class DataListService
             for (Iterator<?> iterator = dataList.getRows().iterator(); iterator.hasNext(); )
             {
                 Object row = iterator.next();
-
                 convertRow(b, runtimeContext, dataList, row, lookups);
             }
+
+            b.close();
+
+            b.property("rowCount", dataList.getRowCount());
 
             b.closeAll();
         }

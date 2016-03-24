@@ -23,6 +23,7 @@ function createPropertyLookup(types)
 
     return propertyLookup;
 }
+
 /**
  * Encapsulates a data-list structure and provides immutable update function on it.
  *
@@ -33,11 +34,23 @@ function createPropertyLookup(types)
 function DataList(dataList, onChange)
 {
     this.types = dataList.types;
+    this.enums = dataList.enums;
     this.columns = dataList.columns;
     this.rows = dataList.rows;
+    this.rowCount = dataList.rowCount;
     this.propertyLookup = createPropertyLookup(this.types);
     this.onChange = onChange;
 }
+
+DataList.prototype.getRaw = function (key)
+{
+    return {
+        types: this.types,
+        enums: this.enums,
+        rows: this.rows,
+        rowCount: this.rowCount
+    }
+};
 
 DataList.prototype.lookupProperty = function (key)
 {
@@ -50,7 +63,6 @@ DataList.prototype.lookupProperty = function (key)
 
     return property;
 };
-
 
 DataList.prototype.getColumnType = function (column)
 {
@@ -156,18 +168,19 @@ DataList.prototype.followTypeDefinitionPath = function(path, startIndex, type, t
 
     if (resolve)
     {
-
         if (!property)
         {
             return {
                 parent: parent,
-                type: type
+                type: type,
+                dataList: this
             };
         }
         else
         {
             return extend({
-                parent: parent
+                parent: parent,
+                dataList: this
             }, property);
         }
     }
@@ -210,7 +223,7 @@ function DataListCursor(dataList, path, type, typeParam)
 {
     validatePath(path);
 
-    this.data = walk(dataList.rows, path);
+    this.value = walk(dataList.rows, path);
     this.dataList = dataList;
     this.type = type;
     this.typeParam = typeParam;
@@ -263,8 +276,9 @@ DataListCursor.prototype.get = function (path)
     {
         return function (path, value)
         {
+            path = path && path.length ? this.path.concat(path) : this.path;
             this.update(spec(
-                path && path.length ? this.path.concat(path) : this.path,
+                path,
                 "$" + op,
                 value
             ), path);
@@ -296,6 +310,7 @@ DataListCursor.prototype.getCursor = function (path)
     return this.dataList.getCursor(this.path.concat(path));
 };
 
+
 DataListCursor.prototype.getPropertyType = function (path)
 {
     var property;
@@ -323,7 +338,8 @@ DataListCursor.prototype.getPropertyType = function (path)
         if (path.length == 1)
         {
             return extend({
-                parent: e.type
+                parent: e.type,
+                dataList: this.dataList
             }, property);
         }
 
@@ -339,16 +355,15 @@ DataListCursor.prototype.getPropertyType = function (path)
 
 DataListCursor.prototype.valueOf = function ()
 {
-    var s = "[DataListCursor: type = " + this.type;
-
-    if (this.typeParam)
-    {
-        s += ", typeParam = " + this.typeParam;
-    }
-
-    s += ", dataList = " + this.dataList + "]";
-
-    return s;
+    return this.value;
 };
+
+DataListCursor.prototype.toString = function ()
+{
+    return String(this.value);
+};
+
+
+DataList.Cursor = DataListCursor;
 
 module.exports = DataList;

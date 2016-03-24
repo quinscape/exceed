@@ -138,6 +138,8 @@ describe("DataList Helper", function ()
         ]
     }, function (newData, path)
     {
+        //console.log("CHANGED", newData, path);
+
         changeSpy(newData, path);
     });
 
@@ -149,19 +151,19 @@ describe("DataList Helper", function ()
 
         cursor = dl.getCursor([0]);
         assert(cursor.type === "[DataListRoot]");
-        assert(cursor.data.name === "TestFoo");
+        assert(cursor.value.name === "TestFoo");
 
         cursor.set(["name"], "AnotherFoo");
         call = changeSpy.getCall(0);
         newRows = call.args[0];
         assert(newRows[0].name === "AnotherFoo");
-        assert.deepEqual(call.args[1], ["name"]);
+        assert.deepEqual(call.args[1], [0, "name"]);
 
         cursor.set(["embedded", "name"], "Changed Embedded");
         call = changeSpy.getCall(1);
         newRows = call.args[0];
         assert(newRows[0].embedded.name === "Changed Embedded");
-        assert.deepEqual(call.args[1], ["embedded","name"]);
+        assert.deepEqual(call.args[1], [0, "embedded","name"]);
 
         cursor.merge(["bazes"], {
             "three" : { num: 3.1},
@@ -171,25 +173,25 @@ describe("DataList Helper", function ()
         newRows = call.args[0];
         assert(newRows[0].bazes.three.num === 3.1);
         assert(newRows[0].bazes.five.num === 5);
-        assert.deepEqual(call.args[1], ["bazes"]);
+        assert.deepEqual(call.args[1], [0, "bazes"]);
 
 
         cursor = cursor.getCursor(["embedded"]);
         assert(cursor.type === "Embedded");
-        assert(cursor.data.name === "Changed Embedded");
+        assert(cursor.value.name === "Changed Embedded");
 
         cursor = cursor.pop();
-        assert(cursor.data.name === "AnotherFoo");
+        assert(cursor.value.name === "AnotherFoo");
 
         cursor = dl.getCursor([0, "bars", 0]);
-        assert(cursor.data.name === "Bar 1");
+        assert(cursor.value.name === "Bar 1");
         cursor = cursor.pop(2);
-        assert(cursor.data.name === "AnotherFoo");
+        assert(cursor.value.name === "AnotherFoo");
 
 
         // property cursor
         cursor = dl.getCursor([0, "name"]);
-        assert(cursor.data === "AnotherFoo");
+        assert(cursor.value === "AnotherFoo");
 
         cursor.set(null, "YetAnotherFoo");
         call = changeSpy.getCall(3);
@@ -210,18 +212,21 @@ describe("DataList Helper", function ()
         assert(propertyType.name === "name");
         assert(propertyType.type === "PlainText");
         assert(propertyType.data === 1);
+        assert(propertyType.dataList === dl);
 
         propertyType = cursor.getPropertyType(["num"]);
         assert(propertyType.parent === "Foo");
         assert(propertyType.name === "num");
         assert(propertyType.type === "Integer");
         assert(propertyType.data === 2);
+        assert(propertyType.dataList === dl);
 
         propertyType = cursor.getPropertyType(["embedded", "name"]);
         assert(propertyType.parent === "Embedded");
         assert(propertyType.name === "name");
         assert(propertyType.type === "PlainText");
         assert(propertyType.data === 6);
+        assert(propertyType.dataList === dl);
 
         propertyType = cursor.getPropertyType(["bars"]);
         assert(propertyType.parent === "Foo");
@@ -229,12 +234,14 @@ describe("DataList Helper", function ()
         assert(propertyType.type === "List");
         assert(propertyType.typeParam === "Bar");
         assert(propertyType.data === 4);
+        assert(propertyType.dataList === dl);
 
         propertyType = cursor.getPropertyType(["bars", 0, "name"]);
         assert(propertyType.parent === "Bar");
         assert(propertyType.name === "name");
         assert(propertyType.type === "PlainText");
         assert(propertyType.data === 7);
+        assert(propertyType.dataList === dl);
 
         propertyType = cursor.getPropertyType(["bazes"]);
         assert(propertyType.parent === "Foo");
@@ -242,18 +249,21 @@ describe("DataList Helper", function ()
         assert(propertyType.type === "Map");
         assert(propertyType.typeParam === "Baz");
         assert(propertyType.data === 5);
+        assert(propertyType.dataList === dl);
 
         propertyType = cursor.getPropertyType(["bazes", "one", "num"]);
         assert(propertyType.parent === "Baz");
         assert(propertyType.name === "num");
         assert(propertyType.type === "Integer");
         assert(propertyType.data === 8);
+        assert(propertyType.dataList === dl);
 
         propertyType = cursor.getPropertyType(["joinedName"]);
         assert(propertyType.parent === "Joined");
         assert(propertyType.name === "name");
         assert(propertyType.type === "PlainText");
         assert(propertyType.data === 9);
+        assert(propertyType.dataList === dl);
 
         cursor = dl.getCursor([0, "embedded", "name"]);
 
@@ -261,6 +271,7 @@ describe("DataList Helper", function ()
         assert(propertyType.parent === "Embedded");
         assert(propertyType.type === "PlainText");
         assert(propertyType.data === 6);
+        assert(propertyType.dataList === dl);
 
     });
 
