@@ -1,29 +1,34 @@
 {
-  "name": "Foo",
-  "properties": [
-    { "name": "id",
-      "type" : "UUID",
-      "maxLength" : 36
-    },
-    { "name": "name",
-      "type" : "PlainText",
-      "maxLength" : 64
-    },
-    { "name": "num",
-      "type" : "Integer"
-    },
-    {
-      "name" : "type",
-      "type" : "Enum",
-      "typeParam" : "MyEnum"
-    },
-    { "name": "created",
-      "type" : "Timestamp"
-    },
-    {
-      "name": "description",
-      "type" : "PlainText",
-      "maxLength" : 4096
-    }
-  ]
+    "name": "Foo",
+    "properties": [
+        {
+            "name": "id",
+            "type": "UUID",
+            "maxLength": 36
+        },
+        {
+            "name": "name",
+            "type": "PlainText",
+            "maxLength": 64,
+            "required": true
+        },
+        {
+            "name": "num",
+            "type": "Integer"
+        },
+        {
+            "name": "type",
+            "type": "Enum",
+            "typeParam": "MyEnum"
+        },
+        {
+            "name": "created",
+            "type": "Timestamp"
+        },
+        {
+            "name": "description",
+            "type": "PlainText",
+            "maxLength": 4096
+        }
+    ]
 }
