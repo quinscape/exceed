@@ -2,7 +2,7 @@
 
 var sys = require("../sys");
 
-function evaluateParams(params)
+function evaluateParams(params, usedInPath)
 {
     var p = "";
     if (params)
@@ -10,17 +10,22 @@ function evaluateParams(params)
         var sep = "?";
         for (var name in params)
         {
-            if (params.hasOwnProperty(name))
+            if (params.hasOwnProperty(name) && !usedInPath[name])
             {
-                p += sep + encodeURIComponent(name) + "=" + encodeURIComponent(params[name]);
-                sep = "&";
+                var value = params[name];
+                if (value !== undefined)
+                {
+                    p += sep + encodeURIComponent(name) + "=" + encodeURIComponent(value);
+                    sep = "&";
+                }
             }
         }
     }
     return p;
 }
 
-function replacePathVariables(location, params)
+
+function replacePathVariables(location, params, usedInPath)
 {
    return location.replace(/{([a-z]+)}/g, function (match, name, offset, str)
     {
@@ -29,15 +34,16 @@ function replacePathVariables(location, params)
         {
             throw new Error("Undefined path variable '" + name + "' in '" + location + "'");
         }
-        delete params[name];
+        usedInPath[name] = true;
         return value;
     });
 }
 function uri(location, params)
 {
-    location = replacePathVariables(location, params);
+    var usedInPath = {};
+    location = replacePathVariables(location, params, usedInPath);
 
-    var result = sys.contextPath + location + evaluateParams(params);
+    var result = sys.contextPath + location + evaluateParams(params, usedInPath);
 
     //console.log("URI:", result);
 
