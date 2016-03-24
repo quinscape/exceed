@@ -17,16 +17,9 @@ public class TextNode
 {
     public TextNode(String value)
     {
-        try
-        {
-            Attributes attrs = new Attributes(null);
-            attrs.setAttribute("value", value);
-            this.setAttrs(attrs);
-        }
-        catch (ParseException e)
-        {
-            throw new ExceedRuntimeException("Error creating string model", e);
-        }
+        Attributes attrs = new Attributes(null);
+        attrs.setAttribute("value", value);
+        this.setAttrs(attrs);
     }
 
 

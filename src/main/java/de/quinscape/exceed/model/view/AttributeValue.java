@@ -14,7 +14,7 @@ public class AttributeValue
 {
     private final AttributeValueType type;
 
-    private final Object value;
+    private final String value;
 
     private final ASTExpression astExpression;
 
@@ -22,7 +22,7 @@ public class AttributeValue
 
     public AttributeValue(
         AttributeValueType type,
-        Object value) throws ParseException
+        String value) throws ParseException
     {
         this.value = value;
 
@@ -68,7 +68,7 @@ public class AttributeValue
     }
 
 
-    public Object getValue()
+    public String getValue()
     {
         return value;
     }

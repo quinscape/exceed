@@ -52,7 +52,7 @@ public class ComponentModel
 
     @JSONProperty(ignoreIfNull = true)
     @JSONTypeHint(ComponentModel.class)
-    public void setKids(List kids) throws ParseException
+    public void setKids(List kids)
     {
         for (int i = 0; i < kids.size(); i++)
         {
@@ -208,20 +208,13 @@ public class ComponentModel
      */
     public static ComponentModel forString(String value)
     {
-        try
-        {
-            ComponentModel model = new ComponentModel();
-            model.setName(STRING_MODEL_NAME);
-            Attributes attrs = new Attributes(null);
-            attrs.setAttribute("value", value);
-            model.setAttrs(attrs);
+        ComponentModel model = new ComponentModel();
+        model.setName(STRING_MODEL_NAME);
+        Attributes attrs = new Attributes(null);
+        attrs.setAttribute("value", value);
+        model.setAttrs(attrs);
 
-            return model;
-        }
-        catch (ParseException e)
-        {
-            throw new ExceedRuntimeException("Error creating string model", e);
-        }
+        return model;
     }
 
     public static boolean isTextNode(ComponentModel componentModel)

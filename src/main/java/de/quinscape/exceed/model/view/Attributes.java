@@ -1,6 +1,7 @@
 package de.quinscape.exceed.model.view;
 
 import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import org.svenson.JSONParameters;
 import org.svenson.JSONProperty;
 import org.svenson.JSONable;
@@ -17,10 +18,15 @@ public class Attributes
 
     private Map<String,AttributeValue> attrs;
 
+    public Attributes()
+    {
+        this(new HashMap<>());
+    }
+
     public Attributes(
         @JSONParameters
         Map<String, Object> attrs
-    ) throws ParseException
+    )
     {
         if (attrs != null)
         {
@@ -38,7 +44,7 @@ public class Attributes
         attrs.put(name,value);
     }
 
-    private Map<String, AttributeValue> convert(Map<String, Object> attrs) throws ParseException
+    private Map<String, AttributeValue> convert(Map<String, Object> attrs)
     {
         Map<String, AttributeValue> newAttrs = new HashMap<>(attrs.size());
         for (Map.Entry<String, Object> entry : attrs.entrySet())
@@ -48,42 +54,49 @@ public class Attributes
         return newAttrs;
     }
 
-    private AttributeValue convertValue(Object value) throws ParseException
+    private AttributeValue convertValue(Object value)
     {
-        AttributeValue attrValue;
-        if (value instanceof String)
+        try
         {
-            String stringValue = (String) value;
-            if (stringValue.startsWith("{") && stringValue.endsWith("}"))
+            AttributeValue attrValue;
+            if (value instanceof String)
             {
-                attrValue = new AttributeValue(AttributeValueType.EXPRESSION, formatExpression(stringValue));
+                String stringValue = (String) value;
+                if (stringValue.startsWith("{") && stringValue.endsWith("}"))
+                {
+                    attrValue = new AttributeValue(AttributeValueType.EXPRESSION, formatExpression(stringValue));
+                }
+                else
+                {
+                    attrValue = new AttributeValue(AttributeValueType.STRING, (String) value);
+                }
+            }
+            else if (value instanceof Long || value instanceof Integer || value instanceof Boolean)
+            {
+                attrValue = new AttributeValue(AttributeValueType.STRING, String.valueOf(value));
+            }
+            else if (value instanceof Collection || value instanceof Map)
+            {
+                throw new IllegalArgumentException("Invalid complex attribute value: " + value);
             }
             else
             {
-                attrValue = new AttributeValue(AttributeValueType.STRING, value);
+                attrValue = null;
             }
+            return attrValue;
         }
-        else if (value instanceof Long || value instanceof Integer || value instanceof Boolean)
+        catch (ParseException e)
         {
-            attrValue = new AttributeValue(AttributeValueType.STRING,  String.valueOf(value));
+            throw new ExceedRuntimeException(e);
         }
-        else if (value instanceof Collection || value instanceof Map)
-        {
-            throw new IllegalArgumentException("Invalid complex attribute value: " + value);
-        }
-        else
-        {
-            attrValue = null;
-        }
-        return attrValue;
     }
 
-    public void setAttribute(String name, String value) throws ParseException
+    public void setAttribute(String name, String value)
     {
         setAttribute(name, convertValue(value));
     }
 
-    public void setAttribute(String name, Object value) throws ParseException
+    public void setAttribute(String name, Object value)
     {
         setAttribute(name, convertValue(value));
     }
