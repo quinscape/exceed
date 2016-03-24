@@ -5,12 +5,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
-import de.quinscape.exceed.runtime.security.ApplicationUserDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.File;
 import java.util.ArrayList;

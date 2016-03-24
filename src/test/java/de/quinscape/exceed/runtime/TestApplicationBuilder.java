@@ -4,7 +4,6 @@ import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.model.domain.PropertyType;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.config.DefaultPropertyConverters;
 import de.quinscape.exceed.runtime.datalist.DataListService;
 import de.quinscape.exceed.runtime.domain.DomainService;
