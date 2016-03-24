@@ -13,6 +13,7 @@
     "lodash.keys": "^3.1.2",
     "mousetrap": "^1.5.3",
     "node-uuid": "^1.4.3",
+    "react-addons-linked-state-mixin": "^0.14.7",
     "react-bootstrap": "^0.28.2",
     "react-overlays": "^0.5.4"
   },
