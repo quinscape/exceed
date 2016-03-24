@@ -32,6 +32,10 @@ public class ComponentDescriptor
     private final String providedContext;
     private final Map<String,ComponentPropWizard> componentPropWizards;
 
+    /**
+     * If set to <code>true</code> the corresponding component will receive a <em>model</em> prop containing the original
+     * model JSON data.
+     */
     private final boolean modelAware;
 
     private final Map<String,String> queryExecutors;
