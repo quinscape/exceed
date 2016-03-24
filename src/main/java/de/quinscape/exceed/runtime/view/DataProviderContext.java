@@ -132,11 +132,8 @@ public final class DataProviderContext
             throw new IllegalArgumentException("componentModel can't be null");
         }
 
-        if (componentModel.equals(overridden))
-        {
-            return varsOverride;
-        }
 
+        Map<String, Object> vars = new HashMap<>();
         try
         {
             VariableResolutionEnvironment variableResolutionEnvironment = new VariableResolutionEnvironment
@@ -152,7 +149,6 @@ public final class DataProviderContext
 
             if (varExpressions != null)
             {
-                Map<String, Object> vars = new HashMap<>();
                 for (Map.Entry<String, String> entry : varExpressions.entrySet())
                 {
                     String varName = entry.getKey();
@@ -162,12 +158,14 @@ public final class DataProviderContext
                     Object result = expressionService.evaluate(astExpression, variableResolutionEnvironment);
                     vars.put(varName, result);
                 }
-                return vars;
             }
-            else
+
+            if (componentModel.equals(overridden))
             {
-                return Collections.emptyMap();
+                vars.putAll(varsOverride);
             }
+
+            return vars;
         }
         catch (ParseException e)
         {
