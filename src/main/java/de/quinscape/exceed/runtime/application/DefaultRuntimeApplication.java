@@ -74,7 +74,7 @@ public class DefaultRuntimeApplication
 
     public static final String UPDATE_VARS_PARAM = "_xcd_vars";
 
-    private static Logger log = LoggerFactory.getLogger(DefaultRuntimeApplication.class);
+    private final static Logger log = LoggerFactory.getLogger(DefaultRuntimeApplication.class);
 
     private final ServletContext servletContext;
 

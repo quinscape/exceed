@@ -19,7 +19,7 @@ import java.util.List;
 public class FileResourceRoot
     implements ResourceRoot
 {
-    private static Logger log = LoggerFactory.getLogger(FileResourceRoot.class);
+    private final static Logger log = LoggerFactory.getLogger(FileResourceRoot.class);
 
     private final File baseDirectory;
     private final Java7NIOResourceWatcher watcher;

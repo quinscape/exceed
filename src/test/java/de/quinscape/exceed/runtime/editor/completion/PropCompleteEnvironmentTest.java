@@ -38,7 +38,7 @@ import static org.hamcrest.MatcherAssert.*;
 
 public class PropCompleteEnvironmentTest
 {
-    private static Logger log = LoggerFactory.getLogger(PropCompleteEnvironmentTest.class);
+    private final static Logger log = LoggerFactory.getLogger(PropCompleteEnvironmentTest.class);
 
 
     private ModelJSONService modelJSONService = new ModelJSONServiceImpl();

@@ -26,7 +26,7 @@ import static org.hamcrest.MatcherAssert.*;
 
 public class DataListServiceTest
 {
-    private static Logger log = LoggerFactory.getLogger(DataListServiceTest.class);
+    private final static Logger log = LoggerFactory.getLogger(DataListServiceTest.class);
 
     // we mostly test conversion of different types  in "row" here because "types" and "columns" are just
     // straightforward JSON generation without any transformation or conversion

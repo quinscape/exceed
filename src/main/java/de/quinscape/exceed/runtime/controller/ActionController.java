@@ -40,7 +40,7 @@ import java.util.Map;
 @Controller
 public class ActionController
 {
-    private static Logger log = LoggerFactory.getLogger(ActionController.class);
+    private final static Logger log = LoggerFactory.getLogger(ActionController.class);
 
 
     @Autowired

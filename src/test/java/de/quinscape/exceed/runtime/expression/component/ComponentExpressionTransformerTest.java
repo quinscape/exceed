@@ -15,7 +15,7 @@ import static org.hamcrest.MatcherAssert.*;
 
 public class ComponentExpressionTransformerTest
 {
-    private static Logger log = LoggerFactory.getLogger(ComponentExpressionTransformerTest.class);
+    private final static Logger log = LoggerFactory.getLogger(ComponentExpressionTransformerTest.class);
 
 
     private ComponentExpressionTransformer env = new ComponentExpressionTransformer( new ExpressionServiceImpl(ImmutableSet.of(new ComponentExpressionOperations())), new TestRegistry(), true);

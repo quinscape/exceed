@@ -23,7 +23,7 @@ import static org.hamcrest.MatcherAssert.*;
 
 public class ModelJSONServiceTest
 {
-    private static Logger log = LoggerFactory.getLogger(ModelJSONServiceTest.class);
+    private final static Logger log = LoggerFactory.getLogger(ModelJSONServiceTest.class);
 
 
     private ModelJSONService modelJSONService = new ModelJSONServiceImpl();

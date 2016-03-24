@@ -23,7 +23,7 @@ import static de.quinscape.exceed.model.view.ComponentModelBuilder.component;
 
 public class ClientExpressionRendererTest
 {
-    private static Logger log = LoggerFactory.getLogger(ClientExpressionRendererTest.class);
+    private final static Logger log = LoggerFactory.getLogger(ClientExpressionRendererTest.class);
 
     private ComponentModel componentModel;
 

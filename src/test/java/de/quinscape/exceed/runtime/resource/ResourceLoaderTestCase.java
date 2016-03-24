@@ -17,7 +17,7 @@ import static org.hamcrest.MatcherAssert.*;
 
 public class ResourceLoaderTestCase
 {
-    private static Logger log = LoggerFactory.getLogger(ResourceLoaderTestCase.class);
+    private final static Logger log = LoggerFactory.getLogger(ResourceLoaderTestCase.class);
 
 
     @Test

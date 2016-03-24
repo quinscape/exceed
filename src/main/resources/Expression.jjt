@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ExpressionParser
 {
-    private static Logger log = LoggerFactory.getLogger(ExpressionParser.class);
+    private final static Logger log = LoggerFactory.getLogger(ExpressionParser.class);
 
     public static ASTExpression parse(String expression) throws ParseException
     {

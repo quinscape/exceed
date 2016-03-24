@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @Controller
 public class HotReloadController
 {
-    private static Logger log = LoggerFactory.getLogger(HotReloadController.class);
+    private final static Logger log = LoggerFactory.getLogger(HotReloadController.class);
 
     public final static long TIMEOUT = TimeUnit.SECONDS.toMillis(110);
 

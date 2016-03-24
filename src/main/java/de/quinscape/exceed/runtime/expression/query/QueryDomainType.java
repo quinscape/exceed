@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class QueryDomainType
 {
-    private static Logger log = LoggerFactory.getLogger(QueryDomainType.class);
+    private final static Logger log = LoggerFactory.getLogger(QueryDomainType.class);
 
     private final DomainType type;
 

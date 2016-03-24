@@ -29,7 +29,7 @@ import static de.quinscape.exceed.domain.Tables.*;
 public class ApplicationServiceImpl
     implements ApplicationService
 {
-    private static Logger log = LoggerFactory.getLogger(ApplicationServiceImpl.class);
+    private final static Logger log = LoggerFactory.getLogger(ApplicationServiceImpl.class);
 
     @Autowired
     private DSLContext dslContext;

@@ -9,7 +9,7 @@ import static org.hamcrest.MatcherAssert.*;
 
 public class UtilTestCase
 {
-    private static Logger log = LoggerFactory.getLogger(UtilTestCase.class);
+    private final static Logger log = LoggerFactory.getLogger(UtilTestCase.class);
 
 
     @Test

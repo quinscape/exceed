@@ -15,7 +15,7 @@ public class ApplicationUserDetailsService
     implements UserDetailsService
 {
 
-    private static Logger log = LoggerFactory.getLogger(ApplicationUserDetailsService.class);
+    private final static Logger log = LoggerFactory.getLogger(ApplicationUserDetailsService.class);
 
     private final DSLContext dslContext;
 

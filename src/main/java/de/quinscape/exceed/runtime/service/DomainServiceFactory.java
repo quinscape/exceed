@@ -22,7 +22,7 @@ import java.util.Map;
 @Service
 public class DomainServiceFactory
 {
-    private static Logger log = LoggerFactory.getLogger(DomainServiceFactory.class);
+    private final static Logger log = LoggerFactory.getLogger(DomainServiceFactory.class);
 
     @Autowired
     private DataListService dataListService;

@@ -37,7 +37,7 @@ public class RuntimeApplicationFactory
 {
     private static final String CLASSPATH_PREFIX = "classpath:";
 
-    private static Logger log = LoggerFactory.getLogger(RuntimeApplicationFactory.class);
+    private final static Logger log = LoggerFactory.getLogger(RuntimeApplicationFactory.class);
 
     @Autowired
     private ApplicationContext applicationContext;

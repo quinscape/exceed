@@ -18,7 +18,7 @@ import java.util.Map;
 public class ExpressionServiceImpl
     implements ExpressionService, OperationService
 {
-    private static Logger log = LoggerFactory.getLogger(ExpressionServiceImpl.class);
+    private final static Logger log = LoggerFactory.getLogger(ExpressionServiceImpl.class);
 
     private final Map<OperationKey, OperationRegistration>   operationLookup;
     private final Map<IdentifierKey, IdentifierRegistration> identifierLookup;

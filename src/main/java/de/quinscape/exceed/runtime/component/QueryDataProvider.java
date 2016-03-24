@@ -19,7 +19,7 @@ import java.util.Map;
 public class QueryDataProvider
     implements DataProvider
 {
-    private static Logger log = LoggerFactory.getLogger(QueryDataProvider.class);
+    private final static Logger log = LoggerFactory.getLogger(QueryDataProvider.class);
 
     private final QueryTransformer queryTransformer;
 

@@ -29,7 +29,7 @@ import java.io.IOException;
 @Configuration
 public class DefaultAppConfiguration
 {
-    private static Logger log = LoggerFactory.getLogger(DefaultAppConfiguration.class);
+    private final static Logger log = LoggerFactory.getLogger(DefaultAppConfiguration.class);
 
 
     private final static String ROOT_NAME = "exceed-root";

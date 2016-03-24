@@ -45,7 +45,7 @@ import java.util.Map;
 public class WebConfiguration
     extends WebMvcConfigurerAdapter
 {
-    private static Logger log = LoggerFactory.getLogger(WebConfiguration.class);
+    private final static Logger log = LoggerFactory.getLogger(WebConfiguration.class);
 
     @Autowired
     private ServletContext servletContext;

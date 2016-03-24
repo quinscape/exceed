@@ -44,7 +44,7 @@ public class ModelCompositionService
 
     public static final String DOMAIN_LAYOUT_NAME = "/layout/domain.json";
 
-    private static Logger log = LoggerFactory.getLogger(ModelCompositionService.class);
+    private final static Logger log = LoggerFactory.getLogger(ModelCompositionService.class);
 
     private ModelJSONService modelJSONService;
 

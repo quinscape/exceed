@@ -32,7 +32,7 @@ import static org.hamcrest.Matchers.*;
 @Transactional
 public class DomainConfigurationTest
 {
-    private static Logger log = LoggerFactory.getLogger(DomainConfigurationTest.class);
+    private final static Logger log = LoggerFactory.getLogger(DomainConfigurationTest.class);
 
     @Autowired
     private DSLContext dslContext;

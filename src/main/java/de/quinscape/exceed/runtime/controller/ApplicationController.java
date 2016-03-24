@@ -29,7 +29,7 @@ import java.io.IOException;
 @Controller
 public class ApplicationController
 {
-    private static Logger log = LoggerFactory.getLogger(ApplicationController.class);
+    private final static Logger log = LoggerFactory.getLogger(ApplicationController.class);
 
     @Autowired
     private ServletContext servletContext;

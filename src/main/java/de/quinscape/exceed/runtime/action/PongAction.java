@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 public class PongAction
     implements Action<PongActionModel, PongData>
 {
-    private static Logger log = LoggerFactory.getLogger(PongAction.class);
+    private final static Logger log = LoggerFactory.getLogger(PongAction.class);
 
     @Override
     public PongData execute(RuntimeContext runtimeContext, PongActionModel model, PongData pongData)

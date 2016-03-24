@@ -37,7 +37,7 @@ public class CompletionService
      */
     private static final String DEFAULT_TEMPLATE_META = "component";
 
-    private static Logger log = LoggerFactory.getLogger(CompletionService.class);
+    private final static Logger log = LoggerFactory.getLogger(CompletionService.class);
 
     @Autowired
     private ComponentRegistry componentRegistry;

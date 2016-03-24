@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public class QueryTransformer
 {
-    private static Logger log = LoggerFactory.getLogger(QueryTransformer.class);
+    private final static Logger log = LoggerFactory.getLogger(QueryTransformer.class);
 
     private ExpressionService expressionService;
 

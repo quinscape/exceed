@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class ExpressionParser/*@bgen(jjtree)*/implements ExpressionParserTreeConstants, ExpressionParserConstants {/*@bgen(jjtree)*/
-  protected JJTExpressionParserState jjtree = new JJTExpressionParserState();private static Logger log = LoggerFactory.getLogger(ExpressionParser.class);
+  protected JJTExpressionParserState jjtree = new JJTExpressionParserState();private final static Logger log = LoggerFactory.getLogger(ExpressionParser.class);
 
     public static ASTExpression parse(String expression) throws ParseException
     {

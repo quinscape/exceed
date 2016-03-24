@@ -31,7 +31,7 @@ import java.util.concurrent.ExecutionException;
 @Controller
 public class ResourceController
 {
-    private static Logger log = LoggerFactory.getLogger(ResourceController.class);
+    private final static Logger log = LoggerFactory.getLogger(ResourceController.class);
 
     private final static Charset UTF_8 = Charset.forName("UTF-8");
 

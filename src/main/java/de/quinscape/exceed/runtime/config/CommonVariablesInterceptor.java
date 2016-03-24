@@ -25,7 +25,7 @@ import java.util.Set;
 public class CommonVariablesInterceptor
     extends HandlerInterceptorAdapter
 {
-    private static Logger log = LoggerFactory.getLogger(CommonVariablesInterceptor.class);
+    private final static Logger log = LoggerFactory.getLogger(CommonVariablesInterceptor.class);
 
     public final static String CONTEXT_PATH = "contextPath";
 

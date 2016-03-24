@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 public class StoreAction
     implements Action<StoreActionModel, DataList>
 {
-    private static Logger log = LoggerFactory.getLogger(StoreAction.class);
+    private final static Logger log = LoggerFactory.getLogger(StoreAction.class);
 
 
     public StoreAction()

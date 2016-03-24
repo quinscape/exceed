@@ -32,7 +32,7 @@ import java.util.List;
 @ExpressionOperations(environment = QueryTransformerEnvironment.class)
 public class QueryTransformerOperations
 {
-    private static Logger log = LoggerFactory.getLogger(QueryTransformerOperations.class);
+    private final static Logger log = LoggerFactory.getLogger(QueryTransformerOperations.class);
 
     private static final String FILTER_MARKER = QueryTransformerOperations.class.getName() + ":filter";
 

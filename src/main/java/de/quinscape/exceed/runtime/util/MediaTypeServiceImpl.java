@@ -45,7 +45,7 @@ import java.util.Map;
 public class MediaTypeServiceImpl
     implements MediaTypeService, InitializingBean
 {
-    private static Logger log = LoggerFactory.getLogger(MediaTypeServiceImpl.class);
+    private final static Logger log = LoggerFactory.getLogger(MediaTypeServiceImpl.class);
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 

@@ -15,7 +15,7 @@ import java.util.Set;
 public class DomainServiceImpl
     implements DomainService
 {
-    private static Logger log = LoggerFactory.getLogger(DomainServiceImpl.class);
+    private final static Logger log = LoggerFactory.getLogger(DomainServiceImpl.class);
 
 
     private final DataListService dataListService;

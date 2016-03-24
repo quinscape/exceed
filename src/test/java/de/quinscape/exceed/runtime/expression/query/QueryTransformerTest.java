@@ -27,7 +27,7 @@ import static org.hamcrest.MatcherAssert.*;
 
 public class QueryTransformerTest
 {
-    private static Logger log = LoggerFactory.getLogger(QueryTransformerTest.class);
+    private final static Logger log = LoggerFactory.getLogger(QueryTransformerTest.class);
 
     private QueryTransformer transformer = new QueryTransformer(new ExpressionServiceImpl(ImmutableSet.of(new QueryTransformerOperations())));
 

@@ -44,7 +44,7 @@ import java.util.Set;
 @Controller
 public class EditorController
 {
-    private static Logger log = LoggerFactory.getLogger(EditorController.class);
+    private final static Logger log = LoggerFactory.getLogger(EditorController.class);
 
     @Autowired
     private ApplicationService applicationService;

@@ -39,7 +39,7 @@ import static org.jooq.impl.DSL.*;
 public class JOOQQueryExecutor
     implements QueryExecutor
 {
-    private static Logger log = LoggerFactory.getLogger(JOOQQueryExecutor.class);
+    private final static Logger log = LoggerFactory.getLogger(JOOQQueryExecutor.class);
 
     private final DSLContext dslContext;
 

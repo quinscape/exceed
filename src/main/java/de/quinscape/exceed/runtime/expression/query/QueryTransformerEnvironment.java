@@ -14,7 +14,7 @@ public class QueryTransformerEnvironment
     extends ExpressionEnvironment
 {
 
-    private static Logger log = LoggerFactory.getLogger(QueryTransformerEnvironment.class);
+    private final static Logger log = LoggerFactory.getLogger(QueryTransformerEnvironment.class);
 
     private final NamingStrategy namingStrategy;
 

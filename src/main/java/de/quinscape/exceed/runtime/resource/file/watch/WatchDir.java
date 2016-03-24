@@ -24,7 +24,7 @@ import static java.nio.file.StandardWatchEventKinds.*;
 
 abstract class WatchDir
 {
-    private static Logger log = LoggerFactory.getLogger(WatchDir.class);
+    private final static Logger log = LoggerFactory.getLogger(WatchDir.class);
 
     private final WatchService watcher;
     private final ConcurrentMap<WatchKey, Path> keys;

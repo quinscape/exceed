@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class DefaultActionRegistry
     implements ActionRegistry
 {
-    private static Logger log = LoggerFactory.getLogger(DefaultActionRegistry.class);
+    private final static Logger log = LoggerFactory.getLogger(DefaultActionRegistry.class);
 
 
     private final Map<String,? extends Action> actions;

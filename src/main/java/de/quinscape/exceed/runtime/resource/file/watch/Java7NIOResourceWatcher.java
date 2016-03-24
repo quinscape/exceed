@@ -20,7 +20,7 @@ public class Java7NIOResourceWatcher
     extends WatchDir
     implements ResourceWatcher, Runnable
 {
-    private static Logger log = LoggerFactory.getLogger(Java7NIOResourceWatcher.class);
+    private final static Logger log = LoggerFactory.getLogger(Java7NIOResourceWatcher.class);
 
     private final FileResourceRoot root;
 

@@ -9,7 +9,7 @@ import static org.hamcrest.MatcherAssert.*;
 
 public class ExpressionParserTest
 {
-    private static Logger log = LoggerFactory.getLogger(ExpressionParserTest.class);
+    private final static Logger log = LoggerFactory.getLogger(ExpressionParserTest.class);
 
     @Test
     public void testParse() throws Exception

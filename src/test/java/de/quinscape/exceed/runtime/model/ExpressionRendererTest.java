@@ -12,7 +12,7 @@ import static org.hamcrest.Matchers.*;
 public class ExpressionRendererTest
 {
 
-    private static Logger log = LoggerFactory.getLogger(ExpressionRendererTest.class);
+    private final static Logger log = LoggerFactory.getLogger(ExpressionRendererTest.class);
 
 
     @Test

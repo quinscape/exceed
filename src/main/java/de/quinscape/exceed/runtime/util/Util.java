@@ -26,7 +26,7 @@ public final class Util
 {
     public static final String LIBRARY_SOURCE_SYSTEM_PROPERTY = "exceed.library.source";
 
-    private static Logger log = LoggerFactory.getLogger(Util.class);
+    private final static Logger log = LoggerFactory.getLogger(Util.class);
 
 
     private Util()

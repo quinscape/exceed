@@ -15,7 +15,7 @@ import java.util.UUID;
 public class MessageHubRegistryImpl
     implements MessageHubRegistry
 {
-    private static Logger log = LoggerFactory.getLogger(MessageHubRegistryImpl.class);
+    private final static Logger log = LoggerFactory.getLogger(MessageHubRegistryImpl.class);
     private EditorMessageHub editorMessageHub;
 
     @Required

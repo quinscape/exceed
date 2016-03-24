@@ -39,7 +39,7 @@ public class EditorWebSocketHandler
 
     private final static String GROUP_NAME = Message.MESSAGE_PREFIX + Group.class.getSimpleName();
 
-    private static Logger log = LoggerFactory.getLogger(EditorWebSocketHandler.class);
+    private final static Logger log = LoggerFactory.getLogger(EditorWebSocketHandler.class);
 
     @Autowired
     private DataListService dataListService;

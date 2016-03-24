@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public abstract class AbstractStreamResourceRoot
     implements ResourceRoot
 {
-    private static Logger log = LoggerFactory.getLogger(ClassPathResourceRoot.class);
+    private final static Logger log = LoggerFactory.getLogger(ClassPathResourceRoot.class);
     protected final String pathBase;
     private int extensionIndex;
 

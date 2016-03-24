@@ -23,7 +23,7 @@ public class ModelJSONServiceImpl
 
     public static final String MODEL_ATTR_NAME = "model";
 
-    private static Logger log = LoggerFactory.getLogger(ModelJSONServiceImpl.class);
+    private final static Logger log = LoggerFactory.getLogger(ModelJSONServiceImpl.class);
 
     private final JSONParser parser;
 

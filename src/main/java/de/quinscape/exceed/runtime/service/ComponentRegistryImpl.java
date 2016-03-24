@@ -40,7 +40,7 @@ public class ComponentRegistryImpl
 
     private static final String DEFAULT_DATA_PROVIDER = "defaultDataProvider";
 
-    private static Logger log = LoggerFactory.getLogger(ComponentRegistryImpl.class);
+    private final static Logger log = LoggerFactory.getLogger(ComponentRegistryImpl.class);
 
     private JSONParser parser;
 

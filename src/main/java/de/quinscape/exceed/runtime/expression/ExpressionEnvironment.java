@@ -51,7 +51,7 @@ import java.util.Map;
 public abstract class ExpressionEnvironment
     implements ExpressionParserVisitor
 {
-    private static Logger log = LoggerFactory.getLogger(ExpressionEnvironment.class);
+    private final static Logger log = LoggerFactory.getLogger(ExpressionEnvironment.class);
 
     protected OperationService operationService;
 

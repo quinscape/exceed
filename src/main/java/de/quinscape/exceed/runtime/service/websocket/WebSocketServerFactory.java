@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutionException;
 public class WebSocketServerFactory
     implements InitializingBean
 {
-    private static Logger log = LoggerFactory.getLogger(WebSocketServerFactory.class);
+    private final static Logger log = LoggerFactory.getLogger(WebSocketServerFactory.class);
 
     private WebServer webServer;
 

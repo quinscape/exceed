@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 @PropertySource(value = "classpath:application.properties")
 public class DomainConfiguration
 {
-    private static Logger log = LoggerFactory.getLogger(DomainConfiguration.class);
+    private final static Logger log = LoggerFactory.getLogger(DomainConfiguration.class);
 
 
     @Bean

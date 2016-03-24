@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class ViewDataService
 {
-    private static Logger log = LoggerFactory.getLogger(ViewDataService.class);
+    private final static Logger log = LoggerFactory.getLogger(ViewDataService.class);
 
     @Autowired
     private ExpressionService expressionService;
