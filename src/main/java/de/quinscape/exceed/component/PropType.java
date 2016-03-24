@@ -9,7 +9,9 @@ public enum PropType
     INTEGER,
     FLOAT,
     BOOLEAN,
+    CLASSES,
 
     QUERY_EXPRESSION,
+    FILTER_EXPRESSION,
     ACTION_EXPRESSION
 }
