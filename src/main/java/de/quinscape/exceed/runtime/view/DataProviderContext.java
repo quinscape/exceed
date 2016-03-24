@@ -220,6 +220,11 @@ public final class DataProviderContext
         {
             if (node.getName().equals("prop"))
             {
+                if (node.jjtGetNumChildren() != 1)
+                {
+                    throw new IllegalStateException("Operation prop() takes exactly one argument");
+                }
+
                 Object result = node.jjtGetChild(0).jjtAccept(this, null);
                 if (result instanceof String)
                 {
