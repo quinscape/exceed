@@ -60,6 +60,9 @@ public class RuntimeApplicationFactory
     @Autowired
     private DomainServiceFactory domainServiceFactory;
 
+    @Autowired
+    private ProcessExecutionService processExecutionService;
+
     private List<RuntimeInfoProvider> runtimeInfoProviders;
 
     public DefaultRuntimeApplication createRuntimeApplication(ServletContext servletContext, AppState state)
@@ -75,7 +78,7 @@ public class RuntimeApplicationFactory
             resourceLoader.setResourceCache(cache);
         }
 
-        return new DefaultRuntimeApplication(servletContext, viewDataService, componentRegistry, styleService,  modelCompositionService, resourceLoader, domainServiceFactory, runtimeInfoProviders);
+        return new DefaultRuntimeApplication(servletContext, viewDataService, componentRegistry, styleService,  modelCompositionService, resourceLoader, domainServiceFactory, runtimeInfoProviders, processExecutionService);
     }
 
     private List<ResourceRoot> configureExtensions(ServletContext servletContext, AppState state)

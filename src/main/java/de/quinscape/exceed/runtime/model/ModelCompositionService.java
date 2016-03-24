@@ -10,6 +10,7 @@ import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.model.domain.PropertyType;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.process.ProcessState;
+import de.quinscape.exceed.model.process.Transition;
 import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.View;
@@ -277,16 +278,16 @@ public class ModelCompositionService
     {
         for (Process process : applicationModel.getProcesses().values())
         {
-            String start = process.getStart();
-            if (start == null)
+            Transition startTransition = process.getStartTransition();
+            if (startTransition == null)
             {
-                throw new IllegalStateException("Process '" + process.getName() + "' defines no start");
+                throw new IllegalStateException("Process '" + process.getName() + "' defines no start transition");
             }
 
-            ProcessState processState = process.getStates().get(start);
+            ProcessState processState = process.getStates().get(startTransition.getTo());
             if (processState == null)
             {
-                throw new IllegalStateException("Process '" + process.getName() + "' defines a non existing start-state: '" + start + "' does not exist");
+                throw new IllegalStateException("Process '" + process.getName() + "' defines a non existing start-state: '" + startTransition + "' does not exist");
             }
 
             for (ProcessState state : process.getStates().values())
