@@ -1,23 +1,22 @@
 package de.quinscape.exceed.runtime.expression;
 
+import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
+import de.quinscape.exceed.runtime.expression.ExpressionContext;
+import de.quinscape.exceed.runtime.expression.ExpressionService;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.*;
 
 public class ExpressionEnvironmentTest
 {
-    private static Logger log = LoggerFactory.getLogger(ExpressionEnvironmentTest.class);
-
 
     @Test
     public void testLogical() throws Exception
@@ -97,7 +96,6 @@ public class ExpressionEnvironmentTest
     @Test
     public void testStringConcatenation() throws Exception
     {
-
         {
             String result = (String) transform("value + ':' + value2");
             assertThat(result, is("abc:xyz"));
@@ -230,11 +228,14 @@ public class ExpressionEnvironmentTest
 
     }
 
+    private ExpressionService svc = new ExpressionServiceImpl(ImmutableSet.of(new
+        TestOperations()));
 
     private Object transform(String expr) throws ParseException
     {
+        TestEnvironment env = new TestEnvironment();
         ASTExpression astExpression = ExpressionParser.parse(expr);
-        return astExpression.jjtAccept(new TestEnvironment(), null);
+        return svc.evaluate(astExpression, env);
     }
 
     @Test
@@ -286,51 +287,102 @@ public class ExpressionEnvironmentTest
         assertThat(transform("({foo: { bar : 123} })['f' + 'o' + 'o']['bar']"), is(123));
     }
 
-
-    public static class TestEnvironment extends ExpressionEnvironment
+    @ExpressionOperations(environment = TestEnvironment.class)
+    public static class TestOperations
     {
-        public TestEnvironment()
-        {
-            comparatorsAllowed = true;
-            arithmeticOperatorsAllowed = true;
-            logicalOperatorsAllowed = true;
-            complexLiteralsAllowed = true;
-        }
-
-
-        @Override
-        protected Object resolveIdentifier(String name)
-        {
-            switch (name)
-            {
-                case "num":
-                    return 123;
-                case "value":
-                    return "abc";
-                case "value2":
-                    return "xyz";
-                case "IDENT_TRUE":
-                    return true;
-                case "IDENT_FALSE":
-                    return false;
-                default:
-                    throw new ExceedRuntimeException("Unknown identifier: " + name);
-            }
-        }
-
         @Operation
-        public Foo foo(ASTFunction node)
+        public Foo foo(ExpressionContext<TestEnvironment> ctx)
         {
             return new Foo();
         }
 
-        @Operation
-        public Foo name(ASTFunction node, Foo foo)
+        @Operation(context = Foo.class)
+        public Foo name(ExpressionContext<TestEnvironment> ctx, Foo foo, String name)
         {
-            foo.setName(getArg(node, 0, String.class));
+            foo.setName(name);
             return foo;
         }
+
+
+        @Identifier
+        public String value()
+        {
+            return "abc";
+        }
+
+        @Identifier
+        public String value2(TestEnvironment testEnv)
+        {
+            return testEnv.getValue();
+        }
+
+        @Identifier(name = "IDENT_TRUE")
+        public boolean identTrue()
+        {
+            return true;
+        }
+
+        @Identifier(name = "IDENT_FALSE")
+        public boolean identFalse()
+        {
+            return false;
+        }
+
     }
+
+    public static class TestEnvironment
+        extends ExpressionEnvironment
+    {
+
+        @Override
+        protected boolean logicalOperatorsAllowed()
+        {
+            return true;
+        }
+
+
+        @Override
+        protected boolean comparatorsAllowed()
+        {
+            return true;
+        }
+
+
+        @Override
+        protected boolean complexLiteralsAllowed()
+        {
+            return true;
+        }
+
+
+        @Override
+        protected boolean arithmeticOperatorsAllowed()
+        {
+            return true;
+        }
+
+
+        @Override
+        public Object resolveIdentifier(String name)
+        {
+            if (name.equals("num"))
+            {
+                return 123;
+            }
+            else if (name.equals("value"))
+            {
+                throw new IllegalStateException("Should be shadowed by de.quinscape.exceed.runtime.expression.ExpressionEnvTest.TestOperations.value");
+            }
+            return super.resolveIdentifier(name);
+        }
+
+
+        public String getValue()
+        {
+            return "xyz";
+        }
+    }
+
 
     private static class Foo
     {
@@ -348,4 +400,5 @@ public class ExpressionEnvironmentTest
             this.name = name;
         }
     }
+
 }

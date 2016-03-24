@@ -1,9 +1,7 @@
 package de.quinscape.exceed.runtime.editor.completion.expression;
 
 import de.quinscape.exceed.component.ComponentDescriptor;
-import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
-import de.quinscape.exceed.runtime.expression.Operation;
 
 public class ChildRuleEnvironment
     extends ExpressionEnvironment
@@ -13,28 +11,48 @@ public class ChildRuleEnvironment
     private final ComponentDescriptor componentDescriptor;
 
 
-    public ChildRuleEnvironment(String componentName, ComponentDescriptor componentDescriptor)
+    public ChildRuleEnvironment( String componentName, ComponentDescriptor componentDescriptor)
     {
-        logicalOperatorsAllowed = true;
-        comparatorsAllowed = true;
-
         this.componentName = componentName;
         this.componentDescriptor = componentDescriptor;
     }
 
-    @Operation
-    public Boolean component(ASTFunction node)
+    @Override
+    protected boolean logicalOperatorsAllowed()
     {
-        String componentName = (String) node.jjtGetChild(0).jjtAccept(this, null);
-        return this.componentName.equals(componentName);
-    }
-
-    @Operation
-    public Boolean hasClass(ASTFunction node)
-    {
-        String cls = (String) node.jjtGetChild(0).jjtAccept(this, null);
-        return componentDescriptor.getClasses().contains(cls);
+        return true;
     }
 
 
+    @Override
+    protected boolean comparatorsAllowed()
+    {
+        return true;
+    }
+
+
+    @Override
+    protected boolean complexLiteralsAllowed()
+    {
+        return false;
+    }
+
+
+    @Override
+    protected boolean arithmeticOperatorsAllowed()
+    {
+        return false;
+    }
+
+
+    public ComponentDescriptor getComponentDescriptor()
+    {
+        return componentDescriptor;
+    }
+
+
+    public String getComponentName()
+    {
+        return componentName;
+    }
 }

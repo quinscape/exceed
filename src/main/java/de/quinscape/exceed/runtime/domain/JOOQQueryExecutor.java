@@ -90,7 +90,7 @@ public class JOOQQueryExecutor
         }
 
 
-        SimpleNode filter = queryDefinition.getFilter();
+        Node filter = queryDefinition.getFilter();
         Condition whereCondition = null;
         if (filter != null)
         {

@@ -1,6 +1,5 @@
 package de.quinscape.exceed.runtime.expression;
 
-import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.expression.ASTAdd;
 import de.quinscape.exceed.expression.ASTArray;
 import de.quinscape.exceed.expression.ASTBool;
@@ -28,109 +27,46 @@ import de.quinscape.exceed.expression.ExpressionParserVisitor;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.Operator;
 import de.quinscape.exceed.expression.SimpleNode;
+import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.util.JSONBeanUtil;
 import org.svenson.util.Util;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
- * Helper base class to define expression language environments sharing the same expression language, AST classes and
- * node and token
- * structure but differing in the identifiers and functions provided.
- * <p>
- * Examines the actual implementations and registers all methods found that are annotated  with {@link Operation}.
- * The methods must be public and take a ASTFunction node as first parameter and optionally a second parameter as context object
- * </p>
- * <p>
- * For each of the methods an expression operator function will be created:
- * </p>
- * <p>
- * <pre>
- * \@Operation
- * public String foo(ASTFunction node)
- * {
- * return "foo";
- * }
- * </pre>
- * <p>
- * <p>
- * would be called by a foo(...) expression whereas
- * </p>
- * <pre>
- * \@Operation
- * public MyContext context(ASTFunction node)
- * {
- *     return new MyContext();
- * }
+ * Base class for expression environments encapsulating the environment necessary for the expression
+ * evaluation.
  *
- * \@Operation
- * public MyContext foo(ASTFunction node, MyContext myContext)
- * {
- *     // do something with myContext
- *     return myContext;
- * }
- * </pre>
- * <p>
- * <p>
- * Would allow context() to create a context which is then chained to a foo() call for further manipulation. (e.g.
- * context('bla').foo(12))
- * </p>
+ * @see ExpressionServiceImpl
+ * @see ExpressionOperations
+ *
  */
 public abstract class ExpressionEnvironment
     implements ExpressionParserVisitor
 {
     private static Logger log = LoggerFactory.getLogger(ExpressionEnvironment.class);
 
-
-    /**
-     * Holds the methodsByContext maps for mapped by implementation class.
-     */
-    private final static ConcurrentMap<Class, EnvironmentHolder> allEnvironments = new ConcurrentHashMap<>();
-
-    /**
-     * Maps context types to maps of operation name to reflection method.
-     *
-     * Uses Void.class to represent "no context" / a function-arg only method.
-     */
-    private final Map<Class<?>, Map<String, Method>> methodsByContext;
-
-    /**
-     * Whether arithmetic operators are allowed in this environment
-     */
-    protected boolean arithmeticOperatorsAllowed = false;
-
-    /**
-     * Whether comparators are allowed in this environment
-     */
-    protected boolean comparatorsAllowed = false;
-
-    /**
-     * Whether logical operators are allowed in this environment
-     */
-    protected boolean logicalOperatorsAllowed = false;
-
-    /**
-     * Whether map literals are allowed in this environment
-     */
-    protected boolean complexLiteralsAllowed = false;
-
+    protected OperationService operationService;
 
     /** The name of the environment, used in error messages. */
-    protected String environmentName;
+    protected final String environmentName;
 
 
-    protected ExpressionEnvironment()
+    void setOperationService(OperationService operationService)
+    {
+        this.operationService = operationService;
+    }
+
+
+    public ExpressionEnvironment()
     {
         Class<? extends ExpressionEnvironment> implementationClass = this.getClass();
 
@@ -141,35 +77,7 @@ public abstract class ExpressionEnvironment
             throw new IllegalArgumentException("Expression environment implementation " + implementationClass + " is not declared as" +
                 " public class");
         }
-
-        /**
-         * We look up the methodsByContext map from the concurrent map making
-         * sure that we only analyze expression environments once per implementation type.
-         */
-        methodsByContext = lookupByType(implementationClass);
     }
-
-
-    private Map<Class<?>, Map<String, Method>> lookupByType(Class<?> implementationClass)
-    {
-        EnvironmentHolder holder = new EnvironmentHolder(implementationClass);
-        EnvironmentHolder existing = allEnvironments.putIfAbsent(implementationClass, holder);
-        if (existing != null)
-        {
-            holder = existing;
-        }
-        return  holder.getMethodsByContext();
-    }
-
-
-    /**
-     * Clears all cached environment operation maps.
-     */
-    public static void reset()
-    {
-        allEnvironments.clear();
-    }
-
 
     @Override
     public Object visit(ASTExpression node, Object data)
@@ -233,49 +141,7 @@ public abstract class ExpressionEnvironment
     @Override
     public Object visit(ASTFunction node, Object chainObject)
     {
-        log.debug("Visit function node {}", node);
-
-
-        Class<?> context = chainObject != null ? chainObject.getClass() : Void.class;
-
-        Map<String, Method> fnMap = methodsByContext.get(context);
-        if (fnMap == null)
-        {
-            throw new UnknownContextException("Environment " + this.environmentName + " has no operations for context " +
-                chainObject);
-        }
-
-        String operatorName = node.getName();
-        Method method = fnMap.get(operatorName);
-
-
-        if (method == null)
-        {
-            return undefinedOperation(node, chainObject);
-        }
-
-        try
-        {
-            if (context.equals(Void.class))
-            {
-                return method.invoke(this, node);
-            }
-
-            if (chainObject == null)
-            {
-                throw new IllegalStateException("Chain object shouldn't be null");
-            }
-
-            return method.invoke(this, node, chainObject);
-        }
-        catch (IllegalAccessException e)
-        {
-            throw new ExpressionEnvironmentException(this.environmentName + ": error accessing " + method.getName());
-        }
-        catch (InvocationTargetException e)
-        {
-            throw new ExpressionEnvironmentException(operatorName + ": ", e.getTargetException());
-        }
+        return operationService.evaluate(this, node, chainObject);
     }
 
 
@@ -289,9 +155,9 @@ public abstract class ExpressionEnvironment
      *
      * @return  value of the unknown operation
      */
-    protected Object undefinedOperation(ASTFunction node, Object chainObject)
+    public Object undefinedOperation(ASTFunction node, Object chainObject)
     {
-        throw new UnknownOperationException("Unknown operation for environment " + this.environmentName + ", context = " + chainObject + ": " + node.getName());
+        throw new UnknownOperationException("Unknown operation '" + node.getName() + "' for environment " + this.environmentName + " and context = " + chainObject);
     }
 
 
@@ -383,7 +249,7 @@ public abstract class ExpressionEnvironment
     @Override
     public Object visit(ASTLogicalOr node, Object data)
     {
-        if (!logicalOperatorsAllowed)
+        if (!logicalOperatorsAllowed())
         {
             throw new ExpressionEnvironmentException(environmentName + ": Logical or operators not allowed in query expressions");
         }
@@ -411,10 +277,12 @@ public abstract class ExpressionEnvironment
     }
 
 
+
+
     @Override
     public Object visit(ASTLogicalAnd node, Object data)
     {
-        if (!logicalOperatorsAllowed)
+        if (!logicalOperatorsAllowed())
         {
             throw new ExpressionEnvironmentException(environmentName + ": Logical and operators not allowed in query expressions");
         }
@@ -445,7 +313,7 @@ public abstract class ExpressionEnvironment
     @Override
     public Object visit(ASTRelational node, Object data)
     {
-        if (!comparatorsAllowed)
+        if (!comparatorsAllowed())
         {
             throw new ExpressionEnvironmentException(environmentName + ": Equality operators not allowed in query expressions");
         }
@@ -536,6 +404,8 @@ public abstract class ExpressionEnvironment
     }
 
 
+
+
     protected double toDouble(Object value)
     {
         if (value instanceof Double)
@@ -581,7 +451,7 @@ public abstract class ExpressionEnvironment
     @Override
     public Object visit(ASTEquality node, Object data)
     {
-        if (!comparatorsAllowed)
+        if (!comparatorsAllowed())
         {
             throw new ExpressionEnvironmentException(environmentName + ": Relational operators not allowed in query expressions");
         }
@@ -603,7 +473,7 @@ public abstract class ExpressionEnvironment
     @Override
     public Object visit(ASTAdd node, Object data)
     {
-        if (!arithmeticOperatorsAllowed)
+        if (!arithmeticOperatorsAllowed())
         {
             throw new ExpressionEnvironmentException(environmentName + ": Addition operators not allowed in query expressions");
         }
@@ -621,7 +491,7 @@ public abstract class ExpressionEnvironment
             Node kid = node.jjtGetChild(i);
             if (kid instanceof ASTIdentifier)
             {
-                operand = resolveIdentifier(((ASTIdentifier) kid).getName());
+                operand = ((ASTIdentifier) kid).jjtAccept(this, null);
             }
             else if (kid instanceof ASTFunction)
             {
@@ -703,7 +573,7 @@ public abstract class ExpressionEnvironment
     @Override
     public Object visit(ASTSub node, Object data)
     {
-        if (!arithmeticOperatorsAllowed)
+        if (!arithmeticOperatorsAllowed())
         {
             throw new ExpressionEnvironmentException(environmentName + ": Addition operators not allowed in query expressions");
         }
@@ -757,7 +627,7 @@ public abstract class ExpressionEnvironment
     @Override
     public Object visit(ASTMult node, Object data)
     {
-        if (!arithmeticOperatorsAllowed)
+        if (!arithmeticOperatorsAllowed())
         {
             throw new ExpressionEnvironmentException(environmentName + ": Addition operators not allowed in query expressions");
         }
@@ -810,7 +680,7 @@ public abstract class ExpressionEnvironment
     @Override
     public Object visit(ASTDiv node, Object data)
     {
-        if (!arithmeticOperatorsAllowed)
+        if (!arithmeticOperatorsAllowed())
         {
             throw new ExpressionEnvironmentException(environmentName + ": Addition operators not allowed in query expressions");
         }
@@ -860,10 +730,12 @@ public abstract class ExpressionEnvironment
     }
 
 
+
+
     @Override
     public Object visit(ASTIdentifier node, Object data)
     {
-        return resolveIdentifier(node.getName());
+        return operationService.resolveIdentifier(this, node.getName());
     }
 
 
@@ -874,105 +746,25 @@ public abstract class ExpressionEnvironment
             "accept method correctly?");
     }
 
-
-    private static class EnvironmentHolder
-    {
-        private final Class<?> implementationClass;
-
-        private volatile Map<Class<?>, Map<String, Method>> methodsByContext;
-
-
-        private EnvironmentHolder(Class<?> implementationClass)
-        {
-            this.implementationClass = implementationClass;
-        }
-
-
-        public Map<Class<?>, Map<String, Method>> getMethodsByContext()
-        {
-            if (methodsByContext == null)
-            {
-                synchronized (this)
-                {
-                    if (methodsByContext == null)
-                    {
-                        methodsByContext = analyze();
-                    }
-                }
-            }
-
-            return methodsByContext;
-        }
-
-
-        private Map<Class<?>, Map<String, Method>> analyze()
-        {
-            log.debug("Analyzing {}", implementationClass);
-
-            Map<Class<?>, Map<String, Method>> methodsByContext = new HashMap<>();
-            for (Method m : implementationClass.getMethods())
-            {
-                if (m.getAnnotation(Operation.class) != null)
-                {
-                    Class<?>[] parameterTypes = m.getParameterTypes();
-
-                    // we're looking for all 2 argument methods that have ASTFunction as first parameter
-                    int numberOfParams = parameterTypes.length;
-                    if ((numberOfParams == 1 || numberOfParams == 2) && parameterTypes[0].equals(ASTFunction.class))
-                    {
-                        Class<?> type = numberOfParams == 2 ? parameterTypes[1] : Void.class;
-                        Map<String, Method> contextMap = methodsByContext.get(type);
-                        if (contextMap == null)
-                        {
-                            contextMap = new HashMap<>();
-                            methodsByContext.put(type, contextMap);
-                        }
-                        contextMap.put(m.getName(), m);
-                    }
-                    else
-                    {
-                        throw new InvalidOperationMethodException("Invalid operation method " + m);
-                    }
-                }
-            }
-
-            // seal map after creation
-            return ImmutableMap.copyOf(methodsByContext);
-        }
-    }
-
-
     /**
      * Resolves an identifier embedded in the expression. This method by default just trows an
-     * exception. If you want identifier resolution in your expression environment you need
-     * to override this method.
+     * exception. If you want identifier resolution in your expression environment you should
+     * first try to use the {@link Identifier} annotation, but you can also override this method
+     * for a non-declarative, more flexible resolution.
      *
      * @param name identifier name
      * @return identifier value (default: throws exception)
      * @throws ExpressionEnvironmentException by default
      */
-    protected Object resolveIdentifier(String name)
+    public Object resolveIdentifier(String name)
     {
-        throw new ExpressionEnvironmentException(name + ": Identifier resolution not enabled.");
+        throw new ExpressionEnvironmentException(environmentName + ": Unknown identifier '" + name + "'");
     }
-
-
-    /**
-     * Provides a read-only map of context types to a map of operation names to implementation methods
-     * for this environment.
-     *
-     * @return  methods by context map
-     */
-    public Map<Class<?>, Map<String, Method>> getMethodsByContext()
-    {
-        return methodsByContext;
-    }
-
 
     @Override
     public Object visit(ASTMap node, Object data)
     {
-        if (!complexLiteralsAllowed)
+        if (!complexLiteralsAllowed())
         {
             throw new ExpressionEnvironmentException(environmentName + ": Invalid map literal");
         }
@@ -992,7 +784,7 @@ public abstract class ExpressionEnvironment
     @Override
     public Object visit(ASTArray node, Object data)
     {
-        if (!complexLiteralsAllowed)
+        if (!complexLiteralsAllowed())
         {
             throw new ExpressionEnvironmentException(environmentName + ": Invalid array literal");
         }
@@ -1008,6 +800,8 @@ public abstract class ExpressionEnvironment
 
         return list;
     }
+
+
 
 
     @Override
@@ -1102,26 +896,12 @@ public abstract class ExpressionEnvironment
         return chainObject;
     }
 
+    protected abstract boolean logicalOperatorsAllowed();
 
-    protected <T> T getArg(ASTFunction node, int index, Class<T> expected)
-    {
-        Object arg = node.jjtGetChild(index).jjtAccept(this, null);
-        if (arg == null || expected.isInstance(arg))
-        {
-            return (T)arg;
-        }
-        throw new IllegalStateException(node.getName() + ", argument #" + index + ", expected = " + expected.getName() + ", got: " + arg);
-    }
+    protected abstract boolean comparatorsAllowed();
 
+    protected abstract boolean complexLiteralsAllowed();
 
-    /**
-     * Take a permissive approach to operator enabling and allow everything.
-     */
-    protected void allowEverything()
-    {
-        arithmeticOperatorsAllowed = true;
-        comparatorsAllowed = true;
-        logicalOperatorsAllowed = true;
-        complexLiteralsAllowed = true;
-    }
+    protected abstract boolean arithmeticOperatorsAllowed();
+
 }

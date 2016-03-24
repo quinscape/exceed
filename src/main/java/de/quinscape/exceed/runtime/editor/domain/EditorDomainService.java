@@ -74,6 +74,7 @@ public class EditorDomainService
             new DomainProperty("name", "PlainText", null, true),
             new DomainProperty("properties", "List", null, true, "DomainProperty", 0)
         ));
+        type.setPkFields(Collections.singletonList("name"));
         map.put("DomainType", type);
 
         DomainType domainPropertyType = new DomainType();

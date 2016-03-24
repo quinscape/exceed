@@ -1,15 +1,14 @@
 package de.quinscape.exceed.runtime.expression.component;
 
 import com.google.common.collect.ImmutableSet;
-import de.quinscape.exceed.model.action.ActionModel;
 import de.quinscape.exceed.runtime.action.Action;
 import de.quinscape.exceed.runtime.controller.ActionNotFoundException;
 import de.quinscape.exceed.runtime.controller.ActionRegistry;
+import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
 import java.util.Set;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
@@ -19,7 +18,7 @@ public class ComponentExpressionTransformerTest
     private static Logger log = LoggerFactory.getLogger(ComponentExpressionTransformerTest.class);
 
 
-    private ComponentExpressionTransformer env = new ComponentExpressionTransformer(true, new TestRegistry());
+    private ComponentExpressionTransformer env = new ComponentExpressionTransformer( new ExpressionServiceImpl(ImmutableSet.of(new ComponentExpressionOperations())), new TestRegistry(), true);
 
     @Test
     public void testComponentExpressions() throws Exception

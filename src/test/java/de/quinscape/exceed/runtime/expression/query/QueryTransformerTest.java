@@ -8,16 +8,15 @@ import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumModel;
-import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DomainService;
+import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,7 +29,7 @@ public class QueryTransformerTest
 {
     private static Logger log = LoggerFactory.getLogger(QueryTransformerTest.class);
 
-    private QueryTransformer transformer = new QueryTransformer();
+    private QueryTransformer transformer = new QueryTransformer(new ExpressionServiceImpl(ImmutableSet.of(new QueryTransformerOperations())));
 
     @Test
     public void testTypeDefinition() throws Exception

@@ -7,10 +7,14 @@ import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.TestApplication;
 import de.quinscape.exceed.runtime.TestApplicationBuilder;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DomainService;
+import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
 import de.quinscape.exceed.runtime.editor.completion.expression.PropCompleteEnvironment;
+import de.quinscape.exceed.runtime.editor.completion.expression.PropCompleteOperations;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
@@ -57,12 +61,16 @@ public class PropCompleteEnvironmentTest
 
         ComponentUtil.updateComponentRegsAndParents(testRegistry, viewModel, null);
 
+        TestApplication app = new TestApplicationBuilder().withDomainService(new TestDomainService()).build();
+        ExpressionService svc = new ExpressionServiceImpl(ImmutableSet.of(new PropCompleteOperations()));
+
+        QueryTransformer queryTransformer = new QueryTransformer(svc);
         {
 
-            PropCompleteEnvironment env = new PropCompleteEnvironment(new TestApplicationBuilder().withDomainService(new TestDomainService()).build(), new QueryTransformer(),
+            PropCompleteEnvironment env = new PropCompleteEnvironment( app, queryTransformer,
                 viewModel, componentModel, "name");
 
-            List<AceCompletion> completions = env.evaluate();
+            List<AceCompletion> completions = env.evaluate(svc);
 
             // no "value", no "foo", already used
             assertThat(completions.size(), is(2));
@@ -73,10 +81,10 @@ public class PropCompleteEnvironmentTest
         }
 
         {
-            PropCompleteEnvironment env = new PropCompleteEnvironment(new TestApplicationBuilder().withDomainService(new TestDomainService()).build(), new QueryTransformer(),
+            PropCompleteEnvironment env = new PropCompleteEnvironment(app, queryTransformer,
                 viewModel, componentModel.getParent(), "type");
 
-            List<AceCompletion> suggestions = env.evaluate();
+            List<AceCompletion> suggestions = env.evaluate(svc);
 
             log.info(JSON.defaultJSON().forValue(suggestions));
 

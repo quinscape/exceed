@@ -11,8 +11,11 @@ import de.quinscape.exceed.runtime.editor.completion.CompletionService;
 import de.quinscape.exceed.runtime.datalist.DataListService;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.JOOQQueryExecutor;
-import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
+import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
+import de.quinscape.exceed.runtime.expression.ExpressionOperations;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
+import de.quinscape.exceed.runtime.expression.query.QueryTransformerOperations;
 import de.quinscape.exceed.runtime.i18n.DefaultTranslator;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.resource.DefaultResourceCacheFactory;
@@ -28,6 +31,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 @Configuration
@@ -52,9 +56,20 @@ public class ServiceConfiguration
     }
 
     @Bean
-    public QueryTransformer queryTransformer()
+    public QueryTransformer queryTransformer(ExpressionService expressionService)
     {
-        return new QueryTransformer();
+        return new QueryTransformer(expressionService);
+    }
+
+    @Bean
+    public ExpressionService expressionService(ApplicationContext applicationContext)
+    {
+        HashSet<Object> operationBeans = new HashSet<>(applicationContext.getBeansWithAnnotation(ExpressionOperations
+            .class).values());
+
+        operationBeans.add(new QueryTransformerOperations());
+
+        return new ExpressionServiceImpl(operationBeans);
     }
 
     @Bean
@@ -74,10 +89,11 @@ public class ServiceConfiguration
     }
 
     @Bean
-    public QueryDataProvider defaultDataProvider(ApplicationContext applicationContext)
+    public QueryDataProvider defaultDataProvider(ApplicationContext applicationContext, QueryTransformer
+        queryTransformer)
     {
         Map<String, QueryExecutor> executors = applicationContext.getBeansOfType(QueryExecutor.class);
-        return new QueryDataProvider(new QueryTransformer(), executors, DEFAULT_QUERY_EXECUTOR);
+        return new QueryDataProvider(queryTransformer, executors, DEFAULT_QUERY_EXECUTOR);
     }
 
     @Bean

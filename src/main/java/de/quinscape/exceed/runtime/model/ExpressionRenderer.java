@@ -286,13 +286,13 @@ public class ExpressionRenderer
     /**
      * Convenience method to turn an ASTExpression back into a string
      *
-     * @param astExpression expression
+     * @param n expression or partial expression
      * @return expression string
      */
-    public static String render(ASTExpression astExpression)
+    public static String render(Node n)
     {
         ExpressionRenderer renderer = new ExpressionRenderer();
-        astExpression.jjtAccept(renderer, null);
+        n.jjtAccept(renderer, null);
         return renderer.getOutput();
     }
 }

@@ -1,8 +1,6 @@
 package de.quinscape.exceed.runtime.editor.completion.expression;
 
-import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
-import de.quinscape.exceed.runtime.expression.Operation;
 
 import java.util.Set;
 
@@ -15,14 +13,38 @@ public class ParentRuleEnvironment
     {
         this.parentClasses = parentClasses;
 
-        logicalOperatorsAllowed = true;
-        comparatorsAllowed = true;
     }
 
-    @Operation
-    public Boolean parentHasClass(ASTFunction node)
+    @Override
+    protected boolean logicalOperatorsAllowed()
     {
-        String cls = (String) node.jjtGetChild(0).jjtAccept(this, null);
-        return parentClasses.contains(cls);
+        return true;
+    }
+
+
+    @Override
+    protected boolean comparatorsAllowed()
+    {
+        return true;
+    }
+
+
+    @Override
+    protected boolean complexLiteralsAllowed()
+    {
+        return false;
+    }
+
+
+    @Override
+    protected boolean arithmeticOperatorsAllowed()
+    {
+        return false;
+    }
+
+
+    public Set<String> getParentClasses()
+    {
+        return parentClasses;
     }
 }

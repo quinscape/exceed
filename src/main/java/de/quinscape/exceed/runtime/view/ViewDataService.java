@@ -4,11 +4,12 @@ import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataProvider;
+import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
-import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
 
@@ -16,6 +17,8 @@ public class ViewDataService
 {
     private static Logger log = LoggerFactory.getLogger(ViewDataService.class);
 
+    @Autowired
+    private ExpressionService expressionService;
 
     /**
      * Prepares view data for the current view by recursively invoking the data providers registered
@@ -32,7 +35,7 @@ public class ViewDataService
     public ViewData prepareView(RuntimeContext runtimeContext, View view)
     {
         ViewData viewData = new ViewData(runtimeContext, view.getName(), runtimeContext.getTranslator());
-        DataProviderContext context = new DataProviderContext(this, runtimeContext, view.getName(), viewData, null, null);
+        DataProviderContext context = new DataProviderContext(this, runtimeContext, expressionService, view.getName(), viewData, null, null);
         prepareRecursive(context, view.getRoot());
         return viewData;
     }
@@ -57,7 +60,7 @@ public class ViewDataService
     {
         Translator translator = runtimeContext.getTranslator();
         ViewData viewData = new ViewData(runtimeContext, view.getName(), runtimeContext.getTranslator());
-        DataProviderContext context = new DataProviderContext(this, runtimeContext, view.getName(), viewData, componentModel, vars);
+        DataProviderContext context = new DataProviderContext(this, runtimeContext, expressionService, view.getName(), viewData, componentModel, vars);
         prepareRecursive(context, componentModel);
         return viewData;
     }

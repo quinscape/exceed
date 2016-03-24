@@ -9,6 +9,7 @@ import de.quinscape.exceed.model.view.ComponentModelBuilder;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.editor.completion.expression.ChildRuleEnvironment;
+import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.editor.completion.expression.ParentComponent;
 import de.quinscape.exceed.runtime.editor.completion.expression.ParentRuleEnvironment;
 import de.quinscape.exceed.runtime.editor.completion.expression.PropCompleteEnvironment;
@@ -42,6 +43,9 @@ public class CompletionService
 
     @Autowired
     private QueryTransformer queryTransformer;
+
+    @Autowired
+    private ExpressionService expressionService;
 
 
     public List<AceCompletion> autocomplete(RuntimeApplication runtimeApplication, List<ParentComponent> path, int index)
@@ -131,13 +135,13 @@ public class CompletionService
 
     private boolean matchesRule(ASTExpression childRuleExpression, String componentName, ComponentDescriptor componentDescriptor, Set<String> parentClasses)
     {
-        if (!(Boolean) childRuleExpression.jjtAccept(new ChildRuleEnvironment(componentName, componentDescriptor), null))
+        if (!(Boolean) expressionService.evaluate(childRuleExpression,  new ChildRuleEnvironment(componentName, componentDescriptor)))
         {
             return false;
         }
 
         ASTExpression parentRuleExpression = componentDescriptor.getParentRuleExpression();
-        return parentRuleExpression == null || (Boolean) parentRuleExpression.jjtAccept(new ParentRuleEnvironment(parentClasses), null);
+        return parentRuleExpression == null || (Boolean) expressionService.evaluate(parentRuleExpression, new ParentRuleEnvironment(parentClasses));
     }
 
 
@@ -162,7 +166,7 @@ public class CompletionService
             viewModel, componentModel, propName
         );
 
-        return env.evaluate();
+        return env.evaluate(expressionService);
     }
 
     public List<AceCompletion> autocompletePropName(RuntimeApplication runtimeApplication, View viewModel, List<Long> path)

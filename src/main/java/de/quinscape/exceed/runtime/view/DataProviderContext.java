@@ -8,8 +8,8 @@ import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
-import de.quinscape.exceed.runtime.expression.Operation;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 
 import java.util.Collections;
@@ -30,17 +30,20 @@ public final class DataProviderContext
     private final String viewName;
     private final ViewData viewData;
 
+    private final ExpressionService expressionService;
+
     private boolean continueOnChildren = true;
 
     private final ComponentModel overridden;
     private final Map<String, Object> varsOverride;
 
 
-    public DataProviderContext(ViewDataService viewDataService, RuntimeContext runtimeContext, String viewName, ViewData viewData, ComponentModel overridden,Map<String, Object> varsOverride)
+    public DataProviderContext(ViewDataService viewDataService, RuntimeContext runtimeContext, ExpressionService expressionService, String viewName, ViewData viewData, ComponentModel overridden, Map<String, Object> varsOverride)
     {
         this.viewDataService = viewDataService;
         this.viewName = viewName;
         this.runtimeContext = runtimeContext;
+        this.expressionService = expressionService;
         this.viewData = viewData;
         this.overridden = overridden;
         this.varsOverride = varsOverride;
@@ -136,7 +139,35 @@ public final class DataProviderContext
 
         try
         {
-            return new VariableResolutionEnvironment(componentModel).evaluateVars();
+            VariableResolutionEnvironment variableResolutionEnvironment = new VariableResolutionEnvironment
+                (componentModel);
+
+            ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
+            if (componentRegistration == null)
+            {
+                throw new IllegalStateException("No component registration for " + componentModel);
+            }
+
+            Map<String, String> varExpressions = componentRegistration.getDescriptor().getVars();
+
+            if (varExpressions != null)
+            {
+                Map<String, Object> vars = new HashMap<>();
+                for (Map.Entry<String, String> entry : varExpressions.entrySet())
+                {
+                    String varName = entry.getKey();
+                    String expression = entry.getValue();
+
+                    ASTExpression astExpression = ExpressionParser.parse(expression);
+                    Object result = expressionService.evaluate(astExpression, variableResolutionEnvironment);
+                    vars.put(varName, result);
+                }
+                return vars;
+            }
+            else
+            {
+                return Collections.emptyMap();
+            }
         }
         catch (ParseException e)
         {
@@ -154,68 +185,66 @@ public final class DataProviderContext
         public VariableResolutionEnvironment(ComponentModel componentModel)
         {
             this.componentModel = componentModel;
-            complexLiteralsAllowed = true;
-            arithmeticOperatorsAllowed = true;
-            logicalOperatorsAllowed = true;
-            comparatorsAllowed = true;
         }
 
 
-        public Map<String, Object> evaluateVars() throws ParseException
+
+        @Override
+        protected boolean logicalOperatorsAllowed()
         {
-            ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
-            if (componentRegistration == null)
-            {
-                throw new IllegalStateException("No component registration for " + componentModel);
-            }
-
-            Map<String, String> varExpressions = componentRegistration.getDescriptor().getVars();
-
-            if (varExpressions != null)
-            {
-                Map<String, Object> vars = new HashMap<>();
-                for (Map.Entry<String, String> entry : varExpressions.entrySet())
-                {
-                    String varName = entry.getKey();
-                    String expression = entry.getValue();
-
-
-                    ASTExpression astExpression = ExpressionParser.parse(expression);
-                    Object result = astExpression.jjtAccept(this, null);
-                    vars.put(varName, result);
-                }
-                return vars;
-            }
-            else
-            {
-                return Collections.emptyMap();
-            }
+            return true;
         }
 
-        @Operation
-        public Object prop(ASTFunction node)
-        {
-            Object result = node.jjtGetChild(0).jjtAccept(this, null);
-            if (result instanceof String)
-            {
-                String propName = (String) result;
-                AttributeValue attribute = componentModel.getAttribute(propName);
-                if (attribute == null)
-                {
-                    return null;
-                }
 
-                ASTExpression astExpression = attribute.getAstExpression();
-                if (astExpression != null)
-                {
-                    return astExpression.jjtAccept(this, null);
-                }
-                return attribute.getValue();
-            }
-            else
+        @Override
+        protected boolean comparatorsAllowed()
+        {
+            return true;
+        }
+
+
+        @Override
+        protected boolean complexLiteralsAllowed()
+        {
+            return true;
+        }
+
+
+        @Override
+        protected boolean arithmeticOperatorsAllowed()
+        {
+            return true;
+        }
+
+
+        @Override
+        public Object undefinedOperation(ASTFunction node, Object chainObject)
+        {
+            if (node.getName().equals("prop"))
             {
-                throw new VariableResolutionException("Invalid prop operator argument: " + result);
+                Object result = node.jjtGetChild(0).jjtAccept(this, null);
+                if (result instanceof String)
+                {
+                    String propName = (String) result;
+                    AttributeValue attribute = componentModel.getAttribute(propName);
+                    if (attribute == null)
+                    {
+                        return null;
+                    }
+
+                    ASTExpression astExpression = attribute.getAstExpression();
+                    if (astExpression != null)
+                    {
+                        return astExpression.jjtAccept(this, null);
+                    }
+                    return attribute.getValue();
+                }
+                else
+                {
+                    throw new VariableResolutionException("Invalid prop operator argument: " + result);
+                }
             }
+            return super.undefinedOperation(node, chainObject);
         }
     }
 }
