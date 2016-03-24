@@ -1,0 +1,20 @@
+.calendar-widget a.btn-link.btn-primary
+{
+    color: #fff;
+}
+
+.calendar-widget a.btn-link
+{
+    color: #000;
+}
+
+.calendar-widget .controls
+{
+    text-align: center;
+    white-space: nowrap !important;
+}
+.calendar-widget .month-year
+{
+    display: inline-block;
+    padding: 0 4em;
+}

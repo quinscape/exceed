@@ -1,0 +1,104 @@
+{
+    "components": {
+        "Form": {
+            "classes": ["element"],
+            "queries": {
+                "dataList": "query( prop('type').fields(childAttributes('field'))).filter( prop('filter') )"
+            },
+            "propTypes": {
+                "type": {
+                    "client": false,
+                    "type": "QUERY_EXPRESSION",
+                    "rule": "domainType()",
+                    "required" : true
+                },
+                "horizontal": {
+                    "type": "BOOLEAN"
+                },
+                "filter": {
+                    "client": false,
+                    "rule": "filterExpr(query(prop('type')))",
+                    "required" : true
+                }
+            },
+            "providesContext": "DataList",
+            "childRule": "hasClass('element') || hasClass('field')",
+            "parentRule": "!parentHasClass('iterative-context')"
+        },
+        "StaticText": {
+            "classes": ["field"],
+            "propTypes": {
+                "name": {
+                    "rule": "fieldOf(parent.prop('type'))",
+                    "required" : true
+                },
+                "context": {
+                    "context": "context.getCursor(props.name)",
+                    "contextType" : "DataList"
+                },
+                "wrapperClass" : {
+                    "type" : "CLASSES"
+                },
+                "labelClass" : {
+                    "type" : "CLASSES"
+                }
+            },
+            "providesContext": "DataList"
+        },
+        "Field": {
+            "classes": ["field"],
+            "propTypes": {
+                "name": {
+                    "rule": "fieldOf(parent.prop('type'))",
+                    "required" : true
+                },
+                "context": {
+                    "context": "context.getCursor(props.name)",
+                    "contextType" : "DataList"
+                },
+                "wrapperClass" : {
+                    "type" : "CLASSES"
+                },
+                "labelClass" : {
+                    "type" : "CLASSES"
+                }
+            }
+        },
+        "Button": {
+            "classes": ["field", "toolbar-child"],
+            "parentRule" : "!viewInProcess()",
+            "propTypes": {
+                "context": {
+                    "context" : true,
+                    "contextType" : "DataList"
+                },
+                "action" : {
+                    "type" : "ACTION_EXPRESSION",
+                    "required" : true
+                },
+                "text" : {
+                    "required" : true,
+                    "type" : "PLAINTEXT"
+                }
+            }
+        },
+        "TButton": {
+            "classes": ["field", "toolbar-child"],
+            "parentRule" : "viewInProcess()",
+            "propTypes": {
+                "context": {
+                    "contextType" : "DataList"
+                },
+                "transition" : {
+                    "rule": "transitionNames()",
+                    "type" : "PLAINTEXT",
+                    "required" : true
+                }
+            }
+        },
+        "Toolbar": {
+            "classes": ["element"],
+            "childRule": "hasClass('toolbar-child')"
+        }
+    }
+}
