@@ -72,7 +72,7 @@ public class ExpressionRenderer
 //    }
 
 
-    private Object renderMultiBinary(Node node, String op, Object data)
+    protected Object renderMultiBinary(Node node, String op, Object data)
     {
         if (op == null)
         {

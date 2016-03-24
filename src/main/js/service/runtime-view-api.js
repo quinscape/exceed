@@ -34,4 +34,9 @@ RTView.prototype.inject = function (props, data)
     return props;
 };
 
+RTView.prototype.param = function (name)
+{
+    return this.data._exceed.locationParams[name];
+};
+
 module.exports = RTView;

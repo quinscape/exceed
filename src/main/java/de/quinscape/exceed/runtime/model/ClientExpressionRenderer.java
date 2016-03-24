@@ -5,6 +5,7 @@ import de.quinscape.exceed.expression.ASTBool;
 import de.quinscape.exceed.expression.ASTComputedPropertyChain;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ASTFloat;
+import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTIdentifier;
 import de.quinscape.exceed.expression.ASTInteger;
 import de.quinscape.exceed.expression.ASTPropertyChain;
@@ -240,6 +241,20 @@ public class ClientExpressionRenderer
                     }
                 }
             }
+        }
+        return super.visit(node, data);
+    }
+
+
+    @Override
+    public Object visit(ASTFunction node, Object data)
+    {
+        if (node.getName().equals("param"))
+        {
+            buf.append("_v.param(");
+            renderMultiBinary(node, ", ", data);
+            buf.append(')');
+            return data;
         }
         return super.visit(node, data);
     }
