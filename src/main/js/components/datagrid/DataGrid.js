@@ -7,34 +7,21 @@ var i18n = require("../../service/i18n");
 var ValueLink = require("../../util/value-link");
 
 var DebounceMixin = require("../../mixin/debounce-mixin");
-var StatelessComponent = require("../../mixin/stateless-component");
+var ComponentUpdateMixin = require("../../mixin/component-update-mixin");
+
+var DataList = require("../../util/data-list");
 
 var PagingComponent = require("../../ui/PagingComponent");
 
 var Enum = require("../../util/enum");
 
-var immutableUpdate = require("react-addons-update");
-
-const MAX = 1<<31;
-
-var FilterMode = new Enum({
-    CONTAINS: 1,
-    EQUALS: 1,
-    STARTS_WITH: 1
-});
 var converter = require("../../service/property-converter");
 
+var immutableUpdate = require("react-addons-update");
 
 var Column = React.createClass({
     propTypes: {
-        filterMode: React.PropTypes.oneOf(FilterMode.values()).isRequired,
         name: React.PropTypes.string.isRequired
-    },
-    getDefaultProps: function ()
-    {
-        return {
-            filterMode: "CONTAINS"
-        };
     },
     render: function ()
     {
@@ -93,7 +80,7 @@ var Header = React.createClass({
     {
         var currentSort = this.props.currentSortLink.value;
 
-        if (currentSort ===  this.props.sort)
+        if (currentSort && currentSort.length == 1 && currentSort[0] ===  this.props.sort)
         {
             this.props.currentSortLink.requestChange("!" + this.props.sort)
         }
@@ -135,34 +122,34 @@ var DataGrid = React.createClass({
     propTypes: {
         orderBy: React.PropTypes.string,
         limit: React.PropTypes.number,
-            rows: React.PropTypes.object
+        rows: React.PropTypes.object
     },
 
-    mixins: [ StatelessComponent ],
+    mixins: [ ComponentUpdateMixin ],
 
     changeSort: function (newValue)
     {
-        this.updateVars({
-            orderBy: newValue
+        this.updateComponent({
+            orderBy: [ newValue ]
         });
     },
 
     setFilter: function(v)
     {
-        var vars = this.getVars();
-
-        this.setVars(immutableUpdate(vars, {
-            filter: {
-                [v.name]: { $set: v.value }
-            },
-            // restart paging on filter change
-            offset: {$set: 0}
-        }));
+        this.updateComponent(
+            immutableUpdate(this.props.vars, {
+                filter: {
+                    [v.name]: { $set: v.value }
+                },
+                // restart paging on filter change
+                offset: {$set: 0}
+            })
+        );
     },
 
     setPagingOffset: function(offset)
     {
-        this.updateVars({
+        this.updateComponent({
             offset: offset
         });
     },
@@ -204,33 +191,74 @@ var DataGrid = React.createClass({
         );
     },
 
+    renderFilter: function ()
+    {
+        var colCount = 0;
+        var activeFilters = this.props.vars.filter || {};
+
+        return (
+            <tr>
+            {
+                this.props.model.kids.map((kidModel) =>
+                {
+                    var name = kidModel.attrs.name;
+                    return (
+                        <FilterField
+                            key={ colCount++ }
+                            name={ name }
+                            valueLink={
+                                new ValueLink( activeFilters[name], (value) =>
+                                    {
+                                        this.setFilter({name: name, value: value});
+                                    }
+                                )
+                            }
+                        />
+                    );
+                })
+
+            }
+            </tr>
+        );
+    },
+
+
+    onChange: function (rows, path)
+    {
+        console.log("ONCHANGE", rows, path);
+    },
     render: function ()
     {
-        //console.log("COUNT", this.props.count);
+        //console.log("DATAGRID");
+        //console.dir(this.props);
+        var queryResult = new DataList(this.props.result, this.onChange);
 
-        var queryResult = this.props.result;
-
-        var rows = queryResult.rows.map(function (row, idx)
-        {
-            return (
-                <tr key = { idx }>
-                    { this.props.renderChildrenWithContext(row) }
-                </tr>
-            );
-
-        },this);
-
-        if (!queryResult.rows.length)
+        var count = queryResult.rows.length;
+        var rows;
+        if (!count)
         {
             rows = <tr><td colSpan={ this.props.childCount }>{ i18n("No Rows") }</td></tr>
         }
+        else
+        {
+            rows = [];
 
+            for (var i = 0; i < count; i++)
+            {
+                rows[i] = (
+                    <tr key = { i }>
+                        { this.props.renderChildrenWithContext( queryResult.getCursor([i])) }
+                    </tr>
+                )
+            }
+        }
 
         return (
             <div className="datagrid">
                 <table className="table table-striped table-hover table-bordered">
                     <thead>
                     { this.renderHeader() }
+                    { this.renderFilter() }
                     </thead>
                     <tbody>
                     {  rows }
