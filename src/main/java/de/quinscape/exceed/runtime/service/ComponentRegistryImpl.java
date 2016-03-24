@@ -38,7 +38,7 @@ public class ComponentRegistryImpl
 {
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
-    private static final String DEFAULT_DATA_PROVIDER = "defaultDataProvider";
+    private static final String DEFAULT_DATA_PROVIDER = "queryDataProvider";
 
     private final static Logger log = LoggerFactory.getLogger(ComponentRegistryImpl.class);
 

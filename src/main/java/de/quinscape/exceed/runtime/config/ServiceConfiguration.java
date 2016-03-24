@@ -65,7 +65,7 @@ public class ServiceConfiguration
     }
 
     @Bean
-    public QueryDataProvider defaultDataProvider(ApplicationContext applicationContext, QueryTransformer
+    public QueryDataProvider queryDataProvider(ApplicationContext applicationContext, QueryTransformer
         queryTransformer)
     {
         Map<String, QueryExecutor> executors = applicationContext.getBeansOfType(QueryExecutor.class);
