@@ -22,10 +22,11 @@ public interface ExpressionParserTreeConstants
   public int JJTINTEGER = 16;
   public int JJTSTRING = 17;
   public int JJTMAP = 18;
-  public int JJTMAPENTRY = 19;
-  public int JJTFLOAT = 20;
-  public int JJTBOOL = 21;
-  public int JJTNULL = 22;
+  public int JJTARRAY = 19;
+  public int JJTMAPENTRY = 20;
+  public int JJTFLOAT = 21;
+  public int JJTBOOL = 22;
+  public int JJTNULL = 23;
 
 
   public String[] jjtNodeName = {
@@ -48,10 +49,11 @@ public interface ExpressionParserTreeConstants
     "Integer",
     "String",
     "Map",
+    "Array",
     "MapEntry",
     "Float",
     "Bool",
     "Null",
   };
 }
-/* JavaCC - OriginalChecksum=a24920f7765225796aead15e3158ab69 (do not edit this line) */
+/* JavaCC - OriginalChecksum=6ce368136a143bea0cbf0afe9b2bd767 (do not edit this line) */

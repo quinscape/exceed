@@ -22,9 +22,10 @@ public interface ExpressionParserVisitor
   public Object visit(ASTInteger node, Object data);
   public Object visit(ASTString node, Object data);
   public Object visit(ASTMap node, Object data);
+  public Object visit(ASTArray node, Object data);
   public Object visit(ASTMapEntry node, Object data);
   public Object visit(ASTFloat node, Object data);
   public Object visit(ASTBool node, Object data);
   public Object visit(ASTNull node, Object data);
 }
-/* JavaCC - OriginalChecksum=3aaab8c8b0b9f1016c529b94d0ffb659 (do not edit this line) */
+/* JavaCC - OriginalChecksum=22b9bcd4e2ca4e8d3d8e772d26638eb7 (do not edit this line) */

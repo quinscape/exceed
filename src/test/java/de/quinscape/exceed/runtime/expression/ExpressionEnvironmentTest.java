@@ -2,7 +2,6 @@ package de.quinscape.exceed.runtime.expression;
 
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ASTFunction;
-import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
@@ -11,8 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.DoubleAccumulator;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
@@ -297,7 +294,7 @@ public class ExpressionEnvironmentTest
             comparatorsAllowed = true;
             arithmeticOperatorsAllowed = true;
             logicalOperatorsAllowed = true;
-            mapLiteralsAllowed = true;
+            complexLiteralsAllowed = true;
         }
 
 

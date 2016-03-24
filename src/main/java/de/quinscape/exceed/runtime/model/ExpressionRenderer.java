@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.model;
 
 import de.quinscape.exceed.expression.ASTAdd;
+import de.quinscape.exceed.expression.ASTArray;
 import de.quinscape.exceed.expression.ASTBool;
 import de.quinscape.exceed.expression.ASTComputedPropertyChain;
 import de.quinscape.exceed.expression.ASTDiv;
@@ -56,6 +57,20 @@ public class ExpressionRenderer
         buf.append(')');
         return data;
     }
+
+
+//    @Override
+//    public Object visit(ASTAssignment node, Object data)
+//    {
+//        Node lft = node.jjtGetChild(0);
+//        Node rgt = node.jjtGetChild(1);
+//
+//        lft.jjtAccept(this, data);
+//        buf.append(" = ");
+//        rgt.jjtAccept(this, data);
+//        return data;
+//    }
+
 
     private Object renderMultiBinary(Node node, String op, Object data)
     {
@@ -216,6 +231,16 @@ public class ExpressionRenderer
         buf.append('{');
         renderMultiBinary(node, ", ", data);
         buf.append('}');
+        return data;
+    }
+
+
+    @Override
+    public Object visit(ASTArray node, Object data)
+    {
+        buf.append('[');
+        renderMultiBinary(node, ", ", data);
+        buf.append(']');
         return data;
     }
 

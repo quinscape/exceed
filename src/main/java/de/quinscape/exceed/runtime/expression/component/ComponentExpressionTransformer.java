@@ -60,7 +60,7 @@ public class ComponentExpressionTransformer
             comparatorsAllowed = true;
             arithmeticOperatorsAllowed = true;
             logicalOperatorsAllowed = true;
-            mapLiteralsAllowed = true;
+            complexLiteralsAllowed = true;
 
             output = new StringBuilder();
         }

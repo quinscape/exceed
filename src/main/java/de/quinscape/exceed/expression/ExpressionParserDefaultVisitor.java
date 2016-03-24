@@ -63,6 +63,9 @@ public class ExpressionParserDefaultVisitor implements ExpressionParserVisitor{
   public Object visit(ASTMap node, Object data){
     return defaultVisit(node, data);
   }
+  public Object visit(ASTArray node, Object data){
+    return defaultVisit(node, data);
+  }
   public Object visit(ASTMapEntry node, Object data){
     return defaultVisit(node, data);
   }
@@ -76,4 +79,4 @@ public class ExpressionParserDefaultVisitor implements ExpressionParserVisitor{
     return defaultVisit(node, data);
   }
 }
-/* JavaCC - OriginalChecksum=208b29894feb52dd5b307bc0c930dd3e (do not edit this line) */
+/* JavaCC - OriginalChecksum=76eb3a0507dcc331784334c03c3734bb (do not edit this line) */

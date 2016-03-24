@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.expression;
 
 import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.expression.ASTAdd;
+import de.quinscape.exceed.expression.ASTArray;
 import de.quinscape.exceed.expression.ASTBool;
 import de.quinscape.exceed.expression.ASTComputedPropertyChain;
 import de.quinscape.exceed.expression.ASTDiv;
@@ -122,7 +123,7 @@ public abstract class ExpressionEnvironment
     /**
      * Whether map literals are allowed in this environment
      */
-    protected boolean mapLiteralsAllowed = false;
+    protected boolean complexLiteralsAllowed = false;
 
 
     /** The name of the environment, used in error messages. */
@@ -273,7 +274,7 @@ public abstract class ExpressionEnvironment
         }
         catch (InvocationTargetException e)
         {
-            throw new ExpressionEnvironmentException(operatorName + ": " + e.getTargetException().getMessage());
+            throw new ExpressionEnvironmentException(operatorName + ": ", e.getTargetException());
         }
     }
 
@@ -971,7 +972,7 @@ public abstract class ExpressionEnvironment
     @Override
     public Object visit(ASTMap node, Object data)
     {
-        if (!mapLiteralsAllowed)
+        if (!complexLiteralsAllowed)
         {
             throw new ExpressionEnvironmentException(environmentName + ": Invalid map literal");
         }
@@ -986,6 +987,28 @@ public abstract class ExpressionEnvironment
 
         return map;
     }
+
+
+    @Override
+    public Object visit(ASTArray node, Object data)
+    {
+        if (!complexLiteralsAllowed)
+        {
+            throw new ExpressionEnvironmentException(environmentName + ": Invalid array literal");
+        }
+
+        List<Object> list = new ArrayList<>();
+
+        for (int i=0; i < node.jjtGetNumChildren(); i++)
+        {
+            Node kid = node.jjtGetChild(i);
+
+            list.add(kid.jjtAccept(this, list));
+        }
+
+        return list;
+    }
+
 
     @Override
     public Object visit(ASTMapEntry node, Object data)
@@ -1099,6 +1122,6 @@ public abstract class ExpressionEnvironment
         arithmeticOperatorsAllowed = true;
         comparatorsAllowed = true;
         logicalOperatorsAllowed = true;
-        mapLiteralsAllowed = true;
+        complexLiteralsAllowed = true;
     }
 }

@@ -2,7 +2,6 @@ package de.quinscape.exceed.runtime.view;
 
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ASTFunction;
-import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.view.AttributeValue;
@@ -155,7 +154,7 @@ public final class DataProviderContext
         public VariableResolutionEnvironment(ComponentModel componentModel)
         {
             this.componentModel = componentModel;
-            mapLiteralsAllowed = true;
+            complexLiteralsAllowed = true;
             arithmeticOperatorsAllowed = true;
             logicalOperatorsAllowed = true;
             comparatorsAllowed = true;

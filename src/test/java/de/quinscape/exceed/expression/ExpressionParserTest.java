@@ -59,11 +59,13 @@ public class ExpressionParserTest
         testOp("2 * 1", Operator.MULTIPLY, ASTMult.class);
         testOp("2 / 1", Operator.DIVIDE, ASTDiv.class);
 
-        ASTEquality eq2 = (ASTEquality) parse("qux == 'abc\\n\\u0020'");
-        ASTIdentifier ident = (ASTIdentifier) eq2.jjtGetChild(0);
-        ASTString str = (ASTString) eq2.jjtGetChild(1);
-        assertThat(ident.getName(), is("qux"));
-        assertThat(str.getValue(), is("abc\n "));
+        {
+            ASTEquality eq2 = (ASTEquality) parse("qux == 'abc\\n\\u0020'");
+            ASTIdentifier ident = (ASTIdentifier) eq2.jjtGetChild(0);
+            ASTString str = (ASTString) eq2.jjtGetChild(1);
+            assertThat(ident.getName(), is("qux"));
+            assertThat(str.getValue(), is("abc\n "));
+        }
 
         // simple precedence test
 
@@ -156,7 +158,7 @@ public class ExpressionParserTest
             assertThat(i1.getValue(), is(true));
 
             Node n = parse("!foo.bar");
-            log.info(dump(n));
+            //log.info(dump(n));
             not = (ASTNot) n;
 
             ASTPropertyChain chain = (ASTPropertyChain) not.jjtGetChild(0);
@@ -164,6 +166,32 @@ public class ExpressionParserTest
             ASTIdentifier i4 = (ASTIdentifier) chain.jjtGetChild(1);
             assertThat(i3.getName(), is("foo"));
             assertThat(i4.getName(), is("bar"));
+        }
+
+        // assignment operator take out again (for now?)
+        // the only case where we might want to have it (action expressions) simultaneously
+        // suffers from the fact that it needs to produce an action description to be evaluated later
+        // which means we'd also needs a function definition mechanism or magic function wrapping
+        // Seems easier and cleaner to just keep it a "set" action
+//        {
+//            ASTAssignment assigment = (ASTAssignment) parse("testVar = a || b");
+//            ASTIdentifier identifier = (ASTIdentifier) assigment.jjtGetChild(0);
+//            ASTLogicalOr or = (ASTLogicalOr) assigment.jjtGetChild(1);
+//
+//            assertThat(identifier.getName(), is("testVar"));
+//            assertThat(((ASTIdentifier)or.jjtGetChild(0)).getName(), is("a"));
+//            assertThat(((ASTIdentifier)or.jjtGetChild(1)).getName(), is("b"));
+//        }
+
+        {
+            ASTArray array = (ASTArray) parse("[foo, 8347, 'coconut']");
+            ASTIdentifier identifier = (ASTIdentifier) array.jjtGetChild(0);
+            ASTInteger integer = (ASTInteger) array.jjtGetChild(1);
+            ASTString str= (ASTString) array.jjtGetChild(2);
+
+            assertThat(identifier.getName(), is("foo"));
+            assertThat(integer.getValue(), is(8347));
+            assertThat(str.getValue(), is("coconut"));
         }
     }
 

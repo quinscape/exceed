@@ -144,8 +144,17 @@ ASTExpression Expression() #Expression : {}
 /** Expression. */
 void Expr() : {}
 {
-  OrExpression()
+    OrExpression()
 }
+
+
+///** An or expression. */
+//void AssignmentExpression() : {}
+//{
+//    (
+//        OrExpression() ("=" OrExpression())*
+//    ) #Assignment(jjtree.nodeArity() == 2)
+//}
 
 /** An or expression. */
 void OrExpression() : {}
@@ -311,6 +320,7 @@ void ValueExpression() : {}
     Identifier() |
     String() |
     Map() |
+    Array() |
     Float() |
     Integer() |
     Bool() |
@@ -374,6 +384,14 @@ void Map() #Map:
 }
 {
     "{" ( MapEntry() ( "," MapEntry() )* )? "}"
+}
+
+/** A Map literal. */
+void Array() #Array:
+{
+}
+{
+    "[" ( Expr() ( "," Expr() )* )? "]"
 }
 
 /** A MapEntry literal. */
