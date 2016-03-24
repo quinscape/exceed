@@ -3,6 +3,9 @@ var BabelConfig = {
 
     plugins: [
 
+        // check const
+        "check-es2015-constants",
+
         "transform-es2015-arrow-functions",
 
         // JSX support
@@ -12,8 +15,10 @@ var BabelConfig = {
         // var obj = { [computed] : true }
         "transform-es2015-computed-properties",
 
+        "transform-es2015-destructuring",
+
         // const MY_CONSTANT = 1 ( const -> let -> var )
-        "check-es2015-constants", "transform-es2015-block-scoping",
+        "transform-es2015-block-scoping",
 
         // if (process.env.NODE_ENV !== "production")
         "transform-node-env-inline",
