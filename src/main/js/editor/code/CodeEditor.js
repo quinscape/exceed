@@ -30,9 +30,16 @@ var ID_REGEX = /<?[a-zA-Z_0-9\$\-\u00A2-\uFFFF]/;
 
 function walk(model, indexPath)
 {
+    console.log("walk", model, indexPath);
+
     for (var i = 0; i < indexPath.length; i++)
     {
-        model = model.kids[indexPath[i]];
+
+        var idx = indexPath[i];
+        if (idx >= 0)
+        {
+            model = model.kids[idx];
+        }
     }
     return model;
 }
@@ -133,7 +140,7 @@ function createIndexPath(parentPath)
     for (var i = 0; i <len; i++)
     {
         var e = parentPath[i];
-        array[len - i - 1] = e.index - 1;
+        array[len - i - 1] = e.index;
     }
     return array;
 }
@@ -167,16 +174,35 @@ ExceedCompleter.prototype.prepareCompletions = function (editor, session, compon
 
         if (completion.wizard)
         {
+            if (type === CompletionType.COMPONENT)
+            {
+                componentName = completion.caption;
+            }
+
             var componentDef = componentService.getComponents()[componentName];
 
             var wizardComponent;
+            var wizardKey = completion.wizard.key;
             if (type === CompletionType.COMPONENT)
             {
-                wizardComponent = componentDef.templates[completion.wizard.key].wizardComponent;
+                var templates = componentDef.templates;
+
+                if (templates == null)
+                {
+                    throw new Error("Error:  Component '" + componentName + "' has no templates: " + JSON.stringify(completion))
+                }
+
+                var template = templates[wizardKey];
+                if (!template)
+                {
+                    throw new Error("Error in component '" + componentName + "': Wizard '" + wizardKey + "' not found: " + JSON.stringify(completion))
+                }
+
+                wizardComponent = template.wizardComponent;
             }
             else if (type === CompletionType.PROP)
             {
-                wizardComponent = componentDef.propWizards[completion.wizard.key].wizardComponent;
+                wizardComponent = componentDef.propWizards[wizardKey].wizardComponent;
             }
             else
             {
@@ -226,7 +252,7 @@ ExceedCompleter.prototype.getCompletions = function (editor, session, pos, prefi
     }
 
     var completionPromise;
-    //console.log("prefix", prefix, "loc", loc);
+    //console.log("loc", loc, loc.parentPath[0].model.name);
 
     var indexPath = createIndexPath(loc.parentPath);
     var model = Tokens.toModel(session);
@@ -236,9 +262,12 @@ ExceedCompleter.prototype.getCompletions = function (editor, session, pos, prefi
         return;
     }
 
+
+
     var componentModel = walk(model.root, indexPath);
 
     var componentName = componentModel.name;
+    console.log("loc", loc, loc.parentPath[0].model.name, componentName);
     var propName = loc.attr;
 
     if (loc.attrValue)

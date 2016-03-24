@@ -70,6 +70,7 @@ module.exports = {
     currentLocation: function (session, row, column, model)
     {
 
+        var entry;
         var iterator = new TokenIterator(session, 0, 0);
 
         var loc = new ModelLocation();
@@ -77,6 +78,12 @@ module.exports = {
         var stack = loc.parentPath;
 
         var start = session.getTokenAt(row, column);
+
+        if (!start)
+        {
+            return null;
+        }
+
 
         var tokenStart = start.start;
 
@@ -108,15 +115,15 @@ module.exports = {
                 {
                     stack.unshift({
                         model: model.root,
-                        index: 0
+                        index: -1
                     });
                 }
                 else
                 {
-                    var entry = stack[0];
+                    entry = stack[0];
                     stack.unshift({
-                        model: entry.model.kids[entry.index++],
-                        index: 0
+                        model: entry.model.kids[++entry.index],
+                        index: -1
                     });
                 }
             }
@@ -144,6 +151,7 @@ module.exports = {
                 if (token.value === "/>")
                 {
                     stack.shift();
+                    loc.attr = null;
                 }
             }
             else if (token.type === "meta.tag.punctuation.end-tag-open.xml")
@@ -166,17 +174,21 @@ module.exports = {
                     // if the location is marked not valid, we have an incomplete tag which we remove from the
                     // stack
                     var removed = loc.parentPath.shift();
-                    //console.log("Remove invalid parent", removed);
+                    console.log("Remove invalid parent", removed);
                 }
 
                 // if we did not parse any tag-names yet, we just before or on the tag open of the root model
                 if (!loc.parentPath.length)
                 {
+                    if (entry)
+                    {
+                        return null;
+                    }
 
                     //console.log("Add root to empty path");
                     loc.parentPath = [{
                         model: model.root,
-                        index: 0
+                        index: -1
                     }];
                 }
 
