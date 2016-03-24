@@ -24,16 +24,6 @@ public class DataList
 
     private Object id;
 
-    public DataList()
-    {
-        this(null, null, null, null, -1);
-    }
-
-    public DataList(Map<String, DomainType> types, Map<String, ColumnDescriptor> columns, List<?> rows, int rowCount)
-    {
-        this(types, columns, Collections.emptyMap(), rows, rowCount);
-    }
-
     public DataList(Map<String, DomainType> types, Map<String, ColumnDescriptor> columns, Map<String, EnumModel> enums, List<?> rows, int rowCount)
     {
         this.types = types;

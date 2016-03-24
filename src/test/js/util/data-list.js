@@ -5,144 +5,15 @@ var changeSpy = sinon.spy();
 
 var DataList = require("../../../../src/main/js/util/data-list");
 
+var dl = new DataList(require("./test-lists/data-list.json"), function (newData, path)
+{
+    //console.log("CHANGED", newData, path);
+
+    changeSpy(newData, path);
+});
+
 describe("DataList Helper", function ()
 {
-    var dl = new DataList({
-        types: {
-            "Foo": {
-                "properties": [
-                    {
-                        "name": "name",
-                        "type": "PlainText",
-                        "data" : 1
-                    },
-                    {
-                        "name": "num",
-                        "type": "Integer",
-                        "data" : 2
-                    },
-                    {
-                        "name": "embedded",
-                        "type": "DomainType",
-                        "typeParam": "Embedded",
-                        "data" : 3
-                    },
-                    {
-                        "name": "bars",
-                        "type": "List",
-                        "typeParam": "Bar",
-                        "data" : 4
-                    },
-                    {
-                        "name": "bazes",
-                        "type": "Map",
-                        "typeParam": "Baz",
-                        "data" : 5
-                    }
-                ]
-            },
-            "Embedded": {
-                "properties": [
-                    {
-                        "name": "name",
-                        "type": "PlainText",
-                        "data" : 6
-                    }
-                ]
-            },
-            "Bar": {
-                "properties": [
-                    {
-                        "name": "name",
-                        "type": "PlainText",
-                        "data" : 7
-                    }
-                ]
-            },
-            "Baz": {
-                "properties": [
-                    {
-                        "name": "num",
-                        "type": "Integer",
-                        "data" : 8
-                    }
-                ]
-            },
-            "Joined": {
-                "properties": [
-                    {
-                        "name": "name",
-                        "type": "PlainText",
-                        "data" : 9
-                    }
-                ]
-            }
-        },
-        columns: {
-            "name": {
-                type: "Foo",
-                name: "name"
-            },
-            "num": {
-                type: "Foo",
-                name: "num"
-            },
-            "embedded": {
-                type: "Foo",
-                name: "embedded"
-            },
-            "bars": {
-                type: "Foo",
-                name: "bars"
-            },
-            "bazes": {
-                type: "Foo",
-                name: "bazes"
-            },
-            "joinedName": {
-                type: "Joined",
-                name: "name"
-            }
-        },
-        rows: [
-            {
-                name: "TestFoo",
-                num: 123,
-                embedded: {
-                    name: "EmbeddedObject"
-                },
-                bars: [
-                    {name: "Bar 1"},
-                    {name: "Bar 2"}
-                ],
-                bazes: {
-                    "one": {num: 1},
-                    "two": {num: 2}
-                }
-            },
-            {
-                name: "TestFoo #2",
-                num: 234,
-                embedded: {
-                    name: "EmbeddedObject #2"
-                },
-                bars: [
-                    {name: "Bar 3"},
-                    {name: "Bar 4"}
-                ],
-                bazes: {
-                    "three": {num: 3},
-                    "four": {num: 4}
-                }
-            }
-        ]
-    }, function (newData, path)
-    {
-        //console.log("CHANGED", newData, path);
-
-        changeSpy(newData, path);
-    });
-
     var cursor;
 
     it("provides data cursors", function ()
@@ -198,81 +69,6 @@ describe("DataList Helper", function ()
         newRows = call.args[0];
         assert(newRows[0].name === "YetAnotherFoo");
 
-
-    });
-
-
-    it("provides property type information for cursor paths", function ()
-    {
-        cursor = dl.getCursor([0]);
-        assert(cursor.type === "[DataListRoot]");
-
-        var propertyType = cursor.getPropertyType(["name"]);
-        assert(propertyType.parent === "Foo");
-        assert(propertyType.name === "name");
-        assert(propertyType.type === "PlainText");
-        assert(propertyType.data === 1);
-        assert(propertyType.dataList === dl);
-
-        propertyType = cursor.getPropertyType(["num"]);
-        assert(propertyType.parent === "Foo");
-        assert(propertyType.name === "num");
-        assert(propertyType.type === "Integer");
-        assert(propertyType.data === 2);
-        assert(propertyType.dataList === dl);
-
-        propertyType = cursor.getPropertyType(["embedded", "name"]);
-        assert(propertyType.parent === "Embedded");
-        assert(propertyType.name === "name");
-        assert(propertyType.type === "PlainText");
-        assert(propertyType.data === 6);
-        assert(propertyType.dataList === dl);
-
-        propertyType = cursor.getPropertyType(["bars"]);
-        assert(propertyType.parent === "Foo");
-        assert(propertyType.name === "bars");
-        assert(propertyType.type === "List");
-        assert(propertyType.typeParam === "Bar");
-        assert(propertyType.data === 4);
-        assert(propertyType.dataList === dl);
-
-        propertyType = cursor.getPropertyType(["bars", 0, "name"]);
-        assert(propertyType.parent === "Bar");
-        assert(propertyType.name === "name");
-        assert(propertyType.type === "PlainText");
-        assert(propertyType.data === 7);
-        assert(propertyType.dataList === dl);
-
-        propertyType = cursor.getPropertyType(["bazes"]);
-        assert(propertyType.parent === "Foo");
-        assert(propertyType.name === "bazes");
-        assert(propertyType.type === "Map");
-        assert(propertyType.typeParam === "Baz");
-        assert(propertyType.data === 5);
-        assert(propertyType.dataList === dl);
-
-        propertyType = cursor.getPropertyType(["bazes", "one", "num"]);
-        assert(propertyType.parent === "Baz");
-        assert(propertyType.name === "num");
-        assert(propertyType.type === "Integer");
-        assert(propertyType.data === 8);
-        assert(propertyType.dataList === dl);
-
-        propertyType = cursor.getPropertyType(["joinedName"]);
-        assert(propertyType.parent === "Joined");
-        assert(propertyType.name === "name");
-        assert(propertyType.type === "PlainText");
-        assert(propertyType.data === 9);
-        assert(propertyType.dataList === dl);
-
-        cursor = dl.getCursor([0, "embedded", "name"]);
-
-        propertyType = cursor.getPropertyType();
-        assert(propertyType.parent === "Embedded");
-        assert(propertyType.type === "PlainText");
-        assert(propertyType.data === 6);
-        assert(propertyType.dataList === dl);
-
     });
 
     it("validates cursors", function ()
@@ -305,5 +101,150 @@ describe("DataList Helper", function ()
         }, /Cannot find property for 'Baz.fake'/);
 
     });
+
+    describe("DataListCursor", function ()
+    {
+        it("provides property type information", function ()
+        {
+            cursor = dl.getCursor([0]);
+            assert(cursor.type === "[DataListRoot]");
+
+            var propertyType = cursor.getPropertyType(["name"]);
+            assert(propertyType.parent === "Foo");
+            assert(propertyType.name === "name");
+            assert(propertyType.type === "PlainText");
+            assert(propertyType.data === 1);
+            assert(propertyType.dataList === dl);
+
+            propertyType = cursor.getPropertyType(["num"]);
+            assert(propertyType.parent === "Foo");
+            assert(propertyType.name === "num");
+            assert(propertyType.type === "Integer");
+            assert(propertyType.data === 2);
+            assert(propertyType.dataList === dl);
+
+            propertyType = cursor.getPropertyType(["embedded", "name"]);
+            assert(propertyType.parent === "Embedded");
+            assert(propertyType.name === "name");
+            assert(propertyType.type === "PlainText");
+            assert(propertyType.data === 6);
+            assert(propertyType.dataList === dl);
+
+            propertyType = cursor.getPropertyType(["bars"]);
+            assert(propertyType.parent === "Foo");
+            assert(propertyType.name === "bars");
+            assert(propertyType.type === "List");
+            assert(propertyType.typeParam === "Bar");
+            assert(propertyType.data === 4);
+            assert(propertyType.dataList === dl);
+
+            propertyType = cursor.getPropertyType(["bars", 0, "name"]);
+            assert(propertyType.parent === "Bar");
+            assert(propertyType.name === "name");
+            assert(propertyType.type === "PlainText");
+            assert(propertyType.data === 7);
+            assert(propertyType.dataList === dl);
+
+            propertyType = cursor.getPropertyType(["bazes"]);
+            assert(propertyType.parent === "Foo");
+            assert(propertyType.name === "bazes");
+            assert(propertyType.type === "Map");
+            assert(propertyType.typeParam === "Baz");
+            assert(propertyType.data === 5);
+            assert(propertyType.dataList === dl);
+
+            propertyType = cursor.getPropertyType(["bazes", "one", "num"]);
+            assert(propertyType.parent === "Baz");
+            assert(propertyType.name === "num");
+            assert(propertyType.type === "Integer");
+            assert(propertyType.data === 8);
+            assert(propertyType.dataList === dl);
+
+            propertyType = cursor.getPropertyType(["joinedName"]);
+            assert(propertyType.parent === "Joined");
+            assert(propertyType.name === "name");
+            assert(propertyType.type === "PlainText");
+            assert(propertyType.data === 9);
+            assert(propertyType.dataList === dl);
+
+            cursor = dl.getCursor([0, "embedded", "name"]);
+
+            propertyType = cursor.getPropertyType();
+            assert(propertyType.parent === "Embedded");
+            assert(propertyType.type === "PlainText");
+            assert(propertyType.data === 6);
+            assert(propertyType.dataList === dl);
+
+        });
+
+        it("extracts implicitly typed domain objects", function ()
+        {
+            var simpleList = new DataList(require("./test-lists/simple-list.json"), null);
+
+            var obj = simpleList.getCursor([1]).getDomainObject();
+
+            assert(obj.name === "TestFoo #2");
+            assert(obj.num === 234);
+            assert(obj._type === "Foo");
+        });
+
+        it("extracts typed domain objects", function ()
+        {
+            var joinedList = new DataList(require("./test-lists/joined-list.json"), null);
+
+            var obj = joinedList.getCursor([0]).getDomainObject("Foo");
+
+            assert(obj.name === "TestFoo");
+            assert(obj.num === 123);
+            assert(obj._type === "Foo");
+
+            obj = joinedList.getCursor([0]).getDomainObject("Baz");
+
+            assert(obj.name === undefined);
+            assert(obj.num === 1);
+            assert(obj._type === "Baz");
+
+
+            assert.throws(function ()
+            {
+                joinedList.getCursor([0]).getDomainObject();
+            }, /Implicit type detection failed/);
+
+
+        });
+
+
+
+        it("extracts nested domain objects", function ()
+        {
+            var simpleList = new DataList(require("./test-lists/nested.json"), null);
+
+            var obj = simpleList.getCursor([0, "embedded"]).getDomainObject();
+
+            assert(obj._type === "Embedded");
+            assert(obj.name === "EmbeddedObject");
+
+            obj = simpleList.getCursor([0, "bars", 1]).getDomainObject();
+            assert(obj._type === "Bar");
+            assert(obj.name === "Bar 2");
+
+            obj = simpleList.getCursor([0, "bazes", "one"]).getDomainObject();
+            assert(obj._type === "Baz");
+            assert(obj.num === 1);
+
+            assert.throws(function ()
+            {
+                simpleList.getCursor([0, "bars"]).getDomainObject();
+            }, /Cannot extract single domain object from List/)
+
+            assert.throws(function ()
+            {
+                simpleList.getCursor([0, "bazes"]).getDomainObject();
+
+            }, /Cannot extract single domain object from Map/)
+
+        });
+    })
+
 
 });

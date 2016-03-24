@@ -1,0 +1,130 @@
+{
+    "types": {
+        "Foo": {
+            "properties": [
+                {
+                    "name": "name",
+                    "type": "PlainText",
+                    "data" : 1
+                },
+                {
+                    "name": "num",
+                    "type": "Integer",
+                    "data" : 2
+                },
+                {
+                    "name": "embedded",
+                    "type": "DomainType",
+                    "typeParam": "Embedded",
+                    "data" : 3
+                },
+                {
+                    "name": "bars",
+                    "type": "List",
+                    "typeParam": "Bar",
+                    "data" : 4
+                },
+                {
+                    "name": "bazes",
+                    "type": "Map",
+                    "typeParam": "Baz",
+                    "data" : 5
+                }
+            ]
+        },
+        "Embedded": {
+            "properties": [
+                {
+                    "name": "name",
+                    "type": "PlainText",
+                    "data" : 6
+                }
+            ]
+        },
+        "Bar": {
+            "properties": [
+                {
+                    "name": "name",
+                    "type": "PlainText",
+                    "data" : 7
+                }
+            ]
+        },
+        "Baz": {
+            "properties": [
+                {
+                    "name": "num",
+                    "type": "Integer",
+                    "data" : 8
+                }
+            ]
+        },
+        "Joined": {
+            "properties": [
+                {
+                    "name": "name",
+                    "type": "PlainText",
+                    "data" : 9
+                }
+            ]
+        }
+    },
+    "columns": {
+        "name": {
+            "type": "Foo",
+            "name": "name"
+        },
+        "num": {
+            "type": "Foo",
+            "name": "num"
+        },
+        "embedded": {
+            "type": "Foo",
+            "name": "embedded"
+        },
+        "bars": {
+            "type": "Foo",
+            "name": "bars"
+        },
+        "bazes": {
+            "type": "Foo",
+            "name": "bazes"
+        },
+        "joinedName": {
+            "type": "Joined",
+            "name": "name"
+        }
+    },
+    "rows": [
+        {
+            "name": "TestFoo",
+            "num": 123,
+            "embedded": {
+                "name": "EmbeddedObject"
+            },
+            "bars": [
+                {"name": "Bar 1"},
+                {"name": "Bar 2"}
+            ],
+            "bazes": {
+                "one": {"num": 1},
+                "two": {"num": 2}
+            }
+        },
+        {
+            "name": "TestFoo #2",
+            "num": 234,
+            "embedded": {
+                "name": "EmbeddedObject #2"
+            },
+            "bars": [
+                {"name": "Bar 3"},
+                {"name": "Bar 4"}
+            ],
+            "bazes": {
+                "three": {"num": 3},
+                "four": {"num": 4}
+            }
+        }
+    ]
+}

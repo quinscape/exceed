@@ -164,7 +164,7 @@ gulp.task("test", function ()
 
     BabelConfig.registerForTests();
 
-    gulp.src("./src/test/js/**/*.js")
+    gulp.src(["./src/test/js/**/*.js", "./src/test/js/**/*.json"])
         .pipe(gulp.dest("./target/js/tests"))
         .pipe(mocha({
             reporter: "spec"

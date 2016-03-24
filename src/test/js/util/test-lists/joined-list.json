@@ -1,0 +1,50 @@
+{
+    "types": {
+        "Foo": {
+            "name" : "Foo",
+            "properties": [
+                {
+                    "name": "name",
+                    "type": "PlainText",
+                    "data" : 1
+                },
+                {
+                    "name": "num",
+                    "type": "Integer",
+                    "data" : 2
+                }
+            ]
+        },
+        "Baz": {
+            "name" : "Baz",
+            "properties": [
+                {
+                    "name": "num",
+                    "type": "Integer",
+                    "data" : 8
+                }
+            ]
+        }
+    },
+    "columns": {
+        "name": {
+            "type": "Foo",
+            "name": "name"
+        },
+        "num": {
+            "type": "Foo",
+            "name": "num"
+        },
+        "bnum": {
+            "type": "Baz",
+            "name": "num"
+        }
+    },
+    "rows": [
+        {
+            "name": "TestFoo",
+            "num": 123,
+            "bnum": 1
+        }
+    ]
+}

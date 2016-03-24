@@ -47,6 +47,7 @@ DataList.prototype.getRaw = function (key)
     return {
         types: this.types,
         enums: this.enums,
+        columns : this.columns,
         rows: this.rows,
         rowCount: this.rowCount
     }
@@ -308,6 +309,87 @@ DataListCursor.prototype.pop = function (howMany)
 DataListCursor.prototype.getCursor = function (path)
 {
     return this.dataList.getCursor(this.path.concat(path));
+};
+
+DataListCursor.prototype.getDomainObject = function (type)
+{
+    var object;
+
+    var rowIndex = this.path[0];
+    var dataList = this.dataList;
+
+    var row = dataList.rows[rowIndex];
+
+    if (this.path.length == 1)
+    {
+        object = {};
+
+        var cols = dataList.columns;
+        if (!cols)
+        {
+            throw new Error("No cols");
+        }
+        var checkImplicit = false;
+
+        for (var name in cols)
+        {
+            if (cols.hasOwnProperty(name))
+            {
+                var entry = cols[name];
+
+                if (!type)
+                {
+                    type = entry.type;
+                    checkImplicit = true;
+                }
+
+                if (entry.type === type)
+                {
+                    object[entry.name] = row[name];
+                }
+                else if (checkImplicit)
+                {
+                    throw new Error("Implicit type detection failed: DataList contains '" + type + "' and '" + entry.type + "' objects");
+                }
+            }
+        }
+        var typeDef = dataList.types[type];
+        object._type = typeDef.name;
+        return object;
+    }
+    else
+    {
+        var propType = this.getPropertyType();
+        if (propType.type === "List")
+        {
+            throw new Error("Cannot extract single domain object from List");
+        }
+        else if (propType.type === "Map")
+        {
+            throw new Error("Cannot extract single domain object from Map");
+        }
+        else if (propType.type === "DomainType")
+        {
+            object = extend({
+                _type: propType.typeParam
+                },
+                this.value
+            );
+        }
+        else
+        {
+            object = extend({
+                _type: propType.type
+            }, this.value);
+        }
+
+        if (type && type !== object._type)
+        {
+            throw new Error("Type parameter requests '" + type + "' but cursor points to '" + object._type + "'");
+        }
+
+        return object;
+    }
 };
 
 
