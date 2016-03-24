@@ -3,6 +3,7 @@ package de.quinscape.exceed.runtime.model;
 import com.google.common.base.Objects;
 import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.component.PropDeclaration;
+import de.quinscape.exceed.component.PropType;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ASTIdentifier;
 import de.quinscape.exceed.expression.ExpressionParser;
@@ -223,13 +224,11 @@ public class ClientViewJSONGenerator
                         ASTExpression contextAttrAST = contextAttr.getAstExpression();
                         if (contextAttrAST == null)
                         {
-                            if (contextAttr.getType() != AttributeValueType.STRING)
+                            if (contextAttr.getType() == AttributeValueType.EXPRESSION_ERROR)
                             {
-                                throw new InconsistentModelException("Context attribute must be a string value containing" +
-                                    " a context name: " + componentModel);
+                                throw new InconsistentModelException("Context expression contains errors", contextAttr.getExpressionError());
                             }
-
-                            contextName = (String) contextAttr.getValue();
+                            contextName = contextAttr.getValue();
                             renameIdentifier(contextAST, "context", contextName);
                         }
                         else
@@ -241,7 +240,8 @@ public class ClientViewJSONGenerator
                     {
                         // otherwise we default to the first parent of matching type to provide a context
                         // type can be null here meaning to accept every kind of context
-                        contextName = findContext(path.getParent(), decl.getContextType());
+                        ComponentPath contextByType = findContextByType(path.getParent(), decl.getContextType());
+                        contextName = contextByType.getContextName();
                         renameIdentifier(contextAST, "context", contextName);
                     }
 
@@ -302,18 +302,17 @@ public class ClientViewJSONGenerator
     }
 
 
-    private String findContext(ComponentPath path, String type)
+    private ComponentPath findContextByType(ComponentPath path, String type)
     {
         while (path != null)
         {
             String contextName = path.getContextName();
             if (contextName != null && (type == null || type.equals(path.getProvidedContext())))
             {
-                return contextName;
+                return path;
             }
             path = path.getParent();
         }
         return null;
     }
-
 }
