@@ -4,6 +4,10 @@ var assert = require("power-assert");
 require("../../../../../src/main/js/editor/code/ace-mode-exceed");
 
 var EditSession = brace.acequire("ace/edit_session").EditSession;
+
+// disable all workers for test
+EditSession.prototype.$useWorker = false;
+
 var ExceedViewMode = brace.acequire("ace/mode/exceed_view").Mode;
 
 var tokens = require("../../../../../src/main/js/editor/code/tokens");
@@ -11,7 +15,6 @@ var xmlUtil = require("../../../../../src/main/js/editor/code/xml-util");
 
 var testView = require("../../../../../src/test/js/editor/code/TestView.json");
 var posInDocument = require("../../../../../src/main/js/util/posInDocument");
-
 
 describe("Tokens Module", function(){
 
