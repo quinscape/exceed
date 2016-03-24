@@ -21,4 +21,19 @@ public interface DomainObject
     Object getProperty(String name);
 
     void setProperty(String name, Object value);
+
+    default void update()
+    {
+        getDomainService().update(this);
+    }
+
+    default void insert()
+    {
+        getDomainService().insert(this);
+    }
+
+    default void delete()
+    {
+        getDomainService().delete(this);
+    }
 }

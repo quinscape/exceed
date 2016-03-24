@@ -2,7 +2,6 @@ package de.quinscape.exceed.runtime.domain;
 
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumModel;
-import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 
 import java.util.Map;
@@ -17,7 +16,7 @@ public interface DomainService
 
     String toJSON(Object domainObject);
 
-    Object toDomainObject(String json);
+    Object toDomainObject(Class<?> cls, String json);
 
     DomainType getDomainType(String name);
 
@@ -26,4 +25,19 @@ public interface DomainService
     Set<String> getDomainTypeNames();
 
     Map<String,EnumModel> getEnums();
+
+    GenericDomainObject read(String type, Object... pkFields);
+
+    default GenericDomainObject read(String type, String id)
+    {
+        return read(type, (Object)id);
+    }
+
+    void delete(DomainObject genericDomainObject);
+
+    void insert(DomainObject genericDomainObject);
+
+    void update(DomainObject genericDomainObject);
+
+    NamingStrategy getNamingStrategy();
 }

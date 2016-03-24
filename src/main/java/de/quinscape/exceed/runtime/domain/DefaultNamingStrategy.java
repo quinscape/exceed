@@ -39,8 +39,8 @@ public class DefaultNamingStrategy
 
 
     @Override
-    public String[] getFieldName(QueryDomainType queryDomainType, DomainProperty property)
+    public String[] getFieldName(String tableName, String propertyName)
     {
-        return new String[] { queryDomainType.getAlias(), property.getName() };
+        return new String[] { tableName, camelCaseToUnderline(propertyName) };
     }
 }

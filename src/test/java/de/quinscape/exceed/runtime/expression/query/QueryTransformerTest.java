@@ -1,17 +1,18 @@
 package de.quinscape.exceed.runtime.expression.query;
 
 import com.google.common.collect.ImmutableSet;
-import de.quinscape.exceed.expression.ASTEquality;
-import de.quinscape.exceed.expression.ASTInteger;
-import de.quinscape.exceed.expression.ASTPropertyChain;
 import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.model.action.ActionModel;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.runtime.TestApplication;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
+import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
+import de.quinscape.exceed.runtime.domain.GenericDomainObject;
+import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
 import org.jooq.Condition;
@@ -128,7 +129,7 @@ public class QueryTransformerTest
 
 
         @Override
-        public Object toDomainObject(String json)
+        public Object toDomainObject(Class<?> actionClass, String json)
         {
             return null;
         }
@@ -167,6 +168,39 @@ public class QueryTransformerTest
         public Map<String, EnumModel> getEnums()
         {
             return Collections.emptyMap();
+        }
+
+
+        @Override
+        public GenericDomainObject read(String type, Object... pkFields)
+        {
+            return null;
+        }
+
+
+        @Override
+        public void delete(DomainObject genericDomainObject)
+        {
+
+        }
+
+        @Override
+        public void insert(DomainObject genericDomainObject)
+        {
+
+        }
+
+
+        @Override
+        public void update(DomainObject genericDomainObject)
+        {
+
+        }
+
+        @Override
+        public NamingStrategy getNamingStrategy()
+        {
+            return null;
         }
     }
 }

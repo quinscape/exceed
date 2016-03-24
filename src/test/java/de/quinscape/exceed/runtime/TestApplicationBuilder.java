@@ -6,6 +6,7 @@ import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.model.domain.PropertyType;
 import de.quinscape.exceed.runtime.config.DefaultPropertyConverters;
 import de.quinscape.exceed.runtime.datalist.DataListService;
+import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.DomainServiceImpl;
 import org.apache.commons.io.FileUtils;
@@ -95,7 +96,7 @@ public class TestApplicationBuilder
         if (domainService == null)
         {
             DataListService dataListService = new DataListService(new DefaultPropertyConverters().getConverters());
-            domainService = new DomainServiceImpl(dataListService);
+            domainService = new DomainServiceImpl(dataListService,null, null);
         }
 
         return new TestApplication(applicationModel, domainService);

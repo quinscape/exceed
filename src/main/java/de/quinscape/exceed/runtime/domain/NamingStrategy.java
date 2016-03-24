@@ -8,5 +8,5 @@ public interface NamingStrategy
 {
     String getTableName(DomainType type);
 
-    String[] getFieldName(QueryDomainType queryDomainType, DomainProperty property);
+    String[] getFieldName(String tableName, String propertyName);
 }

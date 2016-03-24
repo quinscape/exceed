@@ -4,11 +4,21 @@ import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.datalist.DataListService;
+import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
+import de.quinscape.exceed.runtime.util.DBUtil;
+import org.jooq.DSLContext;
+import org.jooq.DeleteQuery;
+import org.jooq.Field;
+import org.jooq.InsertQuery;
+import org.jooq.Record;
+import org.jooq.UpdateQuery;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.JSONParser;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,8 +27,11 @@ public class DomainServiceImpl
 {
     private final static Logger log = LoggerFactory.getLogger(DomainServiceImpl.class);
 
-
     private final DataListService dataListService;
+
+    private final DSLContext dslContext;
+
+    private final NamingStrategy namingStrategy;
 
     private final JSONParser parser;
 
@@ -27,9 +40,11 @@ public class DomainServiceImpl
     private RuntimeApplication runtimeApplication;
 
 
-    public DomainServiceImpl(DataListService dataListService)
+    public DomainServiceImpl(DataListService dataListService, DSLContext dslContext, NamingStrategy namingStrategy)
     {
         this.dataListService = dataListService;
+        this.dslContext = dslContext;
+        this.namingStrategy = namingStrategy;
 
         parser = new JSONParser();
         parser.addObjectFactory(new DomainFactory(this));
@@ -53,13 +68,15 @@ public class DomainServiceImpl
     /**
      * Converts the given model JSON to a model instance.
      *
-     * @param json JSON string. Must have a root "type" property that contains a valid model name,
+     *
+     * @param cls       class to parse into
+     * @param json      JSON string. Must have a root "type" property that contains a valid model name,
      * @return Model instance of type embedded in JSON
      */
     @Override
-    public Object toDomainObject(String json)
+    public Object toDomainObject(Class<?> cls, String json)
     {
-        return parser.parse(GenericDomainObject.class, json);
+        return parser.parse(cls, json);
     }
 
 
@@ -145,5 +162,98 @@ public class DomainServiceImpl
     public Map<String,EnumModel> getEnums()
     {
         return runtimeApplication.getApplicationModel().getEnums();
+    }
+
+
+    @Override
+    public GenericDomainObject read(String type, Object... pkFields)
+    {
+        DomainType domainType = getDomainType(type);
+
+
+        return null;
+    }
+
+
+
+    @Override
+    public void delete(DomainObject domainObject)
+    {
+        DomainType domainType = getDomainType(domainObject.getType());
+
+        DeleteQuery<Record> query = dslContext.deleteQuery(DBUtil.jooqTableFor(domainType, domainType.getName()));
+
+        for (String name : domainType.getPkFields())
+        {
+            Field<Object> pkField = DSL.field(DSL.name(namingStrategy.getFieldName(domainType.getName(), name)));
+            Object pkValue = domainObject.getProperty(name);
+            query.addConditions(pkField.eq(pkValue));
+        }
+
+        int count = query.execute();
+        if (count != 1)
+        {
+            log.warn("Update returned " + count + " results instead of one");
+        }
+    }
+
+
+    @Override
+    public void insert(DomainObject domainObject)
+    {
+        DomainType domainType = getDomainType(domainObject.getType());
+
+        InsertQuery<Record> query = dslContext.insertQuery(DBUtil.jooqTableFor(domainType, domainType.getName()));
+
+
+        for (String name : domainObject.propertyNames())
+        {
+            Field<Object> field = DSL.field(DSL.name(namingStrategy.getFieldName(domainType.getName(), name)));
+            query.addValue(field,  domainObject.getProperty(name));
+        }
+
+        int count = query.execute();
+        if (count != 1)
+        {
+            log.warn("Insert returned " + count + " results instead of one");
+        }
+    }
+
+
+    @Override
+    public void update(DomainObject domainObject)
+    {
+
+        DomainType domainType = getDomainType(domainObject.getType());
+
+        UpdateQuery<Record> query = dslContext.updateQuery(DBUtil.jooqTableFor(domainType, domainType.getName()));
+
+        Set<String> nonPkFields = new HashSet<>(domainObject.propertyNames());
+        nonPkFields.removeAll(domainType.getPkFields());
+
+        for (String name : nonPkFields)
+        {
+            Field<Object> field = DSL.field(DSL.name(namingStrategy.getFieldName(domainType.getName(), name)));
+            query.addValue(field, domainObject.getProperty(name));
+        }
+
+        for (String name : domainType.getPkFields())
+        {
+            Field<Object> pkField = DSL.field(DSL.name(namingStrategy.getFieldName(domainType.getName(), name)));
+            Object pkValue = domainObject.getProperty(name);
+            query.addConditions(pkField.eq(pkValue));
+        }
+
+        int count = query.execute();
+        if (count != 1)
+        {
+            log.warn("Update returned " + count + " results instead of one");
+        }
+    }
+
+    @Override
+    public NamingStrategy getNamingStrategy()
+    {
+        return namingStrategy;
     }
 }

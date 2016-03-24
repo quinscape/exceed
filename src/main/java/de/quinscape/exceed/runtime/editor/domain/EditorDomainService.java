@@ -90,7 +90,7 @@ public class EditorDomainService
             new DomainProperty("maxLength", "Integer", null, true),
             new DomainProperty("data", "Object", null, true)
         ));
-        domainPropertyType.setPkFields(null);
+        type.setPkFields(Collections.singletonList("name"));
 
         map.put("DomainProperty", domainPropertyType);
 

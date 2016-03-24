@@ -11,7 +11,10 @@ import de.quinscape.exceed.runtime.TestApplication;
 import de.quinscape.exceed.runtime.TestApplicationBuilder;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
+import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
+import de.quinscape.exceed.runtime.domain.GenericDomainObject;
+import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
 import de.quinscape.exceed.runtime.editor.completion.expression.PropCompleteEnvironment;
@@ -111,7 +114,7 @@ public class PropCompleteEnvironmentTest
 
 
         @Override
-        public Object toDomainObject(String json)
+        public Object toDomainObject(Class<?> cls, String json)
         {
             return null;
         }
@@ -154,6 +157,39 @@ public class PropCompleteEnvironmentTest
         public Map<String, EnumModel> getEnums()
         {
             return Collections.emptyMap();
+        }
+
+
+        @Override
+        public GenericDomainObject read(String type, Object... pkFields)
+        {
+            return null;
+        }
+
+
+        @Override
+        public void delete(DomainObject genericDomainObject)
+        {
+
+        }
+
+        @Override
+        public void insert(DomainObject genericDomainObject)
+        {
+
+        }
+
+
+        @Override
+        public void update(DomainObject genericDomainObject)
+        {
+
+        }
+
+        @Override
+        public NamingStrategy getNamingStrategy()
+        {
+            return null;
         }
     }
 

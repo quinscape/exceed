@@ -123,7 +123,7 @@ public class QueryFilterOperations
         QueryDomainType queryDomainType = ctx.getEnv().getQueryDomainType();
         DataField dataField = queryDomainType.resolveField(name);
 
-        return DSL.field(DSL.name(namingStrategy.getFieldName(dataField.getQueryDomainType(), dataField.getDomainProperty())));
+        return DSL.field(DSL.name(namingStrategy.getFieldName(dataField.getQueryDomainType().getAlias(), dataField.getDomainProperty().getName())));
     }
 
     @Operation

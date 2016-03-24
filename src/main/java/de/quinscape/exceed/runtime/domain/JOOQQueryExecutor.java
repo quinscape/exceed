@@ -9,6 +9,7 @@ import de.quinscape.exceed.runtime.expression.query.DataField;
 import de.quinscape.exceed.runtime.expression.query.JoinDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryDomainType;
+import de.quinscape.exceed.runtime.util.DBUtil;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -16,6 +17,7 @@ import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.RecordMapper;
 import org.jooq.SelectJoinStep;
+import org.jooq.SelectQuery;
 import org.jooq.SortField;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
@@ -65,32 +67,39 @@ public class JOOQQueryExecutor
     {
         QueryDomainType queryDomainType = queryDefinition.getQueryDomainType();
 
-        SelectJoinStep<Record> builder = dslContext.select(
+        Table<Record> mainTable = DBUtil.jooqTableFor(queryDomainType.getType(), queryDomainType.getAlias());
+
+        SelectQuery<Record> query = dslContext.selectQuery();
+
+        query.addFrom(mainTable);
+        query.addSelect(
             queryDomainType.getFieldsInOrder().stream()
                 .map(this::jooqField)
                 .collect(Collectors.toList())
-        )
-            .from(jooqTableFor(queryDomainType));
+        );
 
-        SelectJoinStep<Record1<Integer>> countBuilder = null;
+        SelectQuery<Record> countQuery = null;
 
         boolean pagedQuery = queryDefinition.getLimit() > 0;
         if (pagedQuery)
         {
-            countBuilder = dslContext.selectCount().from(jooqTableFor(queryDomainType));
+            countQuery = dslContext.selectQuery();
+            countQuery.addFrom(mainTable);
+            countQuery.addSelect(DSL.count());
         }
         JoinDefinition joinedType;
         while ((joinedType = queryDomainType.getJoinedType()) != null)
         {
             Condition joinCondition = joinedType.getCondition();
-            builder
-                .join(jooqTableFor(joinedType.getRight()))
-                .on(joinCondition);
+            Table<Record> joinedTable = DBUtil.jooqTableFor(
+                joinedType.getRight().getType(),
+                joinedType.getRight().getAlias()
+            );
+            query.addJoin(joinedTable, joinCondition);
 
-            if (countBuilder != null)
+            if (countQuery != null)
             {
-                countBuilder.join(jooqTableFor(joinedType.getRight()))
-                    .on(joinCondition);
+                countQuery.addJoin(joinedTable, joinCondition);
             }
         }
 
@@ -100,10 +109,10 @@ public class JOOQQueryExecutor
         if (condition != null)
         {
             whereCondition = condition;
-            builder.where(whereCondition);
-            if (countBuilder != null)
+            query.addConditions(whereCondition);
+            if (countQuery != null)
             {
-                countBuilder.where(whereCondition);
+                countQuery.addConditions(whereCondition);
             }
         }
 
@@ -125,7 +134,7 @@ public class JOOQQueryExecutor
                 }
             }
 
-            builder.orderBy(fields);
+            query.addOrderBy(fields);
         }
 
         int limit = queryDefinition.getLimit();
@@ -134,20 +143,20 @@ public class JOOQQueryExecutor
         {
             if (offset > 0)
             {
-                builder.limit(limit).offset(offset);
+                query.addLimit(offset, limit);
             }
             else
             {
-                builder.limit(limit);
+                query.addLimit(limit);
             }
         }
 
-        List<DomainObject> rows = builder.fetch(new QueryMapper(queryDefinition));
+        List<DomainObject> rows = query.fetch(new QueryMapper(queryDefinition));
 
         int rowCount;
         if (pagedQuery)
         {
-            rowCount = countBuilder.fetchOne(DSL.count());
+            rowCount = countQuery.fetchOne(DSL.count());
         }
         else
         {
@@ -175,17 +184,6 @@ public class JOOQQueryExecutor
     {
         return DSL.field(DSL.name(dataField.getNameFromStrategy(namingStrategy)));
     }
-
-
-    private Table<Record> jooqTableFor(QueryDomainType queryDomainType)
-    {
-
-        DomainType type = queryDomainType.getType();
-        DomainService domainService = type.getDomainService();
-        String schema = domainService.getSchema();
-        return DSL.table(DSL.name(schema,  namingStrategy.getTableName(type))).as(queryDomainType.getAlias());
-    }
-
 
     private class QueryMapper
         implements RecordMapper<Record, DomainObject>

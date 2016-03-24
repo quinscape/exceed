@@ -57,7 +57,7 @@ public class DataField
     {
         if (nameFromStrategy == null)
         {
-            nameFromStrategy = namingStrategy.getFieldName(queryDomainType, domainProperty);
+            nameFromStrategy = namingStrategy.getFieldName(queryDomainType.getAlias(), domainProperty.getName());
         }
         return nameFromStrategy;
     }

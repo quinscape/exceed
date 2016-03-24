@@ -21,9 +21,15 @@ public class DomainServiceFactory
     @Autowired
     private DataListService dataListService;
 
+    @Autowired
+    private NamingStrategy namingStrategy;
+
+    @Autowired
+    private DSLContext dslContext;
+
     public DomainService create()
     {
-        return new DomainServiceImpl(dataListService);
+        return new DomainServiceImpl(dataListService, dslContext, namingStrategy);
     }
 
 }
