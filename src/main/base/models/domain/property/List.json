@@ -1,4 +1,0 @@
-{
-  "name":"List",
-  "converter":"de.quinscape.exceed.runtime.domain.property.ListConverter"
-}
