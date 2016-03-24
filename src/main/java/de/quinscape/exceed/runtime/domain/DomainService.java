@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.domain;
 
 import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.domain.EnumModel;
+import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 
 import java.util.Map;
@@ -24,7 +24,7 @@ public interface DomainService
 
     Set<String> getDomainTypeNames();
 
-    Map<String,EnumModel> getEnums();
+    Map<String,EnumType> getEnums();
 
     GenericDomainObject read(String type, Object... pkFields);
 

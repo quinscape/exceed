@@ -2,10 +2,9 @@ package de.quinscape.exceed.runtime.expression.query;
 
 import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.model.action.ActionModel;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.domain.EnumModel;
+import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.runtime.TestApplication;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
@@ -165,7 +164,7 @@ public class QueryTransformerTest
 
 
         @Override
-        public Map<String, EnumModel> getEnums()
+        public Map<String, EnumType> getEnums()
         {
             return Collections.emptyMap();
         }

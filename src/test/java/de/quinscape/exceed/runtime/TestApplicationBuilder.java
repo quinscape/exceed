@@ -2,11 +2,10 @@ package de.quinscape.exceed.runtime;
 
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.domain.EnumModel;
+import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.PropertyType;
 import de.quinscape.exceed.runtime.config.DefaultPropertyConverters;
 import de.quinscape.exceed.runtime.datalist.DataListService;
-import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.DomainServiceImpl;
 import org.apache.commons.io.FileUtils;
@@ -28,7 +27,7 @@ public class TestApplicationBuilder
 
     private String name = "TestApp";
 
-    private Map<String, EnumModel> enums = new HashMap<>();
+    private Map<String, EnumType> enums = new HashMap<>();
 
     private boolean registerBaseProperties = true;
 
@@ -44,9 +43,9 @@ public class TestApplicationBuilder
     }
 
 
-    public TestApplicationBuilder withEnum(String name, EnumModel enumModel)
+    public TestApplicationBuilder withEnum(String name, EnumType enumType)
     {
-        enums.put(name, enumModel);
+        enums.put(name, enumType);
         return this;
     }
 
@@ -84,14 +83,26 @@ public class TestApplicationBuilder
     {
         ApplicationModel applicationModel = new ApplicationModel();
         applicationModel.setName(name);
-        applicationModel.setDomainTypes(domainTypes);
-        applicationModel.setEnums(enums);
+
+        for (Map.Entry<String, DomainType> e : domainTypes.entrySet())
+        {
+            applicationModel.addDomainType(e.getKey(), e.getValue());
+        }
+
+        for (Map.Entry<String, EnumType> e : enums.entrySet())
+        {
+            applicationModel.addEnum(e.getKey(), e.getValue());
+        }
+
+        for (Map.Entry<String, PropertyType> e : propertyTypes.entrySet())
+        {
+            applicationModel.addPropertyType(e.getKey(), e.getValue());
+        }
 
         if (registerBaseProperties)
         {
             propertyTypes.putAll(readBaseProperties());
         }
-        applicationModel.setPropertyTypes(propertyTypes);
 
         if (domainService == null)
         {

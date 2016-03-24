@@ -3,7 +3,7 @@ package de.quinscape.exceed.runtime.expression.query;
 import de.quinscape.exceed.expression.SimpleNode;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.domain.EnumModel;
+import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.ColumnDescriptor;
 import org.jooq.Condition;
@@ -123,12 +123,12 @@ public class QueryDefinition
     }
 
 
-    public Map<String, ColumnDescriptor> createColumnDescriptorMap(RuntimeContext runtimeContext, Map<String, EnumModel> usedEnums)
+    public Map<String, ColumnDescriptor> createColumnDescriptorMap(RuntimeContext runtimeContext, Map<String, EnumType> usedEnums)
     {
         Map<String, ColumnDescriptor> map = new HashMap<>();
         Map<String, DataField> fields = queryDomainType.getFields();
 
-        Map<String, EnumModel> enums = runtimeContext.getRuntimeApplication().getApplicationModel().getEnums();
+        Map<String, EnumType> enums = runtimeContext.getRuntimeApplication().getApplicationModel().getEnums();
 
         for (Map.Entry<String, DataField> entry : fields.entrySet())
         {
@@ -146,13 +146,13 @@ public class QueryDefinition
             {
                 String name = (String) domainProperty.getTypeParam();
 
-                EnumModel enumModel = enums.get(name);
-                if (enumModel == null)
+                EnumType enumType = enums.get(name);
+                if (enumType == null)
                 {
                     throw new IllegalStateException("Reference to unknown enum '" + name + "'");
                 }
 
-                usedEnums.put(name, enumModel);
+                usedEnums.put(name, enumType);
             }
         }
 

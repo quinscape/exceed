@@ -6,7 +6,7 @@ import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.domain.EnumModel;
+import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.PropertyType;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.process.ProcessState;
@@ -127,14 +127,14 @@ public class ModelCompositionService
                     log.debug("Reading {} as PropertyType", path);
 
                     PropertyType propertyType = create(PropertyType.class, json, resource);
-                    applicationModel.getPropertyTypes().put(propertyType.getName(), propertyType);
+                    applicationModel.addPropertyType(propertyType.getName(), propertyType);
                     return propertyType;
                 }
                 if (path.startsWith(ENUM_MODEL_PREFIX))
                 {
-                    EnumModel enumModel = create(EnumModel.class, json, resource);
-                    applicationModel.getEnums().put(enumModel.getName(), enumModel);
-                    return enumModel;
+                    EnumType enumType = create(EnumType.class, json, resource);
+                    applicationModel.addEnum(enumType.getName(), enumType);
+                    return enumType;
                 }
                 else
                 {
@@ -142,7 +142,7 @@ public class ModelCompositionService
 
                     DomainType domainType = create(DomainType.class, json, resource);
                     domainType.setDomainService(runtimeApplication.getDomainService());
-                    applicationModel.getDomainTypes().put(domainType.getName(), domainType);
+                    applicationModel.addDomainType(domainType.getName(), domainType);
                     return domainType;
                 }
             }
@@ -152,7 +152,7 @@ public class ModelCompositionService
                 log.debug("Reading {} as View", path);
                 View view = createViewModel(runtimeApplication, resource, json, false);
 
-                applicationModel.getViews().put(view.getName(), view);
+                applicationModel.addView(view.getName(), view);
                 return view;
             }
 
@@ -171,7 +171,7 @@ public class ModelCompositionService
                     view.setProcessName(processName);
                     view.setName(viewName);
 
-                    applicationModel.getViews().put(viewName, view);
+                    applicationModel.addView(viewName, view);
 
                     return view;
                 }
@@ -179,7 +179,7 @@ public class ModelCompositionService
                 log.debug("Reading {} as Process", path);
                 Process process = create(Process.class, json , resource);
                 process.setName(processName);
-                applicationModel.getProcesses().put( process.getName(), process);
+                applicationModel.addProcess( process.getName(), process);
                 return process;
             }
             else if (path.equals(DOMAIN_LAYOUT_NAME))
@@ -294,7 +294,7 @@ public class ModelCompositionService
             {
                 if (state instanceof ViewState)
                 {
-                    View view = applicationModel.getViews().get(process.getName() + "/" + state.getName());
+                    View view = process.getView(state.getName());
                     if (view == null)
                     {
                         throw new IllegalStateException("Process '" + process.getName() + "' defines a view state '" + state +"' but no such view model exists");

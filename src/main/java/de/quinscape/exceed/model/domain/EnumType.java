@@ -5,7 +5,7 @@ import de.quinscape.exceed.runtime.domain.property.ConverterException;
 
 import java.util.List;
 
-public class EnumModel
+public class EnumType
     extends TopLevelModel
 {
     private List<String> values;

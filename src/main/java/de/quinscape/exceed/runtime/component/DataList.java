@@ -1,12 +1,9 @@
 package de.quinscape.exceed.runtime.component;
 
 import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.domain.EnumModel;
-import de.quinscape.exceed.runtime.domain.DomainObject;
+import de.quinscape.exceed.model.domain.EnumType;
 import org.svenson.JSONProperty;
 
-import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +11,7 @@ public class DataList
 {
     private Map<String, DomainType> types;
 
-    private Map<String, EnumModel> enums;
+    private Map<String, EnumType> enums;
 
     private Map<String, ColumnDescriptor> columns;
 
@@ -24,7 +21,7 @@ public class DataList
 
     private Object id;
 
-    public DataList(Map<String, DomainType> types, Map<String, ColumnDescriptor> columns, Map<String, EnumModel> enums, List<?> rows, int rowCount)
+    public DataList(Map<String, DomainType> types, Map<String, ColumnDescriptor> columns, Map<String, EnumType> enums, List<?> rows, int rowCount)
     {
         this.types = types;
         this.enums = enums;
@@ -46,13 +43,13 @@ public class DataList
     }
 
 
-    public Map<String, EnumModel> getEnums()
+    public Map<String, EnumType> getEnums()
     {
         return enums;
     }
 
 
-    public void setEnums(Map<String, EnumModel> enums)
+    public void setEnums(Map<String, EnumType> enums)
     {
         this.enums = enums;
     }

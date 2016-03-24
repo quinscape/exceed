@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.domain;
 
 import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.domain.EnumModel;
+import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataList;
 import de.quinscape.exceed.runtime.component.QueryExecutor;
@@ -14,9 +14,7 @@ import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
-import org.jooq.Record1;
 import org.jooq.RecordMapper;
-import org.jooq.SelectJoinStep;
 import org.jooq.SelectQuery;
 import org.jooq.SortField;
 import org.jooq.Table;
@@ -168,7 +166,7 @@ public class JOOQQueryExecutor
 
     private DataList createDataList(RuntimeContext runtimeContext, QueryDefinition queryDefinition, List<DomainObject> rows, int rowCount)
     {
-        Map<String,EnumModel> usedEnums = new HashMap<>();
+        Map<String,EnumType> usedEnums = new HashMap<>();
         return new DataList(
             queryDefinition.createDomainTypeMap(),
             queryDefinition.createColumnDescriptorMap(runtimeContext, usedEnums),

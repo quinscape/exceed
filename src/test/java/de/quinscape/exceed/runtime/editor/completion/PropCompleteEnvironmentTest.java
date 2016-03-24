@@ -3,7 +3,7 @@ package de.quinscape.exceed.runtime.editor.completion;
 import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.domain.EnumModel;
+import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
@@ -154,7 +154,7 @@ public class PropCompleteEnvironmentTest
 
 
         @Override
-        public Map<String, EnumModel> getEnums()
+        public Map<String, EnumType> getEnums()
         {
             return Collections.emptyMap();
         }

@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.domain;
 
 import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.domain.EnumModel;
+import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.datalist.DataListService;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
@@ -159,7 +159,7 @@ public class DomainServiceImpl
     }
 
     @Override
-    public Map<String,EnumModel> getEnums()
+    public Map<String,EnumType> getEnums()
     {
         return runtimeApplication.getApplicationModel().getEnums();
     }
