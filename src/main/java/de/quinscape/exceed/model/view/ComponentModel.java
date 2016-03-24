@@ -27,8 +27,13 @@ public class ComponentModel
 
     private ComponentRegistration componentRegistration;
 
-
     private ComponentModel parent;
+
+
+    public ComponentModel()
+    {
+
+    }
 
     @JSONProperty(priority = 10)
     public String getName()
@@ -226,6 +231,13 @@ public class ComponentModel
     public ComponentModel getParent()
     {
         return parent;
+    }
+
+
+    @JSONProperty(ignore = true)
+    public void setPos(Object pos)
+    {
+        // ignore
     }
 
 

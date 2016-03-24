@@ -205,9 +205,10 @@ module.exports = {
      * Converts the current editor session state to a JSON model.
      *
      * @param session
+     * @param withPosition if true, add pos attribute with start end and pos
      * @returns view model
      */
-    toModel: function (session)
+    toModel: function (session, withPosition)
     {
         var iterator = new TokenIterator(session, 0, 0);
 
@@ -246,6 +247,17 @@ module.exports = {
                 var newComponent = {
                     name: token.value
                 };
+
+                if (withPosition)
+                {
+                    newComponent.pos = {
+                        start: {
+                            row: iterator.getCurrentTokenRow(),
+                            column: iterator.getCurrentTokenColumn() - 1
+                        }
+                    };
+                    //console.log("SET START", newComponent.name, newComponent.pos);
+                }
 
                 if (!currentComponent)
                 {
@@ -306,11 +318,31 @@ module.exports = {
 
                 if (token.value === "/>")
                 {
+                    if (withPosition)
+                    {
+                        var end = {
+                            row: iterator.getCurrentTokenRow(),
+                            column: iterator.getCurrentTokenColumn() + token.value.length
+                        };
+                        currentComponent.pos.end = end;
+
+                        //console.log("SET END", currentComponent.name, end);
+                    }
+
                     currentComponent = stack.shift();
                 }
             }
             else if (token.type === "meta.tag.punctuation.end-tag-open.xml")
             {
+                if (withPosition)
+                {
+                    currentComponent.pos.end = {
+                        row: iterator.getCurrentTokenRow(),
+                        column: iterator.getCurrentTokenColumn() + token.value.length + currentComponent.name.length + 1
+                    };
+                    //console.log("SET END", currentComponent.name, currentComponent.pos.end);
+                }
+
                 currentComponent = stack.shift();
                 attrName = null;
             }
