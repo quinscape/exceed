@@ -6,7 +6,7 @@ package de.quinscape.exceed.message;
  *
  * @see de.quinscape.exceed.runtime.service.websocket.MessageContext#reply(Query, Object)
  */
-public class Query
+public abstract class Query
     extends IncomingMessage
 {
     /**
@@ -15,7 +15,7 @@ public class Query
      * @param meta meta block
      * @throws IllegalArgumentException if the meta is <code>null</code>
      */
-    protected Query(MessageMeta meta)
+    public Query(MessageMeta meta)
     {
         super(meta);
     }
