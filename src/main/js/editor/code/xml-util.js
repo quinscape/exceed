@@ -23,7 +23,7 @@ var primaryAttributes = {
 
 function attr(attrs, name)
 {
-    return " " + name + "=\"" + htmlEscape( attrs[name]) + "\"";
+    return name + "=\"" + htmlEscape( attrs[name]) + "\"";
 
 }
 
@@ -39,28 +39,49 @@ function dump(lines, model, indent)
     var attrs = model.attrs;
     if (attrs)
     {
+        var ats = [];
+
         if (attrs.id !== undefined)
         {
-            line += attr(attrs, "id");
+            ats.push(attr(attrs, "id"));
+            lineLength += ats[ats.length-1].length;
         }
 
         if (attrs.var !== undefined)
         {
-            line += attr(attrs, "var");
+            ats.push(attr(attrs, "var"));
+            lineLength += ats[ats.length-1].length;
         }
 
         if (attrs.name !== undefined)
         {
-            line += attr(attrs, "name");
+            ats.push(attr(attrs, "name"));
+            lineLength += ats[ats.length-1].length;
         }
+
+
+        var lineLength = line.length;
 
         for (var name in attrs)
         {
             if (attrs.hasOwnProperty(name) && primaryAttributes[name] !== true)
             {
-                line += attr(attrs, name);
+                var xmlAttr = attr(attrs, name);
+                ats.push(xmlAttr);
+
+                lineLength += xmlAttr.length;
             }
         }
+
+        if (lineLength < 73)
+        {
+            line += " " + ats.join(" ");
+        }
+        else
+        {
+            line += " " + ats.join("\n    " + indent);
+        }
+
     }
     var kids = model.kids;
     if (kids)
