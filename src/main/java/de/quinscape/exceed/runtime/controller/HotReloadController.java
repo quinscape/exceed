@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.controller;
 
-import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.runtime.service.ApplicationService;
@@ -52,8 +52,7 @@ public class HotReloadController
         }
 
         // will block until a change happens or a timeout.
-        TopLevelModel changedModel = runtimeApplication.waitForChange(TIMEOUT);
-
+        Model changedModel = runtimeApplication.waitForChange(TIMEOUT);
 
         String json = modelJSONService.toJSON(changedModel);
         log.debug("Sending change response: {}", json);

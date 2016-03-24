@@ -96,7 +96,7 @@ public class DefaultRuntimeApplication
 
     private long lastChange;
 
-    private TopLevelModel changeModel = null;
+    private Model changeModel = null;
 
     public final static String RUNTIME_INFO_NAME = "_exceed";
 
@@ -546,7 +546,7 @@ public class DefaultRuntimeApplication
     }
 
 
-    private synchronized void notifyChange(TopLevelModel changeModel)
+    private synchronized void notifyChange(Model changeModel)
     {
         log.debug("notifyChange", changeModel);
 
@@ -556,7 +556,7 @@ public class DefaultRuntimeApplication
     }
 
 
-    public synchronized TopLevelModel waitForChange(long timeout) throws InterruptedException
+    public synchronized Model waitForChange(long timeout) throws InterruptedException
     {
         long start = lastChange;
 

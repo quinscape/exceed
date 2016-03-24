@@ -1,10 +1,7 @@
 package de.quinscape.exceed.model.change;
 
-import de.quinscape.exceed.model.TopLevelModel;
-
 public class StyleChange
-    extends TopLevelModel
+    extends HotreloadSignal
 {
     public final static StyleChange INSTANCE = new StyleChange();
-
 }
