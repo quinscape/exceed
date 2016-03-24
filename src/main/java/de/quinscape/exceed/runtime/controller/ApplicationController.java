@@ -85,6 +85,20 @@ public class ApplicationController
                 return "react-base";
             }
         }
+        catch(MappingNotFoundException e)
+        {
+            if (RequestUtil.isAjaxRequest(request))
+            {
+                response.setContentType(ContentType.JSON);
+                RequestUtil.sendJSON(response, "{\"ok\":false,\"error\":" + JSON.defaultJSON().quote(e.getMessage()) + "}");
+                return null;
+            }
+            else
+            {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Mapping not found");
+                return null;
+            }
+        }
         catch(ApplicationNotFoundException e)
         {
             if (RequestUtil.isAjaxRequest(request))
