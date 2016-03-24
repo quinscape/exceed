@@ -22,10 +22,13 @@ public class QueryTransformer
 
     private ExpressionService expressionService;
 
+    private final NamingStrategy namingStrategy;
 
-    public QueryTransformer(ExpressionService expressionService)
+
+    public QueryTransformer(ExpressionService expressionService, NamingStrategy namingStrategy)
     {
         this.expressionService = expressionService;
+        this.namingStrategy = namingStrategy;
     }
 
 

@@ -3,8 +3,6 @@ package de.quinscape.exceed.runtime.component;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 
-import java.util.Map;
-
 /**
  * Implemented by classes executing {@link QueryDefinition}s.
  */

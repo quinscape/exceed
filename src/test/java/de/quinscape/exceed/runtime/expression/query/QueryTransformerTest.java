@@ -8,9 +8,13 @@ import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumModel;
+import de.quinscape.exceed.runtime.TestApplication;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.DomainService;
+import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
+import org.jooq.Condition;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +33,12 @@ public class QueryTransformerTest
 {
     private final static Logger log = LoggerFactory.getLogger(QueryTransformerTest.class);
 
-    private QueryTransformer transformer = new QueryTransformer(new ExpressionServiceImpl(ImmutableSet.of(new QueryTransformerOperations())));
+    private QueryTransformerOperations  queryTransformerOperations = new QueryTransformerOperations();
+    private ExpressionService expressionService = new ExpressionServiceImpl(ImmutableSet.of(queryTransformerOperations));
+    private QueryTransformer transformer = new QueryTransformer(expressionService, new DefaultNamingStrategy());
+    {
+        queryTransformerOperations.setExpressionService(expressionService);
+    }
 
     @Test
     public void testTypeDefinition() throws Exception
@@ -58,12 +67,9 @@ public class QueryTransformerTest
         assertThat(def.getOrderBy(), is(Collections.singletonList("f.name")));
         assertThat(def.getLimit(), is(55));
         assertThat(def.getOffset(), is(12));
-        ASTEquality filter = (ASTEquality) def.getFilter();
 
+        Condition filter = def.getFilter();
         assertThat(filter, is(notNullValue()));
-        assertThat( ((ASTPropertyChain) filter.jjtGetChild(0)), is(notNullValue()));
-        assertThat( ((ASTInteger) filter.jjtGetChild(1)).getValue(), is(23));
-
     }
 
 
@@ -100,7 +106,7 @@ public class QueryTransformerTest
     private QueryDefinition transform(String query) throws ParseException
     {
         TestDomainService domainService = new TestDomainService();
-        return transformer.transform(domainService, query, null, null);
+        return transformer.transform(new TestApplication(null, new TestDomainService()).createRuntimeContext(), query, null, null);
     }
 
 

@@ -4,6 +4,7 @@ import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.domain.DomainService;
+import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,17 +23,17 @@ public class QueryTransformerEnvironment
 
     private final Map<String, Object> vars;
 
-    private final DomainService domainService;
+    private final RuntimeContext runtimeContext;
 
 
     public QueryTransformerEnvironment(
-        DomainService domainService,
+        RuntimeContext runtimeContext,
         NamingStrategy namingStrategy,
         ComponentModel componentModel,
         Map<String, Object> vars
     )
     {
-        this.domainService = domainService;
+        this.runtimeContext = runtimeContext;
         this.namingStrategy = namingStrategy;
         this.componentModel = componentModel;
         this.vars = vars;
@@ -95,9 +96,25 @@ public class QueryTransformerEnvironment
         return vars;
     }
 
-
-    public DomainService getDomainService()
+    public Object getVar(String name)
     {
-        return domainService;
+        if (vars == null)
+        {
+            return null;
+        }
+
+        return vars.get(name);
+    }
+
+
+    public RuntimeContext getRuntimeContext()
+    {
+        return runtimeContext;
+    }
+
+
+    public NamingStrategy getNamingStrategy()
+    {
+        return namingStrategy;
     }
 }

@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.expression.query;
 
 import de.quinscape.exceed.expression.SimpleNode;
+import org.jooq.Condition;
 
 public class JoinDefinition
 {
@@ -8,7 +9,7 @@ public class JoinDefinition
     private final QueryDomainType left;
     private final QueryDomainType right;
 
-    private SimpleNode condition;
+    private Condition condition;
 
 
     public JoinDefinition(String joinType, QueryDomainType left, QueryDomainType right)
@@ -37,13 +38,13 @@ public class JoinDefinition
     }
 
 
-    public void setCondition(SimpleNode condition)
+    public void setCondition(Condition condition)
     {
         this.condition = condition;
     }
 
 
-    public SimpleNode getCondition()
+    public Condition getCondition()
     {
         return condition;
     }

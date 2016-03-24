@@ -10,19 +10,19 @@ import de.quinscape.exceed.expression.ASTLogicalOr;
 import de.quinscape.exceed.expression.ASTPropertyChain;
 import de.quinscape.exceed.expression.ASTRelational;
 import de.quinscape.exceed.expression.ASTString;
-import de.quinscape.exceed.expression.ComparatorNode;
-import de.quinscape.exceed.expression.ExpressionParserTreeConstants;
-import de.quinscape.exceed.expression.LogicalOperatorNode;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.SimpleNode;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
-import de.quinscape.exceed.runtime.expression.ExpressionOperations;
-import de.quinscape.exceed.runtime.expression.Operation;
+import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
+import de.quinscape.exceed.runtime.expression.annotation.Operation;
 import de.quinscape.exceed.runtime.model.ExpressionRenderer;
+import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.util.ExpressionUtil;
+import org.jooq.Condition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,11 +44,16 @@ public class QueryTransformerOperations
         this.expressionService = expressionService;
     }
 
+    @Operation
+    public Object param(ExpressionContext<QueryTransformerEnvironment> ctx, String name)
+    {
+        return ctx.getEnv().getRuntimeContext().getLocationParams().get(name);
+    }
 
     @Operation
     public Object var(ExpressionContext<QueryTransformerEnvironment> ctx, String name)
     {
-        return ctx.getEnv().getVars().get(name);
+        return ctx.getEnv().getVar(name);
     }
 
     @Operation
@@ -78,14 +83,15 @@ public class QueryTransformerOperations
         List<String> names = new ArrayList<>();
         for (ComponentModel kid : env.getComponentModel().children())
         {
-            AttributeValue name = kid.getAttribute("name");
-            if (name != null)
+            AttributeValue attrVal = kid.getAttribute("name");
+            if (attrVal != null)
             {
-                names.add((String) name.getValue());
+                names.add(attrVal.getValue());
             }
         }
         return names;
     }
+
 
     @Operation
     public List<String> childAttributes(ExpressionContext<QueryTransformerEnvironment> ctx, String cls, String attr)
@@ -103,18 +109,23 @@ public class QueryTransformerOperations
 
     private void attributeValueForClass(List<String> values, ComponentModel componentModel, String cls, String attr)
     {
-        if (componentModel.getComponentRegistration().getDescriptor().getClasses().contains(cls))
-        {
-            AttributeValue attribute = componentModel.getAttribute(attr);
-            if (attribute != null)
-            {
-                values.add(attribute.getValue());
-            }
-        }
+        ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
 
-        for (ComponentModel kid : componentModel.children())
+        if (componentRegistration != null)
         {
-            attributeValueForClass(values, kid, cls, attr);
+            if (componentRegistration.getDescriptor().getClasses().contains(cls))
+            {
+                AttributeValue attribute = componentModel.getAttribute(attr);
+                if (attribute != null)
+                {
+                    values.add(attribute.getValue());
+                }
+            }
+
+            for (ComponentModel kid : componentModel.children())
+            {
+                attributeValueForClass(values, kid, cls, attr);
+            }
         }
     }
 
@@ -203,10 +214,11 @@ public class QueryTransformerOperations
         SimpleNode n = ExpressionUtil.expectChildOf(ctx.getASTFunction(), ASTEquality.class, ASTRelational.class, ASTLogicalAnd
             .class, ASTLogicalOr.class, ASTExpression.class);
 
-        joinDefinition.setCondition(n);
+        Condition condition = transformFilter(ctx.getEnv(), joinDefinition.getLeft(), n);
+
+        joinDefinition.setCondition(condition);
         return joinDefinition.getLeft();
     }
-
 
     @Operation(context = QueryDomainType.class)
     public QueryDomainType fields(ExpressionContext<QueryTransformerEnvironment> ctx, QueryDomainType queryDomainType)
@@ -270,11 +282,11 @@ public class QueryTransformerOperations
         Node n;
         if (len == 1 && (n = node.jjtGetChild(0)) instanceof ASTFunction)
         {
-            limit = (Integer) n.jjtAccept(env, null);
+            limit = ((Number) n.jjtAccept(env, null)).intValue();
         }
         else
         {
-            limit = (Integer) ExpressionUtil.visitOneChildOf(env, ctx.getASTFunction(), ASTInteger.class);
+            limit = ((Number) ExpressionUtil.visitOneChildOf(env, ctx.getASTFunction(), ASTInteger.class)).intValue();
         }
 
         if ( limit != null)
@@ -296,7 +308,7 @@ public class QueryTransformerOperations
         Node n;
         if (len == 1 && (n = node.jjtGetChild(0)) instanceof ASTFunction)
         {
-            offset = (Integer) n.jjtAccept(env, null);
+            offset = ((Number) n.jjtAccept(env, null)).intValue();
         }
         else
         {
@@ -353,55 +365,47 @@ public class QueryTransformerOperations
         QueryTransformerEnvironment env = ctx.getEnv();
         ASTFunction node = ctx.getASTFunction();
 
-        SimpleNode n = ExpressionUtil.expectChildOf(ctx.getASTFunction(), ASTFunction.class, LogicalOperatorNode.class, ComparatorNode
-            .class);
-
-        ExpressionRenderer.render(n);
-
-        if (n instanceof ASTFunction)
+        if (node.jjtGetNumChildren() != 1)
         {
-            Object result = n.jjtAccept(env, null);
-            if (result == null)
-            {
-                return queryDefinition;
-            }
-            if (!(result instanceof LogicalOperatorNode) && !(result instanceof ComparatorNode))
-            {
-                throw new QueryTransformationException("Return value of " + n + " is no filter value:" + result);
-            }
-
+            throw new QueryTransformationException("Filter operation takes exactly one argument: " + node);
         }
 
-        SimpleNode filter = queryDefinition.getFilter();
-        if (filter != null)
-        {
-            // if we already have a filter, we AND the old filter
-            // we don't want to change the filter instances here cause they might be directly
-            // imported from a component model, so we mark nodes that we have created here with
-            // a constant value
+        SimpleNode expr = (SimpleNode) node.jjtGetChild(0);
 
-            // is the filter an marked AND?
-            if (filter instanceof ASTLogicalAnd && filter.jjtGetValue() == FILTER_MARKER)
+        Condition condition = transformFilter(env, queryDefinition.getQueryDomainType(), expr);
+        if (condition != null)
+        {
+            Condition existing = queryDefinition.getFilter();
+            if (existing != null)
             {
-                // yes -> just add the new filter to the AND
-                filter.jjtAddChild(n, filter.jjtGetNumChildren());
+                queryDefinition.setFilter(existing.and(condition));
             }
             else
-            {   // no -> create a new marked AND combining both filters and set that as filter
-                ASTLogicalAnd newAnd = new ASTLogicalAnd(ExpressionParserTreeConstants.JJTLOGICALAND);
-                newAnd.jjtAddChild(n, 1);
-                newAnd.jjtAddChild(filter, 0);
-                newAnd.jjtSetValue(FILTER_MARKER);
-                queryDefinition.setFilter(newAnd);
+            {
+                queryDefinition.setFilter(condition);
             }
-        }
-        else
-        {
-            // if we have no filter, just set the new one
-            queryDefinition.setFilter(n);
         }
         return queryDefinition;
     }
+
+
+    private Condition transformFilter(QueryTransformerEnvironment env, QueryDomainType queryDomainType, SimpleNode n)
+    {
+        try
+        {
+            if (expressionService == null)
+            {
+                throw new IllegalStateException("ExpressionService not set");
+            }
+
+            return (Condition) expressionService.evaluate(n, new QueryFilterEnvironment(env, queryDomainType));
+        }
+        catch(Exception e)
+        {
+            throw new ExceedRuntimeException("Error transforming filter expression '" + ExpressionRenderer.render(n) + "' for " + env.getComponentModel(), e);
+        }
+    }
+
 
     private String evaluateOrderByArg(Node n)
     {

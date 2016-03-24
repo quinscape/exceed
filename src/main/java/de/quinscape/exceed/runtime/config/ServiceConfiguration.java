@@ -7,13 +7,15 @@ import de.quinscape.exceed.runtime.component.QueryDataProvider;
 import de.quinscape.exceed.runtime.component.QueryExecutor;
 import de.quinscape.exceed.runtime.controller.ActionRegistry;
 import de.quinscape.exceed.runtime.controller.DefaultActionRegistry;
+import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
+import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.editor.completion.CompletionService;
 import de.quinscape.exceed.runtime.datalist.DataListService;
-import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.JOOQQueryExecutor;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
-import de.quinscape.exceed.runtime.expression.ExpressionOperations;
+import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
+import de.quinscape.exceed.runtime.expression.query.QueryFilterOperations;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformerOperations;
 import de.quinscape.exceed.runtime.i18n.DefaultTranslator;
@@ -56,9 +58,9 @@ public class ServiceConfiguration
     }
 
     @Bean
-    public QueryTransformer queryTransformer(ExpressionService expressionService)
+    public QueryTransformer queryTransformer(ExpressionService expressionService, NamingStrategy namingStrategy)
     {
-        return new QueryTransformer(expressionService);
+        return new QueryTransformer(expressionService, namingStrategy);
     }
 
     @Bean
@@ -67,9 +69,15 @@ public class ServiceConfiguration
         HashSet<Object> operationBeans = new HashSet<>(applicationContext.getBeansWithAnnotation(ExpressionOperations
             .class).values());
 
-        operationBeans.add(new QueryTransformerOperations());
+        QueryTransformerOperations queryTransformerOperations = new QueryTransformerOperations();
+        operationBeans.add(queryTransformerOperations);
+        operationBeans.add(new QueryFilterOperations());
 
-        return new ExpressionServiceImpl(operationBeans);
+        ExpressionServiceImpl svc = new ExpressionServiceImpl(operationBeans);
+
+        queryTransformerOperations.setExpressionService(svc);
+
+        return svc;
     }
 
     @Bean
@@ -83,9 +91,15 @@ public class ServiceConfiguration
     private final static String DEFAULT_QUERY_EXECUTOR = "jooqQueryExecutor";
 
     @Bean(name = DEFAULT_QUERY_EXECUTOR)
-    public JOOQQueryExecutor defaultQueryExecutor(DSLContext dslContext)
+    public JOOQQueryExecutor defaultQueryExecutor(DSLContext dslContext, NamingStrategy namingStrategy)
     {
-        return new JOOQQueryExecutor(dslContext, new DefaultNamingStrategy());
+        return new JOOQQueryExecutor(dslContext, namingStrategy);
+    }
+
+    @Bean
+    public NamingStrategy namingStrategy()
+    {
+        return new DefaultNamingStrategy();
     }
 
     @Bean

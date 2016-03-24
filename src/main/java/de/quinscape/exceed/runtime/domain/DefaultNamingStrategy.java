@@ -2,17 +2,16 @@ package de.quinscape.exceed.runtime.domain;
 
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.expression.query.QueryDomainType;
 
 public class DefaultNamingStrategy
     implements NamingStrategy
 {
     @Override
-    public String getTableName(String schema, DomainType type)
+    public String getTableName(DomainType type)
     {
 
-        return schema + "." + camelCaseToUnderline(type.getName());
+        return camelCaseToUnderline(type.getName());
     }
 
 
@@ -40,8 +39,8 @@ public class DefaultNamingStrategy
 
 
     @Override
-    public String getFieldName(QueryDomainType queryDomainType, DomainProperty property)
+    public String[] getFieldName(QueryDomainType queryDomainType, DomainProperty property)
     {
-        return "\"" + queryDomainType.getAlias() + "\"." + property.getName();
+        return new String[] { queryDomainType.getAlias(), property.getName() };
     }
 }

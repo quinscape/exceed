@@ -157,7 +157,7 @@ public class QueryDomainType
     }
 
 
-    private DataField resolveField(final String field)
+    public DataField resolveField(final String field)
     {
         QueryDomainType current = this;
 

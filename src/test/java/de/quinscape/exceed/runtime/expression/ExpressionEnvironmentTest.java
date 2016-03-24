@@ -8,6 +8,9 @@ import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
+import de.quinscape.exceed.runtime.expression.annotation.Identifier;
+import de.quinscape.exceed.runtime.expression.annotation.Operation;
 import org.junit.Test;
 
 import java.util.Map;

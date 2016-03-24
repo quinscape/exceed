@@ -1,16 +1,14 @@
 package de.quinscape.exceed.runtime.domain;
 
-import de.quinscape.exceed.expression.Node;
-import de.quinscape.exceed.expression.SimpleNode;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataList;
 import de.quinscape.exceed.runtime.component.QueryExecutor;
+import de.quinscape.exceed.runtime.expression.query.DataField;
 import de.quinscape.exceed.runtime.expression.query.JoinDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryDomainType;
-import de.quinscape.exceed.runtime.expression.query.DataField;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -30,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.jooq.impl.DSL.*;
 
 /**
  * JOOQ-based query executor.
@@ -85,7 +82,7 @@ public class JOOQQueryExecutor
         JoinDefinition joinedType;
         while ((joinedType = queryDomainType.getJoinedType()) != null)
         {
-            Condition joinCondition = createCondition(joinedType.getCondition());
+            Condition joinCondition = joinedType.getCondition();
             builder
                 .join(jooqTableFor(joinedType.getRight()))
                 .on(joinCondition);
@@ -98,11 +95,11 @@ public class JOOQQueryExecutor
         }
 
 
-        Node filter = queryDefinition.getFilter();
+        Condition condition = queryDefinition.getFilter();
         Condition whereCondition = null;
-        if (filter != null)
+        if (condition != null)
         {
-            whereCondition = createCondition(filter);
+            whereCondition = condition;
             builder.where(whereCondition);
             if (countBuilder != null)
             {
@@ -120,11 +117,11 @@ public class JOOQQueryExecutor
 
                 if (name.startsWith("!"))
                 {
-                    fields[i] = DSL.field(name.substring(1)).desc();
+                    fields[i] = DSL.field(DSL.name(name.substring(1))).desc();
                 }
                 else
                 {
-                    fields[i] = DSL.field(name).asc();
+                    fields[i] = DSL.field(DSL.name(name)).asc();
                 }
             }
 
@@ -176,14 +173,7 @@ public class JOOQQueryExecutor
 
     private Field<Object> jooqField(DataField dataField)
     {
-        return field(dataField.getNameFromStrategy(namingStrategy));
-    }
-
-
-    private Condition createCondition(Node expression)
-    {
-
-        return null;
+        return DSL.field(DSL.name(dataField.getNameFromStrategy(namingStrategy)));
     }
 
 
@@ -193,7 +183,7 @@ public class JOOQQueryExecutor
         DomainType type = queryDomainType.getType();
         DomainService domainService = type.getDomainService();
         String schema = domainService.getSchema();
-        return DSL.table(namingStrategy.getTableName(schema, type)).as(queryDomainType.getAlias());
+        return DSL.table(DSL.name(schema,  namingStrategy.getTableName(type))).as(queryDomainType.getAlias());
     }
 
 
@@ -219,7 +209,7 @@ public class JOOQQueryExecutor
             for (DataField field : fields)
             {
                 QueryDomainType queryDomainType = field.getQueryDomainType();
-                Object value = record.getValue(field.getNameFromStrategy(namingStrategy));
+                Object value = record.getValue(DSL.field(DSL.name(field.getNameFromStrategy(namingStrategy))));
 
                 domainObject.setProperty(field.getLocalName(), value);
             }

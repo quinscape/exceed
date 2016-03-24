@@ -22,7 +22,7 @@ public class QueryDefinition
 
     private int limit = 20, offset = 0;
 
-    private SimpleNode filter;
+    private Condition filter;
 
 
     public QueryDefinition(QueryDomainType queryDomainType)
@@ -73,13 +73,13 @@ public class QueryDefinition
     }
 
 
-    public SimpleNode getFilter()
+    public Condition getFilter()
     {
         return filter;
     }
 
 
-    public void setFilter(SimpleNode filter)
+    public void setFilter(Condition filter)
     {
         this.filter = filter;
     }

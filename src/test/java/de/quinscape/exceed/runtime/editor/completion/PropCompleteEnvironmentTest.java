@@ -10,6 +10,7 @@ import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.TestApplication;
 import de.quinscape.exceed.runtime.TestApplicationBuilder;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
@@ -64,7 +65,7 @@ public class PropCompleteEnvironmentTest
         TestApplication app = new TestApplicationBuilder().withDomainService(new TestDomainService()).build();
         ExpressionService svc = new ExpressionServiceImpl(ImmutableSet.of(new PropCompleteOperations()));
 
-        QueryTransformer queryTransformer = new QueryTransformer(svc);
+        QueryTransformer queryTransformer = new QueryTransformer(svc, new DefaultNamingStrategy());
         {
 
             PropCompleteEnvironment env = new PropCompleteEnvironment( app.createRuntimeContext(), queryTransformer,

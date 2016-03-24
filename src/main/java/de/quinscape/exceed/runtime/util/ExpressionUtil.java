@@ -55,4 +55,17 @@ public class ExpressionUtil
         throw new ExpressionEnvironmentException("Unexpected argument for function " + n.getName() + "': " +
             firstArg);
     }
+
+    public static <T> T visit(Node node, ExpressionParserVisitor visitor, Class<T> cls)
+    {
+        Object value = node.jjtAccept(visitor, null);
+
+        if (cls.isInstance(value))
+        {
+            return (T)value;
+        }
+
+        throw new IllegalArgumentException(value + " is no " + cls.getName());
+    }
+
 }
