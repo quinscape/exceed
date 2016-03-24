@@ -135,7 +135,7 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
     {
         for (attrName in attrs)
         {
-            if (attrs.hasOwnProperty(attrName) && ( !exprs || !exprs.hasOwnProperty(attrName)) && attrName !== "id")
+            if (attrs.hasOwnProperty(attrName) && ( !exprs || !exprs.hasOwnProperty(attrName)))
             {
                 value = attrs[attrName];
                 commaIfNotFirst();
