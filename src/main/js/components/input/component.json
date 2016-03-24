@@ -1,9 +1,0 @@
-{
-  "components": {
-    "InputElement": {
-      "propTypes": {
-        "value" : { "rule" : "plainText()" }
-      }
-    }
-  }
-}
