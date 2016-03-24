@@ -32,7 +32,7 @@ function replacePathVariables(location, params, usedInPath)
 {
    return location.replace(/{([a-z]+)}/g, function (match, name, offset, str)
     {
-        var value = params[name];
+        var value = params && params[name];
         if (value === undefined)
         {
             throw new Error("Undefined path variable '" + name + "' in '" + location + "'");
