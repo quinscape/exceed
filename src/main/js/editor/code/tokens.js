@@ -174,7 +174,7 @@ module.exports = {
                     // if the location is marked not valid, we have an incomplete tag which we remove from the
                     // stack
                     var removed = loc.parentPath.shift();
-                    console.log("Remove invalid parent", removed);
+                    //console.log("Remove invalid parent", removed);
                 }
 
                 // if we did not parse any tag-names yet, we just before or on the tag open of the root model

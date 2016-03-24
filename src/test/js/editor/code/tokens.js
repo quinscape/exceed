@@ -20,10 +20,10 @@ describe("Tokens Module", function(){
     var testSession = new EditSession(xmlDoc, "ace/mode/exceed_view");
 
 
-    var locate = function (sub, skip)
+    var locate = function (sub, skip, f)
     {
         var pos = posInDocument(xmlDoc, sub, skip);
-        //console.log("pos", pos);
+        f && console.log("pos", pos);
         return tokens.currentLocation(testSession, pos.row, pos.col, testView);
     };
 
@@ -49,7 +49,7 @@ describe("Tokens Module", function(){
 
         result = locate("login");
         //console.log("RESULT", JSON.stringify(result, null, "  "));
-        assert(result.parentPath[0].model.kids[result.parentPath[0].index - 1] === testView.root.kids[0].kids[0].kids[1].kids[1]);
+        assert(result.parentPath[0].model.kids[result.parentPath[0].index] === testView.root.kids[0].kids[0].kids[1].kids[1]);
         assert(result.attr === "name");
         assert(result.attrValue);
         assert(!result.expression);
@@ -58,8 +58,9 @@ describe("Tokens Module", function(){
     it("locates unclosed tags", function()
     {
 
-        var testSession = new EditSession("<Root>\n    <\ņ</Root>\n", "ace/mode/exceed_view");
-        testView = { root: { name: "Root"} };
+        xmlDoc = "<Root>\n    <\n</Root>\n";
+        testSession = new EditSession(xmlDoc, "ace/mode/exceed_view");
+        testView = { root: { name: "Root", kids: []}};
 
         var result = locate("<", 1);
         assert(result.parentPath[0].model === testView.root);
@@ -87,4 +88,5 @@ describe("Tokens Module", function(){
         assert(kids[1].kids[0].name === "GrandKid");
 
     });
+
 });

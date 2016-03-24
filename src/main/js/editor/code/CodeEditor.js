@@ -58,13 +58,12 @@ ExceedCompleter.prototype.getDocTooltip = function(selected)
 
 ExceedCompleter.prototype.cleanupAfter = function(editor, completion)
 {
-    var pos = editor.getCursorPosition();
-    editor.getSelection().selectTo(pos.row, completion.start);
+    editor.getSelection().selectTo(completion.start.row, completion.start.column);
 };
 
 ExceedCompleter.prototype.insertMatch = function(editor, completion)
 {
-    //console.log("WIZARD", completion);
+    console.log("INSERT MATCH", completion);
 
     var completer = this;
 
@@ -100,12 +99,24 @@ ExceedCompleter.prototype.insertMatch = function(editor, completion)
         else
         {
             this.cleanupAfter(editor, completion);
+
             wizardComponent.call(this, editor, completion);
         }
     }
     else
     {
         this.cleanupAfter(editor, completion);
+
+
+        // if we're a prop completion that had a template, replace the component
+        if (completion.type ===  CompletionType.PROP && completion.model && !editor.getSession().getAnnotations().length)
+        {
+            var selection = editor.getSelection();
+            var range = selection.getRange();
+            range.setEnd(completion.end.row, completion.end.column);
+            selection.setSelectionRange(range);
+        }
+
         editor.insertSnippet(completion.snippet);
 
         if (completion.type === CompletionType.PROP_NAME)
@@ -144,31 +155,37 @@ function createIndexPath(parentPath)
     }
     return array;
 }
-ExceedCompleter.prototype.prepareCompletions = function (editor, session, componentName, propName, pos, prefix, completions)
+ExceedCompleter.prototype.prepareCompletions = function (editor, session, componentName, propName, pos, prefix, componentModel, completions)
 {
     if (!completions || !completions.length)
     {
         return [];
     }
 
-    const line = session.getLine(pos.row);
+    var line = session.getLine(pos.row);
 
-    var completionStart = prefix.length ? line.lastIndexOf(prefix, pos.column) : pos.column;
-    if (completionStart < 0)
+    var start = {
+        row: pos.row,
+        column: prefix.length ? line.lastIndexOf(prefix, pos.column) : pos.column
+    };
+
+    if (start.column < 0)
     {
         return [];
     }
 
     // all options should have the same type
-    if (line.charAt(completionStart - 1) === "<" && completions[0].type === CompletionType.COMPONENT)
+    if (line.charAt(start.column - 1) === "<" && completions[0].type === CompletionType.COMPONENT)
     {
-        completionStart--;
+        start.column--;
     }
 
 
     for (var i = 0; i < completions.length; i++)
     {
         var completion = completions[i];
+
+        console.log("COMPLETION", completion);
 
         var type = completion.type;
 
@@ -220,14 +237,24 @@ ExceedCompleter.prototype.prepareCompletions = function (editor, session, compon
             }
             else if (completion.type === CompletionType.PROP)
             {
-                completion.snippet = completion.caption;
+                if (completion.model)
+                {
+                    start = componentModel.pos.start;
+                    completion.end = componentModel.pos.end;
+
+                    completion.snippet = toXml(completion.model);
+                }
+                else
+                {
+                    completion.snippet = completion.caption;
+                }
             }
             else if (completion.type === CompletionType.PROP_NAME)
             {
                 var text = completion.caption + "=\"\"";
 
                 // no whitespace before start point?
-                if (line.charAt(completionStart - 1) > " ")
+                if (line.charAt(start.column - 1) > " ")
                 {
                     text = " " + text;
                 }
@@ -236,7 +263,7 @@ ExceedCompleter.prototype.prepareCompletions = function (editor, session, compon
         }
 
         completion.completer = this;
-        completion.start = completionStart;
+        completion.start = start;
     }
 
     return completions;
@@ -255,14 +282,12 @@ ExceedCompleter.prototype.getCompletions = function (editor, session, pos, prefi
     //console.log("loc", loc, loc.parentPath[0].model.name);
 
     var indexPath = createIndexPath(loc.parentPath);
-    var model = Tokens.toModel(session);
+    var model = Tokens.toModel(session, true);
 
     if (!model || !model.root)
     {
         return;
     }
-
-
 
     var componentModel = walk(model.root, indexPath);
 
@@ -284,7 +309,7 @@ ExceedCompleter.prototype.getCompletions = function (editor, session, pos, prefi
     }
 
     completionPromise.then( (completions) => {
-        callback(null, this.prepareCompletions(editor, session, componentName, propName, pos, prefix, completions));
+        callback(null, this.prepareCompletions(editor, session, componentName, propName, pos, prefix, componentModel, completions));
     })
     .catch(function (err)
     {
