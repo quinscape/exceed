@@ -33,8 +33,6 @@ public class ResourceController
 {
     private final static Logger log = LoggerFactory.getLogger(ResourceController.class);
 
-    private final static Charset UTF_8 = Charset.forName("UTF-8");
-
     @Autowired
     private ApplicationService applicationService;
 
@@ -62,7 +60,7 @@ public class ResourceController
 
         if (resourceURI.equals("/style/" + appName + ".css"))
         {
-            byte[] data = runtimeApplication.getCollectedStyles().getBytes(UTF_8);
+            byte[] data = runtimeApplication.getCollectedStyles().getBytes(RequestUtil. UTF_8);
 
             response.setCharacterEncoding("UTF-8");
             response.setContentType("text/css");
