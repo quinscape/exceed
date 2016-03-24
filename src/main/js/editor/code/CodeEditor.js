@@ -7,6 +7,8 @@ var ace = require('brace');
 require('./ace-mode-exceed');
 require("brace/ext/language_tools");
 
+var ExceedViewMode = ace.acequire("ace/mode/exceed_view").Mode;
+var EditSession = ace.acequire("ace/edit_session").EditSession;
 
 var Tokens = require("./tokens");
 var ajax = require("../../service/ajax");
@@ -20,13 +22,20 @@ var langTools = ace.acequire("ace/ext/language_tools");
 var Modal = require("react-bootstrap/lib/Modal");
 
 var componentService = require("../../service/component");
+var i18n = require("../../service/i18n");
 
 var CompletionType = require("./completion-type");
 
 var bind = require("../../util/bind");
 var isComponent = require("../../util/is-component");
 
+var LinkedStateMixin = require("react-addons-linked-state-mixin");
+
+var update = require("react-addons-update");
+
 var ID_REGEX = /<?[a-zA-Z_0-9\$\-\u00A2-\uFFFF]/;
+
+var hub = require("../../service/hub");
 
 function walk(model, indexPath)
 {
@@ -271,7 +280,8 @@ ExceedCompleter.prototype.prepareCompletions = function (editor, session, compon
 
 ExceedCompleter.prototype.getCompletions = function (editor, session, pos, prefix, callback)
 {
-    var loc = Tokens.currentLocation(editor.getSession(), pos.row, pos.column, this.xmlEditor.props.model);
+    var model = Tokens.toModel(session, true);
+    var loc = Tokens.currentLocation(editor.getSession(), pos.row, pos.column, model);
     if (!loc)
     {
         callback(null, []);
@@ -282,7 +292,6 @@ ExceedCompleter.prototype.getCompletions = function (editor, session, pos, prefi
     //console.log("loc", loc, loc.parentPath[0].model.name);
 
     var indexPath = createIndexPath(loc.parentPath);
-    var model = Tokens.toModel(session, true);
 
     if (!model || !model.root)
     {
@@ -301,7 +310,7 @@ ExceedCompleter.prototype.getCompletions = function (editor, session, pos, prefi
     }
     else if (loc.valid)
     {
-        completionPromise = completionService.autoComplete(createParentComponentList(loc), loc.parentPath[0].index);
+        completionPromise = completionService.autoComplete(model, createParentComponentList(loc), loc.parentPath[0].index);
     }
     else
     {
@@ -323,7 +332,9 @@ var XMLEditor = React.createClass({
     {
         var pos = editor.getCursorPosition();
 
-        var loc = Tokens.currentLocation(editor.getSession(), pos.row, pos.column , this.props.model);
+        var session = editor.getSession();
+        var model = Tokens.toModel(session);
+        var loc = Tokens.currentLocation(session, pos.row, pos.column , model);
         console.log("intention", loc);
     },
 
@@ -341,7 +352,7 @@ var XMLEditor = React.createClass({
             enableBasicAutocompletion: true
         });
         editor.$blockScrolling = Infinity;
-        editor.getSession().setMode('ace/mode/exceed_view');
+        editor.setSession(this.props.editorState.editSession);
 
         //editor.commands.addCommand({
         //    name: 'complete',
@@ -371,7 +382,8 @@ var XMLEditor = React.createClass({
 
     checkSaved: function (ev)
     {
-        if (!this.editor.session.getUndoManager().isClean())
+        var undoManager = this.editor.session.getUndoManager();
+        if (undoManager && !undoManager.isClean())
         {
             var message = 'WARNING: Lose unsaved changes in Code Editor?';
             ev.returnValue = message;
@@ -395,37 +407,25 @@ var XMLEditor = React.createClass({
 
     componentWillReceiveProps: function (nextProps)
     {
-        var newModel = nextProps.model;
-        // but we update manually if the current model is not a preview (we must have caused that preview / prevent endless loop)
-        if (!newModel.preview)
+        var oldState = this.props.editorState;
+        var newState = nextProps.editorState;
+        if (oldState !== newState)
         {
-            // TODO: offer user option to merge
-            // .. and the current undo state is clean or the user confirms that he wants to load
-            if ((this.editor.session.getUndoManager().isClean() || window.confirm("Load external changes?")))
-            {
-                this.editor.setValue(toXml(newModel));
-            }
+            this.editor.setSession(newState.editSession)
         }
     },
 
     render: function ()
     {
-        var xmlDoc = toXml( this.props.model );
-
         //console.log("render ", xmlDoc);
 
         return (
             <div ref="editor" className="code-editor">
-                { xmlDoc }
+                { this.props.editorState.editSession.getValue() }
             </div>
         );
     }
 });
-
-const CLOSED_STATE = {
-    modalOpen: false,
-    renderFn: null
-};
 
 function ModalControl(codeEditor)
 {
@@ -447,23 +447,189 @@ ModalControl.prototype.close = function ()
     this.codeEditor.close();
 };
 
+function EditorState(model)
+{
+    this.viewName = model.name;
+    this.editSession = new EditSession(toXml(model), new ExceedViewMode());
+    this.editSession.setUndoManager(new ace.UndoManager());
+    this.editSession.exceedViewName = this.viewName;
+    this.changed = null;
+}
+
+
+EditorState.prototype.isClean = function ()
+{
+    return this.editSession.getUndoManager().isClean();
+};
+
+EditorState.prototype.getLabel = function ()
+{
+    return "View '" + this.viewName + "'" +
+        (this.changed ? i18n("Changed") + " " + this.changed.toISOString() : "")
+};
+
+var Toolbar = React.createClass({
+    render: function ()
+    {
+        return (
+            <form className="form-inline" action="#" onSubmit={ this.props.onSave }>
+                <div className="form-group-sm">
+                    <label className="sr-only" htmlFor="editor-state-select">View</label>
+                    <select id="editor-state-select" className="form-control input-sm" valueLink={ this.props.stateLink }>
+                        {
+                            this.props.editorStates.map( (state, index) =>
+                                <option key={ index} value={ index }>{ state.getLabel() }</option>
+                            )
+                        }
+                    </select>
+                    <input type="submit" className="btn btn-sm btn-primary" value="Save" />
+                </div>
+            </form>
+        );
+    }
+});
+
+const VIEW_RECYCLE_LIMIT = 8;
+
 var CodeEditor = React.createClass({
+
+    mixins: [ LinkedStateMixin ],
 
     getInitialState: function ()
     {
-        return CLOSED_STATE;
+        return {
+            editorStates:  [ new EditorState(this.props.model) ],
+            currentState: 0,
+
+            modalOpen: false,
+            renderFn: null
+        };
     },
     close: function ()
     {
-        this.setState(CLOSED_STATE);
+        this.setState({
+            modalOpen: false,
+            renderFn: null
+        });
         var onClose = this.state.onClose;
         onClose && onClose();
     },
+
+    onSave: function (ev)
+    {
+        var currentState = this.getCurrentState();
+        var model = Tokens.toModel(currentState.editSession);
+
+        ev.preventDefault();
+        if (!model || !model.root)
+        {
+            return;
+        }
+
+        var viewName = currentState.viewName;
+        var json = JSON.stringify(model, null, "    ");
+        console.log(json);
+
+        return hub.request({
+            type: "message.SaveViewRequest",
+            viewName: viewName,
+            document: json
+        }).then(function (data)
+        {
+            console.log("SAVED", data);
+            currentState.editSession.getUndoManager().markClean();
+        })
+        .catch(function (err)
+        {
+            console.error(err);
+        });
+    },
+
+    componentWillReceiveProps: function (nextProps)
+    {
+        var oldModel = this.props.model;
+        var newModel = nextProps.model;
+        // but we update manually if the current model is not a preview (we must have caused that preview / prevent endless loop)
+        if (!newModel.preview && newModel.version !== oldModel.version)
+        {
+            var editorStates = this.state.editorStates;
+
+            var i, state, nextStateIndex;
+
+            // We start with adding the new state to the end of the list
+            nextStateIndex = editorStates.length;
+
+            // then we see if we're already editing the same view
+            for (i = 0; i < nextStateIndex; i++)
+            {
+                state = editorStates[i];
+                if (state.viewName === newModel.viewName && !state.changed)
+                {
+                    // and there are no changes in that view or the user confirms the overwrite
+                    if (state.isClean())
+                    {
+                        // if so, we reuse that editor index
+                        nextStateIndex = i;
+                        break;
+                    }
+                    else
+                    {
+                        state.changed = Date.now();
+                    }
+                }
+            }
+
+            // if we haven't found the view and we're above our limit for view recycling
+            if (nextStateIndex === editorStates.length && nextStateIndex >= VIEW_RECYCLE_LIMIT)
+            {
+                for (i = 0; i < nextStateIndex; i++)
+                {
+                    state = editorStates[i];
+
+                    // check if we have an editor that has no unsaved changes
+                    if (state.isClean())
+                    {
+                        // .. and reuse that
+                        nextStateIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            var newState = new EditorState(newModel);
+            this.setState({
+                editorStates: update(this.state.editorStates, {
+                    [nextStateIndex] : { $set : newState }
+                }),
+                currentState: nextStateIndex
+            });
+            //
+            //// TODO: offer user option to merge
+            //// .. and the current undo state is clean or the user confirms that he wants to load
+            //var undoManager = this.editor.session.getUndoManager();
+            //if (undoManager.isClean() || window.confirm("Load external changes?"))
+            //{
+            //    this.editor.setValue(toXml(newModel));
+            //    this.editor.getSession().setUndoManager(new ace.UndoManager())
+            //}
+        }
+    },
+
+    getCurrentState: function ()
+    {
+        return this.state.editorStates[this.state.currentState];
+    },
+
     render: function ()
     {
         return (
             <div>
-                <XMLEditor modalControl={ new ModalControl(this) } model={ this.props.model} />
+                <Toolbar
+                    stateLink={ this.linkState("currentState") }
+                    editorStates={ this.state.editorStates }
+                    onSave={ this.onSave }
+                />
+                <XMLEditor modalControl={ new ModalControl(this) } editorState={ this.getCurrentState() } />
                 <Modal show={ this.state.modalOpen } onHide={ this.close } enforceFocus={ false }>
                     <Modal.Header closeButton>
                         <Modal.Title>Modal heading</Modal.Title>
@@ -473,7 +639,6 @@ var CodeEditor = React.createClass({
                     </Modal.Body>
                 </Modal>
             </div>
-
         );
     }
 });
