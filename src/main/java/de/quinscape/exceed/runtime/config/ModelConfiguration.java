@@ -51,9 +51,9 @@ public class ModelConfiguration
 
 
     @Bean
-    public ClientViewJSONGenerator clientViewJSONGenerator(ActionService actionService, ExpressionService expressionService)
+    public ClientViewJSONGenerator clientViewJSONGenerator(ActionService actionService)
     {
-        return new ClientViewJSONGenerator(actionService, expressionService);
+        return new ClientViewJSONGenerator(actionService);
     }
 
 

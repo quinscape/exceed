@@ -6,6 +6,8 @@ import de.quinscape.exceed.runtime.TestApplicationBuilder;
 import de.quinscape.exceed.runtime.expression.component.TestActionService;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
+import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
+import de.quinscape.exceed.runtime.util.SingleQuoteJSONParser;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -28,7 +30,7 @@ public class ClientViewJSONGeneratorTest
 
     private ModelJSONService modelJSONService = new ModelJSONServiceImpl();
 
-    private ClientViewJSONGenerator viewJSONGenerator = new ClientViewJSONGenerator(new TestActionService(), null);
+    private ClientViewJSONGenerator viewJSONGenerator = new ClientViewJSONGenerator(new TestActionService());
 
 
     @Test
@@ -40,6 +42,7 @@ public class ClientViewJSONGeneratorTest
         descriptors.put("AnotherProvider", descriptor("{'providesContext' : 'AnotherContext'}"));
         descriptors.put("Consumer", descriptor("{ 'providesContext': 'Test.Deriv', 'propTypes': { 'ctx': { 'context': true, 'contextType': 'Test'} } }"));
         descriptors.put("ComputedConsumer", descriptor("{ 'providesContext': 'Test.Deriv2', 'propTypes': { 'ctx': { 'context': 'context[props.name]'} } }"));
+        descriptors.put("DefaultProps", descriptor("{ 'propTypes': { 'defVal' :{ 'defaultValue': 'defVal default'}, 'defExpr' :{ 'defaultValue': '{ \\'default\\' }'}, 'defClient' :{ 'client': false, 'defaultValue': '{ \\'xxx\\' }'}} }"));
 
         ComponentDescriptor defaultDescriptor = descriptor("{}");
         descriptors.put("Grid", defaultDescriptor);
@@ -137,21 +140,26 @@ public class ClientViewJSONGeneratorTest
             assertThat(untypedConsumer.get("name"),is("ComputedConsumer"));
             assertThat(expr(untypedConsumer, "ctx"),is("anotherContext[\"ccName3\"]"));
         }
+
+        {
+            Map<String, Object> defaultPropsComponent = kid(col, 4);
+
+            log.info("defaultPropsComponent: {}", defaultPropsComponent);
+
+            assertThat(defaultPropsComponent.get("name"), is("DefaultProps"));
+            assertThat(expr(defaultPropsComponent, "defExpr"),is("\"default\""));
+            assertThat(attr(defaultPropsComponent, "defVal"),is("defVal default"));
+
+            // don't dump client=false props
+            assertThat(attr(defaultPropsComponent, "defClient"),is((String)null));
+        }
     }
 
-    private final static JSONParser jsonParser;
-
-
-    static
-    {
-        jsonParser = new JSONParser();
-        jsonParser.setAllowSingleQuotes(true);
-    }
 
 
     private ComponentDescriptor descriptor(String json)
     {
-        return jsonParser.parse(ComponentDescriptor.class, json);
+        return SingleQuoteJSONParser.INSTANCE.parse(ComponentDescriptor.class, json);
     }
 
 

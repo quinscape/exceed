@@ -5,7 +5,6 @@ import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.component.PropDeclaration;
 import de.quinscape.exceed.component.PropType;
 import de.quinscape.exceed.expression.ASTExpression;
-import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTIdentifier;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.Node;
@@ -21,15 +20,16 @@ import de.quinscape.exceed.runtime.action.Action;
 import de.quinscape.exceed.runtime.action.ActionCallGenerator;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.controller.ActionService;
-import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
-import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
 import org.svenson.JSON;
 import org.svenson.util.JSONBuilder;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Produces a special augmented view model JSON from a view model.
@@ -47,27 +47,24 @@ public class ClientViewJSONGenerator
 
     public static final String MODEL_ATTR_NAME = "model";
 
-    private final ExpressionService expressionService;
 
     private final Map<String,ActionCallGenerator> actionCallGenerators;
 
 
-    public ClientViewJSONGenerator(ActionService actionService, ExpressionService expressionService)
+    public ClientViewJSONGenerator(ActionService actionService)
     {
-        this.expressionService = expressionService;
-
         actionCallGenerators = getActionCallGenerators(actionService);
     }
 
-    public String toJSON(RuntimeApplication application, View model, JSONFormat jsonFormat)
+    public String toJSON(RuntimeApplication application, View view, JSONFormat jsonFormat)
     {
         JSONBuilder builder = JSONBuilder.buildObject();
         {
             builder.property("type", "view.View")
-                .property("name", model.getName())
-                .property("preview", model.isPreview());
+                .property("name", view.getName())
+                .property("preview", view.isPreview());
 
-            String version = model.getVersion();
+            String version = view.getVersion();
             if (version != null)
             {
                 builder.property("version", version);
@@ -77,10 +74,10 @@ public class ClientViewJSONGenerator
 
             builder.objectProperty("root");
             {
-                dumpComponentRecursive(builder, application, model.getRoot(), new ComponentPath(), jsonFormat);
+                dumpComponentRecursive(builder, application, view.getRoot(), new ComponentPath(), jsonFormat);
                 builder.closeUntil(lvl);
             }
-            builder.property("comments", model.getComments());
+            builder.property("comments", view.getComments());
         }
         return builder.output();
     }
@@ -93,7 +90,7 @@ public class ClientViewJSONGenerator
         if (jsonFormat == JSONFormat.CLIENT && componentRegistration != null)
         {
 
-            String providedContext = componentRegistration.getDescriptor().getProvidedContext();
+            String providedContext = componentRegistration.getDescriptor().getProvidesContext();
             if (providedContext != null)
             {
                 AttributeValue varAttr = componentModel.getAttribute("var");
@@ -114,14 +111,35 @@ public class ClientViewJSONGenerator
         builder.property("name", componentModel.getName());
 
         Attributes attrs = componentModel.getAttrs();
+        Set<String> attrNames = attrs == null ? Collections.emptySet() : attrs.getNames();
 
-        if (attrs != null)
+        Set<String> defaultAttrs = Collections.emptySet();
+
+        if (componentRegistration != null)
+        {
+            Map<String, PropDeclaration> propTypes = componentRegistration.getDescriptor().getPropTypes();
+            defaultAttrs = propTypes.keySet()
+                .stream()
+                .filter(name ->
+                    !attrNames.contains(name) &&
+                    propTypes.get(name).getDefaultValue() != null
+                )
+                .collect(Collectors.toSet());
+        }
+
+        if (attrs != null || defaultAttrs.size() > 0)
         {
             builder.objectProperty("attrs");
-            for (String attrName : attrs.getNames())
+            for (String attrName : attrNames)
             {
                 Object value = attrs.getAttribute(attrName).getValue();
                 builder.property(attrName, value);
+            }
+
+            if (componentRegistration != null)
+            {
+                addDefaults(builder, componentRegistration.getDescriptor(), defaultAttrs, false, application,
+                    componentModel, path);
             }
 
             builder.close();
@@ -132,7 +150,7 @@ public class ClientViewJSONGenerator
             builder.objectProperty("exprs");
             if (attrs != null)
             {
-                for (String attrName : attrs.getNames())
+                for (String attrName : attrNames)
                 {
                     AttributeValue attribute = attrs.getAttribute(attrName);
                     ASTExpression expression = attribute.getAstExpression();
@@ -157,6 +175,7 @@ public class ClientViewJSONGenerator
                 }
             }
 
+
             if (componentRegistration != null)
             {
                 ComponentDescriptor descriptor = componentRegistration.getDescriptor();
@@ -165,6 +184,8 @@ public class ClientViewJSONGenerator
                 {
                     builder.property(MODEL_ATTR_NAME, path.modelPath());
                 }
+
+                addDefaults(builder, componentRegistration.getDescriptor(), defaultAttrs, true, application, componentModel, path);
 
                 provideContextExpressions(builder, application, componentModel, path, descriptor);
 
@@ -219,6 +240,27 @@ public class ClientViewJSONGenerator
     }
 
 
+    private void addDefaults(JSONBuilder builder, ComponentDescriptor descriptor, Set<String> defaultAttrs, boolean isExpression, RuntimeApplication application, ComponentModel componentModel, ComponentPath path)
+
+    {
+        Map<String, PropDeclaration> propTypes = descriptor.getPropTypes();
+        for (String name : defaultAttrs)
+        {
+            PropDeclaration propDecl = propTypes.get(name);
+            AttributeValue defaultValue = propDecl.getDefaultValue();
+            if ((defaultValue.getAstExpression() != null) == isExpression)
+            {
+                if (!isExpression)
+                {
+                    builder.property(name, defaultValue.getValue());
+                }
+                else
+                {
+                    builder.property(name, transformExpression(defaultValue.getAstExpression(), application, componentModel, name, path, propDecl.getType() == PropType.ACTION_EXPRESSION));
+                }
+            }
+        }
+    }
 
 
     private void provideContextExpressions(JSONBuilder builder, RuntimeApplication application, ComponentModel componentModel, ComponentPath path, ComponentDescriptor descriptor)
@@ -363,14 +405,11 @@ public class ClientViewJSONGenerator
             }
 
             StringBuilder buf = renderer.getBuffer();
-            buf
-                .append("_v.action( ")
-                .append(json.quote(node.getName()))
-                .append(", ");
-
+            buf.append("_v.action( ");
             node.jjtGetChild(0).jjtAccept(renderer, null);
-
-            buf.append(" )");
+            buf.append(", ")
+                .append(json.quote(node.getName()))
+                .append(" )");
         };
 
         for (String name : actionService.getActionNames())
@@ -429,20 +468,14 @@ public class ClientViewJSONGenerator
 
         map.put("action", (renderer, node) -> {
 
-            if (node.jjtGetNumChildren() != 2)
+            if (node.jjtGetNumChildren() != 1)
             {
-                throw new InvalidClientExpressionException("action() needs two parameters (name, model)");
+                throw new InvalidClientExpressionException("action() needs one parameter (actionModel)");
             }
 
             StringBuilder buf = renderer.getBuffer();
             buf.append("_v.action( ");
-
             node.jjtGetChild(0).jjtAccept(renderer, null);
-
-            buf.append(", ");
-
-            node.jjtGetChild(1).jjtAccept(renderer, null);
-
             buf.append(" )");
         });
 
