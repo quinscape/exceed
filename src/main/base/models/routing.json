@@ -3,9 +3,21 @@
         "kids": [
             {
                 "name": "detail",
-                "mapping": {
-                    "viewName": "Detail"
-                }
+                "kids" : [{
+                    "name" : "{id}",
+                    "mapping": {
+                        "viewName": "Detail"
+                    }
+                }]
+            },
+            {
+                "name": "detail2",
+                "kids" : [{
+                    "name" : "{id}",
+                    "mapping": {
+                        "viewName": "Detail2"
+                    }
+                }]
             }
         ],
         "mapping": {
