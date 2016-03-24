@@ -1,5 +1,4 @@
 {
-    "comments" : ["DetailView", null],
     "root": {
         "name": "Grid",
         "attrs": {
@@ -12,15 +11,77 @@
                     {
                         "name": "Col",
                         "attrs": {
-                            "md": "{ 12 }"
+                            "md": "{ 6 }"
                         },
                         "kids": [
                             {
                                 "name": "Heading",
                                 "attrs": {
                                     "id": "myHeading",
-                                    "value": "Detail"
+                                    "value": "{ 'Detail: ' + param('id') }"
                                 }
+                            },
+                            {
+                                "name": "Form",
+                                "attrs": {
+                                    "id": "myForm",
+                                    "filter": "{ id == param('id') }",
+                                    "horizontal": "{ true }",
+                                    "type": "{ Foo }"
+                                },
+                                "kids": [
+                                    {
+                                        "name": "StaticText",
+                                        "attrs": {
+                                            "name": "Foo.id"
+                                        }
+                                    },
+                                    {
+                                        "name": "Field",
+                                        "attrs": {
+                                            "name": "Foo.name"
+                                        }
+                                    },
+                                    {
+                                        "name": "Field",
+                                        "attrs": {
+                                            "name": "Foo.created"
+                                        }
+                                    },
+                                    {
+                                        "name": "Field",
+                                        "attrs": {
+                                            "name": "Foo.type"
+                                        }
+                                    },
+                                    {
+                                        "name": "Field",
+                                        "attrs": {
+                                            "name": "Foo.num"
+                                        }
+                                    },
+                                    {
+                                        "name": "Toolbar",
+                                        "kids": [
+                                            {
+                                                "name": "Button",
+                                                "attrs": {
+                                                    "ignoreErrors": "{ true }",
+                                                    "action": "{ navigateTo('/') }",
+                                                    "text": "Cancel"
+                                                }
+                                            },
+                                            {
+                                                "name": "Button",
+                                                "attrs": {
+                                                    "action": "{ store(context).navigateTo('/') }",
+                                                    "className": "btn-primary",
+                                                    "text": "Save"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
                             }
                         ]
                     }

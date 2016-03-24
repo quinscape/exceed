@@ -1,5 +1,4 @@
 {
-    "comments" : ["Head Comment", null, "Tail Comment"],
     "root": {
         "name": "Grid",
         "attrs": {
@@ -12,7 +11,7 @@
                     {
                         "name": "Col",
                         "attrs": {
-                            "md": "{ 12 }"
+                            "md": "{ 6 }"
                         },
                         "kids": [
                             {
@@ -26,14 +25,50 @@
                                 "name": "DataGrid",
                                 "attrs": {
                                     "id": "myDG",
+                                    "limit": "{ 3 }",
                                     "type": "{ Foo }"
                                 },
                                 "kids": [
                                     {
                                         "name": "DataGrid.Column",
                                         "attrs": {
-                                            "name": "id"
-                                        }
+                                            "name": "id",
+                                            "heading": "Detail"
+                                        },
+                                        "kids": [
+                                            {
+                                                "name": "Link",
+                                                "attrs": {
+                                                    "location": "/detail/{id}",
+                                                    "text": "Detail"
+                                                },
+                                                "kids": [
+                                                    {
+                                                        "name": "Link.Param",
+                                                        "attrs": {
+                                                            "name": "id",
+                                                            "value": "{ context }"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "name": "Link",
+                                                "attrs": {
+                                                    "location": "/detail2/{id}",
+                                                    "text": "Detail 2"
+                                                },
+                                                "kids": [
+                                                    {
+                                                        "name": "Link.Param",
+                                                        "attrs": {
+                                                            "name": "id",
+                                                            "value": "{ context }"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
                                     },
                                     {
                                         "name": "DataGrid.Column",
@@ -45,6 +80,12 @@
                                         "name": "DataGrid.Column",
                                         "attrs": {
                                             "name": "type"
+                                        }
+                                    },
+                                    {
+                                        "name": "DataGrid.Column",
+                                        "attrs": {
+                                            "name": "created"
                                         }
                                     }
                                 ]
