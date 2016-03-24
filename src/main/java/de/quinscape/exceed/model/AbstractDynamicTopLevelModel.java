@@ -7,10 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Created by sven on 28.10.15.
- */
-public class AbstractDynamicTopLevelModel
+public abstract class AbstractDynamicTopLevelModel
     extends TopLevelModel
     implements DynamicProperties
 {
