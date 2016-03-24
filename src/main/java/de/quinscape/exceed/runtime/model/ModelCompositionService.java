@@ -4,7 +4,7 @@ import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.Layout;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
-import de.quinscape.exceed.model.VersionedModel;
+import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.model.domain.PropertyType;
@@ -188,9 +188,9 @@ public class ModelCompositionService
                 namedModel.setName(nameFromPath);
             }
         }
-        if (m instanceof VersionedModel)
+        if (m instanceof AutoVersionedModel)
         {
-            ((VersionedModel) m).setVersion(UUID.randomUUID().toString());
+            ((AutoVersionedModel) m).setVersion(UUID.randomUUID().toString());
         }
 
         return m;

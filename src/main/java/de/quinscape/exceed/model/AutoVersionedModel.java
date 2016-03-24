@@ -2,7 +2,7 @@ package de.quinscape.exceed.model;
 
 import org.svenson.JSONProperty;
 
-public interface VersionedModel
+public interface AutoVersionedModel
 {
     @JSONProperty(ignoreIfNull = true)
     String getVersion();

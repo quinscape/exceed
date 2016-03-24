@@ -1,7 +1,7 @@
 package de.quinscape.exceed.model.view;
 
 import de.quinscape.exceed.model.TopLevelModel;
-import de.quinscape.exceed.model.VersionedModel;
+import de.quinscape.exceed.model.AutoVersionedModel;
 import org.svenson.JSONProperty;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.function.Predicate;
 
 public class View
     extends TopLevelModel
-    implements VersionedModel
+    implements AutoVersionedModel
 {
     private ComponentModel root;
 
