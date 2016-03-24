@@ -14,7 +14,7 @@ if ( process.env.NODE_ENV === "production")
         register: function () { throw ERROR; },
         send: function () { throw ERROR; },
         request: function () { throw Promise.reject(ERROR); },
-        init:function () { throw Promise.reject(ERROR); }
+        init:function (cid) {  }
     };
 }
 else
