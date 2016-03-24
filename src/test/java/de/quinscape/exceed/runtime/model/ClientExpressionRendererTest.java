@@ -19,6 +19,8 @@ import java.util.Map;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
 
+import static de.quinscape.exceed.model.view.ComponentModelBuilder.component;
+
 public class ClientExpressionRendererTest
 {
     private static Logger log = LoggerFactory.getLogger(ClientExpressionRendererTest.class);
@@ -35,31 +37,27 @@ public class ClientExpressionRendererTest
             "    \"vars\" : { \"myVar\": \"myVarValue\"}\n" +
             "}");
 
-        componentModel = new ComponentModel();
-        componentModel.setName("TestComponent");
+        componentModel =
+            component("TestComponent")
+                .withAttribute("id", "testComponentId")
+                .withAttribute("intProp", "{ 123 }")
+                .withAttribute("floatProp", "{ 123.3 }")
+                .withAttribute("boolProp", "{ true }")
+                .withAttribute("strProp", "{ 'foobar' }")
+                .withAttribute("longStrProp",
+                    // String longer than current inlining limit
+                    "'123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123'"
+                )
+            .getComponent();
+
         componentModel.setComponentRegistration(new ComponentRegistration("TestComponent", componentDescriptor, "",
             null));
-
-
-        Map<String, Object> m = new HashMap<>();
-        m.put("id", "testComponentId");
-        m.put("intProp", "{ 123 }");
-        m.put("floatProp", "{ 123.3 }");
-        m.put("boolProp", "{ true }");
-        m.put("strProp", "{ 'foobar' }");
-        m.put("longStrProp",
-            // String longer than current inlining limit
-            "'123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123'");
-
-        componentModel.setAttrs(new Attributes(m));
 
         path = new ComponentPath().firstChildPath();
         path.increment();
         path.increment();
         path = path.firstChildPath();
         path.increment();
-
-
     }
 
 
@@ -112,7 +110,7 @@ public class ClientExpressionRendererTest
 
     private String transform(String expr) throws ParseException
     {
-        ClientExpressionRenderer renderer = new ClientExpressionRenderer(null, componentModel, path);
+        ClientExpressionRenderer renderer = new ClientExpressionRenderer(null, componentModel, "test", path);
         ASTExpression expression = ExpressionParser.parse(expr);
         expression.childrenAccept(renderer, null);
         return renderer.getOutput();

@@ -4,11 +4,9 @@ import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.component.ComponentTemplate;
 import de.quinscape.exceed.component.PropDeclaration;
 import de.quinscape.exceed.expression.ASTExpression;
-import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.model.view.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.model.view.ComponentModelBuilder;
 import de.quinscape.exceed.model.view.View;
-import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.editor.completion.expression.ChildRuleEnvironment;
 import de.quinscape.exceed.runtime.editor.completion.expression.ParentComponent;
@@ -23,11 +21,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static de.quinscape.exceed.model.view.ComponentModelBuilder.*;
 
 public class CompletionService
 {
@@ -111,31 +110,22 @@ public class CompletionService
 
     private AceCompletion createDefaultSuggestion(String componentName, ComponentDescriptor descriptor)
     {
-        ComponentModel componentModel = new ComponentModel();
-        try
+
+        ComponentModelBuilder builder = component(componentName);
+
+        int varCount = 1;
+        for (Map.Entry<String, PropDeclaration> entry : descriptor.getPropTypes().entrySet())
         {
+            String propName = entry.getKey();
+            PropDeclaration propDecl = entry.getValue();
 
-
-            int varCount = 1;
-            Map<String, Object> attrs = new HashMap<>();
-            for (Map.Entry<String, PropDeclaration> entry : descriptor.getPropTypes().entrySet())
+            if (propDecl.isRequired())
             {
-                String propName = entry.getKey();
-                PropDeclaration propDecl = entry.getValue();
-
-                if (propDecl.isRequired())
-                {
-                    attrs.put(propName, "${" + (varCount++) + ":" + propName + "}");
-                }
+                builder.withAttribute(propName, "${" + (varCount++) + ":value}");
             }
-            componentModel.setName(componentName);
-            componentModel.setAttrs(new Attributes(attrs));
-            return new AceCompletion(CompletionType.COMPONENT, componentName, DEFAULT_TEMPLATE_META, null, componentModel, null);
         }
-        catch (ParseException e)
-        {
-            throw new ExceedRuntimeException(e);
-        }
+        return new AceCompletion(CompletionType.COMPONENT, componentName, DEFAULT_TEMPLATE_META, null,
+            builder.getComponent(), null);
     }
 
 
@@ -173,7 +163,6 @@ public class CompletionService
         );
 
         return env.evaluate();
-
     }
 
     public List<AceCompletion> autocompletePropName(RuntimeApplication runtimeApplication, View viewModel, List<Long> path)
