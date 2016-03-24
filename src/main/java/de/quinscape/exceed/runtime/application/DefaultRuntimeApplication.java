@@ -1,11 +1,15 @@
 package de.quinscape.exceed.runtime.application;
 
 import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.change.CodeChange;
 import de.quinscape.exceed.model.change.Shutdown;
 import de.quinscape.exceed.model.change.StyleChange;
 import de.quinscape.exceed.model.change.Timeout;
+import de.quinscape.exceed.model.process.Process;
+import de.quinscape.exceed.model.process.ProcessState;
+import de.quinscape.exceed.model.routing.Mapping;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.AttributeValueType;
 import de.quinscape.exceed.model.view.Attributes;
@@ -27,6 +31,7 @@ import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.service.DomainServiceFactory;
+import de.quinscape.exceed.runtime.service.ProcessExecutionService;
 import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;
 import de.quinscape.exceed.runtime.service.StyleService;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
@@ -52,6 +57,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -94,6 +100,8 @@ public class DefaultRuntimeApplication
 
     private final List<RuntimeInfoProvider> runtimeInfoProviders;
 
+    private final ProcessExecutionService processExecutionService;
+
     private long lastChange;
 
     private Model changeModel = null;
@@ -108,7 +116,8 @@ public class DefaultRuntimeApplication
         ModelCompositionService modelCompositionService,
         ResourceLoader resourceLoader,
         DomainServiceFactory domainServiceFactory,
-        List<RuntimeInfoProvider> runtimeInfoProviders)
+        List<RuntimeInfoProvider> runtimeInfoProviders,
+        ProcessExecutionService processExecutionService)
     {
         if (servletContext == null)
         {
@@ -122,6 +131,7 @@ public class DefaultRuntimeApplication
         this.modelCompositionService = modelCompositionService;
         this.resourceLoader = resourceLoader;
         this.runtimeInfoProviders = runtimeInfoProviders;
+        this.processExecutionService = processExecutionService;
 
         //boolean production = ApplicationStatus.from(state) == ApplicationStatus.PRODUCTION;
         applicationModel = new ApplicationModel();
@@ -162,46 +172,73 @@ public class DefaultRuntimeApplication
         RoutingResult result = applicationModel.getRoutingTable().resolve(runtimeContext.getPath());
 
 
-        String viewName = result.getMapping().getViewName();
+        Mapping mapping = result.getMapping();
 
-        log.debug("Routing chose view '{}'", viewName);
+        runtimeContext.setVariables(addRequestParameters(request, new HashMap<>(result.getVariables())));
+
+        String viewName = mapping.getViewName();
+        String processName = mapping.getProcessName();
 
         View view;
-        if (viewName == null || (view = applicationModel.getViews().get(viewName)) == null)
+        boolean isAjaxRequest = RequestUtil.isAjaxRequest(request);
+        boolean isPreview = isAjaxRequest && isPreviewRequest(request);
+
+        if (processName != null)
+        {
+            Process process = applicationModel.getProcesses().get(processName);
+            view = executeProcess(request, response, runtimeContext, process);
+        }
+        else if (viewName != null)
+        {
+            log.debug("Routing chose view '{}'", viewName);
+            view = applicationModel.getViews().get(viewName);
+
+            if (isAjaxRequest)
+            {
+                if (isPreview)
+                {
+                    String json = RequestUtil.readRequestBody(request); ;
+
+                    View previewView = modelCompositionService.createViewModel(this, view.getResource(), json, true);
+                    if (
+                        !Objects.equals(view.getName(), previewView.getName()) ||
+                        !Objects.equals(view.getProcessName(), previewView.getProcessName())
+                        )
+                    {
+                        throw new IllegalStateException("Cannot preview different view. view = " + view + ", preview = " + previewView);
+                    }
+                    modelCompositionService.postProcessView(this, previewView);
+
+                    List<ComponentError> errors = new ArrayList<>();
+
+                    collectErrors(errors, previewView.getRoot(), 0);
+                    if (errors.size() == 0)
+                    {
+                        view = previewView;
+                    }
+                    else
+                    {
+                        model.put("previewErrors", errors);
+                        RequestUtil.sendJSON(response, JSON.defaultJSON().forValue(model));
+                        return;
+                    }
+                }
+            }
+        }
+        else
+        {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Not found.");
+            return;
+        }
+        if (view == null)
         {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "View " + viewName + " not found" +
                 ".");
             return;
         }
 
-        boolean isAjaxRequest = RequestUtil.isAjaxRequest(request);
-        boolean isPreview = false;
-        if (isAjaxRequest)
-        {
-            isPreview = isPreviewRequest(request);
-            if (isPreview)
-            {
-                String json = RequestUtil.readRequestBody(request); ;
-                View previewView = modelCompositionService.createViewModel(this, "preview/" + viewName, json, true);
-                modelCompositionService.postProcessView(this, previewView);
 
-                List<ComponentError> errors = new ArrayList<>();
-
-                collectErrors(errors, previewView.getRoot(), 0);
-                if (errors.size() == 0)
-                {
-                    view = previewView;
-                }
-                else
-                {
-                    model.put("previewErrors", errors);
-                    RequestUtil.sendJSON(response, JSON.defaultJSON().forValue(model));
-                    return;
-                }
-            }
-        }
         runtimeContext.setView(view);
-        runtimeContext.setVariables(addRequestParameters(request, new HashMap<>(result.getVariables())));
 
         try
         {
@@ -250,13 +287,29 @@ public class DefaultRuntimeApplication
                 int index = ComponentUtil.findFlatIndex(view, e.getId());
                 model.put("previewErrors", Collections.singletonList(new ProviderError(e.getCause().getMessage(), index)));
                 RequestUtil.sendJSON(response, JSON.defaultJSON().forValue(model));
-                return;
             }
             else
             {
                 throw new ExceedRuntimeException("Error providing data to view", e);
             }
         }
+    }
+
+
+    private View executeProcess(HttpServletRequest request, HttpServletResponse response, RuntimeContext runtimeContext, Process process)
+    {
+        String stateKey = request.getParameter("_xcd_process_state");
+        ProcessState result;
+        if (stateKey == null)
+        {
+            //result = processExecutionService.start(runtimeContext, process);
+        }
+        else
+        {
+            //result = processExecutionService.resume(storage, stateKey);
+
+        }
+        return null;
     }
 
 

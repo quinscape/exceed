@@ -1,5 +1,6 @@
 package de.quinscape.exceed.model;
 
+import de.quinscape.exceed.runtime.resource.AppResource;
 import org.svenson.JSONProperty;
 
 /**
@@ -11,9 +12,10 @@ import org.svenson.JSONProperty;
 public abstract class TopLevelModel
     extends Model
 {
-    private String originalFilename;
-
     private String name;
+
+    private AppResource resource;
+
 
     public String getName()
     {
@@ -26,26 +28,13 @@ public abstract class TopLevelModel
     }
 
     @JSONProperty(ignore = true)
-    public void setFilename(String originalFilename)
+    public void setResource(AppResource resource)
     {
-        this.originalFilename = originalFilename;
+        this.resource = resource;
     }
 
-    public final String getFilename()
+    public final AppResource getResource()
     {
-        if (originalFilename != null)
-        {
-            return originalFilename;
-        }
-        else
-        {
-            return fileNameForModel();
-        }
+        return resource;
     }
-
-    protected String fileNameForModel()
-    {
-        return getName() + ".json";
-    }
-
 }

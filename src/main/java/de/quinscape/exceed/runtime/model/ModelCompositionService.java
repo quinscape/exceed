@@ -106,7 +106,7 @@ public class ModelCompositionService
         {
             if (path.equals(APP_MODEL_NAME))
             {
-                ApplicationModel newAppModel = create(ApplicationModel.class, json, APP_MODEL_NAME);
+                ApplicationModel newAppModel = create(ApplicationModel.class, json, resource);
                 applicationModel.merge(newAppModel);
                 return applicationModel;
             }
@@ -114,7 +114,7 @@ public class ModelCompositionService
             {
                 log.debug("Reading {} as RoutingTable", path);
 
-                RoutingTable routingTable = create(RoutingTable.class, json, ROUTING_MODEL_NAME);
+                RoutingTable routingTable = create(RoutingTable.class, json, resource);
 
                 applicationModel.setRoutingTable(routingTable);
                 return routingTable;
@@ -125,13 +125,13 @@ public class ModelCompositionService
                 {
                     log.debug("Reading {} as PropertyType", path);
 
-                    PropertyType propertyType = create(PropertyType.class, json, path);
+                    PropertyType propertyType = create(PropertyType.class, json, resource);
                     applicationModel.getPropertyTypes().put(propertyType.getName(), propertyType);
                     return propertyType;
                 }
                 if (path.startsWith(ENUM_MODEL_PREFIX))
                 {
-                    EnumModel enumModel = create(EnumModel.class, json, path);
+                    EnumModel enumModel = create(EnumModel.class, json, resource);
                     applicationModel.getEnums().put(enumModel.getName(), enumModel);
                     return enumModel;
                 }
@@ -139,7 +139,7 @@ public class ModelCompositionService
                 {
                     log.debug("Reading {} as DomainType", path);
 
-                    DomainType domainType = create(DomainType.class, json, path);
+                    DomainType domainType = create(DomainType.class, json, resource);
                     domainType.setDomainService(runtimeApplication.getDomainService());
                     applicationModel.getDomainTypes().put(domainType.getName(), domainType);
                     return domainType;
@@ -149,7 +149,7 @@ public class ModelCompositionService
             {
 
                 log.debug("Reading {} as View", path);
-                View view = createViewModel(runtimeApplication, path, json, false);
+                View view = createViewModel(runtimeApplication, resource, json, false);
 
                 applicationModel.getViews().put(view.getName(), view);
                 return view;
@@ -163,14 +163,20 @@ public class ModelCompositionService
                 if (path.contains("/view/"))
                 {
                     log.debug("Reading {} as Process View", path);
-                    View view = createViewModel(runtimeApplication, path, json, false);
+
+                    View view = createViewModel(runtimeApplication, resource, json, false);
+                    String viewName = processName + "/" + view.getName();
+
                     view.setProcessName(processName);
-                    applicationModel.getViews().put( processName + "/" + view.getName(), view);
+                    view.setName(viewName);
+
+                    applicationModel.getViews().put(viewName, view);
+
                     return view;
                 }
 
                 log.debug("Reading {} as Process", path);
-                Process process = create(Process.class, json , path);
+                Process process = create(Process.class, json , resource);
                 process.setName(processName);
                 applicationModel.getProcesses().put( process.getName(), process);
                 return process;
@@ -178,7 +184,7 @@ public class ModelCompositionService
             else if (path.equals(DOMAIN_LAYOUT_NAME))
             {
                 log.debug("Reading {} as Domain Layout", path);
-                Layout layout = create(Layout.class, json, path);
+                Layout layout = create(Layout.class, json, resource);
 
                 applicationModel.setDomainLayout(layout);
                 return layout;
@@ -197,9 +203,9 @@ public class ModelCompositionService
     }
 
 
-    public View createViewModel(RuntimeApplication runtimeApplication, String path, String json, boolean preview)
+    public View createViewModel(RuntimeApplication runtimeApplication, AppResource resource, String json, boolean preview)
     {
-        View view = create(View.class, json, path);
+        View view = create(View.class, json, resource);
         ComponentUtil.updateComponentRegsAndParents(componentRegistry, view, null);
         view.setPreview(preview);
 
@@ -207,16 +213,16 @@ public class ModelCompositionService
     }
 
 
-    private <M extends Model> M create(Class<M> cls, String json, String path)
+    private <M extends Model> M create(Class<M> cls, String json, AppResource resource)
     {
-        String nameFromPath = nameFromPath(path);
+        String nameFromPath = nameFromPath(resource.getRelativePath());
 
         M m = modelJSONService.toModel(cls, json);
 
         if (m instanceof TopLevelModel)
         {
             TopLevelModel namedModel = (TopLevelModel) m;
-            namedModel.setFilename(nameFromPath + FileExtension.JSON);
+            namedModel.setResource(resource);
 
             if (namedModel.getName() == null)
             {

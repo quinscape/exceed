@@ -15,6 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Exceed process model
+ *
+ */
 public class Process
     extends TopLevelModel
     implements AutoVersionedModel
@@ -24,11 +28,16 @@ public class Process
 
     private String version;
 
-    private String start;
-    private List<ActionModel> startActions;
+    private Transition startTransition;
 
     private Map<String, ProcessState> states;
 
+
+    /**
+     * Auto-generated version identifier.
+     *
+     * @return
+     */
     @Override
     public String getVersion()
     {
@@ -42,6 +51,10 @@ public class Process
     }
 
 
+    /**
+     * Returns th
+     * @return
+     */
     public Map<String, ProcessState> getStates()
     {
         if (states == null)
@@ -71,31 +84,17 @@ public class Process
         }
     }
 
-    public String getStart()
+
+    public Transition getStartTransition()
     {
-        return start;
+        return startTransition;
     }
 
 
-    public void setStart(String start)
+    public void setStartTransition(Transition startTransition)
     {
-        this.start = start;
-    }
-
-
-    public List<ActionModel> getStartActions()
-    {
-        if (startActions == null)
-        {
-            return Collections.emptyList();
-        }
-
-        return startActions;
-    }
-
-
-    public void setStartActions(List<ActionModel> startActions)
-    {
-        this.startActions = startActions;
+        startTransition.setFrom("start");
+        startTransition.setName("start");
+        this.startTransition = startTransition;
     }
 }
