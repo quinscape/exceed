@@ -1,11 +1,19 @@
 package de.quinscape.exceed.runtime.controller;
 
+import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.action.ActionModel;
+import de.quinscape.exceed.model.domain.DomainProperty;
+import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.action.Action;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
-import de.quinscape.exceed.runtime.component.DataList;
+import de.quinscape.exceed.runtime.config.DefaultPropertyConverters;
+import de.quinscape.exceed.runtime.domain.DomainObject;
+import de.quinscape.exceed.runtime.domain.DomainService;
+import de.quinscape.exceed.runtime.domain.GenericDomainObject;
+import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
 import de.quinscape.exceed.runtime.util.ContentType;
@@ -20,19 +28,26 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.svenson.AbstractPropertyValueBasedTypeMapper;
 import org.svenson.JSON;
-import org.svenson.JSONParser;
-import org.svenson.matcher.SubtypeMatcher;
+import org.svenson.TypeAnalyzer;
+import org.svenson.info.JSONClassInfo;
+import org.svenson.info.JSONPropertyInfo;
+import org.svenson.info.JavaObjectSupport;
+import org.svenson.util.JSONBeanUtil;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Controller handling the server-side of the unified action system.
@@ -42,6 +57,8 @@ public class ActionController
 {
     private final static Logger log = LoggerFactory.getLogger(ActionController.class);
 
+    private static final String RESULT_OK = "{\"ok\":true}";
+
 
     @Autowired
     private ApplicationService applicationService;
@@ -50,24 +67,24 @@ public class ActionController
     private ServletContext servletContext;
 
     @Autowired
-    private ActionRegistry actionRegistry;
+    private ActionService actionService;
 
     @Autowired
     private RuntimeContextFactory runtimeContextFactory;
 
+    @Autowired
+    private DefaultPropertyConverters defaultPropertyConverters;
+
     private final JSON resultGenerator;
 
-    private final JSONParser dataParser;
+    private Map<String, Class<? extends ActionModel>> modelsByName;
 
-    private final JSONParser actionModelParser;
+    private Map<Class<? extends ActionModel>, Set<Conversion>> conversionLookup;
 
 
     public ActionController()
     {
         resultGenerator = JSON.defaultJSON();
-        dataParser = JSONParser.defaultJSONParser();
-
-        actionModelParser = new JSONParser();
     }
 
 
@@ -76,8 +93,7 @@ public class ActionController
     public ResponseEntity<String> executeAction(
         @PathVariable("app") String appName,
         @PathVariable("action") String actionName,
-        @RequestParam("model") String actionModelJSON,
-        @RequestBody String dataJSON,
+        @RequestBody String actionModelJSON,
         HttpServletRequest request, HttpServletResponse response) throws IOException
     {
 
@@ -88,43 +104,26 @@ public class ActionController
             return new ResponseEntity<String>("{\"ok\":false,\"error\":\"Action not found\"}", HttpStatus.NOT_FOUND);
         }
 
-        ActionModel model = actionModelParser.parse(ActionModel.class, actionModelJSON);
-
-        response.setContentType(ContentType.JSON);
-
-        if (!model.getAction().equals(actionName))
+        Class<? extends ActionModel> actionClass = modelsByName.get(actionName);
+        if (actionClass == null)
         {
-            return new ResponseEntity<String>("{\"ok\":false,\"error\":\"Action name mismatch\"}", HttpStatus
-                .BAD_REQUEST);
+            throw new ActionNotFoundException("Action '" + actionName + "' not found.");
         }
-
-        Action action = actionRegistry.getAction(model.getAction());
 
         RuntimeContext runtimeContext = runtimeContextFactory.create(
             runtimeApplication, "/action/" + appName + "/" + actionName, request.getLocale());
         RuntimeContextHolder.register(runtimeContext);
 
+        ActionModel model = (ActionModel) runtimeApplication.getDomainService().toDomainObject(actionClass, actionModelJSON);
+        convertProperties(runtimeContext, model);
+
+        response.setContentType(ContentType.JSON);
+
+        Action action = actionService.getAction(model.getAction());
         try
         {
-            Object input = parseData(runtimeContext, action.getInputClass(),dataJSON);
-            Object result = action.execute(runtimeContext, model, input);
-            String resultJSON;
-
-            if (result instanceof DataList)
-            {
-                resultJSON = runtimeApplication.getDomainService().toJSON(result);
-            }
-            else
-            {
-                resultJSON = resultGenerator.forValue(result);
-            }
-
-            if (log.isDebugEnabled())
-            {
-                log.debug("Executed action {}: {} => {}", actionModelJSON, dataJSON, resultJSON);
-            }
-
-            return new ResponseEntity<String>(resultJSON, HttpStatus.OK);
+            action.execute(runtimeContext, model);
+            return new ResponseEntity<String>(RESULT_OK, HttpStatus.OK);
         }
         catch (Exception e)
         {
@@ -142,6 +141,26 @@ public class ActionController
     }
 
 
+    private void convertProperties(RuntimeContext runtimeContext, ActionModel model)
+    {
+        try
+        {
+            Set<Conversion> conversions = conversionLookup.get(model.getClass());
+            if (conversions != null && conversions.size() > 0)
+            {
+                for (Conversion conversion : conversions)
+                {
+                    conversion.convert(runtimeContext, model);
+                }
+            }
+        }
+        catch (ParseException e)
+        {
+            throw new ActionExecutionException("Error converting domain object properties", e);
+        }
+    }
+
+
     @ExceptionHandler(value = ActionNotFoundException.class)
     @ResponseBody
     public ResponseEntity<String> actionNotFound(HttpServletResponse response, ActionNotFoundException e)
@@ -152,76 +171,171 @@ public class ActionController
     }
 
 
-    private Object parseData(RuntimeContext runtimeContext, Class inputClass, String dataJSON)
-    {
-        if (DataList.class.isAssignableFrom(inputClass))
-        {
-            return runtimeContext.getRuntimeApplication().getDomainService().toDomainObject(dataJSON);
-        }
-        return dataParser.parse(inputClass, dataJSON);
-    }
-
-
-//    @RequestMapping(value = "/action/{app}", method = RequestMethod.GET)
-//    @ResponseBody
-//    public String listActions(
-//        @PathVariable("app") String appName,
-//        HttpServletRequest request, HttpServletResponse response) throws IOException
-//    {
-//        RuntimeApplication runtimeApplication = applicationService.getRuntimeApplication(servletContext, appName);
-//        if (runtimeApplication == null)
-//        {
-//            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Application '" + appName + "' not found");
-//            return null;
-//        }
-//
-//        String json;
-//
-//        Map<String, Object> data = new HashMap<>();
-//
-//        data.put("actionNames", actionRegistry.getActionNames());
-//
-//        response.setContentType(ContentType.JSON);
-//        return resultGenerator.forValue(data);
-//    }
-
     @PostConstruct
     public void init()
     {
-        actionModelParser.setTypeMapper(new ActionMapper(actionRegistry.getActionModels()));
+        modelsByName = actionService.getActionModels();
+
+        Map<Class<? extends ActionModel>, Set<Conversion>> map = new HashMap<>();
+
+        for (Class<? extends ActionModel> modelClass : modelsByName.values())
+        {
+            map.put(modelClass, analyze(modelClass));
+        }
+
+        conversionLookup = map;
+
+        log.info("CONVERSIONS: {}", conversionLookup);
     }
 
 
-    private class ActionMapper
-        extends AbstractPropertyValueBasedTypeMapper
+    private JavaObjectSupport objectSupport = new JavaObjectSupport();
+
+
+    private Set<Conversion> analyze(Class<? extends ActionModel> modelClass)
     {
-        private final Map<String, Class<? extends ActionModel>> actionModelClassess;
+        Set<Conversion> conversions = new HashSet<>();
 
-
-        public ActionMapper(Map<String, Class<? extends ActionModel>> actionModelClassess)
+        JSONClassInfo info = TypeAnalyzer.getClassInfo(objectSupport, modelClass);
+        for (JSONPropertyInfo propertyInfo : info.getPropertyInfos())
         {
-            this.actionModelClassess = actionModelClassess;
+            if (DomainObject.class.isAssignableFrom(propertyInfo.getType()))
+            {
+                conversions.add(new PropertyConversion(propertyInfo.getJsonName()));
+            }
+            else if (Collection.class.isAssignableFrom(propertyInfo.getType()))
+            {
+                Class<Object> typeHint = propertyInfo.getTypeHint();
+                if (typeHint != null && DomainObject.class.isAssignableFrom(typeHint))
+                {
+                    conversions.add(new CollectionConversion(propertyInfo.getType(), propertyInfo.getJsonName()));
+                }
+            }
+        }
 
-            setDiscriminatorField("action");
-            setPathMatcher(new SubtypeMatcher(ActionModel.class));
+        return conversions;
+    }
+
+
+    private abstract class Conversion
+    {
+        abstract String getName();
+
+        @Override
+        public String toString()
+        {
+            return super.toString() + ": " + getName();
+        }
+
+
+        public abstract void convert(RuntimeContext runtimeContext, ActionModel model) throws ParseException;
+    }
+
+
+    private class PropertyConversion
+        extends Conversion
+    {
+        private final String name;
+
+
+        public PropertyConversion(String name)
+        {
+            this.name = name;
+        }
+
+
+        public String getName()
+        {
+            return name;
         }
 
 
         @Override
-        protected Class<? extends ActionModel> getTypeHintFromTypeProperty(Object o) throws IllegalStateException
+        public void convert(RuntimeContext runtimeContext, ActionModel model) throws ParseException
         {
-            if (o instanceof String)
+            DomainObject value = (DomainObject) JSONBeanUtil.defaultUtil().getProperty(model, name);
+            if (value == null)
             {
-                Class<? extends ActionModel> actionModelClass = actionModelClassess.get(o);
-                if (actionModelClass == null)
-                {
-                    throw new ActionNotFoundException("Invalid action reference in JSON: " + o);
-                }
-                return actionModelClass;
+                return;
             }
-
-            throw new ActionNotFoundException("Invalid action discriminator value: " + o);
+            convertDomainObject(runtimeContext, value);
         }
     }
 
+    private class CollectionConversion
+        extends Conversion
+    {
+
+        private final String name;
+
+        private final boolean isList;
+
+
+        public CollectionConversion(Class<Object> collectionType, String name)
+        {
+            this.isList = List.class.isAssignableFrom(collectionType);
+            if (!this.isList && !Set.class.isAssignableFrom(collectionType))
+            {
+                throw new IllegalStateException("Collection type must be list or set");
+            }
+            this.name = name;
+        }
+
+        public String getName()
+        {
+            return name;
+        }
+
+
+        @Override
+        public void convert(RuntimeContext runtimeContext, ActionModel model) throws ParseException
+        {
+            Object value = JSONBeanUtil.defaultUtil().getProperty(model, name);
+            if (value == null)
+            {
+                return;
+            }
+
+            if (isList)
+            {
+                List<DomainObject> domainObjects = new ArrayList<>();
+
+                for (DomainObject domainObject : (List<DomainObject>) value)
+                {
+                    convertDomainObject(runtimeContext, domainObject);
+                }
+            }
+        }
+    }
+
+
+    private void convertDomainObject(RuntimeContext runtimeContext, DomainObject domainObject) throws ParseException
+    {
+        final DomainService domainService = domainObject.getDomainService();
+
+
+        DomainType domainType = domainService.getDomainType(domainObject.getType());
+        for (DomainProperty property : domainType.getProperties())
+        {
+            String propertyName = property.getName();
+            Object value = domainObject.getProperty(propertyName);
+            PropertyConverter propertyConverter = getConverter(property.getType());
+            Object converted = propertyConverter.convertToJava(runtimeContext, value, property);
+
+            domainObject.setProperty(propertyName, converted);
+        }
+    }
+
+
+    private PropertyConverter getConverter(String type)
+    {
+        Map<String, PropertyConverter> converters = defaultPropertyConverters.getConverters();
+        String converterName = type + "Converter";
+        PropertyConverter converter = converters.get(converterName);
+        if (converter == null)
+        {
+            throw new IllegalStateException("No property converter '" + converterName + "' found for type '" + type +"'" );
+        }
+        return converter;
+    }
 }

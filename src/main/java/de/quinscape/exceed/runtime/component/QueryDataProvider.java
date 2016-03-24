@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.component;
 
+import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.expression.TokenMgrError;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.domain.DomainService;
@@ -16,6 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Data provider implementation for the default query definition mechanism. Can be replaced
+ * by setting an alternate DataProvider in {@link ComponentDescriptor#dataProviderName}
+ */
 public class QueryDataProvider
     implements DataProvider
 {
@@ -108,8 +113,6 @@ public class QueryDataProvider
             String queryExpression = (String)value;
             try
             {
-                DomainService domainService = dataProviderContext.getRuntimeContext().getRuntimeApplication()
-                    .getDomainService();
                 QueryDefinition definition = queryTransformer.transform(dataProviderContext.getRuntimeContext(), queryExpression, elem, vars);
                 preparedQueries.put(name, definition);
             }

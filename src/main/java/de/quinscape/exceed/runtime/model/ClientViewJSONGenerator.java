@@ -5,20 +5,29 @@ import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.component.PropDeclaration;
 import de.quinscape.exceed.component.PropType;
 import de.quinscape.exceed.expression.ASTExpression;
+import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTIdentifier;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.expression.SimpleNode;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.AttributeValueType;
 import de.quinscape.exceed.model.view.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.action.Action;
+import de.quinscape.exceed.runtime.action.ActionCallGenerator;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.controller.ActionService;
+import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
+import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
+import org.svenson.JSON;
 import org.svenson.util.JSONBuilder;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,9 +41,23 @@ import java.util.Map;
  */
 public class ClientViewJSONGenerator
 {
+    private final static JSON json = JSON.defaultJSON();
+
     public static final String CONTEXT_DEFAULT_NAME = "context";
 
     public static final String MODEL_ATTR_NAME = "model";
+
+    private final ExpressionService expressionService;
+
+    private final Map<String,ActionCallGenerator> actionCallGenerators;
+
+
+    public ClientViewJSONGenerator(ActionService actionService, ExpressionService expressionService)
+    {
+        this.expressionService = expressionService;
+
+        actionCallGenerators = getActionCallGenerators(actionService);
+    }
 
     public String toJSON(RuntimeApplication application, View model, JSONFormat jsonFormat)
     {
@@ -115,17 +138,20 @@ public class ClientViewJSONGenerator
                     ASTExpression expression = attribute.getAstExpression();
                     if (expression != null)
                     {
-                        PropDeclaration propDecl;
-                        boolean isContextExpression = componentRegistration != null &&
+                        PropDeclaration propDecl = null;
+
+                        // property is set on that property dec
+                        boolean isContextExpression =
+                            // the expression is a context expression if there is a component registration..
+                            componentRegistration != null &&
+                            // ..that has a prop declaration with that name..
                             (propDecl = componentRegistration.getDescriptor().getPropTypes().get(attrName)) != null &&
+                            // ..that is declared as context receiving
                             propDecl.getContext() != null;
 
                         if (!isContextExpression)
                         {
-                            ClientExpressionRenderer visitor = new ClientExpressionRenderer(application, componentModel, attrName, path);
-                            expression.childrenAccept(visitor, null);
-                            String transformed = visitor.getOutput();
-                            builder.property(attrName, transformed);
+                            builder.property(attrName, transformExpression(expression, application, componentModel, attrName, path, propDecl != null && propDecl.getType() == PropType.ACTION_EXPRESSION));
                         }
                     }
                 }
@@ -173,11 +199,8 @@ public class ClientViewJSONGenerator
 
                     if (astExpression != null)
                     {
-                        ClientExpressionRenderer renderer = new ClientExpressionRenderer(application, componentModel, "value", path);
-                        astExpression.childrenAccept(renderer, null);
-
                         builder.objectProperty("exprs");
-                        builder.property("value", renderer.getOutput());
+                        builder.property("value", transformExpression(astExpression, application, componentModel, "value", path, false));
                         builder.close();
 
                     }
@@ -194,6 +217,8 @@ public class ClientViewJSONGenerator
         }
         builder.close();
     }
+
+
 
 
     private void provideContextExpressions(JSONBuilder builder, RuntimeApplication application, ComponentModel componentModel, ComponentPath path, ComponentDescriptor descriptor)
@@ -246,9 +271,7 @@ public class ClientViewJSONGenerator
                     }
 
                     // .. and transform it for client consumption
-                    ClientExpressionRenderer renderer = new ClientExpressionRenderer(application, componentModel, propName, path);
-                    contextAST.childrenAccept(renderer, null);
-                    builder.property(propName, renderer.getOutput());
+                    builder.property(propName, transformExpression(contextAST, application, componentModel, propName, path, false));
                 }
                 catch (ParseException e)
                 {
@@ -315,4 +338,116 @@ public class ClientViewJSONGenerator
         }
         return null;
     }
+
+    private Object transformExpression(
+            SimpleNode expression,
+            RuntimeApplication application,
+            ComponentModel componentModel,
+            String attrName,
+            ComponentPath path,
+            boolean isActionExpression)
+    {
+        ClientExpressionRenderer renderer = new ClientExpressionRenderer(application, componentModel, attrName, path, actionCallGenerators, isActionExpression);
+        expression.childrenAccept(renderer, null);
+        return renderer.getOutput();
+    }
+
+    private Map<String, ActionCallGenerator> getActionCallGenerators(ActionService actionService)
+    {
+        Map<String, ActionCallGenerator> map = new HashMap<>();
+
+        final ActionCallGenerator defaultGenerator = (renderer, node) -> {
+            if (node.jjtGetNumChildren() != 1)
+            {
+                throw new InvalidClientExpressionException( node.getName() + "() takes one parameter (model)");
+            }
+
+            StringBuilder buf = renderer.getBuffer();
+            buf
+                .append("_v.action( ")
+                .append(json.quote(node.getName()))
+                .append(", ");
+
+            node.jjtGetChild(0).jjtAccept(renderer, null);
+
+            buf.append(" )");
+        };
+
+        for (String name : actionService.getActionNames())
+        {
+            Action action = actionService.getAction(name);
+
+            if (action instanceof ActionCallGenerator)
+            {
+                map.put(name, (ActionCallGenerator)action);
+            }
+            else
+            {
+                map.put(name, defaultGenerator);
+            }
+        }
+
+        map.put("navigateTo", (renderer, node) -> {
+
+            if (node.jjtGetNumChildren() != 1 && node.jjtGetNumChildren() != 2)
+            {
+                throw new InvalidClientExpressionException("navigateTo() must have one or two parameters (location, [params])");
+            }
+            StringBuilder buf = renderer.getBuffer();
+            buf.append("_v.navigateTo(");
+
+            node.jjtGetChild(0).jjtAccept(renderer, null);
+
+            if (node.jjtGetNumChildren() == 2)
+            {
+                buf.append(", ");
+                node.jjtGetChild(1).jjtAccept(renderer, null);
+            }
+
+            buf.append(")");
+        });
+
+        map.put("update", (renderer, node) -> {
+
+            if (node.jjtGetNumChildren() != 1 && node.jjtGetNumChildren() != 2)
+            {
+                throw new InvalidClientExpressionException("update() must have one or two parameters (id, [vars])");
+            }
+            StringBuilder buf = renderer.getBuffer();
+            buf.append("_v.update( ");
+
+            node.jjtGetChild(0).jjtAccept(renderer, null);
+
+            if (node.jjtGetNumChildren() == 2)
+            {
+                buf.append(", ");
+                node.jjtGetChild(1).jjtAccept(renderer, null);
+            }
+
+            buf.append(" )");
+        });
+
+        map.put("action", (renderer, node) -> {
+
+            if (node.jjtGetNumChildren() != 2)
+            {
+                throw new InvalidClientExpressionException("action() needs two parameters (name, model)");
+            }
+
+            StringBuilder buf = renderer.getBuffer();
+            buf.append("_v.action( ");
+
+            node.jjtGetChild(0).jjtAccept(renderer, null);
+
+            buf.append(", ");
+
+            node.jjtGetChild(1).jjtAccept(renderer, null);
+
+            buf.append(" )");
+        });
+
+        return map;
+    }
+
 }
+

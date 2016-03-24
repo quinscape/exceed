@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.model;
 
+import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.expression.ASTBool;
 import de.quinscape.exceed.expression.ASTComputedPropertyChain;
@@ -14,9 +15,14 @@ import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.AttributeValueType;
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.runtime.action.ActionCallGenerator;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import org.svenson.JSON;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Renders transformed view model expressions.
@@ -44,9 +50,20 @@ public class ClientExpressionRenderer
 
     private final String attrName;
 
+    private final RuntimeApplication application;
 
-    public ClientExpressionRenderer(RuntimeApplication application, ComponentModel componentModel, String attrName, ComponentPath path)
+    private final boolean isActionExpression;
+
+    private final Map<String, ActionCallGenerator> actionCallGenerators;
+
+
+    public ClientExpressionRenderer(RuntimeApplication application, ComponentModel componentModel, String attrName, ComponentPath path, Map<String,ActionCallGenerator> actionCallGenerators, boolean isActionExpression)
+
+
     {
+        this.application = application;
+        this.actionCallGenerators = actionCallGenerators;
+        this.isActionExpression = isActionExpression;
 
         if (componentModel == null)
         {
@@ -85,6 +102,7 @@ public class ClientExpressionRenderer
             modelPath = path.modelPath();
         }
 
+        StringBuilder buf = getBuffer();
         if (isModel)
         {
             buf.append(modelPath);
@@ -113,52 +131,10 @@ public class ClientExpressionRenderer
     }
 
 
-    @Override
-    public Object visit(ASTPropertyChain node, Object data)
-    {
-        Node firstChild = node.jjtGetChild(0);
-        if (firstChild instanceof ASTIdentifier)
-        {
-            ASTIdentifier identifier = (ASTIdentifier) firstChild;
-            if (identifier.getName().equals("vars"))
-            {
-                if (componentDescriptor == null || componentDescriptor.getVars() == null)
-                {
-                    throw new InvalidClientExpressionException(componentModel.getName() + " has no vars");
-                }
-
-                Node second = node.jjtGetChild(1);
-                if (second instanceof ASTIdentifier)
-                {
-                    String varName = ((ASTIdentifier) second).getName();
-                    if (!componentDescriptor.getVars().containsKey(varName))
-                    {
-                        throw new InvalidClientExpressionException(componentModel.getName() + " has no var '" + varName + "'");
-                    }
-                }
-            }
-            if (identifier.getName().equals("props"))
-            {
-                Node second = node.jjtGetChild(1);
-                if (second instanceof ASTIdentifier)
-                {
-                    AttributeValue attribute = componentModel.getAttribute(((ASTIdentifier) second).getName());
-                    if (attribute != null)
-                    {
-                        if (renderInlinedConstant(attribute))
-                        {
-                            return data;
-                        }
-                    }
-                }
-            }
-        }
-        return super.visit(node, data);
-    }
-
 
     private boolean renderInlinedConstant(AttributeValue attribute)
     {
+        StringBuilder buf = getBuffer();
         AttributeValueType type = attribute.getType();
         if (type == AttributeValueType.STRING)
         {
@@ -241,6 +217,7 @@ public class ClientExpressionRenderer
                     }
                 }
             }
+            return super.visit(node, data);
         }
         return super.visit(node, data);
     }
@@ -249,13 +226,156 @@ public class ClientExpressionRenderer
     @Override
     public Object visit(ASTFunction node, Object data)
     {
-        if (node.getName().equals("param"))
+        StringBuilder buf = getBuffer();
+        String operationName = node.getName();
+
+        ActionCallGenerator gen;
+        if (operationName.equals("param"))
         {
             buf.append("_v.param(");
             renderMultiBinary(node, ", ", data);
             buf.append(')');
             return data;
         }
+        else if (operationName.equals("uri"))
+        {
+            buf.append("_v.uri( '/app/' + _sys.appName + ");
+            renderMultiBinary(node, ", ", data);
+            buf.append(')');
+            return data;
+        }
+        else if ((gen = actionCallGenerators.get(operationName)) != null)
+        {
+            actionProlog();
+            gen.renderJsCode(this, node);
+            actionEpilog();
+            return data;
+        }
+
         return super.visit(node, data);
+    }
+
+
+
+
+    @Override
+    public Object visit(ASTPropertyChain node, Object data)
+    {
+        Node firstChild = node.jjtGetChild(0);
+        if (firstChild instanceof ASTIdentifier)
+        {
+            ASTIdentifier identifier = (ASTIdentifier) firstChild;
+            if (identifier.getName().equals("vars"))
+            {
+                if (componentDescriptor == null || componentDescriptor.getVars() == null)
+                {
+                    throw new InvalidClientExpressionException(componentModel.getName() + " has no vars");
+                }
+
+                Node second = node.jjtGetChild(1);
+                if (second instanceof ASTIdentifier)
+                {
+                    String varName = ((ASTIdentifier) second).getName();
+                    if (!componentDescriptor.getVars().containsKey(varName))
+                    {
+                        throw new InvalidClientExpressionException(componentModel.getName() + " has no var '" + varName + "'");
+                    }
+                }
+            }
+            else if (identifier.getName().equals("props"))
+            {
+                Node second = node.jjtGetChild(1);
+                if (second instanceof ASTIdentifier)
+                {
+                    AttributeValue attribute = componentModel.getAttribute(((ASTIdentifier) second).getName());
+                    if (attribute != null)
+                    {
+                        if (renderInlinedConstant(attribute))
+                        {
+                            return data;
+                        }
+                    }
+                }
+            }
+            return super.visit(node, data);
+        }
+        else if (firstChild instanceof ASTFunction)
+        {
+            if (isActionExpression)
+            {
+
+                int i;
+                for (i = 0; i < node.jjtGetNumChildren(); i++)
+                {
+                    Node kid = node.jjtGetChild(i);
+
+                    if (kid instanceof ASTFunction)
+                    {
+                        String opName = ((ASTFunction) kid).getName();
+                        if (!actionCallGenerators.containsKey(opName))
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                // no actions: default handling
+                if (i == 0)
+                {
+                    return super.visit(node, data);
+                }
+
+                // are all chain members are actions?
+                if (i == node.jjtGetNumChildren())
+                {
+                    actionProlog();
+
+                    for (i = 0; i < node.jjtGetNumChildren(); i++)
+                    {
+                        ASTFunction kid = (ASTFunction) node.jjtGetChild(i);
+
+                        String opName = ((ASTFunction) kid).getName();
+
+                        if (i > 0)
+                        {
+                            getBuffer().append(".then(function(){ return (");
+                        }
+
+                        actionCallGenerators.get(opName).renderJsCode(this, kid);
+
+                        if (i > 0)
+                        {
+                            getBuffer().append(")})");
+                        }
+                    }
+                    actionEpilog();
+                }
+                else
+                {
+                    throw new InvalidClientExpressionException("Property chain member " + node.jjtGetChild(i) + " is not a supported action generator: " + ExpressionRenderer.render(node));
+                }
+            }
+            else
+            {
+                return super.visit(node, data);
+            }
+        }
+        return data;
+    }
+
+
+    private void actionProlog()
+    {
+        getBuffer().append("function(){ return _v.observe(");
+    }
+
+
+    private void actionEpilog()
+    {
+        getBuffer().append(")}");
     }
 }

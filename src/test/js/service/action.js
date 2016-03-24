@@ -6,6 +6,16 @@ var proxyquire = require("proxyquire");
 var sys = require("../../../../src/main/js/sys");
 sys.init("/test-context", "TestApp");
 
+var data;
+
+function initData()
+{
+    data = {
+        calls: []
+    }
+}
+
+
 var actionService = proxyquire("../../../../src/main/js/service/action", {
     "./ajax" : function(opts)
     {
@@ -17,22 +27,19 @@ var actionService = proxyquire("../../../../src/main/js/service/action", {
         }
         else if (opts.url.indexOf("/test-context/action/TestApp/foo") === 0)
         {
-            opts.data.calls.push({
+            data.calls.push({
                 server: true
             });
-
-            return Promise.resolve(opts.data);
         }
         else if (opts.url.indexOf("/test-context/action/TestApp/bar") === 0)
         {
-            opts.data.calls.push({
+            data.calls.push({
                 failed: true,
                 error: new Error("Bar always fails")
             });
-            return Promise.resolve(opts.data);
         }
 
-        return Promise.reject(new Error("Unhandled ajax test opts" + JSON.stringify(opts)));
+        return Promise.resolve();
     }
 
 });
@@ -41,13 +48,15 @@ describe("Action Service", function(){
 
     before(function ()
     {
-        actionService.clearActions();
+        actionService._clearActions();
     });
 
 
 	it("registers bulk required client actions", function()
 	{
-        var testAction = function (model, data)
+        initData();
+
+        var testAction = function (model)
         {
             if (model.fail)
             {
@@ -57,21 +66,20 @@ describe("Action Service", function(){
             data.calls.push({
                 model: model
             });
-
-            return Promise.resolve(data);
         };
 
-        testAction.catch = function(e, model, data)
+        testAction.catch = function(e, model)
         {
             data.calls.push({
                 model: model,
                 failed: true,
                 error: e
             });
-            return Promise.resolve(data);
+
+            return Promise.resolve();
         };
 
-        var wrappingAction = function (model, data)
+        var wrappingAction = function (model)
         {
             return actionService.execute({ action : "bar" }, data).catch(function (e)
             {
@@ -80,15 +88,13 @@ describe("Action Service", function(){
                     failed: true,
                     error: e
                 });
-                return Promise.resolve(data);
-            });
+                return Promise.reject(new Error("caught"));            });
         };
 
         actionService.registerBulk({
             test: testAction,
             serverWrap: wrappingAction
         });
-
 
         var actions = actionService.getActions();
         assert(actions.test.client === true);
@@ -108,11 +114,12 @@ describe("Action Service", function(){
 
     it ("executes client actions", function ()
     {
+        initData();
         var model = {
             action: "test"
         };
-        return actionService.execute(model, { calls: []})
-            .then(function(data)
+        return actionService.execute(model)
+            .then(function()
             {
                 assert(data.calls.length === 1);
                 assert(data.calls[0].model === model);
@@ -121,15 +128,14 @@ describe("Action Service", function(){
 
     it ("optionally handles client action failure", function ()
     {
+        initData();
+
         return actionService.execute(
             {
                 action: "test",
                 fail: true
-            },
-            {
-                calls:[]
             })
-            .then(function(data)
+            .then(function()
             {
                 assert(data.calls.length === 1);
                 assert(data.calls[0].failed);
@@ -139,14 +145,12 @@ describe("Action Service", function(){
 
     it ("can handle wrapped server function failure", function ()
     {
+        initData();
         return actionService.execute(
             {
                 action: "serverWrap"
-            },
-            {
-                calls:[]
             })
-            .then(function(data)
+            .then(function()
             {
                 assert(data.calls.length === 1);
                 assert(data.calls[0].failed);
@@ -156,36 +160,15 @@ describe("Action Service", function(){
 
     it ("executes server actions", function ()
     {
+        initData();
         var model = {
             action: "foo"
         };
-        return actionService.execute(model, { calls: []})
-            .then(function(data)
+        return actionService.execute(model)
+            .then(function()
             {
                 assert(data.calls.length === 1);
                 assert(data.calls[0].server);
-            })
-    });
-
-    it ("pipes actions", function ()
-    {
-        return actionService.execute([
-            {
-                action: "test",
-                id: 1
-            },
-            { action: "foo"},
-            {
-                action: "test",
-                id: 2
-            }
-        ], { calls: []})
-            .then(function(data)
-            {
-                assert(data.calls.length === 3);
-                assert(data.calls[0].model.id === 1);
-                assert(data.calls[1].server);
-                assert(data.calls[2].model.id === 2);
             })
     });
 

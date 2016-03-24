@@ -1,29 +1,23 @@
 package de.quinscape.exceed.runtime.controller;
 
 import com.google.common.collect.ImmutableMap;
-import de.quinscape.exceed.model.action.ActionModel;
 import de.quinscape.exceed.runtime.action.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.svenson.AbstractPropertyValueBasedTypeMapper;
-import org.svenson.JSONParser;
-import org.svenson.matcher.SubtypeMatcher;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-public class DefaultActionRegistry
-    implements ActionRegistry
+public class DefaultActionService
+    implements ActionService
 {
-    private final static Logger log = LoggerFactory.getLogger(DefaultActionRegistry.class);
+    private final static Logger log = LoggerFactory.getLogger(DefaultActionService.class);
 
 
     private final Map<String,? extends Action> actions;
 
 
-    public DefaultActionRegistry(Map<String, ? extends Action> actions)
+    public DefaultActionService(Map<String, ? extends Action> actions)
     {
         this.actions = ImmutableMap.copyOf(actions);
         log.info("Created action registery with actions = {}", getActionNames());

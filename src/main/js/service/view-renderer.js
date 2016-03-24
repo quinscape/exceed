@@ -284,11 +284,11 @@ module.exports = {
         var code = renderViewComponentSource(viewModel);
         //console.log("\nRENDER-FN:\n", code);
 
-        var renderFn = new Function("_React", "_components", "_RTView", "_catchErrors", "_ErrorReport", code);
+        var renderFn = new Function("_React", "_components", "_RTView", "_catchErrors", "_ErrorReport", "_sys", code);
 
         return function (component)
         {
-            return renderFn.call(component, React, components, rtViewAPI, catchErrors, ErrorReport);
+            return renderFn.call(component, React, components, rtViewAPI, catchErrors, ErrorReport, sys);
         };
     }
 };

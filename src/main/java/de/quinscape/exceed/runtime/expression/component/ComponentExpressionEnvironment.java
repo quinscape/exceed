@@ -12,7 +12,7 @@ import de.quinscape.exceed.expression.ASTPropertyChain;
 import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.runtime.controller.ActionNotFoundException;
-import de.quinscape.exceed.runtime.controller.ActionRegistry;
+import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironmentException;
 import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
@@ -21,7 +21,7 @@ import org.svenson.JSON;
 public class ComponentExpressionEnvironment
     extends ExpressionEnvironment
 {
-    private final ActionRegistry actionRegistry;
+    private final ActionService actionService;
 
     private final boolean actionExpression;
 
@@ -30,9 +30,9 @@ public class ComponentExpressionEnvironment
     private final static JSON generator = SingleQuoteJSONGenerator.INSTANCE;
 
 
-    public ComponentExpressionEnvironment( ActionRegistry actionRegistry, boolean actionExpression)
+    public ComponentExpressionEnvironment(ActionService actionService, boolean actionExpression)
     {
-        this.actionRegistry = actionRegistry;
+        this.actionService = actionService;
         this.actionExpression = actionExpression;
         output = new StringBuilder();
 
@@ -88,7 +88,7 @@ public class ComponentExpressionEnvironment
         }
 
         String actionName = node.getName();
-        if (!actionRegistry.getActionNames().contains(actionName))
+        if (!actionService.getActionNames().contains(actionName))
         {
             throw new ActionNotFoundException("Invalid action reference: " + actionName);
         }

@@ -3,13 +3,12 @@ package de.quinscape.exceed.runtime.action;
 import de.quinscape.exceed.runtime.RuntimeContext;
 
 public class SleepAction
-    implements Action<SleepActionModel, Object>
+    implements Action<SleepActionModel>
 {
     @Override
-    public Object execute(RuntimeContext runtimeContext, SleepActionModel model, Object input) throws Exception
+    public void execute(RuntimeContext runtimeContext, SleepActionModel model) throws Exception
     {
         Thread.sleep(model.getTime());
-        return input;
     }
 
 
@@ -17,12 +16,5 @@ public class SleepAction
     public Class<SleepActionModel> getActionModelClass()
     {
         return SleepActionModel.class;
-    }
-
-
-    @Override
-    public Class<Object> getInputClass()
-    {
-        return Object.class;
     }
 }

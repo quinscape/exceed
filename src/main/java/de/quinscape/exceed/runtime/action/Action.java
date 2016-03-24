@@ -8,14 +8,14 @@ import de.quinscape.exceed.runtime.RuntimeContext;
  * Implemented by the server-side of the unified action system.
  *
  * @param <M> action model type
- * @param <I> data input type.
  */
-public interface Action<M extends ActionModel, I>
+public interface Action<M extends ActionModel>
 {
-    Object execute(RuntimeContext runtimeContext, M model, I input) throws Exception;
+    void execute(RuntimeContext runtimeContext, M model) throws Exception;
 
-    Class<M> getActionModelClass();
-
-    Class<I> getInputClass();
+    default Class<M> getActionModelClass()
+    {
+        return (Class<M>) ActionModel.class;
+    }
 }
 

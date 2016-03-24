@@ -1,5 +1,6 @@
-module.exports = function (model, data)
+var viewService = require("../service/view");
+
+module.exports = function (model)
 {
-    console.log("navigateTo", model, data);
-    return data;
+    return viewService.navigateTo(model.url);
 };

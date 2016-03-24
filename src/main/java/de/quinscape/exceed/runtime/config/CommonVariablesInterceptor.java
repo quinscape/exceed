@@ -1,16 +1,10 @@
 package de.quinscape.exceed.runtime.config;
 
-import de.quinscape.exceed.runtime.controller.ActionRegistry;
-import de.quinscape.exceed.runtime.security.ApplicationUserDetails;
-import de.quinscape.exceed.runtime.service.websocket.MessageHubRegistry;
+import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.util.AppAuthentication;
-import de.quinscape.exceed.runtime.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import org.svenson.JSON;
@@ -111,11 +105,11 @@ public class CommonVariablesInterceptor
 
     private Set<String> getServerSideActionsInSystem()
     {
-        ActionRegistry actionRegistry = applicationContext.getBean(ActionRegistry.class);
-        if (actionRegistry == null)
+        ActionService actionService = applicationContext.getBean(ActionService.class);
+        if (actionService == null)
         {
             throw new IllegalStateException("No action registry");
         }
-        return actionRegistry.getActionNames();
+        return actionService.getActionNames();
     }
 }

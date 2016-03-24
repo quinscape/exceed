@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.JSONParser;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -110,7 +111,7 @@ public class ClientExpressionRendererTest
 
     private String transform(String expr) throws ParseException
     {
-        ClientExpressionRenderer renderer = new ClientExpressionRenderer(null, componentModel, "test", path);
+        ClientExpressionRenderer renderer = new ClientExpressionRenderer(null, componentModel, "test", path, Collections.emptyMap(), false);
         ASTExpression expression = ExpressionParser.parse(expr);
         expression.childrenAccept(renderer, null);
         return renderer.getOutput();

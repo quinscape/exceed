@@ -40,7 +40,7 @@ public class ExpressionRenderer
     implements ExpressionParserVisitor
 {
     
-    protected StringBuilder buf = new StringBuilder();
+    private StringBuilder buf = new StringBuilder();
     
     @Override
     public Object visit(SimpleNode node, Object data)
@@ -294,5 +294,11 @@ public class ExpressionRenderer
         ExpressionRenderer renderer = new ExpressionRenderer();
         n.jjtAccept(renderer, null);
         return renderer.getOutput();
+    }
+
+
+    public StringBuilder getBuffer()
+    {
+        return buf;
     }
 }

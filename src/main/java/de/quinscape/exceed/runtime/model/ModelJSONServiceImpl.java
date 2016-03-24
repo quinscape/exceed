@@ -6,6 +6,7 @@ import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Required;
 import org.svenson.AbstractPropertyValueBasedTypeMapper;
 import org.svenson.JSON;
 import org.svenson.JSONParser;
@@ -29,7 +30,14 @@ public class ModelJSONServiceImpl
 
     private final JSON generator = JSON.defaultJSON();
 
-    private ClientViewJSONGenerator viewJSONGenerator = new ClientViewJSONGenerator();
+    private ClientViewJSONGenerator clientViewJSONGenerator;
+
+
+    @Required
+    public void setClientViewJSONGenerator(ClientViewJSONGenerator clientViewJSONGenerator)
+    {
+        this.clientViewJSONGenerator = clientViewJSONGenerator;
+    }
 
 
     public ModelJSONServiceImpl()
@@ -57,7 +65,7 @@ public class ModelJSONServiceImpl
             throw new IllegalArgumentException("jsonFormat can't be null");
         }
 
-        return viewJSONGenerator.toJSON(application, model, jsonFormat);
+        return clientViewJSONGenerator.toJSON(application, model, jsonFormat);
     }
 
 

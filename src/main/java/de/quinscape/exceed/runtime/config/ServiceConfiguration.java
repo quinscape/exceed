@@ -1,23 +1,14 @@
 package de.quinscape.exceed.runtime.config;
 
-import de.quinscape.exceed.model.action.ActionModel;
-import de.quinscape.exceed.runtime.ExceedRuntimeException;
-import de.quinscape.exceed.runtime.action.Action;
 import de.quinscape.exceed.runtime.component.QueryDataProvider;
 import de.quinscape.exceed.runtime.component.QueryExecutor;
-import de.quinscape.exceed.runtime.controller.ActionRegistry;
-import de.quinscape.exceed.runtime.controller.DefaultActionRegistry;
+import de.quinscape.exceed.runtime.datalist.DataListService;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
+import de.quinscape.exceed.runtime.domain.JOOQQueryExecutor;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.editor.completion.CompletionService;
-import de.quinscape.exceed.runtime.datalist.DataListService;
-import de.quinscape.exceed.runtime.domain.JOOQQueryExecutor;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
-import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
-import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
-import de.quinscape.exceed.runtime.expression.query.QueryFilterOperations;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
-import de.quinscape.exceed.runtime.expression.query.QueryTransformerOperations;
 import de.quinscape.exceed.runtime.i18n.DefaultTranslator;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.resource.DefaultResourceCacheFactory;
@@ -30,27 +21,15 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.FilterType;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 @Configuration
 @ComponentScan(value = {
-    "de.quinscape.exceed.runtime.action",
     "de.quinscape.exceed.runtime.service"
-}, includeFilters = {
-    @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = Action.class)
 })
 public class ServiceConfiguration
 {
-    @Autowired
-    private ComponentRegistry componentRegistry;
-
-    @Autowired
-    private ApplicationContext applicationContext;
-
     @Bean
     public ViewDataService viewDataService()
     {
@@ -61,23 +40,6 @@ public class ServiceConfiguration
     public QueryTransformer queryTransformer(ExpressionService expressionService, NamingStrategy namingStrategy)
     {
         return new QueryTransformer(expressionService, namingStrategy);
-    }
-
-    @Bean
-    public ExpressionService expressionService(ApplicationContext applicationContext)
-    {
-        HashSet<Object> operationBeans = new HashSet<>(applicationContext.getBeansWithAnnotation(ExpressionOperations
-            .class).values());
-
-        QueryTransformerOperations queryTransformerOperations = new QueryTransformerOperations();
-        operationBeans.add(queryTransformerOperations);
-        operationBeans.add(new QueryFilterOperations());
-
-        ExpressionServiceImpl svc = new ExpressionServiceImpl(operationBeans);
-
-        queryTransformerOperations.setExpressionService(svc);
-
-        return svc;
     }
 
     @Bean
@@ -111,48 +73,25 @@ public class ServiceConfiguration
     }
 
     @Bean
-    public ActionRegistry actionRegistry()
-    {
-        Map<String, Action> actions = new HashMap<>();
-
-        for (Action action : applicationContext.getBeansOfType(Action.class).values())
-        {
-            // instantiate the action model per mandatory default constructor
-            ActionModel actionModel = null;
-            try
-            {
-                Class actionModelClass = action.getActionModelClass();
-                if (actionModelClass == null)
-                {
-                    throw new IllegalStateException(action + " returns invalid action model class null");
-                }
-                actionModel = (ActionModel) actionModelClass.newInstance();
-            }
-            catch (Exception e)
-            {
-                throw new ExceedRuntimeException("Error creating empty action model for " + action, e);
-            }
-            // .. and register the action under the name provided by the model.
-            actions.put(actionModel.getAction(), action);
-        }
-
-        return new DefaultActionRegistry(actions);
-    }
-
-    @Bean
     public Translator translator()
     {
         return new DefaultTranslator();
     }
 
     @Bean
-    public DataListService dataListService(ApplicationContext applicationContext)
+    public DataListService dataListService(ApplicationContext applicationContext, DefaultPropertyConverters defaultPropertyConverters)
     {
         if (applicationContext == null)
         {
             throw new IllegalArgumentException("applicationContext can't be null");
         }
-        return new DataListService(new DefaultPropertyConverters().getConverters());
+        return new DataListService(defaultPropertyConverters.getConverters());
+    }
+
+    @Bean
+    public DefaultPropertyConverters defaultPropertyConverters()
+    {
+        return new DefaultPropertyConverters();
     }
 
     @Bean

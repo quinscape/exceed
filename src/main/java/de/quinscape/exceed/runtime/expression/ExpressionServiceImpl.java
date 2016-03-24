@@ -151,6 +151,11 @@ public class ExpressionServiceImpl
     @Override
     public Object evaluate(Node node, ExpressionEnvironment env)
     {
+        if (env == null)
+        {
+            throw new IllegalArgumentException("env can't be null");
+        }
+
         env.setOperationService(this);
         return node.jjtAccept(env, null);
     }

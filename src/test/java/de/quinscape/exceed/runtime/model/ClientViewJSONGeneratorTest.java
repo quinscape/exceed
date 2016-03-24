@@ -3,6 +3,7 @@ package de.quinscape.exceed.runtime.model;
 import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.TestApplicationBuilder;
+import de.quinscape.exceed.runtime.expression.component.TestActionService;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
 import org.apache.commons.io.FileUtils;
@@ -27,7 +28,7 @@ public class ClientViewJSONGeneratorTest
 
     private ModelJSONService modelJSONService = new ModelJSONServiceImpl();
 
-    private ClientViewJSONGenerator viewJSONGenerator = new ClientViewJSONGenerator();
+    private ClientViewJSONGenerator viewJSONGenerator = new ClientViewJSONGenerator(new TestActionService(), null);
 
 
     @Test

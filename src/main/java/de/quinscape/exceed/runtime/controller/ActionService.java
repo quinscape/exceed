@@ -1,14 +1,18 @@
 package de.quinscape.exceed.runtime.controller;
 
 import de.quinscape.exceed.model.action.ActionModel;
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.action.Action;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface ActionRegistry
+public interface ActionService
 {
     Set<String> getActionNames();
 
