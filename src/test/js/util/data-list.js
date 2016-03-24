@@ -186,6 +186,17 @@ describe("DataList Helper", function ()
         cursor = cursor.pop(2);
         assert(cursor.data.name === "AnotherFoo");
 
+
+        // property cursor
+        cursor = dl.getCursor([0, "name"]);
+        assert(cursor.data === "AnotherFoo");
+
+        cursor.set(null, "YetAnotherFoo");
+        call = changeSpy.getCall(3);
+        newRows = call.args[0];
+        assert(newRows[0].name === "YetAnotherFoo");
+
+
     });
 
 
@@ -244,6 +255,13 @@ describe("DataList Helper", function ()
         assert(propertyType.type === "PlainText");
         assert(propertyType.data === 9);
 
+        cursor = dl.getCursor([0, "embedded", "name"]);
+
+        propertyType = cursor.getPropertyType();
+        assert(propertyType.parent === "Embedded");
+        assert(propertyType.type === "PlainText");
+        assert(propertyType.data === 6);
+
     });
 
     it("validates cursors", function ()
@@ -277,34 +295,4 @@ describe("DataList Helper", function ()
 
     });
 
-    it("validates cursor base type", function ()
-    {
-        // cursor bases must be complex objects, not properties
-
-        assert.throws(function ()
-        {
-            dl.getCursor([0, "name"]);
-        }, /Invalid cursor base type: 'PlainText'/);
-
-        assert.throws(function ()
-        {
-            dl.getCursor([0, "embedded", "name"]);
-        }, /Invalid cursor base type: 'PlainText'/);
-
-        assert.throws(function ()
-        {
-            dl.getCursor([0, "joinedName"]);
-        }, /Invalid cursor base type: 'PlainText'/);
-
-        assert.throws(function ()
-        {
-            dl.getCursor([0, "bars", 0, "name"]);
-        }, /Invalid cursor base type: 'PlainText'/);
-
-        assert.throws(function ()
-        {
-            dl.getCursor([0, "bazes", "one", "num"]);
-        }, /Invalid cursor base type: 'Integer'/);
-
-    });
 });

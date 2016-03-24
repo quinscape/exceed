@@ -94,11 +94,6 @@ DataList.prototype.getCursor = function (path)
             type = typeParam;
             typeParam = null;
         }
-
-        if (!this.types[type] && type !== "List" && type !== "Map")
-        {
-            throw new Error("Invalid cursor base type: '" + type + "'")
-        }
     }
 
     return new DataListCursor(this, path, type, typeParam);
@@ -161,6 +156,7 @@ DataList.prototype.followTypeDefinitionPath = function(path, startIndex, type, t
 
     if (resolve)
     {
+
         if (!property)
         {
             return {
@@ -303,17 +299,21 @@ DataListCursor.prototype.getCursor = function (path)
 DataListCursor.prototype.getPropertyType = function (path)
 {
     var property;
-    var info;
-    validatePath(path);
-
-    var key = path[0];
 
     var type = this.type;
     var typeParam = this.typeParam;
 
-    if (this.type === ROOT_NAME)
+    if (!path || !path.length)
     {
-        var e = this.dataList.columns[key];
+        type = ROOT_NAME;
+        typeParam = null;
+        path = this.path.slice(1);
+    }
+
+    if (type === ROOT_NAME)
+    {
+        var column = path[0];
+        var e = this.dataList.columns[column];
         if (!e)
         {
             throw new Error("No column '" + column + "' in dataList columns ( '" + JSON.stringify(this.columns) + " )");
