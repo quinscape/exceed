@@ -3,6 +3,7 @@ package de.quinscape.exceed.component;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.model.view.AttributeValue;
 import org.svenson.JSONParameter;
 import org.svenson.JSONProperty;
 
@@ -45,6 +46,7 @@ public class PropDeclaration
 
     private final String description;
 
+    private final AttributeValue defaultValue;
 
     public PropDeclaration(
         @JSONParameter("client")
@@ -60,10 +62,13 @@ public class PropDeclaration
         @JSONParameter("required")
         Boolean required,
         @JSONParameter("description")
-        String description) throws ParseException
+        String description,
+        @JSONParameter("defaultValue")
+        String defaultValue) throws ParseException
     {
         this.rule = rule;
         this.description = description;
+        this.defaultValue = AttributeValue.forValue(defaultValue);
         this.ruleExpression = ExpressionParser.parse(rule);
         this.type = type != null ? type :  PropType.PLAINTEXT;
 
@@ -129,6 +134,12 @@ public class PropDeclaration
     public String getDescription()
     {
         return description;
+    }
+
+
+    public AttributeValue getDefaultValue()
+    {
+        return defaultValue;
     }
 }
 
