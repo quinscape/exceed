@@ -10,5 +10,6 @@ public enum PropType
     FLOAT,
     BOOLEAN,
 
-    QUERY_EXPRESSION
+    QUERY_EXPRESSION,
+    ACTION_EXPRESSION
 }
