@@ -71,9 +71,6 @@ public class FileAppResource
     @Override
     public String toString()
     {
-        return super.toString() + ": "
-            + "root = " + root
-            + ", file = " + file
-            ;
+        return super.toString() + ": " + file.getPath();
     }
 }
