@@ -1,6 +1,7 @@
 /**
- *  Renders a JSON view model to Javasript source code creating the described component and context hierarchy and creates
- *  the react class for that view.
+ *  Renders Javasript source code from the JSON view model.
+ *
+ *  It creates the described component and context hierarchy and creates the react class for that view.
  *
  *  If we're in production mode and NO_CATCH_ERRORS is not set, we instrument the generated view-source by hand
  *  to have catch-errors protection for the view component, too.
@@ -9,8 +10,10 @@
 var catchErrors;
 var ErrorReport;
 
+var sys = require("../sys");
+
 // we repeat this full expression so that uglify is clever enough to really strip the code when inactive
-if (process.env.NODE_ENV !== "production" && !process.env.NO_CATCH_ERRORS)
+if (process.env.NODE_ENV !== "production" && process.env.NO_CATCH_ERRORS !== "true")
 {
     catchErrors = require("react-transform-catch-errors");
     ErrorReport = require("../ui/ErrorReport.es5");
@@ -162,6 +165,14 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
             }
         }
     }
+
+    if (componentDescriptor && componentDescriptor.modelAware)
+    {
+        commaIfNotFirst();
+        indent(ctx, depth + 2);
+        ctx.out.push(" \"viewModel\": _v.viewModel");
+    }
+
 
     if (childIndex !== undefined)
     {

@@ -31,6 +31,7 @@ function RTView(model, data)
     this.name = model.name;
     this.root = model.root;
     this.data = data;
+    this.viewModel = model;
 }
 
 /**

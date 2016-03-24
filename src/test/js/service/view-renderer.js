@@ -80,6 +80,12 @@ var ViewComponentRenderer = proxyquire("../../../../src/main/js/service/view-ren
                 },
                 Injected: {
                     component: Injected,
+                    propTypes: {
+                        id: {
+                            client: false
+                        }
+
+                    },
                     queries: {
                         value : {}
                     }
@@ -96,7 +102,7 @@ var ViewComponentRenderer = proxyquire("../../../../src/main/js/service/view-ren
     }
 });
 
-var ViewComponent = require("../../../../src/main/js/service/render").ViewComponent;
+var ViewComponent = require("../../../../src/main/js/service/view").ViewComponent;
 
 // View Model client format with "exprs" and transformed expressions
 var simpleView = {
@@ -136,7 +142,7 @@ describe("View Components", function ()
         />);
 
         expect(renderer.getRenderOutput()).toEqualJSX(
-            <Foo model={ simpleView.root }>
+            <Foo model={ simpleView.root } viewModel={ simpleView }>
                 <Bar>
                     abc123
                 </Bar>
