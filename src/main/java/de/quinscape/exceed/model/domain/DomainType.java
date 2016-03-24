@@ -6,12 +6,16 @@ import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DomainType
     extends TopLevelModel
 {
     private List<String> pkFields = Collections.singletonList("id");
+
+    private Set<String> pkFieldSet = new HashSet<>(pkFields);
 
     /**
      * the linked hash map type ensures our properties stay in definition order
@@ -41,7 +45,13 @@ public class DomainType
 
     public void setPkFields(List<String> pkFields)
     {
+        if (pkFields == null)
+        {
+            throw new IllegalArgumentException("pkFields can't be null");
+        }
+
         this.pkFields = pkFields;
+        this.pkFieldSet = new HashSet<>(pkFields);
     }
 
 
@@ -64,6 +74,11 @@ public class DomainType
         return domainService;
     }
 
+
+    public boolean isPKField(String name)
+    {
+        return pkFieldSet.contains(name);
+    }
 
     @Override
     public String toString()
