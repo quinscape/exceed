@@ -6,11 +6,17 @@ import de.quinscape.exceed.component.PropDeclaration;
 import de.quinscape.exceed.component.PropType;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ASTFunction;
+import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.model.routing.Mapping;
+import de.quinscape.exceed.model.routing.MappingNode;
 import de.quinscape.exceed.model.view.AttributeValue;
+import de.quinscape.exceed.model.view.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.model.view.ComponentModelBuilder;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.application.RoutingResult;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
-import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.editor.completion.AceCompletion;
 import de.quinscape.exceed.runtime.editor.completion.CompletionType;
 import de.quinscape.exceed.runtime.editor.completion.PropWizard;
@@ -24,9 +30,13 @@ import de.quinscape.exceed.runtime.service.ComponentRegistration;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import static de.quinscape.exceed.model.view.ComponentModelBuilder.component;
 
 /**
  * Expression environment for prop completion rules.
@@ -71,6 +81,110 @@ public class PropCompleteEnvironment
         }
         return suggestions;
     }
+
+    @Operation
+    public List<AceCompletion> location(ASTFunction node)
+    {
+        List<AceCompletion> suggestions = new ArrayList<>();
+
+        MappingNode rootNode = application.getApplicationModel().getRoutingTable().getRootNode();
+        collectLocations(suggestions, rootNode, new LocationPath(rootNode));
+        return suggestions;
+    }
+
+    private void collectLocations(List<AceCompletion> suggestions, MappingNode node, LocationPath locationPath)
+    {
+        Mapping mapping = node.getMapping();
+        if (mapping != null)
+        {
+            String path = locationPath.path();
+            String currentText = componentModel.getAttribute("text").getValue();
+            ComponentModelBuilder builder =
+                component("Link")
+                    .withAttribute("location", path)
+                    .withAttribute("text", "${0:" + (currentText != null ? currentText : "text") + "}");
+
+
+            Map<String, String> current = getCurrentParams();
+
+            List<String> variables = locationPath.variables();
+            for (int i = 0; i < variables.size(); i++)
+            {
+                String varName = variables.get(i);
+                String value = current.get(varName);
+
+                builder.withKids(
+                    component("Link.Param")
+                        .withAttribute("name", varName)
+                        .withAttribute("value", "${" + (i + 1) + ":" + (value != null ? value : "value") + "}")
+                );
+            }
+
+            suggestions.add(new AceCompletion(CompletionType.PROP, path, mapping
+                .getName(), null, builder.getComponent(), null));
+        }
+
+            List<MappingNode> kids = node.getChildren();
+            if (kids != null)
+            {
+                for (MappingNode kid : kids)
+                {
+                    collectLocations(suggestions, kid, locationPath.next(kid));
+                }
+            }
+    }
+
+
+    private Map<String, String> getCurrentParams()
+    {
+        if (componentModel == null || componentModel.getKids() == null)
+        {
+            return Collections.emptyMap();
+        }
+
+        Map<String,String> map = new HashMap<>();
+        for (ComponentModel kid : componentModel.getKids())
+        {
+            if (kid.getName().equals("Link.Param"))
+            {
+                Attributes attrs = kid.getAttrs();
+                String varName = (String) attrs.getAttribute("name").getValue();
+                String value = (String) attrs.getAttribute("value").getValue();
+                map.put(varName, value);
+            }
+        }
+        return map;
+    }
+
+    @Operation
+    public List<AceCompletion> locationParams(ASTFunction node)
+    {
+        Set<String> alreadyUsedNames = findAlreadyUsed();
+
+        List<AceCompletion> suggestions = new ArrayList<>();
+
+        Object value = node.jjtGetChild(0).jjtAccept(this, null);
+
+        if (!(value instanceof String))
+        {
+            throw new IllegalArgumentException("Path is no string: " + value);
+        }
+        String path = (String) value;
+
+        RoutingResult result = application.getApplicationModel().getRoutingTable().resolve(path);
+
+        for (String name : result.getVariables().keySet())
+        {
+            if (!alreadyUsedNames.contains(name))
+            {
+                suggestions.add(new AceCompletion(CompletionType.PROP, name, "param", null));
+            }
+        }
+
+        return suggestions;
+    }
+
+
 
     @Operation
     public List<AceCompletion> integer(ASTFunction node)
@@ -247,5 +361,70 @@ public class PropCompleteEnvironment
         }
 
         throw new IllegalStateException(ExpressionRenderer.render(ruleExpression) + " produced no list of prop suggestions");
+    }
+
+
+    private class LocationPath
+    {
+        private final MappingNode node;
+        private final LocationPath parent;
+
+
+        private LocationPath(MappingNode node)
+        {
+            this(node, null);
+        }
+
+        private LocationPath(MappingNode node, LocationPath parent)
+        {
+            this.node = node;
+            this.parent = parent;
+        }
+
+        public LocationPath next(MappingNode kid)
+        {
+            return new LocationPath(kid, this);
+        }
+
+        public String path()
+        {
+            if (this.parent == null)
+            {
+                return "/";
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("/").append(this.node.getName());
+
+            LocationPath p = this;
+
+            while ((p = p.parent)  != null)
+            {
+                if (p.parent != null)
+                {
+                    sb.insert(0, "/" + p.node.getName());
+                }
+            }
+
+            return sb.toString();
+        }
+
+        public List<String> variables()
+        {
+            List<String> vars = new ArrayList<>();
+
+            LocationPath p = this;
+            while (p  != null)
+            {
+                String varName = p.node.getVarName();
+                if (varName != null)
+                {
+                    vars.add(varName);
+                }
+                p = p.parent;
+            }
+            Collections.reverse(vars);
+            return vars;
+        }
     }
 }

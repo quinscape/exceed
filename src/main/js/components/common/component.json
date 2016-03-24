@@ -15,16 +15,25 @@
             "classes": ["element"],
             "propTypes": {
                 "location": {
-                    "rule": "location()"
+                    "rule": "location()",
+                    "required" : true
                 },
-                "params": {
+                "text": {
+                    "type": "PLAINTEXT",
+                    "required" : true
                 }
             },
-            "propWizards" : {
-                "params": {
-                    "wizard": "LinkParamsWizard",
-                    "title": "Configure Params",
-                    "description": "Configure declared location parameters"
+            "childRule" : "component('Link.Param')"
+        },
+        "Link.Param": {
+            "propTypes": {
+                "name": {
+                    "type" : "PLAINTEXT",
+                    "rule" : "locationParams()",
+                    "required" : true
+                },
+                "value": {
+                    "required" : true
                 }
             }
         }
