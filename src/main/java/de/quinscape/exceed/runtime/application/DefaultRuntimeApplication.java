@@ -15,7 +15,6 @@ import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataProviderPreparationException;
 import de.quinscape.exceed.runtime.domain.DomainService;
-import de.quinscape.exceed.runtime.model.JSONFormat;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.ResourceChangeListener;
@@ -172,9 +171,7 @@ public class DefaultRuntimeApplication
             if (isPreview)
             {
                 String json = RequestUtil.readRequestBody(request); ;
-                View previewView = modelCompositionService.createViewModel("preview/" + viewName, json, true);
-                previewView.setCachedJSON(modelCompositionService.getModelJSONService().toJSON(this, previewView,
-                    JSONFormat.CLIENT));
+                View previewView = modelCompositionService.createViewModel(this, "preview/" + viewName, json, true);
 
                 List<ComponentError> errors = new ArrayList<>();
 
@@ -198,6 +195,12 @@ public class DefaultRuntimeApplication
             ViewData viewData = viewDataService.prepareView(runtimeContext, view);
             String viewDataJSON = domainService.toJSON(viewData);
             String viewModelJSON = view.getCachedJSON();
+
+            if (viewModelJSON == null)
+            {
+                throw new IllegalStateException("No view model JSON set in view");
+            }
+
 
             if (!isAjaxRequest)
             {
