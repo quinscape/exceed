@@ -5,8 +5,7 @@ var pollingEnabled = false;
 const ACTIVITY_TIMEOUT = 60000;
 
 var ajax = require("./ajax");
-var fetchView = require("./fetch-view");
-var render = require("./render");
+var viewService = require("./view");
 
 // are we currently waiting for a poll response?
 var polling = false;
@@ -48,18 +47,13 @@ if (process.env.NODE_ENV !== "production")
 
             if (model._type === "view.View")
             {
-                fetchView().then(function (data)
-                {
-                    return render.render(
-                        data.viewModel,
-                        data.viewData.data
-                    );
-                })
-                .then(pollChanges)
-                .catch(function (e)
-                {
-                    console.error(e);
-                });
+                viewService.fetch()
+                    .then(viewService.render)
+                    .then(pollChanges)
+                    .catch(function (e)
+                    {
+                        console.error(e);
+                    });
             }
             else if (model._type === "change.Shutdown")
             {

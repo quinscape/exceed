@@ -7,5 +7,7 @@
 module.exports = {
     hub: require("./service/hub"),
     componentService: require("./service/component"),
-    render: require("./service/render")
+    converter: require("./service/property-converter"),
+    action: require("./service/action"),
+    render: require("./service/view")
 };

@@ -271,15 +271,16 @@ ace.define('ace/mode/exceed_view',["require","exports","module"], function(ace_r
 
                 var annos = session.getAnnotations();
 
-                if (!annos.length)
+                if (!annos.length && !session.getUndoManager().isClean())
                 {
                     var model = Tokens.toModel(session);
 
-                    if (model && model.root)
-                    {
-                        var fetchView = require("../../service/fetch-view");
+                    var viewService = require("../../service/view");
 
-                        fetchView(model).then(function (data)
+                    if (model && model.root && viewService.getViewModel().name === session.exceedViewName)
+                    {
+
+                        viewService.fetch({ preview: model }).then(function (data)
                         {
                             var expressionErrors = data.previewErrors;
                             if (expressionErrors)
@@ -291,14 +292,11 @@ ace.define('ace/mode/exceed_view',["require","exports","module"], function(ace_r
                             {
                                 if (!worker.first)
                                 {
-                                    //console.log("render after fetchView", data);
+                                    console.log("render preview", data);
 
-                                    // avoid cyclic dependency
-                                    var render = require("../../service/render");
-
-                                    return render.render(
+                                    return viewService.render(
                                         data.viewModel,
-                                        data.viewData.data
+                                        data.viewData
                                     );
                                 }
                             }
@@ -306,8 +304,8 @@ ace.define('ace/mode/exceed_view',["require","exports","module"], function(ace_r
                         })
                         .catch(function (e)
                         {
-                            var render = require("../../service/render");
-                            return render.renderError(new Error(JSON.stringify(e)), true);
+                            console.error(e);
+                            return viewService.renderError(new Error(JSON.stringify(e)), true);
                         });
                     }
                 }

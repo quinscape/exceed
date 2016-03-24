@@ -8,7 +8,7 @@ var sys = require("./sys");
 var componentService = require("./service/component");
 var actionService = require("./service/action");
 var security = require("./service/security");
-var render = require("./service/render");
+var viewService = require("./service/view");
 var hub = require("./service/hub");
 
 var svgLayout = require("./util/svg-layout");
@@ -32,14 +32,10 @@ function evaluateEmbedded(elemId, mediaType)
     return JSON.parse(elem.innerHTML);
 }
 
-var currentViewName;
-var currentViewData;
-
 domready(function ()
 {
     var bodyData = document.body.dataset;
     security.init(bodyData.roles);
-
 
     var model = evaluateEmbedded("root-model", "x-ceed/view-model");
     var data = evaluateEmbedded("root-data", "x-ceed/view-data");
@@ -47,24 +43,8 @@ domready(function ()
 
     sys.init( systemInfo.contextPath, bodyData.appName);
 
-    currentViewName = model.name;
-    currentViewData = data.data;
-
-    //console.log("currentViewData", JSON.stringify(currentViewData, null, "  "));
-
     console.info("Server actions", systemInfo.actions);
-
     actionService.initServerActions(systemInfo.actions);
-
-    //actionService.execute([
-    //    {
-    //        action: "sleep",
-    //        time: 10000
-    //    },
-    //    {
-    //        action: "ping"
-    //    }
-    //], {value:1});
 
     // async setup
     Promise.all([
@@ -72,11 +52,6 @@ domready(function ()
         hub.init(bodyData.connectionId)
     ]).then(function ()
     {
-        //if (process.env.NODE_ENV !== "production" && security.hasRole("ROLE_EDITOR"))
-        //{
-        //    hotReload.enablePolling();
-        //}
-
         //var group = hub.createGroup();
         //
         //group.request({
@@ -117,7 +92,7 @@ domready(function ()
         //    console.error(err);
         //});
 
-        return render.render(model, currentViewData);
+        return  viewService.render(model, data);
     })
     .catch(function (e)
     {

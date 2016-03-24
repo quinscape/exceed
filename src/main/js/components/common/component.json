@@ -12,7 +12,7 @@
             }
         },
         "Link": {
-            "classes": ["element"],
+            "classes": ["element", "toolbar-child"],
             "propTypes": {
                 "location": {
                     "rule": "location()",
