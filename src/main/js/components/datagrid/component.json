@@ -51,6 +51,9 @@
                     "rule": "fieldOf(parent.prop('type'))",
                     "required" : true
                 },
+                "heading": {
+                    "type": "PLAINTEXT"
+                },
                 "context" : {
                     "context": "context[props.name]",
                     "contextType" : "DataGrid.Row"

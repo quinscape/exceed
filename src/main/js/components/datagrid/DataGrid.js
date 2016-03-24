@@ -185,7 +185,7 @@ var DataGrid = React.createClass({
                 <Header
                     key={ i }
                     currentSortLink={ currentSortLink }
-                    heading={ i18n(column.domainType + "." + column.name) }
+                    heading={ i18n(kid.attrs.heading || (column.type + "." + column.name)) }
                     sort={ name }
                     />
             );
