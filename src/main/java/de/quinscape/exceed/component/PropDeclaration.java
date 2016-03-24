@@ -23,9 +23,14 @@ public class PropDeclaration
     private final String context;
 
     /**
-     * Completion rule for this prop. Mutually exclusive with wizard.
+     * Completion rule for this prop. Wizard dialogs can be specified by setting {@link ComponentDescriptor#componentPropWizards}
      */
     private final String rule;
+
+    /**
+     * AST for {@link #rule}
+     */
+    private final ASTExpression ruleExpression;
 
     /**
      * Proptype for for this prop.
@@ -42,10 +47,14 @@ public class PropDeclaration
      */
     private final Boolean required;
 
-    private final ASTExpression ruleExpression;
-
+    /**
+     * Prop declaration description for autocomplete purposes.
+     */
     private final String description;
 
+    /**
+     * Default value for this prop.
+     */
     private final AttributeValue defaultValue;
 
     public PropDeclaration(

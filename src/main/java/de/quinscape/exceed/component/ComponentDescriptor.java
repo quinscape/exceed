@@ -3,6 +3,8 @@ package de.quinscape.exceed.component;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.runtime.component.DataProvider;
+import de.quinscape.exceed.runtime.component.QueryDataProvider;
 import de.quinscape.exceed.runtime.util.Util;
 import org.svenson.JSONParameter;
 import org.svenson.JSONProperty;
@@ -19,17 +21,72 @@ import java.util.Set;
  */
 public class ComponentDescriptor
 {
+    /**
+     * Var definitions for this component
+     */
     private final Map<String,String> vars;
+
+    /**
+     * Maps prop names to {@link PropDeclaration}s for this component.
+     */
     private final Map<String,PropDeclaration> propTypes;
+
+    /**
+     * Completion rule to find all eligible children for this component. The general mechanism is to find all child candidates
+     * with this rule and then use a potential parentRule on the child to validate the candidate status.
+     *
+     * @see #parentRule
+     */
     private final String childRule;
+
+    /**
+     * AST for {@link #childRule}
+     */
     private final ASTExpression childRuleExpression;
+
+    /**
+     * Validation rule to validate if a component is valid in a parent context.
+     *
+     * @see #childRule
+     */
     private final String parentRule;
+
+    /**
+     * AST for {@link #parentRule}
+     */
     private final ASTExpression parentRuleExpression;
+
+    /**
+     * Query definitions for this component.
+     *
+     * @see #dataProviderName
+     */
     private final Map<String, Object> queries;
+
+    /**
+     * Template models for this component
+     */
     private final List<ComponentTemplate> templates;
+
+    /**
+     * Component classification.
+     */
     private final Set<String> classes;
+
+    /**
+     * Name of spring bean implementing the {@link DataProvider} interface to use as an alternate data provider to use for this component.
+     * The default is to use {@link QueryDataProvider}.
+     */
     private final String dataProviderName;
-    private final String providedContext;
+    /**
+     * Defines the symbolic type name of the context provided by this component. Other components can receive that component type either
+     * by inheriting it from the first parent to offer any context or by specifying a context type they depend on.
+     */
+    private final String providesContext;
+
+    /**
+     * Maps the prop name to the a component prop wizard definition for that prop.
+     */
     private final Map<String,ComponentPropWizard> componentPropWizards;
 
     /**
@@ -72,7 +129,7 @@ public class ComponentDescriptor
         Map<String, String> queryExecutors,
 
         @JSONParameter("providesContext")
-        String providedContext,
+        String providesContext,
 
         @JSONParameter("modelAware")
         Boolean modelAware,
@@ -91,12 +148,16 @@ public class ComponentDescriptor
         this.dataProviderName = dataProviderName;
         this.childRule = childRule;
         this.queryExecutors = Util.immutableMap(queryExecutors);
-        this.providedContext = providedContext;
+        this.providesContext = providesContext;
 
         childRuleExpression = ExpressionParser.parse(childRule);
         parentRuleExpression = ExpressionParser.parse(parentRule);
         this.componentPropWizards = Util.immutableMap(componentPropWizards);
+
     }
+
+
+
 
     public Map<String, String> getVars()
     {
@@ -134,9 +195,9 @@ public class ComponentDescriptor
 
     @JSONProperty(ignoreIfNull = true)
 
-    public String getProvidedContext()
+    public String getProvidesContext()
     {
-        return providedContext;
+        return providesContext;
     }
 
     public Map<String, String> getQueryExecutors()
