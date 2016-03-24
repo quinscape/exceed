@@ -10,6 +10,8 @@ public class MappingNode
 {
     private String name;
 
+    private String varName;
+
     private Mapping mapping;
     private List<MappingNode> children;
 
@@ -20,6 +22,14 @@ public class MappingNode
 
     public void setName(String name)
     {
+        if (name != null && name.startsWith("{") && name.endsWith("}"))
+        {
+            varName = name.substring(1, name.length() - 1).trim();
+        }
+        else
+        {
+            varName = null;
+        }
         this.name = name;
     }
 
@@ -51,11 +61,27 @@ public class MappingNode
 
     public void setMapping(Mapping mapping)
     {
+        if (mapping != null)
+        {
+            boolean haveProcess = mapping.getProcessName() != null;
+            boolean haveView = mapping.getViewName() != null;
+            if (haveProcess == haveView)
+            {
+                throw new IllegalStateException("Need either a view reference or a process reference");
+            }
+        }
         this.mapping = mapping;
     }
 
     public boolean isVariable()
     {
-        return name.startsWith("{") && name.endsWith("}");
+        return varName != null;
+    }
+
+
+    @JSONProperty(ignore = true)
+    public String getVarName()
+    {
+        return varName;
     }
 }

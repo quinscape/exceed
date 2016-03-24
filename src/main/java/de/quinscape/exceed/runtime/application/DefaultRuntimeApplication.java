@@ -6,9 +6,6 @@ import de.quinscape.exceed.model.change.CodeChange;
 import de.quinscape.exceed.model.change.Shutdown;
 import de.quinscape.exceed.model.change.StyleChange;
 import de.quinscape.exceed.model.change.Timeout;
-import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.routing.Mapping;
-import de.quinscape.exceed.model.routing.MappingNode;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.AttributeValueType;
 import de.quinscape.exceed.model.view.Attributes;
@@ -50,7 +47,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 /**
  * The application at runtime. Goes beyond what is included in the {@link RuntimeApplication} interface which is mostly
@@ -147,7 +143,7 @@ public class DefaultRuntimeApplication
 
     public void route(RuntimeContext runtimeContext) throws IOException
     {
-        RoutingResult result = resolve(runtimeContext.getPath());
+        RoutingResult result = applicationModel.getRoutingTable().resolve(runtimeContext.getPath());
 
 
         HttpServletRequest request = runtimeContext.getRequest();
@@ -284,51 +280,6 @@ public class DefaultRuntimeApplication
         }
 
         return id;
-    }
-
-    private RoutingResult resolve(String path)
-    {
-        StringTokenizer tokenizer = new StringTokenizer(path, "/");
-
-        MappingNode node = applicationModel.getRoutingTable().getRootNode();
-
-        while (node != null && tokenizer.hasMoreTokens())
-        {
-            String part = tokenizer.nextToken();
-
-            MappingNode found = null;
-            MappingNode varNode = null;
-            for (MappingNode kid : node.children())
-            {
-                if (kid.getName().equals(part))
-                {
-                    found = kid;
-                    break;
-                }
-                if (kid.isVariable() && varNode == null)
-                {
-                    varNode = kid;
-                }
-            }
-
-            if (found == null)
-            {
-                found = varNode;
-            }
-
-            node = found;
-        }
-
-        if (!tokenizer.hasMoreTokens() && node != null)
-        {
-            Mapping mapping = node.getMapping();
-            if (mapping != null)
-            {
-                return new RoutingResult(mapping);
-            }
-        }
-
-        throw new MappingNotFoundException("Could not find a valid mapping for path '" + path + "'");
     }
 
 
