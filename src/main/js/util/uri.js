@@ -1,6 +1,9 @@
 "use strict";
 
 var sys = require("../sys");
+var extend = require("extend");
+
+var url = require("url");
 
 function evaluateParams(params, usedInPath)
 {
@@ -38,12 +41,27 @@ function replacePathVariables(location, params, usedInPath)
         return value;
     });
 }
-function uri(location, params)
+
+function uri(location, params, containsContextPath)
 {
     var usedInPath = {};
+
+    var hPos = location.indexOf("#");
+    if (hPos >=0)
+    {
+        location = location.substring(0, hPos);
+    }
+    var qPos = location.indexOf("?");
+    if (qPos >= 0)
+    {
+        var current = url.parse(location, true);
+        params = extend(current.query, params);
+        location = location.substring(0, qPos);
+    }
+
     location = replacePathVariables(location, params, usedInPath);
 
-    var result = sys.contextPath + location + evaluateParams(params, usedInPath);
+    var result = (containsContextPath ? "" : sys.contextPath) + location + evaluateParams(params, usedInPath);
 
     //console.log("URI:", result);
 
