@@ -67,7 +67,7 @@ public class PropCompleteEnvironmentTest
         QueryTransformer queryTransformer = new QueryTransformer(svc);
         {
 
-            PropCompleteEnvironment env = new PropCompleteEnvironment( app, queryTransformer,
+            PropCompleteEnvironment env = new PropCompleteEnvironment( app.createRuntimeContext(), queryTransformer,
                 viewModel, componentModel, "name");
 
             List<AceCompletion> completions = env.evaluate(svc);
@@ -81,7 +81,7 @@ public class PropCompleteEnvironmentTest
         }
 
         {
-            PropCompleteEnvironment env = new PropCompleteEnvironment(app, queryTransformer,
+            PropCompleteEnvironment env = new PropCompleteEnvironment(app.createRuntimeContext(), queryTransformer,
                 viewModel, componentModel.getParent(), "type");
 
             List<AceCompletion> suggestions = env.evaluate(svc);

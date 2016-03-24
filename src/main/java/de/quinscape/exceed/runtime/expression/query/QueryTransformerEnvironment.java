@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.expression.query;
 
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
 import org.slf4j.Logger;
@@ -15,6 +16,8 @@ public class QueryTransformerEnvironment
 
     private static Logger log = LoggerFactory.getLogger(QueryTransformerEnvironment.class);
 
+    private final NamingStrategy namingStrategy;
+
     private final ComponentModel componentModel;
 
     private final Map<String, Object> vars;
@@ -24,11 +27,13 @@ public class QueryTransformerEnvironment
 
     public QueryTransformerEnvironment(
         DomainService domainService,
+        NamingStrategy namingStrategy,
         ComponentModel componentModel,
         Map<String, Object> vars
     )
     {
         this.domainService = domainService;
+        this.namingStrategy = namingStrategy;
         this.componentModel = componentModel;
         this.vars = vars;
     }
@@ -38,7 +43,7 @@ public class QueryTransformerEnvironment
     public Object resolveIdentifier(String name)
     {
 
-        DomainType domainType = domainService.getDomainType(name);
+        DomainType domainType = runtimeContext.getRuntimeApplication().getDomainService().getDomainType(name);
         if (domainType == null)
         {
             throw new QueryTransformationException("Unknown domain type '" + name + "'");

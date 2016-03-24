@@ -64,7 +64,7 @@ public class JOOQQueryExecutor
 
 
     @Override
-    public DataList execute(QueryDefinition queryDefinition)
+    public DataList execute(RuntimeContext runtimeContext, QueryDefinition queryDefinition)
     {
         QueryDomainType queryDomainType = queryDefinition.getQueryDomainType();
 

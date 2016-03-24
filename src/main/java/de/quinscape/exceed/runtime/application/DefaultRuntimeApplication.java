@@ -27,16 +27,20 @@ import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.service.DomainServiceFactory;
+import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;
 import de.quinscape.exceed.runtime.service.StyleService;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
 import de.quinscape.exceed.runtime.util.FileExtension;
 import de.quinscape.exceed.runtime.util.RequestUtil;
+import de.quinscape.exceed.runtime.view.ComponentData;
 import de.quinscape.exceed.runtime.view.ViewData;
 import de.quinscape.exceed.runtime.view.ViewDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.ModelMap;
 import org.svenson.JSON;
+import org.svenson.JSONParseException;
+import org.svenson.JSONParser;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -44,8 +48,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -61,6 +67,12 @@ public class DefaultRuntimeApplication
     implements ResourceChangeListener, RuntimeApplication
 {
     public static final String PREVIEW_HEADER_NAME = "X-ceed-Preview";
+
+    public static final String UPDATE_HEADER_NAME = "X-ceed-Update";
+
+    public static final String UPDATE_ID_PARAM = "_xcd_id";
+
+    public static final String UPDATE_VARS_PARAM = "_xcd_vars";
 
     private static Logger log = LoggerFactory.getLogger(DefaultRuntimeApplication.class);
 
@@ -80,10 +92,13 @@ public class DefaultRuntimeApplication
 
     private final DomainService domainService;
 
+    private final List<RuntimeInfoProvider> runtimeInfoProviders;
+
     private long lastChange;
 
     private TopLevelModel changeModel = null;
 
+    public final static String RUNTIME_INFO_NAME = "_exceed";
 
     public DefaultRuntimeApplication(
         ServletContext servletContext,
@@ -92,8 +107,8 @@ public class DefaultRuntimeApplication
         StyleService styleService,
         ModelCompositionService modelCompositionService,
         ResourceLoader resourceLoader,
-        DomainServiceFactory domainServiceFactory
-    )
+        DomainServiceFactory domainServiceFactory,
+        List<RuntimeInfoProvider> runtimeInfoProviders)
     {
         if (servletContext == null)
         {
@@ -106,6 +121,7 @@ public class DefaultRuntimeApplication
         this.componentRegistry = componentRegistry;
         this.modelCompositionService = modelCompositionService;
         this.resourceLoader = resourceLoader;
+        this.runtimeInfoProviders = runtimeInfoProviders;
 
         //boolean production = ApplicationStatus.from(state) == ApplicationStatus.PRODUCTION;
         applicationModel = new ApplicationModel();
@@ -141,12 +157,9 @@ public class DefaultRuntimeApplication
     }
 
 
-    public void route(RuntimeContext runtimeContext) throws IOException
+    public void route(HttpServletRequest request, HttpServletResponse response, RuntimeContext runtimeContext, ModelMap model) throws IOException
     {
         RoutingResult result = applicationModel.getRoutingTable().resolve(runtimeContext.getPath());
-
-
-        HttpServletRequest request = runtimeContext.getRequest();
 
 
         String viewName = result.getMapping().getViewName();
@@ -154,7 +167,6 @@ public class DefaultRuntimeApplication
         log.debug("Routing chose view '{}'", viewName);
 
         View view;
-        HttpServletResponse response = runtimeContext.getResponse();
         if (viewName == null || (view = applicationModel.getViews().get(viewName)) == null)
         {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "View " + viewName + " not found" +
@@ -162,16 +174,16 @@ public class DefaultRuntimeApplication
             return;
         }
 
-        ModelMap model = runtimeContext.getModel();
         boolean isAjaxRequest = RequestUtil.isAjaxRequest(request);
         boolean isPreview = false;
         if (isAjaxRequest)
         {
-            isPreview = request.getMethod().equals("POST") && "true".equals(request.getHeader(PREVIEW_HEADER_NAME));
+            isPreview = isPreviewRequest(request);
             if (isPreview)
             {
                 String json = RequestUtil.readRequestBody(request); ;
                 View previewView = modelCompositionService.createViewModel(this, "preview/" + viewName, json, true);
+                modelCompositionService.postProcessView(this, previewView);
 
                 List<ComponentError> errors = new ArrayList<>();
 
@@ -189,11 +201,22 @@ public class DefaultRuntimeApplication
             }
         }
         runtimeContext.setView(view);
+        runtimeContext.setVariables(addRequestParameters(request, new HashMap<>(result.getVariables())));
 
         try
         {
+            if (isAjaxRequest && isVarsUpdate(request))
+            {
+                updateComponentVars(runtimeContext, request, view, response);
+                return;
+            }
+
             ViewData viewData = viewDataService.prepareView(runtimeContext, view);
-            String viewDataJSON = domainService.toJSON(viewData);
+
+            Map<String, Object> viewDataMap = new HashMap<>(viewData.getData());
+            viewDataMap.put(RUNTIME_INFO_NAME, getRuntimeInfo(request, runtimeContext));
+
+            String viewDataJSON = domainService.toJSON(viewDataMap);
             String viewModelJSON = view.getCachedJSON();
 
             if (viewModelJSON == null)
@@ -234,6 +257,93 @@ public class DefaultRuntimeApplication
                 throw new ExceedRuntimeException("Error providing data to view", e);
             }
         }
+    }
+
+
+    private Map<String, Object> addRequestParameters(HttpServletRequest request, Map<String, Object> params)
+    {
+
+        for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet())
+        {
+            String name = entry.getKey();
+            String[] values = entry.getValue();
+
+            if (values.length == 1)
+            {
+                params.putIfAbsent(name, values[0]);
+            }
+            else
+            {
+                params.putIfAbsent(name, values);
+            }
+        }
+        return params;
+    }
+
+
+    private Map<String, Object> getRuntimeInfo(HttpServletRequest request, RuntimeContext runtimeContext)
+    {
+        Map<String, Object> map = new HashMap<>();
+
+        for (RuntimeInfoProvider provider : runtimeInfoProviders)
+        {
+            map.put(provider.getName(), provider.provide(request, runtimeContext));
+        }
+
+        return map;
+    }
+
+
+    private void updateComponentVars(RuntimeContext runtimeContext, HttpServletRequest request, View view, HttpServletResponse response) throws IOException
+    {
+        String componentId = request.getParameter(UPDATE_ID_PARAM);
+        String varsJSON = request.getParameter(UPDATE_VARS_PARAM);
+
+        if (componentId == null)
+        {
+            throw new IllegalStateException("componentId can't be null");
+        }
+
+        if (varsJSON == null)
+        {
+            throw new IllegalStateException("varsJSON can't be null");
+        }
+
+        Map<String,Object> vars = parseVars(varsJSON);
+
+        ComponentModel componentModel = view.find((m) -> {
+            AttributeValue value = m.getAttribute("id");
+            return value != null && componentId.equals(value.getValue());
+        });
+
+        ComponentData componentData = viewDataService.prepareComponent(runtimeContext, view, componentModel,
+            vars);
+
+        RequestUtil.sendJSON(response, domainService.toJSON(componentData));
+    }
+
+
+    private Map parseVars(String varsJSON)
+    {
+        try
+        {
+            return JSONParser.defaultJSONParser().parse(Map.class, varsJSON);
+        }
+        catch(JSONParseException e)
+        {
+            throw new ExceedRuntimeException("Error parsing " + varsJSON, e);
+        }
+    }
+
+
+    private static boolean isPreviewRequest(HttpServletRequest request)
+    {
+         return request.getMethod().equals("POST") && "true".equals(request.getHeader(PREVIEW_HEADER_NAME));
+    }
+
+    private static boolean isVarsUpdate(HttpServletRequest request)
+    {
+         return "true".equals(request.getHeader(UPDATE_HEADER_NAME));
     }
 
 

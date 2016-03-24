@@ -21,6 +21,7 @@ import static de.quinscape.exceed.domain.Tables.*;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
     ModelConfiguration.class,
@@ -54,10 +55,14 @@ public class DomainConfigurationTest
         AppUserRecord record = dslContext.newRecord(APP_USER, foo);
         record.store();
 
+
+
         List<AppUser> foos = dslContext.select().from(APP_USER).where(APP_USER.LOGIN.eq("Footastic")).fetchInto(AppUser.class);
         assertThat(foos.size(), is(1));
         assertThat(foos.get(0).getLogin(), is("Footastic"));
         assertThat(foos.get(0).getPassword(), is("secret"));
+
+
 
     }
 

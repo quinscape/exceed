@@ -22,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.Charset;
-import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
@@ -143,7 +142,7 @@ public class ModelCompositionService
             else if (path.startsWith(VIEW_MODEL_PREFIX))
             {
                 log.debug("Reading {} as View", path);
-                View view = createViewModel(path, json, false);
+                View view = createViewModel(runtimeApplication, path, json, false);
 
                 applicationModel.getViews().put(view.getName(), view);
                 return view;
@@ -170,11 +169,12 @@ public class ModelCompositionService
     }
 
 
-    public View createViewModel(String path, String json, boolean preview)
+    public View createViewModel(RuntimeApplication runtimeApplication, String path, String json, boolean preview)
     {
         View view = create(View.class, json, path);
         ComponentUtil.updateComponentRegsAndParents(componentRegistry, view, null);
         view.setPreview(preview);
+
         return view;
     }
 
@@ -237,7 +237,7 @@ public class ModelCompositionService
     }
 
 
-    private void postProcessView(RuntimeApplication application, View view)
+    public void postProcessView(RuntimeApplication application, View view)
     {
         view.setCachedJSON(modelJSONService.toJSON(application, view, JSONFormat.CLIENT));
     }

@@ -5,11 +5,8 @@ import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.ModelMap;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.Locale;
 
 @Service
 public class RuntimeContextFactory
@@ -17,9 +14,9 @@ public class RuntimeContextFactory
     @Autowired
     private Translator translator;
 
-    public RuntimeContext create(HttpServletRequest request, HttpServletResponse response, ModelMap model, RuntimeApplication
-        runtimeApplication, String path)
+    public RuntimeContext create(RuntimeApplication
+                                     runtimeApplication, String path, Locale locale)
     {
-        return new RuntimeContext(request, response, model, runtimeApplication, path, translator);
+        return new RuntimeContext(runtimeApplication, path, translator, locale);
     }
 }

@@ -27,8 +27,7 @@ import de.quinscape.exceed.expression.ExpressionParserVisitor;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.Operator;
 import de.quinscape.exceed.expression.SimpleNode;
-import de.quinscape.exceed.runtime.expression.ExpressionService;
-import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
+import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.util.JSONBeanUtil;
@@ -126,7 +125,6 @@ public abstract class ExpressionEnvironment
             {
                 throw new IllegalStateException("Cannot access property '" + name + "' of null");
             }
-
             chainObject = JSONBeanUtil.defaultUtil().getProperty(chainObject, name);
         }
         if (kid instanceof ASTFunction)

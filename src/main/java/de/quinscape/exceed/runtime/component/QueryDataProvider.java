@@ -70,7 +70,8 @@ public class QueryDataProvider
             {
                 throw new IllegalStateException("No query executor with name '" + beanName + "'");
             }
-            Object result = executor.execute(queryDefinition);
+
+            Object result = executor.execute(dataProviderContext.getRuntimeContext(), queryDefinition);
 
             log.debug("Result: {}", result);
 
@@ -109,7 +110,7 @@ public class QueryDataProvider
             {
                 DomainService domainService = dataProviderContext.getRuntimeContext().getRuntimeApplication()
                     .getDomainService();
-                QueryDefinition definition = queryTransformer.transform(domainService, queryExpression, elem, vars);
+                QueryDefinition definition = queryTransformer.transform(dataProviderContext.getRuntimeContext(), queryExpression, elem, vars);
                 preparedQueries.put(name, definition);
             }
             catch(QueryTransformationException e)

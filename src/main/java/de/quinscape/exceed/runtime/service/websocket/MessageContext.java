@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.service.websocket;
 
 import de.quinscape.exceed.message.Query;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.util.AppAuthentication;
 
 /**
@@ -36,5 +36,5 @@ public interface MessageContext
      *
      * @return
      */
-    RuntimeApplication getRuntimeApplication();
+    RuntimeContext getRuntimeContext();
 }

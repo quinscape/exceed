@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,7 +35,7 @@ public class EditorDomainService
     @Override
     public void handle(MessageContext context, DomainTypeQuery msg) throws Exception
     {
-        RuntimeApplication runtimeApplication = context.getRuntimeApplication();
+        RuntimeApplication runtimeApplication = context.getRuntimeContext().getRuntimeApplication();
 
         Map<String, Object> data = new HashMap<>();
 
@@ -50,7 +51,8 @@ public class EditorDomainService
 
     private DataList createDomainDataList(Map<String, DomainType> domainTypes)
     {
-        return new DataList(types, columns, new ArrayList<>(domainTypes.values()));
+        ArrayList<DomainType> rows = new ArrayList<>(domainTypes.values());
+        return new DataList(types, columns, Collections.emptyMap(), rows, rows.size());
     }
 
 
@@ -88,6 +90,7 @@ public class EditorDomainService
             new DomainProperty("maxLength", "Integer", null, true),
             new DomainProperty("data", "Object", null, true)
         ));
+        domainPropertyType.setPkFields(null);
 
         map.put("DomainProperty", domainPropertyType);
 

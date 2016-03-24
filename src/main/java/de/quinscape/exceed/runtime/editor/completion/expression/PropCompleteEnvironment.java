@@ -5,6 +5,7 @@ import de.quinscape.exceed.component.ComponentPropWizard;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.editor.completion.AceCompletion;
 import de.quinscape.exceed.runtime.editor.completion.CompletionType;
@@ -27,10 +28,11 @@ public class PropCompleteEnvironment
 
     private final QueryTransformer queryTransformer;
 
-    private final RuntimeApplication application;
+    private final RuntimeContext runtimeContext;
+
 
     public PropCompleteEnvironment(
-        RuntimeApplication application,
+        RuntimeContext runtimeContext,
         QueryTransformer queryTransformer,
         View viewModel,
         ComponentModel componentModel,
@@ -40,7 +42,7 @@ public class PropCompleteEnvironment
         this.viewModel = viewModel;
         this.componentModel = componentModel;
         this.queryTransformer = queryTransformer;
-        this.application = application;
+        this.runtimeContext = runtimeContext;
     }
 
 
@@ -68,9 +70,9 @@ public class PropCompleteEnvironment
     }
 
 
-    public RuntimeApplication getApplication()
+    public RuntimeContext getRuntimeContext()
     {
-        return application;
+        return runtimeContext;
     }
 
 

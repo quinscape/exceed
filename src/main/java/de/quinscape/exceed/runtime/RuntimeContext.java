@@ -3,12 +3,9 @@ package de.quinscape.exceed.runtime;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.i18n.Translator;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.ModelMap;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Contains information about the current request and the context in which it happens.
@@ -17,12 +14,6 @@ import java.util.Locale;
  */
 public class RuntimeContext
 {
-    private final HttpServletRequest request;
-
-    private final HttpServletResponse response;
-
-    private final ModelMap model;
-
     private final String path;
 
     private final RuntimeApplication runtimeApplication;
@@ -33,37 +24,18 @@ public class RuntimeContext
 
     private View view;
 
+    private Map<String, Object> variables;
 
-    public RuntimeContext(HttpServletRequest request, HttpServletResponse response, ModelMap model,
-                          RuntimeApplication runtimeApplication,
-                          String path, Translator translator)
+
+    public RuntimeContext(RuntimeApplication runtimeApplication,
+                          String path, Translator translator, Locale locale)
     {
-        this.request = request;
-        this.response = response;
-        this.model = model;
         this.path = path;
         this.runtimeApplication = runtimeApplication;
         this.translator = translator;
-        this.locale = request.getLocale();
+        this.locale = locale;
     }
 
-
-    public HttpServletRequest getRequest()
-    {
-        return request;
-    }
-
-
-    public HttpServletResponse getResponse()
-    {
-        return response;
-    }
-
-
-    public ModelMap getModel()
-    {
-        return model;
-    }
 
 
     public String getPath()
@@ -99,5 +71,23 @@ public class RuntimeContext
     public View getView()
     {
         return view;
+    }
+
+
+    public void setVariables(Map<String, Object> variables)
+    {
+        this.variables = variables;
+    }
+
+
+    /**
+     * Returns the location params which consist of the path variables and the HTTP parameters received for the
+     * current mapping.
+     *
+     * @return
+     */
+    public Map<String, Object> getLocationParams()
+    {
+        return variables;
     }
 }

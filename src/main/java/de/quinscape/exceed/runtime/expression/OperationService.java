@@ -5,7 +5,7 @@ import de.quinscape.exceed.expression.ASTFunction;
 /**
  * Internal interface used by the expression environments to access the registered opererations and identifiers.
  */
-interface OperationService
+public interface OperationService
 {
     /**
      * Returns the identifier for the given expression.

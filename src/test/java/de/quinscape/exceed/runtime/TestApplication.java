@@ -6,9 +6,11 @@ import de.quinscape.exceed.runtime.config.DefaultPropertyConverters;
 import de.quinscape.exceed.runtime.datalist.DataListService;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.DomainServiceImpl;
+import de.quinscape.exceed.runtime.i18n.DefaultTranslator;
 import org.springframework.mock.web.MockServletContext;
 
 import javax.servlet.ServletContext;
+import java.util.Locale;
 
 public class TestApplication
     implements RuntimeApplication
@@ -47,5 +49,10 @@ public class TestApplication
     public DomainService getDomainService()
     {
         return domainService;
+    }
+
+    public RuntimeContext createRuntimeContext()
+    {
+        return new RuntimeContext(this, "/test", new DefaultTranslator(), Locale.getDefault());
     }
 }

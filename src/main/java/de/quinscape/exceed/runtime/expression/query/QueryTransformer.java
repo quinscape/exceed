@@ -4,7 +4,9 @@ import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.domain.DomainService;
+import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,12 +29,12 @@ public class QueryTransformer
     }
 
 
-    public QueryDefinition transform(DomainService domainService, String expression, ComponentModel
+    public QueryDefinition transform(RuntimeContext runtimeContext, String expression, ComponentModel
         componentModel, Map<String, Object> vars) throws ParseException
     {
         ASTExpression astExpression = ExpressionParser.parse(expression);
 
-        Object o = evaluate(domainService, astExpression,
+        Object o = evaluate(runtimeContext, astExpression,
             componentModel, vars);
 
         if (o instanceof QueryDefinition)
@@ -50,17 +52,16 @@ public class QueryTransformer
     /**
      * Evaluates the given ASTExpression in the query transformer environment.
      *
-     * @param domainService     domain service
+     * @param runtimeContext    runtimeContext
      * @param astExpression     ast expression
      * @param componentModel    component model
      * @param vars              vars for this component model
      * @return
      */
-    public Object evaluate(DomainService domainService, ASTExpression astExpression, ComponentModel componentModel, Map<String, Object> vars)
+    public Object evaluate(RuntimeContext runtimeContext, ASTExpression astExpression, ComponentModel componentModel, Map<String, Object> vars)
     {
-        QueryTransformerEnvironment visitor = new QueryTransformerEnvironment(domainService, componentModel, vars);
+        QueryTransformerEnvironment visitor = new QueryTransformerEnvironment(runtimeContext, namingStrategy, componentModel, vars);
         return expressionService.evaluate(astExpression, visitor);
     }
-
 
 }

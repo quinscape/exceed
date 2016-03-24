@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.service.websocket;
 
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.util.AppAuthentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,11 +25,11 @@ public class MessageHubRegistryImpl
     }
 
     @Override
-    public String registerConnection(HttpSession session, RuntimeApplication application, AppAuthentication auth)
+    public String registerConnection(HttpSession session, RuntimeContext runtimeContext, AppAuthentication auth)
     {
         String connectionId = UUID.randomUUID().toString();
 
-        editorMessageHub.register(connectionId, auth, session, application);
+        editorMessageHub.register(connectionId, auth, session, runtimeContext);
 
         if (log.isDebugEnabled())
         {

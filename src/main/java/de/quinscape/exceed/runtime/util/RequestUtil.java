@@ -10,7 +10,7 @@ import java.nio.charset.Charset;
 
 public class RequestUtil
 {
-    private static final Charset UTF_8 = Charset.forName("UTF-8");
+    public static final Charset UTF_8 = Charset.forName("UTF-8");
 
 
     public static boolean isAjaxRequest(HttpServletRequest request)
@@ -33,6 +33,11 @@ public class RequestUtil
 
     public static String readRequestBody(HttpServletRequest request) throws IOException
     {
+        String method = request.getMethod();
+        if (!method.equals("POST"))
+        {
+            throw new IllegalStateException("Request must be POST method:"  + method);
+        }
         return IOUtils.toString(request.getInputStream(), UTF_8);
     }
 

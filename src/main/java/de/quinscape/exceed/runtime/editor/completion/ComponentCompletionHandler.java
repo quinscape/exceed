@@ -16,8 +16,8 @@ public class ComponentCompletionHandler
     @Override
     public void handle(MessageContext context, ComponentCompleteQuery msg) throws Exception
     {
-        List<AceCompletion> completions = completionService.autocomplete(context.getRuntimeApplication(),
-            msg.getPath(), msg.getIndex());
+        List<AceCompletion> completions = completionService.autocomplete(context.getRuntimeContext(),
+            msg.getViewModel(), msg.getPath(), msg.getIndex());
 
         context.reply(msg, completions);
     }

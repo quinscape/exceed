@@ -1,8 +1,8 @@
 package de.quinscape.exceed.runtime.expression.component;
 
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
-import de.quinscape.exceed.runtime.expression.ExpressionOperations;
-import de.quinscape.exceed.runtime.expression.Operation;
+import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
+import de.quinscape.exceed.runtime.expression.annotation.Operation;
 
 @ExpressionOperations(environment = ComponentExpressionEnvironment.class)
 public class ComponentExpressionOperations

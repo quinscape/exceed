@@ -15,6 +15,7 @@ import de.quinscape.exceed.runtime.controller.ActionNotFoundException;
 import de.quinscape.exceed.runtime.controller.ActionRegistry;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironmentException;
+import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
 import org.svenson.JSON;
 
 public class ComponentExpressionEnvironment
@@ -26,7 +27,7 @@ public class ComponentExpressionEnvironment
 
     private final StringBuilder output;
 
-    private final static JSON generator = new JSON('\'');
+    private final static JSON generator = SingleQuoteJSONGenerator.INSTANCE;
 
 
     public ComponentExpressionEnvironment( ActionRegistry actionRegistry, boolean actionExpression)

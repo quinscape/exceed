@@ -4,6 +4,7 @@ import de.quinscape.exceed.message.IncomingMessage;
 import de.quinscape.exceed.message.MessageMeta;
 import de.quinscape.exceed.message.Query;
 import de.quinscape.exceed.message.Reply;
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.util.AppAuthentication;
 import org.springframework.web.util.WebUtils;
@@ -20,18 +21,18 @@ class EditorClientConnection
 
     private final EditorWebSocketHandler editorWebSocketHandler;
 
-    private final RuntimeApplication runtimeApplication;
+    private final RuntimeContext runtimeContext;
 
     private WebSocketConnection webSocketConnection;
 
     public EditorClientConnection(String connectionId, AppAuthentication login, HttpSession session,
-                                  EditorWebSocketHandler editorWebSocketHandler, RuntimeApplication runtimeApplication)
+                                  EditorWebSocketHandler editorWebSocketHandler, RuntimeContext runtimeContext)
     {
         this.connectionId = connectionId;
         this.login = login;
         this.session = session;
         this.editorWebSocketHandler = editorWebSocketHandler;
-        this.runtimeApplication = runtimeApplication;
+        this.runtimeContext = runtimeContext;
     }
 
     @Override
@@ -87,8 +88,8 @@ class EditorClientConnection
 
 
     @Override
-    public RuntimeApplication getRuntimeApplication()
+    public RuntimeContext getRuntimeContext()
     {
-        return runtimeApplication;
+        return runtimeContext;
     }
 }

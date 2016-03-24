@@ -16,7 +16,7 @@ public class PropNameCompletionHandler
     @Override
     public void handle(MessageContext context, PropNameCompleteQuery msg) throws Exception
     {
-        List<AceCompletion> completions = completionService.autocompletePropName(context.getRuntimeApplication(), msg.getViewModel(), msg.getPath());
+        List<AceCompletion> completions = completionService.autocompletePropName(context.getRuntimeContext(), msg.getViewModel(), msg.getPath());
 
         context.reply(msg, completions);
     }

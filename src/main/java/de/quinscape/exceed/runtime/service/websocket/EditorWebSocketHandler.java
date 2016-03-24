@@ -7,7 +7,7 @@ import de.quinscape.exceed.message.Message;
 import de.quinscape.exceed.message.Query;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataList;
 import de.quinscape.exceed.runtime.datalist.DataListService;
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
@@ -168,12 +168,12 @@ public class EditorWebSocketHandler
 
 
     @Override
-    public void register(String connectionId, AppAuthentication auth, HttpSession session, RuntimeApplication
-        runtimeApplication)
+    public void register(String connectionId, AppAuthentication auth, HttpSession session, RuntimeContext
+        runtimeContext)
     {
         log.debug("Register connectionId {}, login = {}", connectionId, auth);
         connections.put(connectionId, new EditorClientConnection(connectionId, auth, session, this,
-            runtimeApplication));
+            runtimeContext));
     }
 
 

@@ -60,7 +60,7 @@ public class ApplicationController
                 return null;
             }
 
-            RuntimeContext runtimeContext = runtimeContextFactory.create(request, response, model, runtimeApplication, inAppURI);
+            RuntimeContext runtimeContext = runtimeContextFactory.create(runtimeApplication, inAppURI, request.getLocale());
 
             RuntimeContextHolder.register(runtimeContext);
 
@@ -70,11 +70,11 @@ public class ApplicationController
             AppAuthentication auth = AppAuthentication.get();
             if (auth.hasRole(Roles.EDITOR))
             {
-                String connectionId = messageHubRegistry.registerConnection(request.getSession(), runtimeApplication, auth);
+                String connectionId = messageHubRegistry.registerConnection(request.getSession(), runtimeContext, auth);
                 model.put("connectionId", connectionId);
             }
 
-            runtimeApplication.route(runtimeContext);
+            runtimeApplication.route(request, response, runtimeContext, model);
 
             if (response.isCommitted())
             {
@@ -124,6 +124,4 @@ public class ApplicationController
             RuntimeContextHolder.clear();
         }
     }
-
-
 }

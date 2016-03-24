@@ -3,6 +3,7 @@ package de.quinscape.exceed.runtime.editor.completion;
 import de.quinscape.exceed.message.IncomingMessage;
 import de.quinscape.exceed.message.MessageMeta;
 import de.quinscape.exceed.message.Query;
+import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.editor.completion.expression.ParentComponent;
 import org.svenson.JSONParameter;
 import org.svenson.JSONTypeHint;
@@ -16,22 +17,30 @@ public class ComponentCompleteQuery
 
     private final int index;
 
+    private final View viewModel;
+
 
     public ComponentCompleteQuery(
+        @JSONParameter("meta")
+        MessageMeta meta,
+
         @JSONParameter("path")
         @JSONTypeHint(ParentComponent.class)
         List<ParentComponent> path,
+
         @JSONParameter("index")
         int index,
-        @JSONParameter("propName")
-        String propName,
-        @JSONParameter("meta")
-        MessageMeta meta
-    )
+
+        @JSONParameter("viewModel")
+        @JSONTypeHint(View.class)
+        View viewModel
+
+        )
     {
         super(meta);
         this.path = path;
         this.index = index;
+        this.viewModel = viewModel;
     }
 
 
@@ -44,6 +53,12 @@ public class ComponentCompleteQuery
     public int getIndex()
     {
         return index;
+    }
+
+
+    public View getViewModel()
+    {
+        return viewModel;
     }
 
 

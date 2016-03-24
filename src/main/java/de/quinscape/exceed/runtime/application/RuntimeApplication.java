@@ -8,6 +8,8 @@ import de.quinscape.exceed.runtime.resource.ResourceLoader;
 
 import javax.servlet.ServletContext;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Encapsulates application wide information relevant to a large number of submodules.

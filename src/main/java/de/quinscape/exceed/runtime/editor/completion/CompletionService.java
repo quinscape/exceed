@@ -7,6 +7,7 @@ import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.ComponentModelBuilder;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.editor.completion.expression.ChildRuleEnvironment;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
@@ -48,12 +49,12 @@ public class CompletionService
     private ExpressionService expressionService;
 
 
-    public List<AceCompletion> autocomplete(RuntimeApplication runtimeApplication, List<ParentComponent> path, int index)
+    public List<AceCompletion> autocomplete(RuntimeContext runtimeContext, View viewModel, List<ParentComponent> path, int index)
     {
-        Set<String> parentClasses = new HashSet<>();
 
         ComponentDescriptor descriptor = null;
 
+        Set<String> parentClasses = new HashSet<>();
         if (path != null)
         {
             for (ParentComponent parentComponent : path)
@@ -81,7 +82,7 @@ public class CompletionService
                 ComponentRegistration componentRegistration = componentRegistry.getComponentRegistration(componentName);
                 ComponentDescriptor currentDescriptor = componentRegistration.getDescriptor();
 
-                if (matchesRule(childRuleExpression, componentRegistration.getComponentName(), currentDescriptor, parentClasses))
+                if (matchesRule(runtimeContext.getRuntimeApplication(), viewModel, childRuleExpression, componentRegistration.getComponentName(), currentDescriptor, parentClasses))
                 {
                     List<ComponentTemplate> templates = currentDescriptor.getTemplates();
                     if (templates.size() == 0)
@@ -133,19 +134,19 @@ public class CompletionService
     }
 
 
-    private boolean matchesRule(ASTExpression childRuleExpression, String componentName, ComponentDescriptor componentDescriptor, Set<String> parentClasses)
+    private boolean matchesRule(RuntimeApplication runtimeApplication, View viewModel, ASTExpression childRuleExpression, String componentName, ComponentDescriptor componentDescriptor, Set<String> parentClasses)
     {
-        if (!(Boolean) expressionService.evaluate(childRuleExpression,  new ChildRuleEnvironment(componentName, componentDescriptor)))
+        if (!(Boolean) expressionService.evaluate(childRuleExpression,  new ChildRuleEnvironment(runtimeApplication, viewModel, componentName, componentDescriptor)))
         {
             return false;
         }
 
         ASTExpression parentRuleExpression = componentDescriptor.getParentRuleExpression();
-        return parentRuleExpression == null || (Boolean) expressionService.evaluate(parentRuleExpression, new ParentRuleEnvironment(parentClasses));
+        return parentRuleExpression == null || (Boolean) expressionService.evaluate(parentRuleExpression, new ParentRuleEnvironment(runtimeApplication, viewModel, parentClasses));
     }
 
 
-    public List<AceCompletion> autocompleteProp(RuntimeApplication runtimeApplication, String propName, View viewModel, List<Long> path)
+    public List<AceCompletion> autocompleteProp(RuntimeContext runtimeContext, String propName, View viewModel, List<Long> path)
     {
         ComponentModel componentModel = walkIndexPath(viewModel, path);
 
@@ -161,7 +162,7 @@ public class CompletionService
         }
 
         PropCompleteEnvironment env = new PropCompleteEnvironment(
-            runtimeApplication,
+            runtimeContext,
             queryTransformer,
             viewModel, componentModel, propName
         );
@@ -169,7 +170,7 @@ public class CompletionService
         return env.evaluate(expressionService);
     }
 
-    public List<AceCompletion> autocompletePropName(RuntimeApplication runtimeApplication, View viewModel, List<Long> path)
+    public List<AceCompletion> autocompletePropName(RuntimeContext runtimeApplication, View viewModel, List<Long> path)
     {
         ComponentModel componentModel = walkIndexPath(viewModel, path);
 

@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -101,8 +100,8 @@ public class ActionController
 
         Action action = actionRegistry.getAction(model.getAction());
 
-        RuntimeContext runtimeContext = runtimeContextFactory.create(request, response, new ModelMap(),
-            runtimeApplication, "/action/" + appName + "/" + actionName);
+        RuntimeContext runtimeContext = runtimeContextFactory.create(
+            runtimeApplication, "/action/" + appName + "/" + actionName, request.getLocale());
         RuntimeContextHolder.register(runtimeContext);
 
         try
