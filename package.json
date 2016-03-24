@@ -13,6 +13,7 @@
     "lodash.keys": "^3.1.2",
     "mousetrap": "^1.5.3",
     "node-uuid": "^1.4.3",
+    "react-addons-update": "^0.14.7",
     "react-addons-linked-state-mixin": "^0.14.7",
     "react-bootstrap": "^0.28.2",
     "react-overlays": "^0.5.4",
@@ -46,14 +47,13 @@
     "gulp-mocha": "^2.2.0",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-streamify": "^1.0.2",
-    "gulp-uglify": "^1.5.1",
+    "gulp-uglify": "^1.5.3",
     "gulp-util": "^3.0.7",
     "jsdom": "^7.2.2",
     "node-notifier": "^4.3.1",
     "power-assert": "^1.2.0",
     "proxyquire": "^1.7.3",
     "react": "^0.14.7",
-    "react-addons-update": "^0.14.7",
     "react-dom": "^0.14.7",
     "react-transform-catch-errors": "^1.0.1",
     "sinon": "^1.17.2",
@@ -63,7 +63,9 @@
   },
   "browserify-shim": {
     "react": "global:React",
-    "react-dom": "global:ReactDOM"
+    "react-dom": "global:ReactDOM",
+    "react-addons-update": "global:React.addons.update",
+    "react-addons-linked-state-mixin": "global:React.addons.LinkedStateMixin"
   },
   "exceed": {
     "components": "./src/main/js/components"

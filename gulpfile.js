@@ -78,6 +78,7 @@ function bundle(watch, cb) {
     if (PRODUCTION)
     {
         bro.exclude("./src/main/js/editor/InPageEditor.js");
+        bro.exclude("react-transform-catch-errors");
     }
 
     bro.require("./src/main/js/services", {
