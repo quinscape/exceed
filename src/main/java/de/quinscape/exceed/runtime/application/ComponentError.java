@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.application;
 
-public class ExpressionError
+public class ComponentError
 {
     private final String text;
 
@@ -11,7 +11,7 @@ public class ExpressionError
     private final String attrName;
 
 
-    public ExpressionError(String value, Throwable expressionError, int componentIndex, String attrName)
+    public ComponentError(String value, Throwable expressionError, int componentIndex, String attrName)
     {
         text = expressionError.getMessage();
         this.value = value;

@@ -15,6 +15,7 @@ import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataProviderPreparationException;
 import de.quinscape.exceed.runtime.domain.DomainService;
+import de.quinscape.exceed.runtime.model.JSONFormat;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.ResourceChangeListener;
@@ -173,7 +174,7 @@ public class DefaultRuntimeApplication
                 String json = RequestUtil.readRequestBody(request); ;
                 View previewView = modelCompositionService.createViewModel("preview/" + viewName, json, true);
 
-                List<ExpressionError> errors = new ArrayList<>();
+                List<ComponentError> errors = new ArrayList<>();
 
                 collectErrors(errors, previewView.getRoot(), 0);
                 if (errors.size() == 0)
@@ -253,7 +254,7 @@ public class DefaultRuntimeApplication
     }
 
 
-    private int collectErrors(List<ExpressionError> errors, ComponentModel model, int id)
+    private int collectErrors(List<ComponentError> errors, ComponentModel model, int id)
     {
         Attributes attrs = model.getAttrs();
         if (attrs != null)
@@ -263,7 +264,7 @@ public class DefaultRuntimeApplication
                 AttributeValue attributeValue = attrs.getAttribute(name);
                 if (attributeValue.getType() == AttributeValueType.EXPRESSION_ERROR)
                 {
-                    errors.add(new ExpressionError((String) attributeValue.getValue(), attributeValue.getExpressionError(), id, name));
+                    errors.add(new ComponentError((String) attributeValue.getValue(), attributeValue.getExpressionError(), id, name));
                 }
             }
         }
@@ -482,5 +483,6 @@ public class DefaultRuntimeApplication
             ComponentUtil.updateComponentRegsAndParents(componentRegistry, view, componentNames);
         }
     }
+
 }
 
