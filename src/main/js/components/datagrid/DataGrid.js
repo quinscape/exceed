@@ -22,6 +22,7 @@ var FilterMode = new Enum({
     EQUALS: 1,
     STARTS_WITH: 1
 });
+var converter = require("../../service/property-converter");
 
 
 var Column = React.createClass({
@@ -40,10 +41,14 @@ var Column = React.createClass({
         var renderKids = this.props.renderChildrenWithContext;
         if (!renderKids)
         {
+            var cursor = this.props.context;
+
+            var propertyType = cursor.getPropertyType(null);
+
             return (
                 <td>
                     <p className="form-control-static">
-                        { String(this.props.context) }
+                        { converter.toUser(this.props.context.value, propertyType).value }
                     </p>
                 </td>
             );
