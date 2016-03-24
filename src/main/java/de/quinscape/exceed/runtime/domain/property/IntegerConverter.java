@@ -16,7 +16,7 @@ public class IntegerConverter
     @Override
     public Long convertToJSON(RuntimeContext runtimeContext, Integer value, DomainProperty property)
     {
-        return value.longValue();
+        return value != null ? value.longValue() : null;
     }
 
     @Override
