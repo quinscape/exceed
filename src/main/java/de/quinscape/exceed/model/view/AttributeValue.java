@@ -5,10 +5,28 @@ import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.expression.TokenMgrError;
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
+import org.svenson.DynamicProperties;
 import org.svenson.JSON;
 import org.svenson.JSONProperty;
 import org.svenson.JSONable;
 
+import java.math.BigInteger;
+import java.util.Collection;
+import java.util.Map;
+
+/**
+ * Encapsulates an attribute value that is either a simple string or an expression string. An expression string starts with
+ * <code>'{'</code> and ends with <code>'}'</code>
+ *
+ * If the expression in the attribute is syntactically invalid, did not produce a valid abstract syntax tree, the type will
+ * be {@link AttributeValueType#EXPRESSION_ERROR} and the AST returned will be null.
+ *
+ * In this case, {@link #getExpressionError()} will return the error that occured evaluating the attribute.
+ *
+ * @see ExpressionParser
+ */
 public class AttributeValue
     implements JSONable
 {
@@ -20,20 +38,21 @@ public class AttributeValue
 
     private final Throwable expressionError;
 
+    private final static JSON generator = SingleQuoteJSONGenerator.INSTANCE;
+
     public AttributeValue(
         AttributeValueType type,
-        String value) throws ParseException
+        String value)
     {
-        this.value = value;
 
         if (type == AttributeValueType.EXPRESSION)
         {
-            String expr = (String) value;
-            ASTExpression astExpression = null;
-            Throwable exception = null;
+            ASTExpression astExpression;
+            Throwable exception;
             try
             {
-                astExpression = ExpressionParser.parse(expr.substring(1, expr.length() - 1));
+                astExpression = ExpressionParser.parse(value.substring(1, value.length() - 1));
+                exception = null;
             }
             catch(TokenMgrError | ParseException e)
             {
@@ -50,6 +69,8 @@ public class AttributeValue
             this.astExpression = null;
             this.expressionError = null;
         }
+
+        this.value = value;
         this.type = type;
     }
 
@@ -58,8 +79,6 @@ public class AttributeValue
     {
         return type;
     }
-
-
 
     @JSONProperty(ignore = true)
     public Throwable getExpressionError()
@@ -100,6 +119,108 @@ public class AttributeValue
             + "type = " + type
             + ", value = '" + value + '\''
             ;
+    }
+
+
+    /**
+     * Creates an attribute value for the given string value. If the string value
+     * starts with <code>'{'</code> and ends with <code>'}'</code> the resulting attribute value
+     * will have {@link AttributeValueType#EXPRESSION } (or {@link AttributeValueType#EXPRESSION_ERROR } if it is an invalid
+     * expression )
+     *
+     * @param value string or expression string
+     * @return  attribute value
+     */
+    public static AttributeValue forValue(String value)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+
+        String stringValue = (String) value;
+        if (stringValue.startsWith("{") && stringValue.endsWith("}"))
+        {
+            return new AttributeValue(AttributeValueType.EXPRESSION, formatExpression(stringValue));
+        }
+        else
+        {
+            return new AttributeValue(AttributeValueType.STRING, (String) value);
+        }
+    }
+
+
+    /**
+     * Returns a number expression attribute value for the given number.
+     *
+     * @param value number
+     * @return number expression attribute value
+     */
+    public static AttributeValue forValue(Number value)
+    {
+        return toExpression(value);
+    }
+
+    /**
+     * Returns a map expression attribute value for the given map.
+     *
+     * @param value map
+     * @return map expression attribute value
+     */
+    public static AttributeValue forValue(Map value)
+    {
+        return toExpression(value);
+    }
+
+    /**
+     * Returns a list expression attribute value for the given collection.
+     *
+     * @param value collection
+     * @return list expression attribute value
+     */
+    public static AttributeValue forValue(Collection value)
+    {
+        return toExpression(value);
+    }
+
+    /**
+     * Returns a boolean expression attribute value for the given boolean.
+     *
+     * @param value boolean value
+     * @return boolean expression attribute value
+     */
+    public static AttributeValue forValue(Boolean value)
+    {
+        return toExpression(value);
+    }
+
+
+    /**
+     * Internal method to convert an Object to an attribute value.
+     *
+     * @param value value
+     * @return
+     */
+    static AttributeValue toExpression(Object value)
+    {
+        return new AttributeValue(AttributeValueType.EXPRESSION, "{ " + generator.forValue(value) + " }");
+    }
+
+    static String formatExpression(String expr)
+    {
+        if (expr.charAt(1) != ' ')
+        {
+            expr = "{ " + expr.substring(1);
+        }
+
+        int closingBrace = expr.length() - 1;
+        int beforeBrace = expr.length() - 2;
+        if (expr.charAt(beforeBrace) != ' ')
+        {
+            expr = expr.substring(0,closingBrace) + " }";
+        }
+
+        return expr;
     }
 }
 

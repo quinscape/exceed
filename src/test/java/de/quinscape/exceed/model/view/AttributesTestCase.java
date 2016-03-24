@@ -11,9 +11,9 @@ public class AttributesTestCase
     @Test
     public void testFormatExpression() throws Exception
     {
-        assertThat(Attributes.formatExpression("{a}"), is("{ a }"));
-        assertThat(Attributes.formatExpression("{ a}"), is("{ a }"));
-        assertThat(Attributes.formatExpression("{a }"), is("{ a }"));
-        assertThat(Attributes.formatExpression("{ a }"), is("{ a }"));
+        assertThat(AttributeValue.formatExpression("{a}"), is("{ a }"));
+        assertThat(AttributeValue.formatExpression("{ a}"), is("{ a }"));
+        assertThat(AttributeValue.formatExpression("{a }"), is("{ a }"));
+        assertThat(AttributeValue.formatExpression("{ a }"), is("{ a }"));
     }
 }

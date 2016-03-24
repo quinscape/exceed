@@ -12,6 +12,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Contains all attributes of a component.
+ *
+ */
 public class Attributes
     implements JSONable
 {
@@ -25,7 +29,7 @@ public class Attributes
 
     public Attributes(
         @JSONParameters
-        Map<String, Object> attrs
+        Map<String, String> attrs
     )
     {
         if (attrs != null)
@@ -44,79 +48,34 @@ public class Attributes
         attrs.put(name,value);
     }
 
-    private Map<String, AttributeValue> convert(Map<String, Object> attrs)
+    private Map<String, AttributeValue> convert(Map<String, String> attrs)
     {
         Map<String, AttributeValue> newAttrs = new HashMap<>(attrs.size());
-        for (Map.Entry<String, Object> entry : attrs.entrySet())
+        for (Map.Entry<String, String> entry : attrs.entrySet())
         {
-            newAttrs.put(entry.getKey(), convertValue(entry.getValue()));
+            newAttrs.put(entry.getKey(), AttributeValue.forValue(entry.getValue()));
         }
         return newAttrs;
     }
 
-    private AttributeValue convertValue(Object value)
-    {
-        try
-        {
-            AttributeValue attrValue;
-            if (value instanceof String)
-            {
-                String stringValue = (String) value;
-                if (stringValue.startsWith("{") && stringValue.endsWith("}"))
-                {
-                    attrValue = new AttributeValue(AttributeValueType.EXPRESSION, formatExpression(stringValue));
-                }
-                else
-                {
-                    attrValue = new AttributeValue(AttributeValueType.STRING, (String) value);
-                }
-            }
-            else if (value instanceof Long || value instanceof Integer || value instanceof Boolean)
-            {
-                attrValue = new AttributeValue(AttributeValueType.STRING, String.valueOf(value));
-            }
-            else if (value instanceof Collection || value instanceof Map)
-            {
-                throw new IllegalArgumentException("Invalid complex attribute value: " + value);
-            }
-            else
-            {
-                attrValue = null;
-            }
-            return attrValue;
-        }
-        catch (ParseException e)
-        {
-            throw new ExceedRuntimeException(e);
-        }
-    }
 
     public void setAttribute(String name, String value)
     {
-        setAttribute(name, convertValue(value));
+        setAttribute(name, AttributeValue.forValue(value));
     }
 
     public void setAttribute(String name, Object value)
     {
-        setAttribute(name, convertValue(value));
+        if (value instanceof String)
+        {
+            setAttribute(name, (String)value);
+        }
+        else
+        {
+            setAttribute(name, AttributeValue.toExpression(value));
+        }
     }
 
-    static String formatExpression(String expr)
-    {
-        if (expr.charAt(1) != ' ')
-        {
-            expr = "{ " + expr.substring(1);
-        }
-
-        int closingBrace = expr.length() - 1;
-        int beforeBrace = expr.length() - 2;
-        if (expr.charAt(beforeBrace) != ' ')
-        {
-            expr = expr.substring(0,closingBrace) + " }";
-        }
-
-        return expr;
-    }
 
     public AttributeValue getAttribute(String id)
     {
