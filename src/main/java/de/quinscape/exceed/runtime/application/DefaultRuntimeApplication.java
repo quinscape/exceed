@@ -173,6 +173,8 @@ public class DefaultRuntimeApplication
             {
                 String json = RequestUtil.readRequestBody(request); ;
                 View previewView = modelCompositionService.createViewModel("preview/" + viewName, json, true);
+                previewView.setCachedJSON(modelCompositionService.getModelJSONService().toJSON(this, previewView,
+                    JSONFormat.CLIENT));
 
                 List<ComponentError> errors = new ArrayList<>();
 
