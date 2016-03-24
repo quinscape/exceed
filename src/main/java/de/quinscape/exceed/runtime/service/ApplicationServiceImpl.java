@@ -5,6 +5,7 @@ import de.quinscape.exceed.domain.tables.records.AppStateRecord;
 import de.quinscape.exceed.runtime.application.ApplicationNotFoundException;
 import de.quinscape.exceed.runtime.application.ApplicationStatus;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,7 +163,7 @@ public class ApplicationServiceImpl
     }
 
     @Override
-    public RuntimeApplication getRuntimeApplication(ServletContext servletContext, String appName)
+    public DefaultRuntimeApplication getRuntimeApplication(ServletContext servletContext, String appName)
     {
         ApplicationHolder applicationHolder = applications.get(appName);
         if (applicationHolder == null)
@@ -179,7 +180,7 @@ public class ApplicationServiceImpl
     {
         for (ApplicationHolder holder : applications.values())
         {
-            RuntimeApplication runtimeApplication = holder.getRuntimeApplication(null);
+            DefaultRuntimeApplication runtimeApplication = holder.getRuntimeApplication(null);
             if (runtimeApplication != null)
             {
                 runtimeApplication.notifyStyleChange();
@@ -193,7 +194,7 @@ public class ApplicationServiceImpl
     {
         for (ApplicationHolder holder : applications.values())
         {
-            RuntimeApplication runtimeApplication = holder.getRuntimeApplication(null);
+            DefaultRuntimeApplication runtimeApplication = holder.getRuntimeApplication(null);
             if (runtimeApplication != null)
             {
                 runtimeApplication.notifyCodeChange();
@@ -207,7 +208,7 @@ public class ApplicationServiceImpl
     {
         for (ApplicationHolder holder : applications.values())
         {
-            RuntimeApplication runtimeApplication = holder.getRuntimeApplication(null);
+            DefaultRuntimeApplication runtimeApplication = holder.getRuntimeApplication(null);
             if (runtimeApplication != null)
             {
                 runtimeApplication.signalComponentChanges(componentNames);
@@ -222,7 +223,7 @@ public class ApplicationServiceImpl
     {
         for (ApplicationHolder holder : applications.values())
         {
-            RuntimeApplication runtimeApplication = holder.getRuntimeApplication(null);
+            DefaultRuntimeApplication runtimeApplication = holder.getRuntimeApplication(null);
             if (runtimeApplication != null)
             {
                 runtimeApplication.notifyShutdown();
@@ -234,7 +235,7 @@ public class ApplicationServiceImpl
     private class ApplicationHolder
     {
         private final String name;
-        private volatile RuntimeApplication runtimeApplication;
+        private volatile DefaultRuntimeApplication runtimeApplication;
         private volatile ApplicationStatus status;
 
         public ApplicationHolder(String name)
@@ -242,7 +243,7 @@ public class ApplicationServiceImpl
             this.name = name;
         }
 
-        public RuntimeApplication getRuntimeApplication(ServletContext servletContext)
+        public DefaultRuntimeApplication getRuntimeApplication(ServletContext servletContext)
         {
             if (status == ApplicationStatus.OFFLINE || servletContext == null)
             {

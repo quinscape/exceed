@@ -167,7 +167,7 @@ public class CompletionService
         }
 
         PropCompleteEnvironment env = new PropCompleteEnvironment(
-            runtimeApplication.getDomainService(),
+            runtimeApplication,
             queryTransformer,
             viewModel, componentModel, propName
         );

@@ -14,6 +14,7 @@ import de.quinscape.exceed.model.view.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import org.svenson.util.JSONBuilder;
 
@@ -34,7 +35,7 @@ public class ClientViewJSONGenerator
 
     public static final String MODEL_ATTR_NAME = "model";
 
-    public String toJSON(View model, JSONFormat jsonFormat)
+    public String toJSON(RuntimeApplication application, View model, JSONFormat jsonFormat)
     {
         JSONBuilder builder = JSONBuilder.buildObject();
         {
@@ -52,7 +53,7 @@ public class ClientViewJSONGenerator
 
             builder.objectProperty("root");
             {
-                dumpComponentRecursive(builder, model.getRoot(), new ComponentPath(), jsonFormat);
+                dumpComponentRecursive(builder, application, model.getRoot(), new ComponentPath(), jsonFormat);
                 builder.closeUntil(lvl);
             }
             builder.property("comments", model.getComments());
@@ -62,7 +63,7 @@ public class ClientViewJSONGenerator
 
 
 
-    private void dumpComponentRecursive(JSONBuilder builder, ComponentModel componentModel, ComponentPath path, JSONFormat jsonFormat)
+    private void dumpComponentRecursive(JSONBuilder builder, RuntimeApplication application, ComponentModel componentModel, ComponentPath path, JSONFormat jsonFormat)
     {
         ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
         if (jsonFormat == JSONFormat.CLIENT && componentRegistration != null)
@@ -118,7 +119,7 @@ public class ClientViewJSONGenerator
                             (propType = componentRegistration.getDescriptor().getPropTypes().get(attrName)) == null ||
                             propType.getContext() == null)
                         {
-                            ClientExpressionRenderer visitor = new ClientExpressionRenderer(componentModel, path);
+                            ClientExpressionRenderer visitor = new ClientExpressionRenderer(application, componentModel, path);
                             expression.childrenAccept(visitor, null);
                             String transformed = visitor.getOutput();
                             builder.property(attrName, transformed);
@@ -136,7 +137,7 @@ public class ClientViewJSONGenerator
                     builder.property(MODEL_ATTR_NAME, path.modelPath());
                 }
 
-                provideContextExpressions(builder, componentModel, path, descriptor);
+                provideContextExpressions(builder, application, componentModel, path, descriptor);
 
                 builder.close();
             }
@@ -169,7 +170,7 @@ public class ClientViewJSONGenerator
 
                     if (astExpression != null)
                     {
-                        ClientExpressionRenderer renderer = new ClientExpressionRenderer(componentModel, path);
+                        ClientExpressionRenderer renderer = new ClientExpressionRenderer(application, componentModel, path);
                         astExpression.childrenAccept(renderer, null);
 
                         builder.objectProperty("exprs");
@@ -182,7 +183,7 @@ public class ClientViewJSONGenerator
                 else
                 {
                     builder.objectElement();
-                    dumpComponentRecursive(builder, kid, kidPath, jsonFormat);
+                    dumpComponentRecursive(builder, application, kid, kidPath, jsonFormat);
                 }
                 kidPath.increment();
             }
@@ -192,7 +193,7 @@ public class ClientViewJSONGenerator
     }
 
 
-    private void provideContextExpressions(JSONBuilder builder, ComponentModel componentModel, ComponentPath path, ComponentDescriptor descriptor)
+    private void provideContextExpressions(JSONBuilder builder, RuntimeApplication application, ComponentModel componentModel, ComponentPath path, ComponentDescriptor descriptor)
     {
         // we check all property declarations of the current component
         Map<String, PropDeclaration> propTypes = descriptor.getPropTypes();
@@ -243,7 +244,7 @@ public class ClientViewJSONGenerator
                     }
 
                     // .. and transform it for client consumption
-                    ClientExpressionRenderer renderer = new ClientExpressionRenderer(componentModel, path);
+                    ClientExpressionRenderer renderer = new ClientExpressionRenderer(application, componentModel, path);
                     contextAST.childrenAccept(renderer, null);
                     builder.property(propName, renderer.getOutput());
                 }

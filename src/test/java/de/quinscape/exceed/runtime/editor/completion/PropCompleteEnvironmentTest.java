@@ -7,6 +7,7 @@ import de.quinscape.exceed.model.domain.EnumModel;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.TestApplicationBuilder;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.editor.completion.expression.PropCompleteEnvironment;
@@ -57,7 +58,8 @@ public class PropCompleteEnvironmentTest
         ComponentUtil.updateComponentRegsAndParents(testRegistry, viewModel, null);
 
         {
-            PropCompleteEnvironment env = new PropCompleteEnvironment(new TestDomainService(), new QueryTransformer(),
+
+            PropCompleteEnvironment env = new PropCompleteEnvironment(new TestApplicationBuilder().withDomainService(new TestDomainService()).build(), new QueryTransformer(),
                 viewModel, componentModel, "name");
 
             List<AceCompletion> completions = env.evaluate();
@@ -71,7 +73,7 @@ public class PropCompleteEnvironmentTest
         }
 
         {
-            PropCompleteEnvironment env = new PropCompleteEnvironment(new TestDomainService(), new QueryTransformer(),
+            PropCompleteEnvironment env = new PropCompleteEnvironment(new TestApplicationBuilder().withDomainService(new TestDomainService()).build(), new QueryTransformer(),
                 viewModel, componentModel.getParent(), "type");
 
             List<AceCompletion> suggestions = env.evaluate();

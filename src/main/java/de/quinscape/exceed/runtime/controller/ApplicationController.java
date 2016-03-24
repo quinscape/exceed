@@ -3,34 +3,28 @@ package de.quinscape.exceed.runtime.controller;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.application.ApplicationNotFoundException;
+import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
+import de.quinscape.exceed.runtime.application.MappingNotFoundException;
 import de.quinscape.exceed.runtime.security.Roles;
 import de.quinscape.exceed.runtime.service.ApplicationService;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
 import de.quinscape.exceed.runtime.service.websocket.MessageHubRegistry;
 import de.quinscape.exceed.runtime.util.AppAuthentication;
 import de.quinscape.exceed.runtime.util.ContentType;
 import de.quinscape.exceed.runtime.util.RequestUtil;
-import de.quinscape.exceed.runtime.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.ui.context.support.UiApplicationContextUtils;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.svenson.JSON;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 @Controller
 public class ApplicationController
@@ -59,7 +53,7 @@ public class ApplicationController
         log.debug("showApplicationView: app = {} path = {}", appName, inAppURI);
         try
         {
-            RuntimeApplication runtimeApplication = applicationService.getRuntimeApplication(servletContext, appName);
+            DefaultRuntimeApplication runtimeApplication = (DefaultRuntimeApplication) applicationService.getRuntimeApplication(servletContext, appName);
             if (runtimeApplication == null)
             {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Application '" + appName + "' not found");

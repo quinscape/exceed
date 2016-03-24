@@ -1,8 +1,8 @@
 package de.quinscape.exceed.runtime.model;
 
 import de.quinscape.exceed.component.ComponentDescriptor;
-import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.TestApplicationBuilder;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
 import org.apache.commons.io.FileUtils;
@@ -15,7 +15,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
@@ -60,7 +59,7 @@ public class ClientViewJSONGeneratorTest
         //log.info("FLAT: {}", view.getRoot().flattened().map(ComponentModel::getName).collect(Collectors.toList()));
 
         // to client format
-        String out = viewJSONGenerator.toJSON(view, JSONFormat.CLIENT);
+        String out = viewJSONGenerator.toJSON(new TestApplicationBuilder().build(), view, JSONFormat.CLIENT);
 
         //log.info(JSON.formatJSON(out));
 

@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.controller;
 
 import de.quinscape.exceed.model.TopLevelModel;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import org.apache.commons.io.IOUtils;
@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.svenson.JSON;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
@@ -45,7 +44,7 @@ public class HotReloadController
         HttpServletRequest request, HttpServletResponse response
     ) throws IOException, InterruptedException
     {
-        RuntimeApplication runtimeApplication = applicationService.getRuntimeApplication(servletContext, appName);
+        DefaultRuntimeApplication runtimeApplication = (DefaultRuntimeApplication) applicationService.getRuntimeApplication(servletContext, appName);
         if (runtimeApplication == null)
         {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Application '" + appName + "' not found");

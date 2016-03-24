@@ -13,6 +13,7 @@ import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.AttributeValueType;
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import org.svenson.JSON;
 
@@ -41,7 +42,7 @@ public class ClientExpressionRenderer
     private final JSON generator = JSON.defaultJSON();
 
 
-    public ClientExpressionRenderer(ComponentModel componentModel, ComponentPath path)
+    public ClientExpressionRenderer(RuntimeApplication application, ComponentModel componentModel, ComponentPath path)
     {
 
         if (componentModel == null)
@@ -239,6 +240,4 @@ public class ClientExpressionRenderer
         }
         return super.visit(node, data);
     }
-
-
 }

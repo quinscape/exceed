@@ -1,6 +1,5 @@
 package de.quinscape.exceed.runtime.model;
 
-import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
@@ -113,7 +112,7 @@ public class ClientExpressionRendererTest
 
     private String transform(String expr) throws ParseException
     {
-        ClientExpressionRenderer renderer = new ClientExpressionRenderer(componentModel, path);
+        ClientExpressionRenderer renderer = new ClientExpressionRenderer(null, componentModel, path);
         ASTExpression expression = ExpressionParser.parse(expr);
         expression.childrenAccept(renderer, null);
         return renderer.getOutput();

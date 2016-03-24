@@ -3,6 +3,7 @@ package de.quinscape.exceed.runtime.model;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.AbstractPropertyValueBasedTypeMapper;
@@ -43,20 +44,20 @@ public class ModelJSONServiceImpl
     {
         if (model instanceof View)
         {
-            return toJSON((View) model, JSONFormat.EXTERNAL);
+            return toJSON(null, (View) model, JSONFormat.EXTERNAL);
         }
         return generator.forValue(model);
     }
 
     @Override
-    public String toJSON(View model, JSONFormat jsonFormat)
+    public String toJSON(RuntimeApplication application, View model, JSONFormat jsonFormat)
     {
         if (jsonFormat == null)
         {
             throw new IllegalArgumentException("jsonFormat can't be null");
         }
 
-        return viewJSONGenerator.toJSON(model, jsonFormat);
+        return viewJSONGenerator.toJSON(application, model, jsonFormat);
     }
 
 

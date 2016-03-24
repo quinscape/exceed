@@ -3,8 +3,7 @@ package de.quinscape.exceed.runtime.service;
 import com.google.common.cache.LoadingCache;
 import de.quinscape.exceed.domain.tables.pojos.AppState;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
-import de.quinscape.exceed.runtime.controller.ActionRegistry;
+import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.resource.ResourceCacheFactory;
 import de.quinscape.exceed.runtime.resource.ResourceLoader;
@@ -18,16 +17,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.svenson.JSON;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 @Service
@@ -56,7 +51,7 @@ public class RuntimeApplicationFactory
     private DomainServiceFactory domainServiceFactory;
 
 
-    public RuntimeApplication createRuntimeApplication(ServletContext servletContext, AppState state)
+    public DefaultRuntimeApplication createRuntimeApplication(ServletContext servletContext, AppState state)
     {
         List<ResourceRoot> resourceRoots = configureExtensions(servletContext, state);
 
@@ -69,14 +64,13 @@ public class RuntimeApplicationFactory
             resourceLoader.setResourceCache(cache);
         }
 
-        return new RuntimeApplication(servletContext, viewDataService, componentRegistry, styleService,  modelCompositionService, resourceLoader, domainServiceFactory);
+        return new DefaultRuntimeApplication(servletContext, viewDataService, componentRegistry, styleService,  modelCompositionService, resourceLoader, domainServiceFactory);
     }
 
     private List<ResourceRoot> configureExtensions(ServletContext servletContext, AppState state)
     {
         try
         {
-
             List<ResourceRoot> resourceRoots = new ArrayList<>();
             String appName = state.getName();
             String extensionPath = state.getPath();

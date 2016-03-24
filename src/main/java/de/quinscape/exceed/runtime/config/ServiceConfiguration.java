@@ -122,10 +122,7 @@ public class ServiceConfiguration
         {
             throw new IllegalArgumentException("applicationContext can't be null");
         }
-
-
-        Map<String, PropertyConverter> propertyTypes = applicationContext.getBeansOfType(PropertyConverter.class);
-        return new DataListService(propertyTypes);
+        return new DataListService(new DefaultPropertyConverters().getConverters());
     }
 
     @Bean

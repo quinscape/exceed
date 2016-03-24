@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.controller;
 
 import com.google.common.cache.LoadingCache;
+import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
@@ -50,7 +51,7 @@ public class ResourceController
         ModelMap model, HttpServletRequest request, HttpServletResponse response) throws IOException
     {
 
-        RuntimeApplication runtimeApplication = applicationService.getRuntimeApplication(servletContext, appName);
+        DefaultRuntimeApplication runtimeApplication = (DefaultRuntimeApplication) applicationService.getRuntimeApplication(servletContext, appName);
         if (runtimeApplication == null)
         {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Application '" + appName + "' not found");
