@@ -68,6 +68,7 @@ public class ClientViewJSONGenerator
         ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
         if (jsonFormat == JSONFormat.CLIENT && componentRegistration != null)
         {
+
             String providedContext = componentRegistration.getDescriptor().getProvidedContext();
             if (providedContext != null)
             {
@@ -113,13 +114,14 @@ public class ClientViewJSONGenerator
                     ASTExpression expression = attribute.getAstExpression();
                     if (expression != null)
                     {
+                        PropDeclaration propDecl;
+                        boolean isContextExpression = componentRegistration != null &&
+                            (propDecl = componentRegistration.getDescriptor().getPropTypes().get(attrName)) != null &&
+                            propDecl.getContext() != null;
 
-                        PropDeclaration propType;
-                        if (componentRegistration == null ||
-                            (propType = componentRegistration.getDescriptor().getPropTypes().get(attrName)) == null ||
-                            propType.getContext() == null)
+                        if (!isContextExpression)
                         {
-                            ClientExpressionRenderer visitor = new ClientExpressionRenderer(application, componentModel, path);
+                            ClientExpressionRenderer visitor = new ClientExpressionRenderer(application, componentModel, attrName, path);
                             expression.childrenAccept(visitor, null);
                             String transformed = visitor.getOutput();
                             builder.property(attrName, transformed);
@@ -170,7 +172,7 @@ public class ClientViewJSONGenerator
 
                     if (astExpression != null)
                     {
-                        ClientExpressionRenderer renderer = new ClientExpressionRenderer(application, componentModel, path);
+                        ClientExpressionRenderer renderer = new ClientExpressionRenderer(application, componentModel, "value", path);
                         astExpression.childrenAccept(renderer, null);
 
                         builder.objectProperty("exprs");
@@ -244,7 +246,7 @@ public class ClientViewJSONGenerator
                     }
 
                     // .. and transform it for client consumption
-                    ClientExpressionRenderer renderer = new ClientExpressionRenderer(application, componentModel, path);
+                    ClientExpressionRenderer renderer = new ClientExpressionRenderer(application, componentModel, propName, path);
                     contextAST.childrenAccept(renderer, null);
                     builder.property(propName, renderer.getOutput());
                 }

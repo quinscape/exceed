@@ -41,8 +41,10 @@ public class ClientExpressionRenderer
 
     private final JSON generator = JSON.defaultJSON();
 
+    private final String attrName;
 
-    public ClientExpressionRenderer(RuntimeApplication application, ComponentModel componentModel, ComponentPath path)
+
+    public ClientExpressionRenderer(RuntimeApplication application, ComponentModel componentModel, String attrName, ComponentPath path)
     {
 
         if (componentModel == null)
@@ -60,6 +62,7 @@ public class ClientExpressionRenderer
         this.componentId = attr != null ? (String) attr.getValue() : null;
         this.path = path;
         this.componentModel = componentModel;
+        this.attrName = attrName;
 
         ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
         this.componentDescriptor = componentRegistration != null ? componentRegistration.getDescriptor() : null;
