@@ -40,33 +40,7 @@ var PRODUCTION = process.env.NODE_ENV === "production";
 
 var REACT_CATCH_ERRORS = !PRODUCTION && !process.env.NO_CATCH_ERRORS;
 
-var BABEL_PLUGINS = [
-
-    "transform-es2015-arrow-functions",
-
-    // JSX support
-    "transform-react-jsx",
-    "transform-react-display-name",
-
-    // var obj = { [computed] : true }
-    "transform-es2015-computed-properties",
-
-    // const MY_CONSTANT = 1 ( const -> let -> var )
-    "check-es2015-constants", "transform-es2015-block-scoping",
-
-    // if (process.env.NODE_ENV !== "production")
-    "transform-node-env-inline",
-
-    // ES2015 module imports
-    "transform-es2015-modules-commonjs",
-
-    // auto "use strict";
-    "transform-strict-mode",
-
-    // ... Spread operator
-    "transform-object-rest-spread"
-];
-
+var BabelConfig = require("./babel-config");
 
 gulp.task("build", function(cb) {
     bundle(false, cb);
@@ -122,7 +96,7 @@ function bundle(watch, cb) {
  	        plugins: REACT_CATCH_ERRORS ?
 
                 // Conditionally add react-transfro
-                BABEL_PLUGINS.concat(
+                BabelConfig.plugins.concat(
 
                 [["react-transform", {
                     "transforms": [{
@@ -132,7 +106,6 @@ function bundle(watch, cb) {
 
                             // the first import is your React distribution
                             // (if you use React Native, pass "react-native" instead)
-
                             "react",
 
                             // the second import is the React component to render error
@@ -151,7 +124,7 @@ function bundle(watch, cb) {
                         ]
                     }]
                 }]]
-            ) : BABEL_PLUGINS
+            ) : BabelConfig.plugins
         }))
         .transform("bulkify")
         .transform("browserify-shim", {
@@ -187,16 +160,8 @@ function bundle(watch, cb) {
 
 gulp.task("test", function ()
 {
-    var usePoweredAsserts = !process.env.NO_POWER_ASSERT;
 
-    // do babeljs runtime registration via require hook with our settings.
-    require("babel-core/register")({
-        plugins:
-            ( usePoweredAsserts ?
-                BABEL_PLUGINS.concat("babel-plugin-espower") :
-                BABEL_PLUGINS
-            )
-    });
+    BabelConfig.registerForTests();
 
     gulp.src("./src/test/js/**/*.js")
         .pipe(gulp.dest("./target/js/tests"))
