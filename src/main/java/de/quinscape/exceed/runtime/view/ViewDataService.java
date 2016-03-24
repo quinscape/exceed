@@ -5,7 +5,6 @@ import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataProvider;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
-import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,14 +54,13 @@ public class ViewDataService
      * @param vars
      * @return  view data
      */
-    public ViewData prepareComponent(RuntimeContext runtimeContext, View view, ComponentModel componentModel,
-                                     Map<String, Object> vars)
+    public ComponentData prepareComponent(RuntimeContext runtimeContext, View view, ComponentModel componentModel,
+                                          Map<String, Object> vars)
     {
-        Translator translator = runtimeContext.getTranslator();
         ViewData viewData = new ViewData(runtimeContext, view.getName(), runtimeContext.getTranslator());
         DataProviderContext context = new DataProviderContext(this, runtimeContext, expressionService, view.getName(), viewData, componentModel, vars);
         prepareRecursive(context, componentModel);
-        return viewData;
+        return (ComponentData) viewData.getData().get(componentModel.getComponentId());
     }
 
     void prepareRecursive(DataProviderContext context, ComponentModel element)
@@ -70,7 +68,7 @@ public class ViewDataService
         ComponentRegistration componentRegistration = element.getComponentRegistration();
         if (element.isComponent() && componentRegistration != null)
         {
-            DataProvider dataProviderInstance = (DataProvider) componentRegistration.getDataProvider();
+            DataProvider dataProviderInstance = componentRegistration.getDataProvider();
             if (dataProviderInstance != null)
             {
                 log.debug("Calling {} for {}", dataProviderInstance, element);
@@ -79,7 +77,6 @@ public class ViewDataService
 
                 Map<String, Object> vars = context.getVars(element);
                 Map<String, Object> componentDataMap = dataProviderInstance.provide(context, element, vars);
-
 
                 ViewData viewData = context.getViewData();
                 String componentId = element.getComponentId();
