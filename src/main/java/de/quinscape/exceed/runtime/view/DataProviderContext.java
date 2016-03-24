@@ -10,6 +10,7 @@ import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
+import de.quinscape.exceed.runtime.expression.Operation;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 
 import java.util.Collections;
@@ -192,6 +193,7 @@ public final class DataProviderContext
             }
         }
 
+        @Operation
         public Object prop(ASTFunction node)
         {
             Object result = node.jjtGetChild(0).jjtAccept(this, null);

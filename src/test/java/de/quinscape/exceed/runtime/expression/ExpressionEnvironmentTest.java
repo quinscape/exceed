@@ -321,11 +321,13 @@ public class ExpressionEnvironmentTest
             }
         }
 
+        @Operation
         public Foo foo(ASTFunction node)
         {
             return new Foo();
         }
 
+        @Operation
         public Foo name(ASTFunction node, Foo foo)
         {
             foo.setName(getArg(node, 0, String.class));

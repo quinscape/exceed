@@ -9,11 +9,13 @@ import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.editor.completion.AceCompletion;
 import de.quinscape.exceed.runtime.editor.completion.CompletionType;
 import de.quinscape.exceed.runtime.editor.completion.PropWizard;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
+import de.quinscape.exceed.runtime.expression.Operation;
 import de.quinscape.exceed.runtime.expression.query.DataField;
 import de.quinscape.exceed.runtime.expression.query.QueryDomainType;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
@@ -42,12 +44,13 @@ public class PropCompleteEnvironment
 
     private final QueryTransformer queryTransformer;
 
-    private final DomainService domainService;
+    private final RuntimeApplication application;
 
-    public PropCompleteEnvironment(DomainService domainService,
+
+    public PropCompleteEnvironment(RuntimeApplication application,
                                    QueryTransformer queryTransformer, View viewModel, ComponentModel componentModel, String propName)
     {
-        this.domainService = domainService;
+        this.application = application;
         this.queryTransformer = queryTransformer;
         this.propName = propName;
         this.viewModel = viewModel;
@@ -57,10 +60,11 @@ public class PropCompleteEnvironment
     }
 
 
+    @Operation
     public List<AceCompletion> domainType(ASTFunction node)
     {
         List<AceCompletion> suggestions = new ArrayList<>();
-        for (String domainType : domainService.getDomainTypeNames())
+        for (String domainType : application.getDomainService().getDomainTypeNames())
         {
             suggestions.add(new AceCompletion(CompletionType.PROP, domainType, "DomainType", null));
 
@@ -68,11 +72,13 @@ public class PropCompleteEnvironment
         return suggestions;
     }
 
+    @Operation
     public List<AceCompletion> integer(ASTFunction node)
     {
         return Collections.singletonList(new AceCompletion(CompletionType.PROP, "{ ${0:" + propName + "} }", "Integer", null));
     }
 
+    @Operation
     public List<AceCompletion> fieldOf(ASTFunction node)
     {
         Set<String> alreadyUsedNames = findAlreadyUsed();
@@ -143,21 +149,25 @@ public class PropCompleteEnvironment
     }
 
 
+    @Operation
     public ComponentModel model(ASTFunction node)
     {
         return  componentModel;
     }
 
+    @Operation
     public ComponentModel parent(ASTFunction node)
     {
         return  componentModel.getParent();
     }
 
+    @Operation
     public Object prop(ASTFunction node)
     {
         return  prop(node, componentModel);
     }
 
+    @Operation
     public Object prop(ASTFunction node, ComponentModel componentModel)
     {
         String name = getArg(node, 0, String.class);
@@ -179,7 +189,7 @@ public class PropCompleteEnvironment
                 if (propDeclaration.getType() == PropType.QUERY_EXPRESSION)
                 {
                     return  queryTransformer.evaluate(
-                        domainService,
+                        application.getDomainService(),
                         astExpression,
                         componentModel,
                         // TODO: vars?

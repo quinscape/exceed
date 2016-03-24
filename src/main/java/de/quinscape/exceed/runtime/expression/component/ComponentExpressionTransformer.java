@@ -18,6 +18,7 @@ import de.quinscape.exceed.runtime.controller.ActionNotFoundException;
 import de.quinscape.exceed.runtime.controller.ActionRegistry;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironmentException;
+import de.quinscape.exceed.runtime.expression.Operation;
 import org.svenson.JSON;
 
 public class ComponentExpressionTransformer
@@ -77,6 +78,7 @@ public class ComponentExpressionTransformer
         }
 
 
+        @Operation
         public Object prop(ASTFunction astFunction)
         {
             output.append("props[");
@@ -86,6 +88,7 @@ public class ComponentExpressionTransformer
         }
 
 
+        @Operation
         public Object var(ASTFunction astFunction)
         {
             output.append("vars[");

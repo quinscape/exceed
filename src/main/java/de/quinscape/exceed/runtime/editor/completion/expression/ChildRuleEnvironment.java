@@ -3,6 +3,7 @@ package de.quinscape.exceed.runtime.editor.completion.expression;
 import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
+import de.quinscape.exceed.runtime.expression.Operation;
 
 public class ChildRuleEnvironment
     extends ExpressionEnvironment
@@ -21,12 +22,14 @@ public class ChildRuleEnvironment
         this.componentDescriptor = componentDescriptor;
     }
 
+    @Operation
     public Boolean component(ASTFunction node)
     {
         String componentName = (String) node.jjtGetChild(0).jjtAccept(this, null);
         return this.componentName.equals(componentName);
     }
 
+    @Operation
     public Boolean hasClass(ASTFunction node)
     {
         String cls = (String) node.jjtGetChild(0).jjtAccept(this, null);

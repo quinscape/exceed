@@ -22,6 +22,7 @@ import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
+import de.quinscape.exceed.runtime.expression.Operation;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,13 +97,14 @@ public class QueryTransformer
         }
 
 
+        @Operation
         public Object var(ASTFunction node)
         {
             String name = getArg(node, 0, String.class);
             return vars.get(name);
         }
 
-
+        @Operation
         public Object prop(ASTFunction node)
         {
             String name = getArg(node, 0, String.class);
@@ -140,6 +142,7 @@ public class QueryTransformer
             return queryDomainType;
         }
 
+        @Operation
         public QueryDefinition query(ASTFunction node)
         {
             Object result = visitOneChildOf(node, ASTFunction.class, ASTPropertyChain.class);
@@ -160,6 +163,7 @@ public class QueryTransformer
         }
 
 
+        @Operation
         public List<String> childModelNames(ASTFunction node)
         {
             List<String> names = new ArrayList<>();
@@ -176,54 +180,62 @@ public class QueryTransformer
         }
 
 
+        @Operation
         public QueryDefinition query(ASTFunction node, QueryDomainType queryDomainType)
         {
             return new QueryDefinition(queryDomainType);
         }
 
 
+        @Operation
         public JoinDefinition join(ASTFunction node, QueryDomainType queryDomainType)
         {
             return joinInternal(node, queryDomainType);
         }
 
 
+        @Operation
         public JoinDefinition crossJoin(ASTFunction node, QueryDomainType queryDomainType)
         {
             return joinInternal(node, queryDomainType);
         }
 
 
+        @Operation
         public JoinDefinition fullOuterJoin(ASTFunction node, QueryDomainType queryDomainType)
         {
             return joinInternal(node, queryDomainType);
         }
 
 
+        @Operation
         public JoinDefinition leftOuterJoin(ASTFunction node, QueryDomainType queryDomainType)
         {
             return joinInternal(node, queryDomainType);
         }
 
 
+        @Operation
         public JoinDefinition rightOuterJoin(ASTFunction node, QueryDomainType queryDomainType)
         {
             return joinInternal(node, queryDomainType);
         }
 
 
+        @Operation
         public JoinDefinition naturalJoin(ASTFunction node, QueryDomainType queryDomainType)
         {
             return joinInternal(node, queryDomainType);
         }
 
 
+        @Operation
         public JoinDefinition naturalLeftOuterJoin(ASTFunction node, QueryDomainType queryDomainType)
         {
             return joinInternal(node, queryDomainType);
         }
 
-
+        @Operation
         public JoinDefinition naturalRightOuterJoin(ASTFunction node, QueryDomainType queryDomainType)
         {
             return joinInternal(node, queryDomainType);
@@ -246,6 +258,7 @@ public class QueryTransformer
         }
 
 
+        @Operation
         public QueryDomainType on(ASTFunction node, JoinDefinition joinDefinition)
         {
             SimpleNode n = expectChildOf(node, ASTEquality.class, ASTRelational.class, ASTLogicalAnd
@@ -256,6 +269,7 @@ public class QueryTransformer
         }
 
 
+        @Operation
         public QueryDomainType fields(ASTFunction node, QueryDomainType queryDomainType)
         {
             List<String> fields = new ArrayList<>();
@@ -279,6 +293,7 @@ public class QueryTransformer
             return queryDomainType;
         }
 
+        @Operation
         public QueryDomainType as(ASTFunction node, QueryDomainType queryDomainType)
         {
             Node arg = node.jjtGetNumChildren() > 0 ? node.jjtGetChild(0) : null;
@@ -300,6 +315,7 @@ public class QueryTransformer
         }
 
 
+        @Operation
         public QueryDefinition limit(ASTFunction node, QueryDefinition queryDefinition)
         {
             int len = node.jjtGetNumChildren();
@@ -323,6 +339,7 @@ public class QueryTransformer
         }
 
 
+        @Operation
         public QueryDefinition offset(ASTFunction node, QueryDefinition queryDefinition)
         {
             int len = node.jjtGetNumChildren();
@@ -346,6 +363,7 @@ public class QueryTransformer
         }
 
 
+        @Operation
         public QueryDefinition orderBy(ASTFunction node, QueryDefinition queryDefinition)
         {
             int len = node.jjtGetNumChildren();
@@ -379,6 +397,7 @@ public class QueryTransformer
         }
 
 
+        @Operation
         public QueryDefinition filter(ASTFunction node, QueryDefinition queryDefinition)
         {
             SimpleNode n = expectChildOf(node, ASTFunction.class, LogicalOperatorNode.class, ComparatorNode

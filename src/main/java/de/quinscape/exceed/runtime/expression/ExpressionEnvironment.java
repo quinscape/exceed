@@ -48,15 +48,16 @@ import java.util.concurrent.ConcurrentMap;
  * node and token
  * structure but differing in the identifiers and functions provided.
  * <p>
- * Examines the actual implementations and registers all methods found that are public and take a ASTFunction node
- * as first parameter and an optional second parameter as context object
+ * Examines the actual implementations and registers all methods found that are annotated  with {@link Operation}.
+ * The methods must be public and take a ASTFunction node as first parameter and optionally a second parameter as context object
  * </p>
  * <p>
  * For each of the methods an expression operator function will be created:
  * </p>
  * <p>
  * <pre>
- * public static String foo(ASTFunction node)
+ * \@Operation
+ * public String foo(ASTFunction node)
  * {
  * return "foo";
  * }
@@ -66,12 +67,14 @@ import java.util.concurrent.ConcurrentMap;
  * would be called by a foo(...) expression whereas
  * </p>
  * <pre>
- * public static MyContext context(ASTFunction node)
+ * \@Operation
+ * public MyContext context(ASTFunction node)
  * {
  *     return new MyContext();
  * }
  *
- * public static MyContext foo(ASTFunction node, MyContext myContext)
+ * \@Operation
+ * public MyContext foo(ASTFunction node, MyContext myContext)
  * {
  *     // do something with myContext
  *     return myContext;
@@ -908,20 +911,27 @@ public abstract class ExpressionEnvironment
             Map<Class<?>, Map<String, Method>> methodsByContext = new HashMap<>();
             for (Method m : implementationClass.getMethods())
             {
-                Class<?>[] parameterTypes = m.getParameterTypes();
-
-                // we're looking for all 2 argument methods that have ASTFunction as first parameter
-                int numberOfParams = parameterTypes.length;
-                if ((numberOfParams == 1 || numberOfParams == 2) && parameterTypes[0].equals(ASTFunction.class))
+                if (m.getAnnotation(Operation.class) != null)
                 {
-                    Class<?> type = numberOfParams == 2 ? parameterTypes[1] : Void.class;
-                    Map<String, Method> contextMap = methodsByContext.get(type);
-                    if (contextMap == null)
+                    Class<?>[] parameterTypes = m.getParameterTypes();
+
+                    // we're looking for all 2 argument methods that have ASTFunction as first parameter
+                    int numberOfParams = parameterTypes.length;
+                    if ((numberOfParams == 1 || numberOfParams == 2) && parameterTypes[0].equals(ASTFunction.class))
                     {
-                        contextMap = new HashMap<>();
-                        methodsByContext.put(type, contextMap);
+                        Class<?> type = numberOfParams == 2 ? parameterTypes[1] : Void.class;
+                        Map<String, Method> contextMap = methodsByContext.get(type);
+                        if (contextMap == null)
+                        {
+                            contextMap = new HashMap<>();
+                            methodsByContext.put(type, contextMap);
+                        }
+                        contextMap.put(m.getName(), m);
                     }
-                    contextMap.put(m.getName(), m);
+                    else
+                    {
+                        throw new InvalidOperationMethodException("Invalid operation method " + m);
+                    }
                 }
             }
 
