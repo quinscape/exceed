@@ -1,6 +1,6 @@
 "use strict";
 
-var extend = require("extend");
+var assign = require("object.assign").getPolyfill();
 
 var i18n = require("../service/i18n");
 

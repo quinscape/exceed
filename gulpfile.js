@@ -5,7 +5,7 @@ var path = require("path");
 var browserify = require("browserify");
 var buffer = require("vinyl-buffer");
 var chalk = require("chalk");
-var extend = require("extend");
+var assign = require("object.assign").getPolyfill();
 var gulpif = require("gulp-if");
 var gulp = require("gulp");
 var gutil = require("gulp-util");
@@ -58,7 +58,7 @@ function bundle(watch, cb) {
     if (watch) {
         bro = watchify(browserify(MAIN_FILE,
             // Assigning debug to have sourcemaps
-            extend(watchify.args, {
+            assign(watchify.args, {
                 debug: true,
                 fullPaths: true
             })));

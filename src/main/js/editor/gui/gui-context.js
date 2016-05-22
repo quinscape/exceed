@@ -1,4 +1,4 @@
-var extend = require("extend");
+var assign = require("object.assign").getPolyfill();
 var React = require("react");
 var ReactDOM = require("react-dom");
 

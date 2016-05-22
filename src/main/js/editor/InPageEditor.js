@@ -1,7 +1,7 @@
 var React = require("react");
 
 var classes = require("classnames");
-var extend = require("extend");
+var assign = require("object.assign").getPolyfill();
 var ValueLink = require("../util/value-link");
 
 var SVGLayout = require("../util/svg-layout");
@@ -74,7 +74,7 @@ var InPageEditor = React.createClass({
 
         if (savedState)
         {
-            return extend({}, DEFAULT_STATE,  JSON.parse(savedState));
+            return assign({}, DEFAULT_STATE,  JSON.parse(savedState));
         }
         else
         {

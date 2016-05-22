@@ -1,5 +1,5 @@
 var React = require("react");
-var extend = require("extend");
+var assign = require("object.assign").getPolyfill();
 var Promise = require("es6-promise-polyfill").Promise;
 var security = require("./security");
 var uri = require("../util/uri");
@@ -182,7 +182,7 @@ var viewService = {
 
     fetch: function (opts)
     {
-        opts = extend({}, fetchDefaultOpts, opts);
+        opts = assign({}, fetchDefaultOpts, opts);
 
         var isPreview = !!opts.preview;
         //console.log("fetchView, isPreview = ", isPreview, JSON.stringify(model, null, "  "));

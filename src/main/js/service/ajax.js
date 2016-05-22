@@ -1,5 +1,5 @@
 var Promise = require("es6-promise-polyfill").Promise;
-var extend = require("extend");
+var assign = require("object.assign").getPolyfill();
 var cando = require("../cando");
 
 var Enum = require("./../util/enum");
@@ -73,7 +73,7 @@ function serialize(data)
  */
 module.exports = function(opts)
 {
-    opts = extend({}, defaultOpts, opts);
+    opts = assign({}, defaultOpts, opts);
 
     if (!csrfToken)
     {

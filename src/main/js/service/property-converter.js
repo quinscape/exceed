@@ -1,4 +1,4 @@
-var extend = require("extend");
+var assign = require("object.assign").getPolyfill();
 
 var i18n = require("./i18n");
 
@@ -195,7 +195,7 @@ module.exports = {
 
         if (propertyType.required && !value)
         {
-            return extend(Result(""), MISSING_VALUE);
+            return assign(Result(""), MISSING_VALUE);
         }
 
         var name = propertyType.type;

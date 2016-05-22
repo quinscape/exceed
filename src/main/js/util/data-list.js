@@ -1,5 +1,5 @@
 var immutableUpdate = require("react-addons-update");
-var extend = require("extend");
+var assign = require("object.assign").getPolyfill();
 
 const ROOT_NAME = "[DataListRoot]";
 
@@ -179,7 +179,7 @@ DataList.prototype.followTypeDefinitionPath = function(path, startIndex, type, t
         }
         else
         {
-            return extend({
+            return assign({
                 parent: parent,
                 dataList: this
             }, property);
@@ -370,7 +370,7 @@ DataListCursor.prototype.getDomainObject = function (type)
         }
         else if (propType.type === "DomainType")
         {
-            object = extend({
+            object = assign({
                 _type: propType.typeParam
                 },
                 this.value
@@ -378,7 +378,7 @@ DataListCursor.prototype.getDomainObject = function (type)
         }
         else
         {
-            object = extend({
+            object = assign({
                 _type: propType.type
             }, this.value);
         }
@@ -419,7 +419,7 @@ DataListCursor.prototype.getPropertyType = function (path)
 
         if (path.length == 1)
         {
-            return extend({
+            return assign({
                 parent: e.type,
                 dataList: this.dataList
             }, property);

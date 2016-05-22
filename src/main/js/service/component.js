@@ -1,5 +1,5 @@
 
-var extend = require("extend");
+var assign = require("object.assign").getPolyfill();
 
 var components = {};
 

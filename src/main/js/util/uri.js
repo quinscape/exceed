@@ -1,7 +1,7 @@
 "use strict";
 
 var sys = require("../sys");
-var extend = require("extend");
+var assign = require("object.assign").getPolyfill();
 
 var url = require("url");
 
@@ -55,7 +55,7 @@ function uri(location, params, containsContextPath)
     if (qPos >= 0)
     {
         var current = url.parse(location, true);
-        params = extend(current.query, params);
+        params = assign(current.query, params);
         location = location.substring(0, qPos);
     }
 
