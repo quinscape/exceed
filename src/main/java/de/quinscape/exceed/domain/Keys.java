@@ -6,9 +6,11 @@ package de.quinscape.exceed.domain;
 
 import de.quinscape.exceed.domain.tables.AppState;
 import de.quinscape.exceed.domain.tables.AppUser;
+import de.quinscape.exceed.domain.tables.Foo;
 import de.quinscape.exceed.domain.tables.PersistentLogins;
 import de.quinscape.exceed.domain.tables.records.AppStateRecord;
 import de.quinscape.exceed.domain.tables.records.AppUserRecord;
+import de.quinscape.exceed.domain.tables.records.FooRecord;
 import de.quinscape.exceed.domain.tables.records.PersistentLoginsRecord;
 
 import javax.annotation.Generated;
@@ -42,6 +44,7 @@ public class Keys {
 
 	public static final UniqueKey<AppStateRecord> APP_STATE_PKEY = UniqueKeys0.APP_STATE_PKEY;
 	public static final UniqueKey<AppUserRecord> APP_USER_PKEY = UniqueKeys0.APP_USER_PKEY;
+	public static final UniqueKey<FooRecord> FOO_PKEY = UniqueKeys0.FOO_PKEY;
 	public static final UniqueKey<PersistentLoginsRecord> PERSISTENT_LOGINS_PKEY = UniqueKeys0.PERSISTENT_LOGINS_PKEY;
 
 	// -------------------------------------------------------------------------
@@ -56,6 +59,7 @@ public class Keys {
 	private static class UniqueKeys0 extends AbstractKeys {
 		public static final UniqueKey<AppStateRecord> APP_STATE_PKEY = createUniqueKey(AppState.APP_STATE, AppState.APP_STATE.ID);
 		public static final UniqueKey<AppUserRecord> APP_USER_PKEY = createUniqueKey(AppUser.APP_USER, AppUser.APP_USER.ID);
+		public static final UniqueKey<FooRecord> FOO_PKEY = createUniqueKey(Foo.FOO, Foo.FOO.ID);
 		public static final UniqueKey<PersistentLoginsRecord> PERSISTENT_LOGINS_PKEY = createUniqueKey(PersistentLogins.PERSISTENT_LOGINS, PersistentLogins.PERSISTENT_LOGINS.SERIES);
 	}
 }
