@@ -9,7 +9,11 @@ public enum PropType
     INTEGER,
     FLOAT,
     BOOLEAN,
+
+    /** space separated set of classes */
     CLASSES,
+    /** transition name */
+    TRANSITION,
 
     QUERY_EXPRESSION,
     FILTER_EXPRESSION,
