@@ -5,33 +5,37 @@ public interface ExpressionParserTreeConstants
 {
   public int JJTEXPRESSION = 0;
   public int JJTVOID = 1;
-  public int JJTLOGICALOR = 2;
-  public int JJTLOGICALAND = 3;
-  public int JJTEQUALITY = 4;
-  public int JJTRELATIONAL = 5;
-  public int JJTADD = 6;
-  public int JJTSUB = 7;
-  public int JJTMULT = 8;
-  public int JJTDIV = 9;
-  public int JJTNOT = 10;
-  public int JJTNEGATE = 11;
-  public int JJTPROPERTYCHAIN = 12;
-  public int JJTCOMPUTEDPROPERTYCHAIN = 13;
-  public int JJTIDENTIFIER = 14;
-  public int JJTFUNCTION = 15;
-  public int JJTINTEGER = 16;
-  public int JJTSTRING = 17;
-  public int JJTMAP = 18;
-  public int JJTARRAY = 19;
-  public int JJTMAPENTRY = 20;
-  public int JJTFLOAT = 21;
-  public int JJTBOOL = 22;
-  public int JJTNULL = 23;
+  public int JJTEXPRESSIONSEQUENCE = 2;
+  public int JJTASSIGNMENT = 3;
+  public int JJTLOGICALOR = 4;
+  public int JJTLOGICALAND = 5;
+  public int JJTEQUALITY = 6;
+  public int JJTRELATIONAL = 7;
+  public int JJTADD = 8;
+  public int JJTSUB = 9;
+  public int JJTMULT = 10;
+  public int JJTDIV = 11;
+  public int JJTNOT = 12;
+  public int JJTNEGATE = 13;
+  public int JJTPROPERTYCHAIN = 14;
+  public int JJTCOMPUTEDPROPERTYCHAIN = 15;
+  public int JJTIDENTIFIER = 16;
+  public int JJTFUNCTION = 17;
+  public int JJTINTEGER = 18;
+  public int JJTSTRING = 19;
+  public int JJTMAP = 20;
+  public int JJTARRAY = 21;
+  public int JJTMAPENTRY = 22;
+  public int JJTFLOAT = 23;
+  public int JJTBOOL = 24;
+  public int JJTNULL = 25;
 
 
   public String[] jjtNodeName = {
     "Expression",
     "void",
+    "ExpressionSequence",
+    "Assignment",
     "LogicalOr",
     "LogicalAnd",
     "Equality",
@@ -56,4 +60,4 @@ public interface ExpressionParserTreeConstants
     "Null",
   };
 }
-/* JavaCC - OriginalChecksum=6ce368136a143bea0cbf0afe9b2bd767 (do not edit this line) */
+/* JavaCC - OriginalChecksum=0a9ea1c93c339effe547fc22a43dbf3d (do not edit this line) */

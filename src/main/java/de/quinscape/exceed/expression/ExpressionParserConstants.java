@@ -62,6 +62,8 @@ public interface ExpressionParserConstants {
     "<DIGIT>",
     "<SQUOTED_STRING>",
     "<SQ_ALLOWABLE_CHARACTERS>",
+    "\";\"",
+    "\"=\"",
     "\"||\"",
     "\"&&\"",
     "\"==\"",

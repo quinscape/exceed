@@ -110,7 +110,7 @@ public class ExpressionRendererTest
     @Test
     public void testASTString() throws ParseException
     {
-        assertThat(process("'\"abc'"), is("\"\\\"abc\""));
+        assertThat(process("'\"abc'"), is("'\"abc'"));
     }
 
 

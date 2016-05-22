@@ -13,6 +13,7 @@ import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.runtime.controller.ActionNotFoundException;
 import de.quinscape.exceed.runtime.controller.ActionService;
+import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironmentException;
 import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
@@ -80,11 +81,11 @@ public class ComponentExpressionEnvironment
 
 
     @Override
-    public Object undefinedOperation(ASTFunction node, Object chainObject)
+    public Object undefinedOperation(ExpressionContext<ExpressionEnvironment> ctx, ASTFunction node, Object chainObject)
     {
         if (!actionExpression)
         {
-            super.undefinedOperation(node, chainObject);
+            super.undefinedOperation(ctx, node, chainObject);
         }
 
         String actionName = node.getName();
@@ -165,6 +166,13 @@ public class ComponentExpressionEnvironment
 
     @Override
     protected boolean arithmeticOperatorsAllowed()
+    {
+        return true;
+    }
+
+
+    @Override
+    protected boolean expressionSequenceAllowed()
     {
         return true;
     }

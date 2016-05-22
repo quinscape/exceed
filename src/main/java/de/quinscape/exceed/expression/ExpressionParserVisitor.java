@@ -5,6 +5,8 @@ public interface ExpressionParserVisitor
 {
   public Object visit(SimpleNode node, Object data);
   public Object visit(ASTExpression node, Object data);
+  public Object visit(ASTExpressionSequence node, Object data);
+  public Object visit(ASTAssignment node, Object data);
   public Object visit(ASTLogicalOr node, Object data);
   public Object visit(ASTLogicalAnd node, Object data);
   public Object visit(ASTEquality node, Object data);
@@ -28,4 +30,4 @@ public interface ExpressionParserVisitor
   public Object visit(ASTBool node, Object data);
   public Object visit(ASTNull node, Object data);
 }
-/* JavaCC - OriginalChecksum=22b9bcd4e2ca4e8d3d8e772d26638eb7 (do not edit this line) */
+/* JavaCC - OriginalChecksum=4e241396cb59706118696debfce6ed81 (do not edit this line) */

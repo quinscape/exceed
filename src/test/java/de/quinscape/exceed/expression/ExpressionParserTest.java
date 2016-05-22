@@ -168,20 +168,15 @@ public class ExpressionParserTest
             assertThat(i4.getName(), is("bar"));
         }
 
-        // assignment operator take out again (for now?)
-        // the only case where we might want to have it (action expressions) simultaneously
-        // suffers from the fact that it needs to produce an action description to be evaluated later
-        // which means we'd also needs a function definition mechanism or magic function wrapping
-        // Seems easier and cleaner to just keep it a "set" action
-//        {
-//            ASTAssignment assigment = (ASTAssignment) parse("testVar = a || b");
-//            ASTIdentifier identifier = (ASTIdentifier) assigment.jjtGetChild(0);
-//            ASTLogicalOr or = (ASTLogicalOr) assigment.jjtGetChild(1);
-//
-//            assertThat(identifier.getName(), is("testVar"));
-//            assertThat(((ASTIdentifier)or.jjtGetChild(0)).getName(), is("a"));
-//            assertThat(((ASTIdentifier)or.jjtGetChild(1)).getName(), is("b"));
-//        }
+        {
+            ASTAssignment assigment = (ASTAssignment) parse("testVar = a || b");
+            ASTIdentifier identifier = (ASTIdentifier) assigment.jjtGetChild(0);
+            ASTLogicalOr or = (ASTLogicalOr) assigment.jjtGetChild(1);
+
+            assertThat(identifier.getName(), is("testVar"));
+            assertThat(((ASTIdentifier)or.jjtGetChild(0)).getName(), is("a"));
+            assertThat(((ASTIdentifier)or.jjtGetChild(1)).getName(), is("b"));
+        }
 
         {
             ASTArray array = (ASTArray) parse("[foo, 8347, 'coconut']");
@@ -195,13 +190,14 @@ public class ExpressionParserTest
         }
     }
 
-
     @Test
-    public void testIt() throws Exception
+    public void testSequence() throws Exception
     {
-        Node node = parse("1 + (2 * 3)");
+        Node node = parse("a() ; c('arg') = 1 + 2; b()");
 
-        log.info(dump(node));
+        assertThat(node.jjtGetChild(0) instanceof ASTFunction, is(true));
+        assertThat(node.jjtGetChild(1) instanceof ASTAssignment, is(true));
+        assertThat(node.jjtGetChild(2) instanceof ASTFunction, is(true));
 
     }
 
@@ -250,10 +246,11 @@ public class ExpressionParserTest
     }
 
 
-    @Test(expected = ParseException.class)
+    // this used to be an error, now it's supported as expression sequence
     public void testError() throws Exception
     {
-        parse("1 + 2(a)");
+
+        Node node = parse("1 + 2(a)");
     }
 
     @Test(expected = ParseException.class)

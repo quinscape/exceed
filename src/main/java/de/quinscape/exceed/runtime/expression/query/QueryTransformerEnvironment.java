@@ -85,6 +85,13 @@ public class QueryTransformerEnvironment
     }
 
 
+    @Override
+    protected boolean expressionSequenceAllowed()
+    {
+        return false;
+    }
+
+
     public ComponentModel getComponentModel()
     {
         return componentModel;

@@ -12,6 +12,12 @@ public class ExpressionParserDefaultVisitor implements ExpressionParserVisitor{
   public Object visit(ASTExpression node, Object data){
     return defaultVisit(node, data);
   }
+  public Object visit(ASTExpressionSequence node, Object data){
+    return defaultVisit(node, data);
+  }
+  public Object visit(ASTAssignment node, Object data){
+    return defaultVisit(node, data);
+  }
   public Object visit(ASTLogicalOr node, Object data){
     return defaultVisit(node, data);
   }
@@ -79,4 +85,4 @@ public class ExpressionParserDefaultVisitor implements ExpressionParserVisitor{
     return defaultVisit(node, data);
   }
 }
-/* JavaCC - OriginalChecksum=76eb3a0507dcc331784334c03c3734bb (do not edit this line) */
+/* JavaCC - OriginalChecksum=416a729a77de9996e8d23ca4db223e21 (do not edit this line) */

@@ -51,6 +51,13 @@ public class ParentRuleEnvironment
     }
 
 
+    @Override
+    protected boolean expressionSequenceAllowed()
+    {
+        return false;
+    }
+
+
     public Set<String> getParentClasses()
     {
         return parentClasses;

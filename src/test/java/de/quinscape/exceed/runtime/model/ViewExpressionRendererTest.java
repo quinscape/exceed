@@ -4,7 +4,6 @@ import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.model.view.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import org.junit.Before;
@@ -13,18 +12,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.JSONParser;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
 
 import static de.quinscape.exceed.model.view.ComponentModelBuilder.component;
 
-public class ClientExpressionRendererTest
+public class ViewExpressionRendererTest
 {
-    private final static Logger log = LoggerFactory.getLogger(ClientExpressionRendererTest.class);
+    private final static Logger log = LoggerFactory.getLogger(ViewExpressionRendererTest.class);
 
     private ComponentModel componentModel;
 
@@ -52,7 +47,7 @@ public class ClientExpressionRendererTest
             .getComponent();
 
         componentModel.setComponentRegistration(new ComponentRegistration("TestComponent", componentDescriptor, "",
-            null));
+            null, null));
 
         path = new ComponentPath().firstChildPath();
         path.increment();
@@ -72,15 +67,15 @@ public class ClientExpressionRendererTest
     public void testPropsTransformation() throws Exception
     {
         assertThat(transform("props.longStrProp"), is("_v.root.kids[2].kids[1].attrs.longStrProp"));
-        assertThat(transform("props['longStrProp']"), is("_v.root.kids[2].kids[1].attrs[\"longStrProp\"]"));
+        assertThat(transform("props['longStrProp']"), is("_v.root.kids[2].kids[1].attrs['longStrProp']"));
     }
 
 
     @Test
     public void testVarsAccessTransformation() throws Exception
     {
-        assertThat(transform("vars.myVar"), is("_v.data[\"testComponentId\"].vars.myVar"));
-        assertThat(transform("vars['myVar']"), is("_v.data[\"testComponentId\"].vars[\"myVar\"]"));
+        assertThat(transform("vars.myVar"), is("_v.data['testComponentId'].vars.myVar"));
+        assertThat(transform("vars['myVar']"), is("_v.data['testComponentId'].vars['myVar']"));
     }
 
 
@@ -91,7 +86,7 @@ public class ClientExpressionRendererTest
         assertThat(transform("props.intProp"), is("123"));
         assertThat(transform("props.floatProp"), is("123.3"));
         assertThat(transform("props.boolProp"), is("true"));
-        assertThat(transform("props.strProp"), is("\"foobar\""));
+        assertThat(transform("props.strProp"), is("'foobar'"));
 
     }
 
@@ -111,7 +106,7 @@ public class ClientExpressionRendererTest
 
     private String transform(String expr) throws ParseException
     {
-        ClientExpressionRenderer renderer = new ClientExpressionRenderer(null, componentModel, "test", path, Collections.emptyMap(), false);
+        ActionExpressionBaseRenderer renderer = new ViewExpressionRenderer(null, null, componentModel, "test", path, null);
         ASTExpression expression = ExpressionParser.parse(expr);
         expression.childrenAccept(renderer, null);
         return renderer.getOutput();

@@ -144,17 +144,25 @@ ASTExpression Expression() #Expression : {}
 /** Expression. */
 void Expr() : {}
 {
-    OrExpression()
+    ExpressionSequence()
+}
+
+/** An expression sequence. */
+void ExpressionSequence() : {}
+{
+    (
+    AssignmentExpression() ( ";" AssignmentExpression() )*
+    ) #ExpressionSequence(>1)
 }
 
 
-///** An or expression. */
-//void AssignmentExpression() : {}
-//{
-//    (
-//        OrExpression() ("=" OrExpression())*
-//    ) #Assignment(jjtree.nodeArity() == 2)
-//}
+/** An or expression. */
+void AssignmentExpression() : {}
+{
+    (
+        OrExpression() ( "=" OrExpression())*
+    ) #Assignment(jjtree.nodeArity() == 2)
+}
 
 /** An or expression. */
 void OrExpression() : {}
@@ -245,7 +253,7 @@ void SubtractionExpression() :
     }
     {
     (
-    MultiplicationExpression() ( "-" MultiplicationExpression() )*
+     MultiplicationExpression() ( "-" MultiplicationExpression() )*
     ) #Sub(>1)
     }
 
@@ -307,7 +315,7 @@ void ComputedPropertyChainExpression() : {}
 {
     (
         // property access and methods
-        ValueExpression() ("[" Expr() "]" )*
+        ValueExpression() ( "[" Expr() "]" )*
     ) #ComputedPropertyChain(>1)
 }
 

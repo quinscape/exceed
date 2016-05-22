@@ -2,11 +2,13 @@ package de.quinscape.exceed.runtime.model;
 
 import de.quinscape.exceed.expression.ASTAdd;
 import de.quinscape.exceed.expression.ASTArray;
+import de.quinscape.exceed.expression.ASTAssignment;
 import de.quinscape.exceed.expression.ASTBool;
 import de.quinscape.exceed.expression.ASTComputedPropertyChain;
 import de.quinscape.exceed.expression.ASTDiv;
 import de.quinscape.exceed.expression.ASTEquality;
 import de.quinscape.exceed.expression.ASTExpression;
+import de.quinscape.exceed.expression.ASTExpressionSequence;
 import de.quinscape.exceed.expression.ASTFloat;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTIdentifier;
@@ -28,6 +30,8 @@ import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.OperatorNode;
 import de.quinscape.exceed.expression.SimpleNode;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
+import de.quinscape.exceed.runtime.util.SingleQuoteJSONParser;
 import org.svenson.JSON;
 
 /**
@@ -59,18 +63,30 @@ public class ExpressionRenderer
     }
 
 
-//    @Override
-//    public Object visit(ASTAssignment node, Object data)
-//    {
-//        Node lft = node.jjtGetChild(0);
-//        Node rgt = node.jjtGetChild(1);
-//
-//        lft.jjtAccept(this, data);
-//        buf.append(" = ");
-//        rgt.jjtAccept(this, data);
-//        return data;
-//    }
+    @Override
+    public Object visit(ASTExpressionSequence node, Object data)
+    {
+        renderMultiBinary(node, "; ", data);
+        return data;
+    }
 
+
+    @Override
+    public Object visit(ASTAssignment node, Object data)
+    {
+        if (node.jjtGetNumChildren() != 2)
+        {
+            throw new IllegalStateException("Assignment operator must have exactly 2 arguments");
+        }
+
+        Node lft = node.jjtGetChild(0);
+        Node rgt = node.jjtGetChild(1);
+
+        lft.jjtAccept(this, data);
+        buf.append(" = ");
+        rgt.jjtAccept(this, data);
+        return data;
+    }
 
     protected Object renderMultiBinary(Node node, String op, Object data)
     {
@@ -220,7 +236,7 @@ public class ExpressionRenderer
     @Override
     public Object visit(ASTString node, Object data)
     {
-        buf.append(JSON.defaultJSON().quote(node.getValue()));
+        buf.append(SingleQuoteJSONGenerator.INSTANCE.quote(node.getValue()));
         return data;
     }
 

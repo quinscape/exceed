@@ -366,6 +366,13 @@ public class ExpressionEnvironmentTest
 
 
         @Override
+        protected boolean expressionSequenceAllowed()
+        {
+            return false;
+        }
+
+
+        @Override
         public Object resolveIdentifier(String name)
         {
             if (name.equals("num"))

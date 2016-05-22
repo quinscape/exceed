@@ -2,11 +2,13 @@ package de.quinscape.exceed.runtime.expression;
 
 import de.quinscape.exceed.expression.ASTAdd;
 import de.quinscape.exceed.expression.ASTArray;
+import de.quinscape.exceed.expression.ASTAssignment;
 import de.quinscape.exceed.expression.ASTBool;
 import de.quinscape.exceed.expression.ASTComputedPropertyChain;
 import de.quinscape.exceed.expression.ASTDiv;
 import de.quinscape.exceed.expression.ASTEquality;
 import de.quinscape.exceed.expression.ASTExpression;
+import de.quinscape.exceed.expression.ASTExpressionSequence;
 import de.quinscape.exceed.expression.ASTFloat;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTIdentifier;
@@ -148,12 +150,14 @@ public abstract class ExpressionEnvironment
      *
      * The default implementation just throws an UnknownOperationException
      *
+     *
+     * @param ctx
      * @param node              function node
      * @param chainObject       current context
      *
      * @return  value of the unknown operation
      */
-    public Object undefinedOperation(ASTFunction node, Object chainObject)
+    public Object undefinedOperation(ExpressionContext<ExpressionEnvironment> ctx, ASTFunction node, Object chainObject)
     {
         throw new UnknownOperationException("Unknown operation '" + node.getName() + "' for environment " + this.environmentName + " and context = " + chainObject);
     }
@@ -894,6 +898,34 @@ public abstract class ExpressionEnvironment
         return chainObject;
     }
 
+
+    @Override
+    public Object visit(ASTExpressionSequence node, Object data)
+    {
+        if (!expressionSequenceAllowed())
+        {
+            throw new ExpressionEnvironmentException(environmentName + ": Multiple expressions not allowed");
+        }
+
+        List<Object> list = new ArrayList<>();
+
+        for (int i=0; i < node.jjtGetNumChildren(); i++)
+        {
+            Object value = node.jjtGetChild(i).jjtAccept(this, null);
+            list.add(value);
+        }
+
+        return list;
+    }
+
+
+    @Override
+    public Object visit(ASTAssignment node, Object data)
+    {
+        throw new ExpressionEnvironmentException(environmentName + ": Assignment operator not allowed.");
+    }
+
+
     protected abstract boolean logicalOperatorsAllowed();
 
     protected abstract boolean comparatorsAllowed();
@@ -901,5 +933,7 @@ public abstract class ExpressionEnvironment
     protected abstract boolean complexLiteralsAllowed();
 
     protected abstract boolean arithmeticOperatorsAllowed();
+
+    protected abstract boolean expressionSequenceAllowed();
 
 }

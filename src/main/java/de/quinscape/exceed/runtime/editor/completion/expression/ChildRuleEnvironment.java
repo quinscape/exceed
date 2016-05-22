@@ -55,6 +55,13 @@ public class ChildRuleEnvironment
     }
 
 
+    @Override
+    protected boolean expressionSequenceAllowed()
+    {
+        return false;
+    }
+
+
     public ComponentDescriptor getComponentDescriptor()
     {
         return componentDescriptor;

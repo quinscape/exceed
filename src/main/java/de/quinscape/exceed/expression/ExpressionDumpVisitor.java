@@ -85,6 +85,32 @@ public class ExpressionDumpVisitor
     }
 
 
+    @Override
+    public Object visit(ASTExpressionSequence node, Object data)
+    {
+        indent();
+        buf.append(node);
+        ++indent;
+        node.childrenAccept(this, data);
+        --indent;
+
+        return data;
+    }
+
+
+    @Override
+    public Object visit(ASTAssignment node, Object data)
+    {
+        indent();
+        buf.append(node);
+        ++indent;
+        node.childrenAccept(this, data);
+        --indent;
+
+        return data;
+    }
+
+
 //    @Override
 //    public Object visit(ASTAssignment node, Object data)
 //    {

@@ -103,6 +103,14 @@ public class PropCompleteEnvironment
         return false;
     }
 
+
+    @Override
+    protected boolean expressionSequenceAllowed()
+    {
+        return false;
+    }
+
+
     public List<AceCompletion> evaluate(ExpressionService expressionService)
     {
         ComponentDescriptor descriptor = componentModel.getComponentRegistration().getDescriptor();

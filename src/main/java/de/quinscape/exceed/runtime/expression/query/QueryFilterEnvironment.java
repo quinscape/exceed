@@ -11,6 +11,7 @@ import de.quinscape.exceed.expression.ASTPropertyChain;
 import de.quinscape.exceed.expression.ASTRelational;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
 import de.quinscape.exceed.runtime.util.ExpressionUtil;
 import org.jooq.Condition;
@@ -62,6 +63,13 @@ public class QueryFilterEnvironment
 
     @Override
     protected boolean arithmeticOperatorsAllowed()
+    {
+        return false;
+    }
+
+
+    @Override
+    protected boolean expressionSequenceAllowed()
     {
         return false;
     }
@@ -233,7 +241,7 @@ public class QueryFilterEnvironment
 
 
     @Override
-    public Object undefinedOperation(ASTFunction node, Object chainObject)
+    public Object undefinedOperation(ExpressionContext<ExpressionEnvironment> ctx, ASTFunction node, Object chainObject)
     {
         String operationName = node.getName();
 
@@ -248,7 +256,7 @@ public class QueryFilterEnvironment
         {
             return operationService.evaluate(transformerEnvironment, node, chainObject);
         }
-        return super.undefinedOperation(node, chainObject);
+        return super.undefinedOperation(ctx, node, chainObject);
     }
 
 

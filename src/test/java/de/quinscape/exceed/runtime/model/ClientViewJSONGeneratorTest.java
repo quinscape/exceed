@@ -3,10 +3,8 @@ package de.quinscape.exceed.runtime.model;
 import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.TestApplicationBuilder;
-import de.quinscape.exceed.runtime.expression.component.TestActionService;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
-import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
 import de.quinscape.exceed.runtime.util.SingleQuoteJSONParser;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
@@ -30,7 +28,7 @@ public class ClientViewJSONGeneratorTest
 
     private ModelJSONService modelJSONService = new ModelJSONServiceImpl();
 
-    private ClientViewJSONGenerator viewJSONGenerator = new ClientViewJSONGenerator(new TestActionService());
+    private ClientViewJSONGenerator viewJSONGenerator = new ClientViewJSONGenerator(null);
 
 
     @Test
@@ -88,11 +86,11 @@ public class ClientViewJSONGeneratorTest
             Map<String, Object> heading = kid(col, 0);
             assertThat(heading.get("name"),is("Heading"));
             assertThat(attr(heading, "value"),is("{ 'Heading: ' + props.id }"));
-            assertThat(expr(heading, "value"),is("\"Heading: \" + \"myHeading\""));
+            assertThat(expr(heading, "value"),is("'Heading: ' + 'myHeading'"));
         }
 
         /**
-         * more thorough tests for expression transformation and constant inlining in {@link ClientExpressionRendererTest}
+         * more thorough tests for expression transformation and constant inlining in {@link ViewExpressionRendererTest}
          */
 
         {
@@ -110,11 +108,11 @@ public class ClientViewJSONGeneratorTest
 
             Map<String, Object> computed = kid(provider, 2);
             assertThat(computed.get("name"),is("ComputedConsumer"));
-            assertThat(expr(computed, "ctx"),is("customContext[\"ccName\"]"));
+            assertThat(expr(computed, "ctx"),is("customContext['ccName']"));
 
             Map<String, Object> exprComputed = kid(provider, 3);
             assertThat(exprComputed.get("name"),is("ComputedConsumer"));
-            assertThat(expr(exprComputed, "ctx"),is("customContext.foo[\"ccName2\"]"));
+            assertThat(expr(exprComputed, "ctx"),is("customContext.foo['ccName2']"));
         }
 
         {
@@ -138,7 +136,7 @@ public class ClientViewJSONGeneratorTest
 
             Map<String, Object> untypedConsumer = kid(provider2, 1);
             assertThat(untypedConsumer.get("name"),is("ComputedConsumer"));
-            assertThat(expr(untypedConsumer, "ctx"),is("anotherContext[\"ccName3\"]"));
+            assertThat(expr(untypedConsumer, "ctx"),is("anotherContext['ccName3']"));
         }
 
         {
@@ -147,7 +145,7 @@ public class ClientViewJSONGeneratorTest
             log.info("defaultPropsComponent: {}", defaultPropsComponent);
 
             assertThat(defaultPropsComponent.get("name"), is("DefaultProps"));
-            assertThat(expr(defaultPropsComponent, "defExpr"),is("\"default\""));
+            assertThat(expr(defaultPropsComponent, "defExpr"),is("'default'"));
             assertThat(attr(defaultPropsComponent, "defVal"),is("defVal default"));
 
             // don't dump client=false props
