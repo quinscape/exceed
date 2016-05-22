@@ -3,17 +3,16 @@ var DebounceMixin = {
     {
         var args = Array.prototype.slice.call(arguments, 2);
 
-        var ctx = this;
-        var timeout = ctx.debouncedTimeout;
+        var timeout = this.debouncedTimeout;
         if (timeout)
         {
             clearTimeout(timeout);
         }
 
-        ctx.debouncedTimeout = setTimeout(function ()
+        this.debouncedTimeout = setTimeout(() =>
         {
-            ctx.debouncedTimeout = null;
-            func.apply(ctx, args);
+            this.debouncedTimeout = null;
+            func.apply(this, args);
 
         } , time);
     }
