@@ -112,6 +112,12 @@ var ActionService = {
         else if (typeof action === "object" && typeof action.action === "string")
         {
             var entry = actions[action.action];
+
+            if (!entry)
+            {
+                return Promise.reject(new Error("No action registered for name '" + action.action + "'"))
+            }
+
             if (entry.client && !forceServer)
             {
                 try
