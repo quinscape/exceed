@@ -23,7 +23,7 @@ public class SyslogAction
     {
         if (log.isInfoEnabled())
         {
-            log.info("SYSLOG {}", JSON.defaultJSON().forValue(model.getArgs()));
+            log.info(JSON.defaultJSON().forValue(model.getArgs()));
         }
     }
 
