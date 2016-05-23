@@ -4,18 +4,15 @@ import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.model.action.StoreActionModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.domain.GenericDomainObject;
-import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.model.ExpressionRenderer;
 import de.quinscape.exceed.runtime.model.InvalidClientExpressionException;
-import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 public class StoreAction
-    implements Action<StoreActionModel>, ActionCallGenerator
+    implements Action<StoreActionModel>, ClientActionRenderer
 {
     private final static Logger log = LoggerFactory.getLogger(StoreAction.class);
 
@@ -47,7 +44,7 @@ public class StoreAction
         }
 
         StringBuilder buf = renderer.getBuffer();
-        buf.append("_v.action({ action: \"store\", data: ");
+        buf.append("_a.action({ action: \"store\", data: ");
 
         node.jjtGetChild(0).jjtAccept(renderer, null);
 

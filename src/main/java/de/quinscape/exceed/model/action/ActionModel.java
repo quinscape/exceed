@@ -9,7 +9,7 @@ import java.beans.Introspector;
  * Implemented by classes that parametrize {@link de.quinscape.exceed.runtime.action.Action} invocations.
  *
  * Action Models don't follow the normal model JSONification rules but resolve the concrete type by the symbolic name
- * give in the action property resolved via action registry.
+ * give in the action property resolved via the action service.
  */
 public abstract class ActionModel
 {
