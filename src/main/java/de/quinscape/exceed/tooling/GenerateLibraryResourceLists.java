@@ -19,6 +19,8 @@ public class GenerateLibraryResourceLists
 {
     public static void main(String[] args) throws IOException
     {
+        System.out.println("Generating library resource list");
+
         GenerateLibraryResourceLists tool = new GenerateLibraryResourceLists();
 
         tool.generateResourceList(
