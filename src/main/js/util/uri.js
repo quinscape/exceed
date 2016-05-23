@@ -30,7 +30,7 @@ function evaluateParams(params, usedInPath)
 
 function replacePathVariables(location, params, usedInPath)
 {
-   return location.replace(/{([a-z]+)}/g, function (match, name, offset, str)
+   return location.replace(/{([a-z]+)}/gi, function (match, name, offset, str)
     {
         var value = params && params[name];
         if (value === undefined)
