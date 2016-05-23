@@ -31,7 +31,7 @@
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
 </head>
-<body data-context-path="${contextPath}">
+<body data-applicationContextModel-path="${contextPath}">
 <div class="container">
     <h1>Error</h1>
     ${timestamp}

@@ -5,9 +5,11 @@ import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.application.ApplicationNotFoundException;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.application.MappingNotFoundException;
+import de.quinscape.exceed.runtime.application.StateNotFoundException;
 import de.quinscape.exceed.runtime.security.Roles;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
+import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.service.websocket.MessageHubRegistry;
 import de.quinscape.exceed.runtime.util.AppAuthentication;
 import de.quinscape.exceed.runtime.util.ContentType;
@@ -38,6 +40,9 @@ public class ApplicationController
     private ApplicationService applicationService;
 
     @Autowired
+    private ScopedContextFactory scopedContextFactory;
+
+    @Autowired
     private RuntimeContextFactory runtimeContextFactory;
 
     @Autowired
@@ -60,21 +65,18 @@ public class ApplicationController
                 return null;
             }
 
-            RuntimeContext runtimeContext = runtimeContextFactory.create(runtimeApplication, inAppURI, request.getLocale());
-
-            RuntimeContextHolder.register(runtimeContext);
-
             model.put("title", "Application View");
             model.put("appName", appName);
 
+            runtimeApplication.route(request, response, model, inAppURI);
+
             AppAuthentication auth = AppAuthentication.get();
-            if (auth.hasRole(Roles.EDITOR))
+            if (auth.hasRole(Roles.EDITOR) && !RequestUtil.isAjaxRequest(request))
             {
+                RuntimeContext runtimeContext = RuntimeContextHolder.get();
                 String connectionId = messageHubRegistry.registerConnection(request.getSession(), runtimeContext, auth);
                 model.put("connectionId", connectionId);
             }
-
-            runtimeApplication.route(request, response, runtimeContext, model);
 
             if (response.isCommitted())
             {
@@ -87,31 +89,15 @@ public class ApplicationController
         }
         catch(MappingNotFoundException e)
         {
-            if (RequestUtil.isAjaxRequest(request))
-            {
-                response.setContentType(ContentType.JSON);
-                RequestUtil.sendJSON(response, "{\"ok\":false,\"error\":" + JSON.defaultJSON().quote(e.getMessage()) + "}");
-                return null;
-            }
-            else
-            {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Mapping not found");
-                return null;
-            }
+            return sendNotFoundError(request, response, e, "Mapping not found");
         }
         catch(ApplicationNotFoundException e)
         {
-            if (RequestUtil.isAjaxRequest(request))
-            {
-                response.setContentType(ContentType.JSON);
-                RequestUtil.sendJSON(response, "{\"ok\":false,\"error\":" + JSON.defaultJSON().quote(e.getMessage()) + "}");
-                return null;
-            }
-            else
-            {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Application '" + appName + "' not found");
-                return null;
-            }
+            return sendNotFoundError(request, response, e, "Application '" + appName + "' not found");
+        }
+        catch(StateNotFoundException e)
+        {
+            return sendNotFoundError(request, response, e, "State not found");
         }
         catch(Exception e)
         {
@@ -122,6 +108,22 @@ public class ApplicationController
         finally
         {
             RuntimeContextHolder.clear();
+        }
+    }
+
+
+    private String sendNotFoundError(HttpServletRequest request, HttpServletResponse response, Exception e, String message) throws IOException
+    {
+        if (RequestUtil.isAjaxRequest(request))
+        {
+            response.setContentType(ContentType.JSON);
+            RequestUtil.sendJSON(response, "{\"ok\":false,\"error\":" + JSON.defaultJSON().quote(message + ": " + e.getMessage()) + "}");
+            return null;
+        }
+        else
+        {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, message);
+            return null;
         }
     }
 }

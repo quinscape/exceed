@@ -1,13 +1,9 @@
-var Promise = require("es6-promise-polyfill").Promise;
-
-var actionService = require("../service/action");
 var uri = require("../util/uri");
 var sys = require("../sys");
 
+var Scope = require("./scope");
+
 var viewService;
-
-var Throbber = require("../ui/throbber");
-
 
 function getViewService()
 {
@@ -59,61 +55,9 @@ RTView.prototype.inject = function (props, data)
 RTView.prototype.param = function (name)
 {
     /** @see LocationParamsProvider.java */
-    return this.data._exceed.locationParams[name];
+    return this.data._exceed.location.params[name];
 };
 
-/**
- * Returns a promise for the given action execution if the optional name is set, it will be copied to
- * identifying "action" property, otherwise the model must already contain the "action" property.
- *
- * @param model     {object} JSON action model
- * @param name      {?name} optional name parameter.
- * @returns {Promise}
- */
-RTView.prototype.action = function (model, name)
-{
-    // (name, model)?
-    if (name !== undefined)
-    {
-        // yes -> make sure the given object has the right action attribute
-        model.action = name;
-    }
-
-    if (!model.action)
-    {
-        return Promise.reject(new Error("No action property set"));
-    }
-
-    return actionService.execute(model);
-};
-
-function defaultError(err)
-{
-    console.error(err);
-    return Promise.reject(err);
-}
-
-function throbberError(e)
-{
-    Throbber.disable();
-    return defaultError(e);
-}
-
-/**
- * Default action error handling.
- *
- * @param promise   promise to observe
- */
-RTView.prototype.observe = function (promise)
-{
-    var enableThrobber = require("../cando").ajax;
-    enableThrobber && Throbber.enable();
-
-    return ( enableThrobber ?
-        promise.then(Throbber.disable, throbberError) :
-        promise.catch(defaultError)
-    );
-};
 
 /**
  * Navigates the current view state to the given location
@@ -129,11 +73,27 @@ RTView.prototype.navigateTo = function (location, params)
 
 };
 
-RTView.prototype.update = function (id, vars)
+RTView.prototype.uri = require("../util/uri");
+
+RTView.prototype.transition = function (name)
 {
-    getViewService().updateComponent(id, vars || {});
+    var viewState = getViewService().getRuntimeInfo().viewState;
+    if (!viewState)
+    {
+        throw new Error("transitionIsDiscard but no view state");
+    }
+
+    var transition = viewState.transitions[name];
+    if (!transition)
+    {
+        throw new Error("Transition '" + name + "' not found");
+    }
+    return transition;
 };
 
-RTView.prototype.uri = require("../util/uri");
+// Import scope functions into runtime view prototype chain
+RTView.prototype.scopedList = Scope.list;
+RTView.prototype.scopedObject = Scope.object;
+RTView.prototype.scopedProperty = Scope.property;
 
 module.exports = RTView;

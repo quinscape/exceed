@@ -28,7 +28,7 @@ public class DomainObjectTest
             "\"Foolicious\", \"password\" : \"pw123\"}");
 
         assertThat(foo, is(notNullValue()));
-        assertThat(foo.getType(), is("AppUser"));
+        assertThat(foo.getDomainType(), is("AppUser"));
         assertThat(foo.getLogin(), is("Foolicious"));
         assertThat(foo.getPassword(), is("pw123"));
 

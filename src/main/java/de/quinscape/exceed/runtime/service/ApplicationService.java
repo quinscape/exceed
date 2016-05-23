@@ -3,6 +3,7 @@ package de.quinscape.exceed.runtime.service;
 import de.quinscape.exceed.domain.tables.pojos.AppState;
 import de.quinscape.exceed.runtime.application.ApplicationStatus;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.scope.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.transaction.annotation.Propagation;
@@ -39,4 +40,7 @@ public interface ApplicationService
     void signalCodeChanges();
 
     void signalComponentChanges(Set<String> componentNames);
+
+    @Transactional(propagation = Propagation.NESTED)
+    void updateApplicationContext(String appName, ApplicationContext applicationContext);
 }

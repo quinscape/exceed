@@ -3,8 +3,10 @@ package de.quinscape.exceed.runtime.application;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.resource.ResourceLoader;
+import de.quinscape.exceed.runtime.scope.ScopedContext;
 
 import javax.servlet.ServletContext;
 import java.io.IOException;
@@ -23,4 +25,8 @@ public interface RuntimeApplication
     ApplicationModel getApplicationModel();
 
     DomainService getDomainService();
+
+    ScopedContext getApplicationContext();
+
+    StaticFunctionReferences getStaticFunctionReferences();
 }

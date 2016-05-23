@@ -17,7 +17,7 @@ public abstract class Model
 
 
     /**
-     * Provides a read-only "type" property with the path relative to this package which is used by {@link ModelJSONServiceImpl}
+     * Provides a read-only "type" property with the path relative to this package which is used by {@link de.quinscape.exceed.runtime.model.ModelJSONServiceImpl}
      * to parse JSON into the correct java type.
      *
      * @return

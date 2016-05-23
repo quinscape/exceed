@@ -14,11 +14,13 @@ public interface DomainObject
 
     void setDomainService(DomainService domainService);
 
-    String getType();
+    String getDomainType();
 
     Set<String> propertyNames();
 
     Object getProperty(String name);
+
+    DomainObject copy();
 
     void setProperty(String name, Object value);
 

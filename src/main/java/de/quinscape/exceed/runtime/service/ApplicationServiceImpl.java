@@ -6,6 +6,7 @@ import de.quinscape.exceed.runtime.application.ApplicationNotFoundException;
 import de.quinscape.exceed.runtime.application.ApplicationStatus;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
+import de.quinscape.exceed.runtime.scope.ApplicationContext;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -215,6 +216,20 @@ public class ApplicationServiceImpl
             }
         }
 
+    }
+
+
+    @Override
+    @Transactional(propagation = Propagation.NESTED)
+    public void updateApplicationContext(String appName, ApplicationContext applicationContext)
+    {
+        log.info("Updating scoped context for {}", appName);
+        String json = applicationContext.toJSON();
+
+        dslContext.update(APP_STATE)
+            .set(APP_STATE.CONTEXT, json)
+            .where(APP_STATE.NAME.eq(appName))
+            .execute();
     }
 
 

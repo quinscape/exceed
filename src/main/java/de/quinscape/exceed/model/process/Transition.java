@@ -1,9 +1,11 @@
 package de.quinscape.exceed.model.process;
 
-import de.quinscape.exceed.model.action.ActionModel;
+import de.quinscape.exceed.expression.ASTExpression;
+import de.quinscape.exceed.expression.ExpressionParser;
+import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.util.ExpressionUtil;
 import org.svenson.JSONProperty;
-
-import java.util.List;
 
 public class Transition
 {
@@ -13,7 +15,12 @@ public class Transition
 
     private String to;
 
-    private List<ActionModel> actions;
+    private String action;
+
+    private ASTExpression actionAST;
+
+    private boolean discard = false;
+
 
     public String getName()
     {
@@ -25,6 +32,7 @@ public class Transition
     {
         this.name = name;
     }
+
 
     public void setFrom(String from)
     {
@@ -38,6 +46,7 @@ public class Transition
         return from;
     }
 
+
     public String getTo()
     {
         return to;
@@ -50,15 +59,43 @@ public class Transition
     }
 
 
-    public List<ActionModel> getActions()
+    @JSONProperty(ignoreIfNull = true)
+    public String getAction()
     {
-        return actions;
+        return action;
     }
 
 
-    public void setActions(List<ActionModel> actions)
+    public void setAction(String action)
     {
-        this.actions = actions;
+        this.action = action;
+        try
+        {
+            this.actionAST = ExpressionUtil.handleAssignmentAction(ExpressionParser.parse(action));
+        }
+        catch (ParseException e)
+        {
+            throw new ExceedRuntimeException(e);
+        }
+    }
+
+
+    public boolean isDiscard()
+    {
+        return discard;
+    }
+
+
+    public void setDiscard(boolean discard)
+    {
+        this.discard = discard;
+    }
+
+
+    @JSONProperty(ignore = true)
+    public ASTExpression getActionAST()
+    {
+        return actionAST;
     }
 
 
@@ -70,4 +107,6 @@ public class Transition
             + ", '" + from + "' => '" + to + "'"
             ;
     }
+
+
 }

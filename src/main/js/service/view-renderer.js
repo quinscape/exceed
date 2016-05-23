@@ -25,6 +25,7 @@ var React = require("react");
 var components = componentService.getComponents();
 
 var rtViewAPI = require("./runtime-view-api");
+var rtActionAPI = require("./runtime-action-api");
 
 function RenderContext(out)
 {
@@ -110,7 +111,9 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
 
     ctx.out.push("_React.createElement(", component, ", ");
 
-    if (queries)
+    var hasInjection = !!queries || componentDescriptor.dataProvider;
+
+    if (hasInjection)
     {
         ctx.out.push("_v.inject({\n")
     }
@@ -224,7 +227,7 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
         }
     }
 
-    if (queries)
+    if (hasInjection)
     {
         ctx.out.push("\n");
         indent(ctx, depth + 1);
@@ -293,13 +296,12 @@ module.exports = {
     {
         //console.log("\nVIEWMODEL:\n", JSON.stringify(viewModel, null, "  "));
         var code = renderViewComponentSource(viewModel);
-        //console.log("\nRENDER-FN:\n", code);
+        console.log("\nRENDER-FN:\n", code);
 
-        var renderFn = new Function("_React", "_components", "_RTView", "_catchErrors", "_ErrorReport", "_sys", code);
-
+        var renderFn = new Function("_React", "_components", "_RTView", "_catchErrors", "_ErrorReport", "_sys", "_a", code);
         return function (component)
         {
-            return renderFn.call(component, React, components, rtViewAPI, catchErrors, ErrorReport, sys);
+            return renderFn.call(component, React, components, rtViewAPI, catchErrors, ErrorReport, sys, rtActionAPI);
         };
     }
 };

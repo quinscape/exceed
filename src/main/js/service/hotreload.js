@@ -48,7 +48,10 @@ if (process.env.NODE_ENV !== "production")
             if (model._type === "view.View")
             {
                 viewService.fetch()
-                    .then(viewService.render)
+                    .then(function (data)
+                    {
+                        return viewService.render(data.viewModel, data.viewData);
+                    })
                     .then(pollChanges)
                     .catch(function (e)
                     {

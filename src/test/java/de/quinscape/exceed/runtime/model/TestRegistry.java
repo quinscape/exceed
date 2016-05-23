@@ -31,7 +31,7 @@ public class TestRegistry
         for (Map.Entry<String, ComponentDescriptor> entry : componentDescriptors.entrySet())
         {
             String componentName = entry.getKey();
-            m.put(componentName, new ComponentRegistration(componentName, entry.getValue(), "", null));
+            m.put(componentName, new ComponentRegistration(componentName, entry.getValue(), "", null, null));
         }
         this.componentRegistrations = m;
     }

@@ -29,7 +29,7 @@ public class SaveViewHandler
 
         RuntimeApplication runtimeApplication = context.getRuntimeContext().getRuntimeApplication();
 
-        View view = runtimeApplication.getApplicationModel().getViews().get(viewName);
+        View view = runtimeApplication.getApplicationModel().getView(viewName);
 
         AppResource resource = view.getResource();
 

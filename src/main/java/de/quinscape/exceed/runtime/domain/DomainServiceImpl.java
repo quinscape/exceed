@@ -4,7 +4,6 @@ import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.datalist.DataListService;
-import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.util.DBUtil;
 import org.jooq.DSLContext;
 import org.jooq.DeleteQuery;
@@ -83,13 +82,7 @@ public class DomainServiceImpl
     @Override
     public DomainType getDomainType(String name)
     {
-        DomainType domainType = runtimeApplication.getApplicationModel().getDomainTypes().get(name);
-        if (domainType == null)
-        {
-            throw new IllegalArgumentException("Unknown type '" + name + "'");
-        }
-
-        return domainType;
+        return runtimeApplication.getApplicationModel().getDomainType(name);
     }
 
 
@@ -105,13 +98,6 @@ public class DomainServiceImpl
     {
         return Collections.unmodifiableSet(runtimeApplication.getApplicationModel().getDomainTypes().keySet());
     }
-
-
-    public Map<String, DomainType> getDomainTypes()
-    {
-        return runtimeApplication.getApplicationModel().getDomainTypes();
-    }
-
 
     private class DomainFactory
         implements org.svenson.ObjectFactory<GenericDomainObject>
@@ -179,7 +165,7 @@ public class DomainServiceImpl
     @Override
     public void delete(DomainObject domainObject)
     {
-        DomainType domainType = getDomainType(domainObject.getType());
+        DomainType domainType = getDomainType(domainObject.getDomainType());
 
         DeleteQuery<Record> query = dslContext.deleteQuery(DBUtil.jooqTableFor(domainType, domainType.getName()));
 
@@ -201,7 +187,7 @@ public class DomainServiceImpl
     @Override
     public void insert(DomainObject domainObject)
     {
-        DomainType domainType = getDomainType(domainObject.getType());
+        DomainType domainType = getDomainType(domainObject.getDomainType());
 
         InsertQuery<Record> query = dslContext.insertQuery(DBUtil.jooqTableFor(domainType, domainType.getName()));
 
@@ -224,7 +210,7 @@ public class DomainServiceImpl
     public void update(DomainObject domainObject)
     {
 
-        DomainType domainType = getDomainType(domainObject.getType());
+        DomainType domainType = getDomainType(domainObject.getDomainType());
 
         UpdateQuery<Record> query = dslContext.updateQuery(DBUtil.jooqTableFor(domainType, domainType.getName()));
 

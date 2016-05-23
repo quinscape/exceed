@@ -33,7 +33,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppState extends TableImpl<AppStateRecord> {
 
-	private static final long serialVersionUID = 429528662;
+	private static final long serialVersionUID = 1044752296;
 
 	/**
 	 * The reference instance of <code>public.app_state</code>
@@ -72,6 +72,11 @@ public class AppState extends TableImpl<AppStateRecord> {
 	 * The column <code>public.app_state.extensions</code>.
 	 */
 	public final TableField<AppStateRecord, String> EXTENSIONS = createField("extensions", org.jooq.impl.SQLDataType.VARCHAR.length(255), this, "");
+
+	/**
+	 * The column <code>public.app_state.context</code>.
+	 */
+	public final TableField<AppStateRecord, String> CONTEXT = createField("context", org.jooq.impl.SQLDataType.CLOB, this, "");
 
 	/**
 	 * Create a <code>public.app_state</code> table reference

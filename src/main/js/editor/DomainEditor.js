@@ -21,6 +21,8 @@ var immutableUpdate = require("react-addons-update");
 
 var TextSize = svgLayout.TextSize;
 
+var LinkedStateMixin = require("react-addons-linked-state-mixin");
+
 var decorations = {
     Boolean : "\u2173",
     Date : "1.1.70",
@@ -141,6 +143,9 @@ var Entity = React.createClass({
 });
 
 var DomainEditor = React.createClass({
+
+    mixins: [ LinkedStateMixin ],
+
     getInitialState: function ()
     {
         return {
@@ -180,7 +185,25 @@ var DomainEditor = React.createClass({
     {
         var domainEditor = this;
 
-        return new ValueLink(this.state.domainModels.domainTypes[activeEdit], function (newModel)
+
+        var activeRow = null;
+        if (activeEdit)
+        {
+
+            var rows = this.state.domainModels.domainTypes.rows;
+            for (var i = 0; i < rows.length; i++)
+            {
+                var row = rows[i];
+
+                if (row.name === activeEdit)
+                {
+                    activeRow = row;
+                    break;
+                }
+            }
+        }
+
+        return new ValueLink(activeRow, function (newModel)
         {
             ajax({
                 method: "POST",
@@ -294,7 +317,7 @@ var DomainEditor = React.createClass({
 
             if (this.state.domainModels != null)
             {
-                var domainTypes = this.state.domainModels.domainTypes;
+                var domainTypes = this.state.domainModels.domainTypes.rows;
                 var domainLayout = this.state.domainModels.domainLayout || {};
 
                 for (var name in domainTypes)
@@ -349,17 +372,7 @@ var DomainEditor = React.createClass({
 
             var domainEditor = this;
 
-            var openLink = new ValueLink( !!this.state.activeEdit, function(open)
-            {
-                console.log("openLink.requestChange", open);
-                if (!open)
-                {
-                    domainEditor.setState({
-                        activeEdit: null
-                    });
-                }
-            });
-
+            var openLink = this.linkState("activeEdit");
 
             var domainModels = this.state.domainModels || { enums: {}, propertyTypes: {}};
             console.log("render DomainEditor", domainModels);
@@ -369,7 +382,17 @@ var DomainEditor = React.createClass({
                         { entities }
                         { relations }
                     </GUIContainer>
-                    <EntityModal openLink={ openLink } modelLink={ this.createDomainModelLink(this.state.activeEdit) } enums={ domainModels.enums } propertyTypes={ domainModels.propertyTypes }/>
+                    <Modal show={ openLink.value } bsSize="large" onHide={ function()
+                    {
+                        openLink.requestChange(false)
+                    } }>
+                        <Modal.Header closeButton>
+                            <Modal.Title>Modal heading</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <EntityModal modelLink={ this.createDomainModelLink(this.state.activeEdit) } enums={ domainModels.enums } propertyTypes={ domainModels.propertyTypes }/>
+                        </Modal.Body>
+                    </Modal>
                 </div>
             );
 

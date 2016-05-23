@@ -1,0 +1,11 @@
+{
+    "components": {
+        "ModelDocs": {
+            "classes": ["element"],
+            "dataProvider"  : "modelDocsProvider",
+            "vars" : {
+                "type" : "param('type', 'de.quinscape.exceed.model.ApplicationModel')"
+            }
+        }
+    }
+}

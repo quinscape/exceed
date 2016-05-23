@@ -57,7 +57,7 @@
         <dependency>
             <groupId>com.google.code.svenson</groupId>
             <artifactId>svenson</artifactId>
-            <version>1.5.2-SNAPSHOT</version>
+            <version>1.5.4-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -430,9 +430,6 @@
                             <goal>gulp</goal>
                         </goals>
                         <phase>generate-resources</phase>
-                        <configuration>
-                            <arguments>build</arguments>
-                        </configuration>
                     </execution>
 
                     <execution>

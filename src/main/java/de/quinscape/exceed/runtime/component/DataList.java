@@ -2,8 +2,11 @@ package de.quinscape.exceed.runtime.component;
 
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumType;
+import de.quinscape.exceed.runtime.domain.DomainObject;
 import org.svenson.JSONProperty;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -112,5 +115,36 @@ public class DataList
     public void setId(Object id)
     {
         this.id = id;
+    }
+
+
+    /**
+     * Returns a datalist with deep copied rows and shallow copied type information-
+     *
+     * @return
+     */
+    public DataList copy()
+    {
+        List copiedRows = new ArrayList<>(rows.size());
+
+        for (Object o : rows)
+        {
+            Object copy;
+            if (o instanceof DomainObject)
+            {
+                copy = ((DomainObject) o).copy();
+            }
+            else if (o instanceof Map)
+            {
+                copy = new HashMap<>((Map)o);
+            }
+            else
+            {
+                throw new IllegalStateException("Don't know how to copy " + o);
+            }
+
+            copiedRows.add(copy);
+        }
+        return new DataList(types, columns, enums, copiedRows, rowCount);
     }
 }

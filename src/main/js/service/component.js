@@ -76,7 +76,6 @@ function resolveWizardComponents(componentDef, bulkDir, componentName)
 var ComponentService = {
     getComponents: function ()
     {
-        console.log("get real components");
         return components;
     },
 

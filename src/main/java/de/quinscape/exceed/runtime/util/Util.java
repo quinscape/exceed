@@ -44,13 +44,9 @@ public final class Util
 
     final static char[] BASE32_ALPHABET = "0123456789abcdefghijklmnopqrstuv".toCharArray();
 
-    final static String C0 = String.valueOf(BASE32_ALPHABET[0]);
-
-
     public static String base32(long value)
     {
         StringBuilder sb = new StringBuilder();
-
         do
         {
             int lowerBits = (int) (value & 31);

@@ -1,19 +1,18 @@
 package de.quinscape.exceed.model.process;
 
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.TopLevelModel;
-import de.quinscape.exceed.model.action.ActionModel;
+import de.quinscape.exceed.model.context.ContextModel;
+import de.quinscape.exceed.model.view.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 
 import javax.annotation.PostConstruct;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Exceed process model
@@ -31,6 +30,10 @@ public class Process
     private Transition startTransition;
 
     private Map<String, ProcessState> states;
+
+    private ContextModel context;
+
+    private ApplicationModel applicationModel;
 
 
     /**
@@ -96,5 +99,44 @@ public class Process
         startTransition.setFrom("start");
         startTransition.setName("start");
         this.startTransition = startTransition;
+    }
+
+
+    public void setApplicationModel(ApplicationModel applicationModel)
+    {
+        this.applicationModel = applicationModel;
+    }
+
+    @JSONProperty(ignore = true)
+    public ApplicationModel getApplicationModel()
+    {
+        return applicationModel;
+    }
+
+    public View getView(String localName)
+    {
+        if (applicationModel == null)
+        {
+            throw new IllegalStateException("No applicationModel");
+        }
+
+        return applicationModel.getView(getProcessViewName(this.getName(), localName));
+    }
+
+    public static String getProcessViewName(String processName, String localName)
+    {
+        return processName + "/" + localName;
+    }
+
+
+    public ContextModel getContext()
+    {
+        return context;
+    }
+
+
+    public void setContext(ContextModel context)
+    {
+        this.context = context;
     }
 }

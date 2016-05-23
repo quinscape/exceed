@@ -13,12 +13,17 @@ public class RoutingResult
 
     private final Map<String, String> variables;
 
+    private final String template;
 
-    public RoutingResult(Mapping mapping, Map<String, String> variables)
+
+    public RoutingResult(Mapping mapping, Map<String, String> variables, String template)
     {
+
         this.mapping = mapping;
         this.variables = variables;
+        this.template = template;
     }
+
 
     public Mapping getMapping()
     {
@@ -29,5 +34,11 @@ public class RoutingResult
     public Map<String, String> getVariables()
     {
         return variables;
+    }
+
+
+    public String getTemplate()
+    {
+        return template;
     }
 }

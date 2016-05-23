@@ -27,6 +27,12 @@ public class View
 
     private String version;
 
+
+    /**
+     * The root component of this view.
+     *
+     * @return
+     */
     public ComponentModel getRoot()
     {
         return root;
@@ -116,5 +122,17 @@ public class View
     public boolean isContainedInProcess()
     {
         return getProcessName() != null;
+    }
+
+
+    @JSONProperty(ignore = true)
+    public String getLocalName()
+    {
+        if (processName == null)
+        {
+            throw new IllegalStateException("Cannot get local name from non-process view: " + this);
+        }
+
+        return getName().substring(processName.length() + 1);
     }
 }

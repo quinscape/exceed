@@ -1,6 +1,7 @@
 "use strict";
 
 var path = require("path");
+var fs = require("fs");
 
 var browserify = require("browserify");
 var buffer = require("vinyl-buffer");
@@ -14,6 +15,9 @@ var notifier = require("node-notifier");
 var streamify = require("gulp-streamify");
 var uglify = require("gulp-uglify");
 var watchify = require("watchify");
+
+var TrackUsage = require("babel-plugin-track-usage/data");
+
 
 var MAIN_FILE = "./src/main/js/main.js";
 
@@ -42,13 +46,27 @@ var REACT_CATCH_ERRORS = !PRODUCTION && !process.env.NO_CATCH_ERRORS;
 
 var BabelConfig = require("./babel-config");
 
-gulp.task("build", function(cb) {
-    bundle(false, cb);
+function writeTrackUsageReport(cb)
+{
+    var json = JSON.stringify(TrackUsage.get());
+    fs.writeFile(path.join(__dirname, "./target/classes/de/quinscape/exceed/base/resources/js/track-usage.json"), json, cb);
+    gutil.log("Updated track-usage.json");
+}
+
+gulp.task("build", function() {
+    //TrackUsage.clear();
+    return bundle(false);
 });
 
-gulp.task("watch", function(cb) {
-    bundle(true, cb);
+gulp.task("watch", function() {
+    return bundle(true);
 });
+
+
+gulp.task("track-usage", ["build"], function(cb) {
+    writeTrackUsageReport(cb);
+});
+
 
 function bundle(watch, cb) {
     var bro;
@@ -66,6 +84,14 @@ function bundle(watch, cb) {
             rebundle(bro);
         });
         bro.on("log", function() {
+
+            writeTrackUsageReport(function (err)
+            {
+                if (err)
+                {
+                    throw err;
+                }
+            });
             gutil.log.apply(gutil, arguments);
         });
     } else {
@@ -153,7 +179,7 @@ function bundle(watch, cb) {
                 }
             }*/))))
             .pipe(sourcemaps.write(".")) // writes .map file
-            .pipe(gulp.dest("./src/main/base/resources/js"));
+            .pipe(gulp.dest("./target/classes/de/quinscape/exceed/base/resources/js"));
     }
 
     return rebundle(bro);
@@ -171,4 +197,4 @@ gulp.task("test", function ()
         }));
 });
 
-gulp.task("default", ["build"]);
+gulp.task("default", ["track-usage"]);

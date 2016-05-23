@@ -14,7 +14,8 @@ var HttpMethod = new Enum({
 
 var DataType = new Enum({
     JSON: true,
-    TEXT: true
+    TEXT: true,
+    XHR: true
 });
 
 var defaultOpts = {
@@ -38,10 +39,10 @@ function logError(opts, err)
     {
         if (err.hasOwnProperty(name))
         {
-            l.push(name + " = " + err[name] );
+            l.push(name + " = " + JSON.stringify(err[name]) );
         }
     }
-    console.error("AJAX ERROR", opts.url, " => ", l.join(", "), opts);
+    console.error("AJAX ERROR", opts.url, " =>\n", l.join("\n"));
 }
 
 function serialize(data)
@@ -86,6 +87,7 @@ module.exports = function(opts)
         if (typeof opts.url !== "string")
         {
             reject({
+                opts: opts,
                 status: 0,
                 error: "No url",
                 xhr: null
@@ -96,6 +98,7 @@ module.exports = function(opts)
         if (!DataType.isValid(dataType))
         {
             reject({
+                opts: opts,
                 status: 0,
                 error: "Invalid dataType: " + opts.dataType,
                 xhr: null
@@ -106,6 +109,7 @@ module.exports = function(opts)
         if (!HttpMethod.isValid(opts.method.toUpperCase()))
         {
             reject({
+                opts: opts,
                 status: 0,
                 error: "Invalid method: " + opts.method,
                 xhr: null
@@ -118,6 +122,7 @@ module.exports = function(opts)
         if (method === "POST" && opts.data === undefined)
         {
             reject({
+                opts: opts,
                 status: 0,
                 error: "No data for POST request",
                 xhr: null
@@ -129,6 +134,7 @@ module.exports = function(opts)
         if (!xhr)
         {
             reject({
+                opts: opts,
                 status: 0,
                 error: "Could not create XMLHTTPObject",
                 xhr: null
@@ -187,6 +193,7 @@ module.exports = function(opts)
                 if (xhr.status !== 0)
                 {
                     reject({
+                        opts: opts,
                         status: xhr.status,
                         xhr: xhr,
                         error: "HTTP error " + xhr.status
@@ -207,15 +214,20 @@ module.exports = function(opts)
                 catch(e)
                 {
                     reject({
+                        opts: opts,
                         status: xhr.status,
                         xhr: xhr,
-                        error: "Error parsing JSON: " + e.message
+                        error: "Error parsing JSON: " + e.message + "\n" + responseText
                     });
                 }
             }
             else if (dataType === DataType.TEXT)
             {
                 resolve(responseText);
+            }
+            else if (dataType === DataType.XHR)
+            {
+                resolve(xhr);
             }
         };
 

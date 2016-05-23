@@ -19,10 +19,13 @@ public class ComponentRegistration
 
     private final DataProvider dataProvider;
 
+    private final String moduleName;
+
 
     public ComponentRegistration(String componentName, ComponentDescriptor descriptor, String styles,
-                          DataProvider dataProvider)
+                                 DataProvider dataProvider, String moduleName)
     {
+        this.moduleName = moduleName;
         if (componentName == null)
         {
             throw new IllegalArgumentException("componentName can't be null");
@@ -61,6 +64,12 @@ public class ComponentRegistration
     public DataProvider getDataProvider()
     {
         return dataProvider;
+    }
+
+
+    public String getModuleName()
+    {
+        return moduleName;
     }
 
 

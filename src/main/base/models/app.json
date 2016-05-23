@@ -1,11 +1,27 @@
 {
-    "schema" : "public",
-    "styleSheets" : [
+    "schema": "public",
+    "styleSheets": [
         "/resources/css/bootstrap.min.css",
         "/resources/css/bootstrap-theme.min.css",
         "/resources/css/editor.css",
         "/resources/css/layout.css"
-    ]
+    ],
+    "applicationContext": {
+        "properties": {
+            "increment": {
+                "type": "Integer",
+                "defaultValue": "{ 2 }"
+            },
+            "limit": {
+                "type": "Integer",
+                "defaultValue": "{ 10 }"
+            }
+        }
+    },
+    "sessionContext": {
+        "properties": {
+        }
+    }
 }
 
 

@@ -1,25 +1,56 @@
 var React = require("react");
 var cx = require("classnames");
 
+var i18n  = require("../../service/i18n");
+
+var processService  = require("../../service/process");
+
+var FormContext = require("./form-context");
+
 /**
- * Button for transitions / process-based content
+ * Action executing button
  */
 var TButton = React.createClass({
 
     propTypes: {
         transition: React.PropTypes.string.isRequired,
+        discard: React.PropTypes.bool,
         className: React.PropTypes.string,
         text: React.PropTypes.string.isRequired
     },
 
+    contextTypes: {
+        formContext: React.PropTypes.instanceOf(FormContext)
+    },
+
+    isDisabled: function ()
+    {
+        return !this.props.discard && this.context.formContext && this.context.formContext.hasError()
+
+    },
+
     render: function ()
     {
+        var isDisabled = this.isDisabled();
         return (
-            <TButton
-                className={ this.props.ClassName }
-                text={ this.props.text }
-                action={ { action: "transition", name: this.props.transition} }
-            />
+
+            <input
+                className={ cx("btn", isDisabled && "disabled", this.props.className || "btn-default") }
+                type="submit"
+                value={ this.props.text }
+                disabled={ isDisabled }
+                onClick={ (ev) => {
+                    if (!this.isDisabled())
+                    {
+                        var cursor = this.props.context && this.props.context.pop();
+
+                        processService.transition(this.props.transition).catch(function(err)
+                        {
+                            console.error(err);
+                        });
+                    }
+                    ev.preventDefault();
+                } }/>
         );
     }
 });

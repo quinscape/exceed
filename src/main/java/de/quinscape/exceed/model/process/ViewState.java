@@ -31,16 +31,20 @@ public class ViewState
     @Override
     public void validate(Process process)
     {
-        for (Map.Entry<String, Transition> entry : getTransitions().entrySet())
+        Map<String, Transition> transitions = getTransitions();
+        if (transitions != null)
         {
-            String to = entry.getValue().getTo();
-            if (to == null)
+            for (Map.Entry<String, Transition> entry : transitions.entrySet())
             {
-                throw new IllegalStateException("Process '" + process.getName() + "':  Transition '" + entry.getKey() + "' has no target process state");
-            }
-            if (!process.getStates().containsKey(to))
-            {
-                throw new IllegalStateException("Process '" + process.getName() + "':  Transition '" + entry.getKey() + "' references non-existing process-state '" + to + "'");
+                String to = entry.getValue().getTo();
+                if (to == null)
+                {
+                    throw new IllegalStateException("Process '" + process.getName() + "':  Transition '" + entry.getKey() + "' has no target process state");
+                }
+                if (!process.getStates().containsKey(to))
+                {
+                    throw new IllegalStateException("Process '" + process.getName() + "':  Transition '" + entry.getKey() + "' references non-existing process-state '" + to + "'");
+                }
             }
         }
     }

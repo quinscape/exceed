@@ -43,6 +43,11 @@ public class DomainProperty
     }
 
 
+    /**
+     * Name of the property.
+     *
+     * @return
+     */
     @JSONProperty(priority = 100)
     public String getName()
     {
@@ -56,6 +61,10 @@ public class DomainProperty
     }
 
 
+    /**
+     * Logical property type for this property.
+     * @return
+     */
     @JSONProperty(priority = 90)
     public String getType()
     {
@@ -69,6 +78,10 @@ public class DomainProperty
     }
 
 
+    /**
+     * Type parameter for the property. Set for List, Map, Enum.
+     * @return
+     */
     @JSONProperty(ignoreIfNull = true, priority = 80)
     public Object getTypeParam()
     {
@@ -82,6 +95,11 @@ public class DomainProperty
     }
 
 
+    /**
+     * Set true if this property is required.
+     *
+     * @return
+     */
     @JSONProperty(priority = 70)
     public boolean isRequired()
     {
@@ -95,6 +113,10 @@ public class DomainProperty
     }
 
 
+    /**
+     * Maximum length for this property if applicable.
+     * @return
+     */
     @JSONProperty(ignoreIfNull = true, priority = 60)
     public int getMaxLength()
     {
@@ -107,6 +129,11 @@ public class DomainProperty
         this.maxLength = maxLength;
     }
 
+
+    /**
+     * Default value for this property.
+     * @return
+     */
     @JSONProperty(ignoreIfNull = true, priority = 50)
     public String getDefaultValue()
     {
@@ -119,6 +146,11 @@ public class DomainProperty
         this.defaultValue = defaultValue;
     }
 
+
+    /**
+     * User data field. Not used by the system.
+     * @return
+     */
     @JSONProperty(ignoreIfNull = true, priority = 40)
     public Object getData()
     {

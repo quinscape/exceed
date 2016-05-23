@@ -106,14 +106,17 @@ public class ComponentRegistryImpl
         ComponentPackageDescriptor componentPackageDescriptor;
         try
         {
-            componentPackageDescriptor = parser.parse(ComponentPackageDescriptor.class, new String(appResource.read()
-                , UTF8));
-
+            componentPackageDescriptor = parser.parse(
+                ComponentPackageDescriptor.class,
+                new String(appResource.read(), UTF8)
+            );
         }
         catch (Exception e)
         {
             throw new ExceedRuntimeException("Error parsing component package descriptor from " + appResource, e);
         }
+
+        //componentPackageDescriptor.setPath(appResource.getRelativePath());
 
         Set<String> componentNames = new HashSet<>();
 
@@ -125,6 +128,7 @@ public class ComponentRegistryImpl
             String parentDir = Util.parentDir(appResource.getRelativePath());
 
             String styles = null;
+
             String styleSheetName = parentDir + "/" + componentName + FileExtension.CSS;
             AppResource resource = root.getResource(styleSheetName);
             if (resource.exists())
@@ -138,6 +142,7 @@ public class ComponentRegistryImpl
                     styles = styleService.process(root, resource.getRelativePath());
                 }
             }
+
 
             String dataProviderName = descriptor.getDataProviderName();
             DataProvider dataProviderBean = dataProviders.get(dataProviderName != null ? dataProviderName :
@@ -156,7 +161,7 @@ public class ComponentRegistryImpl
             }
 
             ComponentRegistration registration = new ComponentRegistration(componentName, descriptor,
-                styles, dataProviderBean);
+                styles, dataProviderBean, getModuleName(parentDir, componentName));
             components.put(componentName, registration);
 
             log.debug("(Re)registering {}", registration);
@@ -173,6 +178,21 @@ public class ComponentRegistryImpl
                 applicationService.signalComponentChanges(componentNames);
             }
         }
+    }
+
+
+    private String getModuleName(String parentDir, String componentName)
+    {
+        int pos = componentName.indexOf('.');
+        if (pos >= 0)
+        {
+            componentName = componentName.substring(0, pos);
+        }
+        String result = "./components" + parentDir + "/" + componentName;
+
+        log.debug("Module name for component {} is {}", componentName, result);
+
+        return result;
     }
 
 
@@ -243,5 +263,7 @@ public class ComponentRegistryImpl
         this.applicationContext = applicationContext;
 
         this.dataProviders = ImmutableMap.copyOf(this.applicationContext.getBeansOfType(DataProvider.class));
+
+        log.info("DATA-PROVIDERS: {}", dataProviders);
     }
 }

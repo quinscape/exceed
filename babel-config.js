@@ -1,3 +1,4 @@
+var path = require("path");
 
 var BabelConfig = {
 
@@ -30,7 +31,35 @@ var BabelConfig = {
         "transform-strict-mode",
 
         // ... Spread operator
-        "transform-object-rest-spread"
+        "transform-object-rest-spread",
+
+        ["track-usage", {
+            trackedFunctions: {
+                i18n:  {
+                    module: "./service/i18n",
+                    fn: "",
+                    varArgs: true
+                },
+
+                // these are corresponding to de.quinscape.exceed.runtime.scope.ScopedValueType
+                LIST:  {
+                    module: "./service/process",
+                    fn: "list",
+                    varArgs: true
+                },
+                OBJECT:  {
+                    module: "./service/process",
+                    fn: "object",
+                    varArgs: true
+                },
+                PROPERTY:  {
+                    module: "./service/process",
+                    fn: "property",
+                    varArgs: true
+                }
+            },
+            debug: false
+        }]
     ],
 
     registerForTests: function ()

@@ -13,7 +13,7 @@ var Button = React.createClass({
 
     propTypes: {
         action: React.PropTypes.func.isRequired,
-        ignoreErrors: React.PropTypes.bool,
+        discard: React.PropTypes.bool,
         className: React.PropTypes.string,
         text: React.PropTypes.string.isRequired
     },
@@ -33,7 +33,7 @@ var Button = React.createClass({
 
     isDisabled: function ()
     {
-        return !this.props.ignoreErrors && this.context.formContext.hasError()
+        return !this.props.discard && this.context.formContext.hasError()
 
     },
 

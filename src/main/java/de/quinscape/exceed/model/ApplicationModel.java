@@ -1,5 +1,6 @@
 package de.quinscape.exceed.model;
 
+import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.PropertyType;
@@ -7,13 +8,14 @@ import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.model.ModelNotFoundException;
+import de.quinscape.exceed.runtime.scope.SessionContext;
 import org.svenson.JSONProperty;
+import org.svenson.JSONTypeHint;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Encapsulates the general application configuration.
@@ -42,14 +44,17 @@ public class ApplicationModel
     private Map<String, Process> processes = new HashMap<>();
     private Map<String, Process> processesRO = Collections.unmodifiableMap(processes);
 
-    private AtomicLong idCount = new AtomicLong(0L);
-
     private List<String> styleSheets;
 
     private String schema;
 
     private Layout domainLayout;
 
+    private String name;
+
+    private ContextModel applicationContextModel;
+
+    private ContextModel sessionContextModel;
 
 
     public ApplicationModel()
@@ -59,6 +64,10 @@ public class ApplicationModel
     }
 
 
+    /**
+     * Database schema for this application
+     * @return
+     */
     public String getSchema()
     {
         return schema;
@@ -71,6 +80,10 @@ public class ApplicationModel
     }
 
 
+    /**
+     * Routing table for this application
+     * @return
+     */
     @JSONProperty(ignore = true)
     public RoutingTable getRoutingTable()
     {
@@ -84,26 +97,47 @@ public class ApplicationModel
     }
 
 
+    /**
+     * Map of domain types in the application. Actually defined in its own file.
+     * @return
+     */
     @JSONProperty(ignore = true)
+    @JSONTypeHint(DomainType.class)
     public Map<String, DomainType> getDomainTypes()
     {
         return domainTypesRO;
     }
 
+    /**
+     * Map of property types in the application. Actually defined in its own file.
+     * @return
+     */
     @JSONProperty(ignore = true)
+    @JSONTypeHint(PropertyType.class)
     public Map<String, PropertyType> getPropertyTypes()
     {
         return propertyTypesRO;
     }
 
 
+    /**
+     * Map of views in the application. Actually defined in its own file.
+     * @return
+     */
     @JSONProperty(ignore = true)
+    @JSONTypeHint(View.class)
     public Map<String, View> getViews()
     {
         return viewsRO;
     }
 
 
+    /**
+     * Stylesheets resource paths for this application
+     *
+     * @return
+     */
+    @JSONTypeHint(String.class)
     public List<String> getStyleSheets()
     {
         return styleSheets;
@@ -116,32 +150,20 @@ public class ApplicationModel
     }
 
     @Override
+    @JSONProperty(ignore = true)
     public String getName()
     {
-        return "app.json";
-    }
-
-
-    public long nextId()
-    {
-        return idCount.incrementAndGet();
-    }
-
-
-    public void setIdCount(long idCount)
-    {
-        this.idCount.set(idCount);
-    }
-
-
-    public long getIdCount()
-    {
-        return idCount.get();
+        return name;
     }
 
 
     /**
-     * copies the non-app.json data of the give application model into this one.
+     * Merges the app.json located parts of this application model with the given application model.
+     *
+     * This is used internally to ensure location order independent parsing of application models. The system might
+     * encounter the actual app.json file later than other parts it needs to merge into this. So the system creates
+     * an empty application where it sets all the secondary (non-app.json) models, using this method to merge in the
+     * contents of the actual app.json file.
      *
      * @param applicationModel application model
      */
@@ -149,6 +171,8 @@ public class ApplicationModel
     {
         this.styleSheets = applicationModel.styleSheets;
         this.schema = applicationModel.schema;
+        this.applicationContextModel = applicationModel.applicationContextModel;
+        this.sessionContextModel = applicationModel.sessionContextModel;
     }
 
 
@@ -164,12 +188,24 @@ public class ApplicationModel
     }
 
 
+    /**
+     * Map of enum types in the application. Actually defined in its own file.
+     * @return
+     */
+    @JSONProperty(ignore = true)
+    @JSONTypeHint(EnumType.class)
     public Map<String, EnumType> getEnums()
     {
         return enumsRO;
     }
 
 
+    /**
+     * Map of processes in the application. Actually defined in its own file.
+     * @return
+     */
+    @JSONProperty(ignore = true)
+    @JSONTypeHint(Process.class)
     public Map<String, Process> getProcesses()
     {
         return processesRO;
@@ -180,7 +216,7 @@ public class ApplicationModel
         DomainType domainType = domainTypes.get(name);
         if (domainType == null)
         {
-            throw new ModelNotFoundException("Cannot for domain type with name" + name + "'");
+            throw new ModelNotFoundException("Cannot find domain type with name '" + name + "'");
         }
 
         return domainType;
@@ -191,7 +227,7 @@ public class ApplicationModel
         Process process = processes.get(name);
         if (process == null)
         {
-            throw new ModelNotFoundException("Cannot for process with name" + name + "'");
+            throw new ModelNotFoundException("Cannot find process with name '" + name + "'");
         }
 
         return process;
@@ -202,7 +238,7 @@ public class ApplicationModel
         EnumType enumType = enums.get(name);
         if (enumType == null)
         {
-            throw new ModelNotFoundException("Cannot for enum with name" + name + "'");
+            throw new ModelNotFoundException("Cannot find enum with name '" + name + "'");
         }
 
         return enumType;
@@ -213,7 +249,7 @@ public class ApplicationModel
         View view = views.get(name);
         if (view == null)
         {
-            throw new ModelNotFoundException("Cannot for view with name" + name + "'");
+            throw new ModelNotFoundException("Cannot find view with name '" + name + "'");
         }
 
         return view;
@@ -224,7 +260,7 @@ public class ApplicationModel
         PropertyType propertyType = propertyTypes.get(name);
         if (propertyType == null)
         {
-            throw new ModelNotFoundException("Cannot for propertyType with name" + name + "'");
+            throw new ModelNotFoundException("Cannot find propertyType with name '" + name + "'");
         }
 
         return propertyType;
@@ -257,4 +293,34 @@ public class ApplicationModel
         propertyTypes.put(name, propertyType);
     }
 
+
+    @Override
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+
+    public ContextModel getApplicationContext()
+    {
+        return applicationContextModel;
+    }
+
+
+    public void setApplicationContext(ContextModel applicationContextModel)
+    {
+        this.applicationContextModel = applicationContextModel;
+    }
+
+
+    public ContextModel getSessionContext()
+    {
+        return sessionContextModel;
+    }
+
+
+    public void setSessionContext(ContextModel sessionContext)
+    {
+        this.sessionContextModel = sessionContext;
+    }
 }

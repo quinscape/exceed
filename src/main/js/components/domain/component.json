@@ -87,12 +87,18 @@
             "parentRule" : "viewInProcess()",
             "propTypes": {
                 "context": {
-                    "contextType" : "DataList"
+                    "context": true,
+                    "contextType" : "DataListCursor",
+                    "required" : false
                 },
                 "transition" : {
                     "rule": "transitionNames()",
-                    "type" : "PLAINTEXT",
+                    "type" : "TRANSITION",
                     "required" : true
+                },
+                "discard" : {
+                    "type" : "BOOLEAN",
+                    "defaultValue" : "{ transition(props.transition).discard }"
                 }
             }
         },

@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.domain;
 
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
@@ -43,7 +44,7 @@ public class GenericDomainObject
     }
 
 
-    public void setType(String type)
+    public void setDomainType(String type)
     {
         this.type = type;
     }
@@ -51,9 +52,23 @@ public class GenericDomainObject
 
     @Override
     @JSONProperty(value = "_type", priority = 100)
-    public String getType()
+    public String getDomainType()
     {
         return type;
     }
 
+
+    @Override
+    public DomainObject copy()
+    {
+        GenericDomainObject copy = new GenericDomainObject();
+        copy.setId(this.getId());
+        copy.setDomainType(this.getDomainType());
+        copy.setDomainService(this.getDomainService());
+        for (String name : propertyNames())
+        {
+            copy.setProperty(name, this.getProperty(name));
+        }
+        return copy;
+    }
 }

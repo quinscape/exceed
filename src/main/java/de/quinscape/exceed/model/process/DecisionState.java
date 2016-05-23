@@ -1,5 +1,6 @@
 package de.quinscape.exceed.model.process;
 
+import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 
 import java.util.List;
@@ -9,12 +10,14 @@ public class DecisionState
 {
     private List<DecisionModel> decisions;
 
+    private Transition defaultTransition;
 
     public List<DecisionModel> getDecisions()
     {
         return decisions;
     }
 
+    @JSONProperty(priority = 10)
     @JSONTypeHint(DecisionModel.class)
     public void setDecisions(List<DecisionModel> decisions)
     {
@@ -31,10 +34,22 @@ public class DecisionState
                 throw new IllegalArgumentException("Transition not set on decision: " + decision);
             }
 
-            transition.setName("t-" + i);
+            transition.setName("t" + i);
             transition.setFrom(getName());
         }
         this.decisions = decisions;
+    }
+
+
+    public Transition getDefaultTransition()
+    {
+        return defaultTransition;
+    }
+
+
+    public void setDefaultTransition(Transition defaultTransition)
+    {
+        this.defaultTransition = defaultTransition;
     }
 
 
@@ -53,6 +68,25 @@ public class DecisionState
             {
                 throw new IllegalStateException("Process '" + process.getName() + "':  Transition for '" + decision.getExpression() + "' references non-existing process-state '" + to + "'");
             }
+
+        }
+
+        Transition defaultTransition = getDefaultTransition();
+        if (defaultTransition == null)
+        {
+            throw new IllegalStateException("No default transition given for decision state");
+        }
+        String to = defaultTransition.getTo();
+        if (to == null)
+        {
+            throw new IllegalStateException(
+                "Process '" + process.getName() + "':  Default Transition for decision state '" + this.getName() + "' has no target process state");
+        }
+        if (!process.getStates().containsKey(to))
+        {
+            throw new IllegalStateException(
+                "Process '" + process.getName() + "':  " +
+                "Default Transition for decision " + "state '\" + this.getName() + \"' references non-existing process-state '" + to + "'");
         }
     }
 }

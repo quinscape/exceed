@@ -34,6 +34,8 @@ function evaluateEmbedded(elemId, mediaType)
 
 domready(function ()
 {
+    //console.log("DOMREADY");
+
     var bodyData = document.body.dataset;
     security.init(bodyData.roles);
 
@@ -52,47 +54,7 @@ domready(function ()
         hub.init(bodyData.connectionId)
     ]).then(function ()
     {
-        //var group = hub.createGroup();
-        //
-        //group.request({
-        //    type: "message.TestRequest",
-        //    value: "Hello from js"
-        //}).then(function (data)
-        //{
-        //    console.log("DATA", data);
-        //
-        //}).catch(function (err)
-        //{
-        //    console.error(err);
-        //});
-        //
-        //group.request({
-        //    type: "message.TestRequest",
-        //    value: "2nd"
-        //}).then(function (data)
-        //{
-        //    console.log("DATA 2 ", data);
-        //
-        //}).catch(function (err)
-        //{
-        //    console.error(err);
-        //});
-        //
-        //group.close();
-        //
-        //hub.request({
-        //    type: "message.TestRequest",
-        //    value: "single"
-        //}).then(function (data)
-        //{
-        //    console.log("DATA", data);
-        //
-        //}).catch(function (err)
-        //{
-        //    console.error(err);
-        //});
-
-        return  viewService.render(model, data);
+        return viewService.render(model, data);
     })
     .catch(function (e)
     {

@@ -3,7 +3,9 @@ var assign = require("object.assign").getPolyfill();
 var Promise = require("es6-promise-polyfill").Promise;
 var security = require("./security");
 var uri = require("../util/uri");
-var ajax = require("../service/ajax");
+var ajax = require("./ajax");
+
+var modelUtil = require("../util/model");
 
 var update = require("react-addons-update");
 
@@ -120,12 +122,13 @@ function stripExprs(k,v)
 window.onpopstate = function (ev)
 {
     var state = ev.state;
-    viewService.render(state);
+    console.log("POP-STATE", state);
+    viewService.render(state.viewModel, state.viewData);
 };
 
 var viewService = {
 
-    updateComponent: function(id, vars)
+    updateComponent: function(id, vars, url)
     {
         if (!id)
         {
@@ -150,8 +153,8 @@ var viewService = {
 
         var opts = {
             url: uri(window.location.href, {
-                _xcd_id : id,
-                _xcd_vars: JSON.stringify(vars)
+                _id : id,
+                _vars: JSON.stringify(vars)
             }, true),
             headers: {
                 "X-ceed-Update": "true"
@@ -169,9 +172,19 @@ var viewService = {
         return ajax(opts)
             .then((componentData) =>
             {
-                return this.render(currentViewModel, update(currentViewData, {
+                var newViewData = update(currentViewData, {
                     [id] : { $set: componentData }
-                }));
+                });
+
+                if (url)
+                {
+                    window.history.pushState({
+                        viewModel: currentViewModel,
+                        viewData: newViewData
+                    }, "exceed title", url)
+                }
+
+                return this.render(currentViewModel, newViewData, !!url);
             })
             .catch(function (err)
             {
@@ -182,6 +195,11 @@ var viewService = {
 
     fetch: function (opts)
     {
+        //if (fetchCount++ == 1)
+        //{
+        //    return Promise.reject();
+        //}
+
         opts = assign({}, fetchDefaultOpts, opts);
 
         var isPreview = !!opts.preview;
@@ -202,7 +220,9 @@ var viewService = {
         }
         else
         {
-            ajaxOpts.method =  "GET";
+            ajaxOpts.method =  opts.method;
+            ajaxOpts.data = opts.data || {};
+            ajaxOpts.dataType = opts.dataType;
         }
 
         return ajax(ajaxOpts);
@@ -216,16 +236,23 @@ var viewService = {
         }, "exceed title", window.location.href);
     },
 
-    navigateTo: function(url)
+    navigateTo: function(url, data)
     {
         return this.fetch({
-                url: url
+                method: data ? "POST" : "GET",
+                url: url,
+                dataType: "XHR",
+                data: data
             })
-            .then((data) =>
+            .then((xhr) =>
             {
+                //console.log("URL", url, xhr.responseURL, xhr.responseText);
+                url = xhr.responseURL;
+
+                var data = JSON.parse(xhr.responseText);
                 this.updateState();
                 window.history.pushState(data, "exceed title", url);
-                return this.render(data, null, false);
+                return this.render(data.viewModel, data.viewData, false);
             })
             .catch(function (err)
             {
@@ -236,24 +263,26 @@ var viewService = {
     /**
      * Renders the given viewModel and viewData
      *
-     * @param viewModel         viewModel
-     * @param viewData          viewData
+     * @param viewModel     viewModel
+     * @param viewData      viewData
      * @param noReplaceState    if true, don't replace the current window state (mostly internal use)
      *
- * @returns {Promise} resolves after rendering is done.
+     * @returns {Promise} resolves after rendering is done.
      */
     render: function(viewModel, viewData, noReplaceState)
     {
-        if (viewData)
+        if (!viewModel)
         {
-            currentViewModel = viewModel;
-            currentViewData = viewData;
+            return Promise.reject(new Error("No view model"));
         }
-        else
+
+        if (!viewData)
         {
-            currentViewModel = viewModel.viewModel;
-            currentViewData = viewModel.viewData;
+            return Promise.reject(new Error("No view data"));
         }
+
+        currentViewModel = viewModel;
+        currentViewData = viewData;
 
         !noReplaceState && viewService.updateState();
 
@@ -295,6 +324,12 @@ var viewService = {
     getRuntimeInfo: function()
     {
         return currentViewData['_exceed'];
+    },
+
+
+    renderFn: function()
+    {
+        return lookupRenderFn(currentViewModel);
     },
 
     ViewComponent: ViewComponent

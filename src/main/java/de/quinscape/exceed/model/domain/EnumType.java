@@ -2,6 +2,7 @@ package de.quinscape.exceed.model.domain;
 
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.runtime.domain.property.ConverterException;
+import org.svenson.JSONTypeHint;
 
 import java.util.List;
 
@@ -17,6 +18,11 @@ public class EnumType
     }
 
 
+    /**
+     * String values for this enum
+     * @return
+     */
+    @JSONTypeHint(String.class)
     public List<String> getValues()
     {
         return values;

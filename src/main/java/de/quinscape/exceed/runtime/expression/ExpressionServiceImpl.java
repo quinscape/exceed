@@ -139,12 +139,13 @@ public class ExpressionServiceImpl
         );
 
         OperationRegistration registration = operationLookup.get(key);
+        ExpressionContext<ExpressionEnvironment> ctx = new ExpressionContext<>(expressionEnvironment, node);
         if (registration == null)
         {
-            return expressionEnvironment.undefinedOperation(node, context);
+            return expressionEnvironment.undefinedOperation(ctx, node, context);
         }
 
-        return registration.invoke(new ExpressionContext<>(expressionEnvironment, node), node, context);
+        return registration.invoke(ctx, node, context);
     }
 
 

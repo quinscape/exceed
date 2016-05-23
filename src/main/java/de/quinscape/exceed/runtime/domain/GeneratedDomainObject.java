@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.domain;
 
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import org.svenson.JSONProperty;
 import org.svenson.util.JSONBeanUtil;
 
@@ -13,13 +14,13 @@ public abstract class GeneratedDomainObject
 {
     private final static JSONBeanUtil util = JSONBeanUtil.defaultUtil();
 
-    public void setType(String type)
+    public void setDomainType(String type)
     {
         throw new UnsupportedOperationException();
     }
 
     @JSONProperty(value = "_type", readOnly = true, priority = 100)
-    public String getType()
+    public String getDomainType()
     {
         return this.getClass().getSimpleName();
     }
@@ -43,5 +44,26 @@ public abstract class GeneratedDomainObject
     public void setProperty(String name, Object value)
     {
         util.setProperty(this, name,  value);
+    }
+
+
+    @Override
+    public DomainObject copy()
+    {
+        try
+        {
+            GeneratedDomainObject copy = this.getClass().newInstance();
+            copy.setId(this.getId());
+            copy.setDomainService(this.getDomainService());
+            for (String name : propertyNames())
+            {
+                copy.setProperty(name, this.getProperty(name));
+            }
+            return copy;
+        }
+        catch (Exception e)
+        {
+            throw new ExceedRuntimeException(e);
+        }
     }
 }

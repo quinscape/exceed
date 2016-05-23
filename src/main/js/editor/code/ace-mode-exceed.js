@@ -4,6 +4,17 @@ var Tokens = require("./tokens");
 
 var escapedRe = "\\\\(?:x[0-9a-fA-F]{2}|" + "u[0-9a-fA-F]{4}|" + "u{[0-9a-fA-F]{1,6}}|" + "[0-2][0-7]{0,2}|" + "3[0-7][0-7]?|" + "[4-7][0-7]?|" + ".)";
 
+var _viewService;
+
+function getViewService()
+{
+    if (!_viewService)
+    {
+        _viewService = require("../../service/view");
+    }
+    return _viewService;
+}
+
 ace.define('ace/mode/exceed_expr_highlight_rules',["require","exports","module"], function (ace_require, exports, module)
 {
     "use strict";
@@ -275,11 +286,10 @@ ace.define('ace/mode/exceed_view',["require","exports","module"], function(ace_r
                 {
                     var model = Tokens.toModel(session);
 
-                    var viewService = require("../../service/view");
+                    var viewService = getViewService();
 
                     if (model && model.root && viewService.getViewModel().name === session.exceedViewName)
                     {
-
                         viewService.fetch({ preview: model }).then(function (data)
                         {
                             var expressionErrors = data.previewErrors;
@@ -290,15 +300,10 @@ ace.define('ace/mode/exceed_view',["require","exports","module"], function(ace_r
                             }
                             else
                             {
-                                if (!worker.first)
-                                {
-                                    console.log("render preview", data);
-
-                                    return viewService.render(
-                                        data.viewModel,
-                                        data.viewData
-                                    );
-                                }
+                                return viewService.render(
+                                    data.viewModel,
+                                    data.viewData
+                                );
                             }
                             worker.first = false;
                         })

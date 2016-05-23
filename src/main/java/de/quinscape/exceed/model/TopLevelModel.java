@@ -17,6 +17,10 @@ public abstract class TopLevelModel
     private AppResource resource;
 
 
+    /**
+     * Name of the top level model.
+     * @return
+     */
     public String getName()
     {
         return name;
@@ -33,6 +37,11 @@ public abstract class TopLevelModel
         this.resource = resource;
     }
 
+
+    /**
+     * Resource this model was read from.
+     * @return
+     */
     public final AppResource getResource()
     {
         return resource;

@@ -3,6 +3,7 @@ package de.quinscape.exceed.runtime.config;
 import de.quinscape.exceed.model.action.ActionModel;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.action.Action;
+import de.quinscape.exceed.runtime.action.ClientSideOnlyAction;
 import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.controller.DefaultActionService;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
@@ -14,6 +15,7 @@ import de.quinscape.exceed.runtime.model.ClientViewJSONGenerator;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
+import de.quinscape.exceed.runtime.service.ActionExpressionRendererFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,9 +53,15 @@ public class ModelConfiguration
 
 
     @Bean
-    public ClientViewJSONGenerator clientViewJSONGenerator(ActionService actionService)
+    public ClientViewJSONGenerator clientViewJSONGenerator(ActionExpressionRendererFactory actionExpressionRendererFactory)
     {
-        return new ClientViewJSONGenerator(actionService);
+        return new ClientViewJSONGenerator(actionExpressionRendererFactory);
+    }
+
+    @Bean
+    public ActionExpressionRendererFactory actionExpressionRenderer(ActionService actionService)
+    {
+        return new ActionExpressionRendererFactory(actionService);
     }
 
 
@@ -66,6 +74,17 @@ public class ModelConfiguration
 
     @Bean
     public ActionService actionService()
+    {
+        Map<String, Action> actions = findActionBeans();
+
+        ClientSideOnlyAction clientSideOnlyAction = new ClientSideOnlyAction();
+        actions.put("navigateTo", clientSideOnlyAction);
+
+        return new DefaultActionService(actions);
+    }
+
+
+    private Map<String, Action> findActionBeans()
     {
         Map<String, Action> actions = new HashMap<>();
 
@@ -89,8 +108,7 @@ public class ModelConfiguration
             // .. and register the action under the name provided by the model.
             actions.put(actionModel.getAction(), action);
         }
-
-        return new DefaultActionService(actions);
+        return actions;
     }
 
 

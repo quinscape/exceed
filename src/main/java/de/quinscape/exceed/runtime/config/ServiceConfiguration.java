@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.config;
 
 import de.quinscape.exceed.runtime.component.QueryDataProvider;
 import de.quinscape.exceed.runtime.component.QueryExecutor;
+import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.datalist.DataListService;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.JOOQQueryExecutor;
@@ -13,10 +14,10 @@ import de.quinscape.exceed.runtime.i18n.DefaultTranslator;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.resource.DefaultResourceCacheFactory;
 import de.quinscape.exceed.runtime.resource.ResourceCacheFactory;
-import de.quinscape.exceed.runtime.service.ComponentRegistry;
+import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
+import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.view.ViewDataService;
 import org.jooq.DSLContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -59,6 +60,12 @@ public class ServiceConfiguration
     }
 
     @Bean
+    public ModelDocsProvider modelDocsProvider()
+    {
+        return new ModelDocsProvider();
+    }
+
+    @Bean
     public NamingStrategy namingStrategy()
     {
         return new DefaultNamingStrategy();
@@ -98,5 +105,15 @@ public class ServiceConfiguration
     public CompletionService completionService()
     {
         return new CompletionService();
+    }
+
+    @Bean
+    public ScopedContextFactory scopedContextFactory(
+        ApplicationService applicationService,
+        ExpressionService expressionService,
+        ActionService actionService
+    )
+    {
+        return new ScopedContextFactory(applicationService, expressionService, actionService);
     }
 }

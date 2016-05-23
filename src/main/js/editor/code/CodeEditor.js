@@ -164,6 +164,7 @@ function createIndexPath(parentPath)
     }
     return array;
 }
+
 ExceedCompleter.prototype.prepareCompletions = function (editor, session, componentName, propName, pos, prefix, componentModel, completions)
 {
     if (!completions || !completions.length)

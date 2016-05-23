@@ -1,6 +1,7 @@
 package de.quinscape.exceed.model.process;
 
 import de.quinscape.exceed.model.Model;
+import org.svenson.JSONProperty;
 
 public abstract class ProcessState
     extends Model
@@ -14,6 +15,7 @@ public abstract class ProcessState
     }
 
 
+    @JSONProperty(ignore = true)
     public void setName(String name)
     {
         this.name = name;

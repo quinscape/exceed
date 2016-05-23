@@ -3,7 +3,9 @@ package de.quinscape.exceed.runtime;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.i18n.Translator;
+import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
@@ -26,14 +28,19 @@ public class RuntimeContext
 
     private Map<String, Object> variables;
 
+    private String routingTemplate;
+
+    private final ScopedContextChain scopedContextChain;
+
 
     public RuntimeContext(RuntimeApplication runtimeApplication,
-                          String path, Translator translator, Locale locale)
+                          String path, Translator translator, Locale locale, ScopedContextChain scopedContextChain)
     {
         this.path = path;
         this.runtimeApplication = runtimeApplication;
         this.translator = translator;
         this.locale = locale;
+        this.scopedContextChain = scopedContextChain != null ? scopedContextChain : new ScopedContextChain(Collections.emptyList());
     }
 
 
@@ -80,6 +87,18 @@ public class RuntimeContext
     }
 
 
+    public String getRoutingTemplate()
+    {
+        return routingTemplate;
+    }
+
+
+    public void setRoutingTemplate(String routingTemplate)
+    {
+        this.routingTemplate = routingTemplate;
+    }
+
+
     /**
      * Returns the location params which consist of the path variables and the HTTP parameters received for the
      * current mapping.
@@ -89,5 +108,17 @@ public class RuntimeContext
     public Map<String, Object> getLocationParams()
     {
         return variables;
+    }
+
+
+    /**
+     * Returns the scoped context chain for this runtime context containing the application and session context for the user and
+     * also a process context if current execution is within a process.
+     *
+     * @return
+     */
+    public ScopedContextChain getScopedContextChain()
+    {
+        return scopedContextChain;
     }
 }

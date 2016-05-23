@@ -4,6 +4,7 @@ import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.Model;
+import de.quinscape.exceed.runtime.util.ExpressionUtil;
 import org.svenson.JSONProperty;
 
 public class DecisionModel
@@ -24,7 +25,7 @@ public class DecisionModel
     public void setExpression(String expression) throws ParseException
     {
         this.expression = expression;
-        this.expressionAST = ExpressionParser.parse(expression);
+        this.expressionAST = ExpressionUtil.handleAssignmentAction(ExpressionParser.parse(expression));
     }
 
 

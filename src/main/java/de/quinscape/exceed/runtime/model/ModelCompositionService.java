@@ -5,6 +5,7 @@ import de.quinscape.exceed.model.Layout;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.AutoVersionedModel;
+import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.PropertyType;
@@ -23,11 +24,14 @@ import de.quinscape.exceed.runtime.util.FileExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class ModelCompositionService
@@ -166,13 +170,9 @@ public class ModelCompositionService
                     log.debug("Reading {} as Process View", path);
 
                     View view = createViewModel(runtimeApplication, resource, json, false);
-                    String viewName = processName + "/" + view.getName();
-
                     view.setProcessName(processName);
-                    view.setName(viewName);
 
-                    applicationModel.addView(viewName, view);
-
+                    applicationModel.addView(view.getName(), view);
                     return view;
                 }
 
@@ -213,31 +213,46 @@ public class ModelCompositionService
         return view;
     }
 
+    private final static Pattern PROCESS_PATH = Pattern.compile("^/models/process/(.*)/view/");
 
     private <M extends Model> M create(Class<M> cls, String json, AppResource resource)
     {
-        String nameFromPath = nameFromPath(resource.getRelativePath());
 
-        M m = modelJSONService.toModel(cls, json);
+        String path = resource.getRelativePath();
 
-        if (m instanceof TopLevelModel)
+        M model = modelJSONService.toModel(cls, json);
+
+        if (model instanceof TopLevelModel)
         {
-            TopLevelModel namedModel = (TopLevelModel) m;
+            TopLevelModel namedModel = (TopLevelModel) model;
             namedModel.setResource(resource);
 
-            if (namedModel.getName() == null)
+            String name = nameFromPath(path);
+            String processName;
+            if (model instanceof View)
             {
-                namedModel.setName(nameFromPath);
+                Matcher m = PROCESS_PATH.matcher(path);
+                if (m.find())
+                {
+                    namedModel.setName(Process.getProcessViewName( m.group(1), name));
+                }
+                else
+                {
+                    namedModel.setName(name);
+                }
+            }
+            else
+            {
+                namedModel.setName(name);
             }
         }
-        if (m instanceof AutoVersionedModel)
+        if (model instanceof AutoVersionedModel)
         {
-            ((AutoVersionedModel) m).setVersion(UUID.randomUUID().toString());
+            ((AutoVersionedModel) model).setVersion(UUID.randomUUID().toString());
         }
 
-        return m;
+        return model;
     }
-
 
     private String nameFromPath(String path)
     {

@@ -4,6 +4,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import de.quinscape.exceed.domain.tables.pojos.AppState;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.action.ClientActionRenderer;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.resource.ResourceCacheFactory;
@@ -11,6 +12,7 @@ import de.quinscape.exceed.runtime.resource.ResourceLoader;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.stream.ClassPathResourceRoot;
+import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.util.Util;
 import de.quinscape.exceed.runtime.view.ViewDataService;
 import org.slf4j.Logger;
@@ -26,10 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 @Service
@@ -60,10 +60,20 @@ public class RuntimeApplicationFactory
     @Autowired
     private DomainServiceFactory domainServiceFactory;
 
-    @Autowired
-    private ProcessExecutionService processExecutionService;
-
     private List<RuntimeInfoProvider> runtimeInfoProviders;
+
+    @Autowired
+    private ActionExpressionRendererFactory actionExpressionRendererFactory;
+
+    @Autowired
+    private ProcessService processService;
+
+    @Autowired
+    private RuntimeContextFactory runtimeContextFactory;
+
+    @Autowired
+    private ScopedContextFactory scopedContextFactory;
+
 
     public DefaultRuntimeApplication createRuntimeApplication(ServletContext servletContext, AppState state)
     {
@@ -78,7 +88,10 @@ public class RuntimeApplicationFactory
             resourceLoader.setResourceCache(cache);
         }
 
-        return new DefaultRuntimeApplication(servletContext, viewDataService, componentRegistry, styleService,  modelCompositionService, resourceLoader, domainServiceFactory, runtimeInfoProviders, processExecutionService);
+        Map<String, ClientActionRenderer> generators = new HashMap<>();
+        generators.put("syslog", new SyslogCallGenerator());
+
+        return new DefaultRuntimeApplication( servletContext, viewDataService, componentRegistry, styleService,  modelCompositionService, resourceLoader, domainServiceFactory.create(), runtimeInfoProviders, processService, state.getName(), runtimeContextFactory, scopedContextFactory);
     }
 
     private List<ResourceRoot> configureExtensions(ServletContext servletContext, AppState state)
@@ -129,7 +142,7 @@ public class RuntimeApplicationFactory
         File sourceDir = Util.getExceedLibrarySource();
         if (sourceDir != null)
         {
-            File modelSourceLocation = new File(sourceDir, "./src/main/base").getAbsoluteFile();
+            File modelSourceLocation = new File(sourceDir, "./target/classes/de/quinscape/exceed/base").getAbsoluteFile();
 
             log.info("Using model source location {} for application {}", modelSourceLocation.getPath(), appName);
 
@@ -168,6 +181,8 @@ public class RuntimeApplicationFactory
         }
 
         this.runtimeInfoProviders = ImmutableList.copyOf(providers.values());
+
+        log.info("Runtime Info Providers: {}", this.runtimeInfoProviders);
     }
 }
 

@@ -26,13 +26,14 @@ import javax.validation.constraints.Size;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppState extends GeneratedDomainObject implements Serializable {
 
-	private static final long serialVersionUID = 1043581365;
+	private static final long serialVersionUID = -1020074992;
 
 	private String  id;
 	private String  name;
 	private String  path;
 	private Integer status;
 	private String  extensions;
+	private String  context;
 
 	public AppState() {}
 
@@ -42,6 +43,7 @@ public class AppState extends GeneratedDomainObject implements Serializable {
 		this.path = value.path;
 		this.status = value.status;
 		this.extensions = value.extensions;
+		this.context = value.context;
 	}
 
 	public AppState(
@@ -49,13 +51,15 @@ public class AppState extends GeneratedDomainObject implements Serializable {
 		String  name,
 		String  path,
 		Integer status,
-		String  extensions
+		String  extensions,
+		String  context
 	) {
 		this.id = id;
 		this.name = name;
 		this.path = path;
 		this.status = status;
 		this.extensions = extensions;
+		this.context = context;
 	}
 
 	@NotNull
@@ -104,5 +108,13 @@ public class AppState extends GeneratedDomainObject implements Serializable {
 
 	public void setExtensions(String extensions) {
 		this.extensions = extensions;
+	}
+
+	public String getContext() {
+		return this.context;
+	}
+
+	public void setContext(String context) {
+		this.context = context;
 	}
 }

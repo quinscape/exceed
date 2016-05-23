@@ -8,11 +8,13 @@ import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
+import de.quinscape.exceed.runtime.process.ProcessExecutionState;
+import de.quinscape.exceed.runtime.scope.ScopedContext;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +30,9 @@ public final class DataProviderContext
     private final RuntimeContext runtimeContext;
 
     private final String viewName;
+
+    private final ProcessExecutionState state;
+
     private final ViewData viewData;
 
     private final ExpressionService expressionService;
@@ -38,12 +43,13 @@ public final class DataProviderContext
     private final Map<String, Object> varsOverride;
 
 
-    public DataProviderContext(ViewDataService viewDataService, RuntimeContext runtimeContext, ExpressionService expressionService, String viewName, ViewData viewData, ComponentModel overridden, Map<String, Object> varsOverride)
+    public DataProviderContext(ViewDataService viewDataService, RuntimeContext runtimeContext, ExpressionService expressionService, String viewName, ProcessExecutionState state, ViewData viewData, ComponentModel overridden, Map<String, Object> varsOverride)
     {
         this.viewDataService = viewDataService;
         this.viewName = viewName;
         this.runtimeContext = runtimeContext;
         this.expressionService = expressionService;
+        this.state = state;
         this.viewData = viewData;
         this.overridden = overridden;
         this.varsOverride = varsOverride;
@@ -124,6 +130,15 @@ public final class DataProviderContext
         return viewData;
     }
 
+    public String getProcessName()
+    {
+        return state.getExecution().getProcessName();
+    }
+
+    public ScopedContext getScopedContext()
+    {
+        return state.getScopedContext();
+    }
 
     public Map<String, Object> getVars(ComponentModel componentModel)
     {
@@ -137,7 +152,7 @@ public final class DataProviderContext
         try
         {
             VariableResolutionEnvironment variableResolutionEnvironment = new VariableResolutionEnvironment
-                (componentModel);
+                (componentModel, runtimeContext.getLocationParams());
 
             ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
             if (componentRegistration == null)
@@ -179,10 +194,13 @@ public final class DataProviderContext
 
         private final ComponentModel componentModel;
 
+        private final Map<String, Object> locationParams;
 
-        public VariableResolutionEnvironment(ComponentModel componentModel)
+
+        public VariableResolutionEnvironment(ComponentModel componentModel, Map<String, Object> locationParams)
         {
             this.componentModel = componentModel;
+            this.locationParams = locationParams;
         }
 
 
@@ -216,8 +234,31 @@ public final class DataProviderContext
 
 
         @Override
-        public Object undefinedOperation(ASTFunction node, Object chainObject)
+        protected boolean expressionSequenceAllowed()
         {
+            return false;
+        }
+
+
+        @Override
+        public Object undefinedOperation(ExpressionContext<ExpressionEnvironment> ctx, ASTFunction node, Object chainObject)
+        {
+            if (node.getName().equals("param"))
+            {
+                if (node.jjtGetNumChildren() != 1 && node.jjtGetNumChildren() != 2)
+                {
+                    throw new IllegalStateException("Operation prop() takes one or two arguments : (name, default)");
+                }
+
+                String name = node.jjtGetChild(0).jjtAccept(this, null).toString();
+
+                Object value = locationParams.get(name);
+                if (value == null && node.jjtGetNumChildren() == 2)
+                {
+                    value = node.jjtGetChild(1).jjtAccept(this, null).toString();
+                }
+                return value;
+            }
             if (node.getName().equals("prop"))
             {
                 if (node.jjtGetNumChildren() != 1)
@@ -247,7 +288,7 @@ public final class DataProviderContext
                     throw new VariableResolutionException("Invalid prop operator argument: " + result);
                 }
             }
-            return super.undefinedOperation(node, chainObject);
+            return super.undefinedOperation(ctx, node, chainObject);
         }
     }
 }

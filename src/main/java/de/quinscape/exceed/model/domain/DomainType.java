@@ -1,6 +1,7 @@
 package de.quinscape.exceed.model.domain;
 
 import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.annotation.IncludeDocs;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
@@ -31,6 +32,11 @@ public class DomainType
     }
 
 
+    /**
+     * List of properties for this domain type.
+     * @return
+     */
+    @IncludeDocs
     public List<DomainProperty> getProperties()
     {
         return properties;
@@ -55,19 +61,19 @@ public class DomainType
     }
 
 
+    /**
+      List of properties that form the primary key for this type.
+     */
+    @JSONTypeHint(String.class)
     public List<String> getPkFields()
     {
         return pkFields;
     }
 
-
-    @Override
-    public String getName()
-    {
-        return super.getName();
-    }
-
-
+    /**
+     * DomainService
+     * @return
+     */
     @JSONProperty(ignore = true)
     public DomainService getDomainService()
     {

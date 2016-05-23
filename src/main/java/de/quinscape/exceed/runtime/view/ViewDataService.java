@@ -5,6 +5,7 @@ import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataProvider;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.process.ProcessExecutionState;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,12 +30,13 @@ public class ViewDataService
      * @param runtimeContext    runtime context
      * @param view              view model
      *
+     * @param state
      * @return  view data
      */
-    public ViewData prepareView(RuntimeContext runtimeContext, View view)
+    public ViewData prepareView(RuntimeContext runtimeContext, View view, ProcessExecutionState state)
     {
         ViewData viewData = new ViewData(runtimeContext, view.getName(), runtimeContext.getTranslator());
-        DataProviderContext context = new DataProviderContext(this, runtimeContext, expressionService, view.getName(), viewData, null, null);
+        DataProviderContext context = new DataProviderContext(this, runtimeContext, expressionService, view.getName(), state, viewData, null, null);
         prepareRecursive(context, view.getRoot());
         return viewData;
     }
@@ -52,13 +54,14 @@ public class ViewDataService
      * @param view              view model
      *
      * @param vars
+     * @param state
      * @return  view data
      */
     public ComponentData prepareComponent(RuntimeContext runtimeContext, View view, ComponentModel componentModel,
-                                          Map<String, Object> vars)
+                                          Map<String, Object> vars, ProcessExecutionState state)
     {
         ViewData viewData = new ViewData(runtimeContext, view.getName(), runtimeContext.getTranslator());
-        DataProviderContext context = new DataProviderContext(this, runtimeContext, expressionService, view.getName(), viewData, componentModel, vars);
+        DataProviderContext context = new DataProviderContext(this, runtimeContext, expressionService, view.getName(), state, viewData, componentModel, vars);
         prepareRecursive(context, componentModel);
         return (ComponentData) viewData.getData().get(componentModel.getComponentId());
     }

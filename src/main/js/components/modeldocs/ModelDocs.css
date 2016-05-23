@@ -1,0 +1,47 @@
+.model-docs
+{
+    border: 1px solid #666;
+    background: #f0f0f0;
+    margin: 0 2ex;
+    padding: 1em 2ex;
+}
+
+.model-docs h1
+{
+    font-size: 20px;
+}
+
+.model-docs .prop
+{
+    color: #008;
+}
+
+.model-docs .ignored
+{
+    color: #888;
+}
+
+.model-docs .ignored .prop
+{
+    color: #88A;
+}
+
+.model-docs .ignored
+{
+    color: #888;
+}
+
+.model-docs .class-doc,.model-docs .prop-doc
+{
+    line-height: 1.5em;
+    max-width: 75em;
+}
+.model-docs .prop-doc
+{
+    color: #040;
+}
+
+.model-docs .link
+{
+    text-decoration: underline;
+}

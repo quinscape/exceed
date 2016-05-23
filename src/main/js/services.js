@@ -6,8 +6,8 @@
  */
 module.exports = {
     hub: require("./service/hub"),
-    componentService: require("./service/component"),
+    component: require("./service/component"),
     converter: require("./service/property-converter"),
     action: require("./service/action"),
-    render: require("./service/view")
+    view: require("./service/view")
 };
