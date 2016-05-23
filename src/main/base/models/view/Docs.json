@@ -1,0 +1,8 @@
+{
+    "root": {
+        "name": "ModelDocs",
+        "attrs" : {
+            "id" : "docs"
+        }
+    }
+}

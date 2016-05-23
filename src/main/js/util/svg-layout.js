@@ -80,7 +80,7 @@ module.exports = {
                         ReactDOM.unmountComponentAtNode(container);
                         document.body.removeChild(container);
 
-                        console.info("svg layout done in %sms", Date.now() - start);
+                        //console.info("svg layout done in %sms", Date.now() - start);
                         resolve(exampleTextSizes = sizes);
                     },
 

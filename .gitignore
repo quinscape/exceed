@@ -5,6 +5,3 @@ target
 node
 # src/main/resource/Expression.jjt is the relevant grammar file
 src/main/java/de/quinscape/exceed/expression/Expression.jj
-# ignore the output of hotreload js build
-src/main/base/resources/js/main.js
-src/main/base/resources/js/main.js.map
