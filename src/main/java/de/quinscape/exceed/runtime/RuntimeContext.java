@@ -121,4 +121,10 @@ public class RuntimeContext
     {
         return scopedContextChain;
     }
+
+
+    public void setVariable(String stateId, String id)
+    {
+        this.variables.put(stateId, id);
+    }
 }

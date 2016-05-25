@@ -100,6 +100,8 @@ public class DefaultRuntimeApplication
 
     public static final String TRACK_USAGE_DATA_RESOURCE = "/resources/js/track-usage.json";
 
+    public static final String STATE_ID_PARAMETER = "stateId";
+
     private final ServletContext servletContext;
 
     private final ApplicationModel applicationModel;
@@ -254,7 +256,7 @@ public class DefaultRuntimeApplication
             if (processName != null)
             {
                 Process process = applicationModel.getProcess(processName);
-                String stateId = (String) runtimeContext.getLocationParams().get("stateId");
+                String stateId = (String) runtimeContext.getLocationParams().get(STATE_ID_PARAMETER);
 
                 boolean redirect;
                 if (stateId != null)
@@ -270,7 +272,10 @@ public class DefaultRuntimeApplication
                     {
                         state = processService.resume(runtimeContext, initialState, transition);
                         state.register(request.getSession());
-                        redirect = true;
+
+                        runtimeContext.setVariable(STATE_ID_PARAMETER, state.getId());
+
+                        redirect = !isAjaxRequest;
                     }
                     else
                     {
