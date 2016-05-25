@@ -236,7 +236,7 @@ var viewService = {
         }, "exceed title", window.location.href);
     },
 
-    navigateTo: function(url, data)
+    navigateTo: function(url, data, urlProvider)
     {
         return this.fetch({
                 method: data ? "POST" : "GET",
@@ -247,9 +247,17 @@ var viewService = {
             .then((xhr) =>
             {
                 //console.log("URL", url, xhr.responseURL, xhr.responseText);
-                url = xhr.responseURL;
-
                 var data = JSON.parse(xhr.responseText);
+
+                if (urlProvider)
+                {
+                    url = urlProvider(data);
+                }
+                else
+                {
+                    url = xhr.responseURL;
+                }
+
                 this.updateState();
                 window.history.pushState(data, "exceed title", url);
                 return this.render(data.viewModel, data.viewData, false);
