@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.action;
 
 import de.quinscape.exceed.expression.ASTFunction;
+import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.model.ExpressionRenderer;
 import de.quinscape.exceed.runtime.model.InvalidClientExpressionException;
@@ -22,7 +23,7 @@ public class ClientSideOnlyAction
 
 
     @Override
-    public void renderJsCode(ExpressionRenderer renderer, ASTFunction node)
+    public void renderJsCode(View view, ExpressionRenderer renderer, ASTFunction node)
     {
         if (node.jjtGetNumChildren() != 1 && node.jjtGetNumChildren() != 2)
         {

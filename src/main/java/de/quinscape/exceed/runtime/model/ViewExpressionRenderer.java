@@ -53,7 +53,7 @@ public class ViewExpressionRenderer
     public ViewExpressionRenderer(RuntimeApplication application, View view, ComponentModel componentModel, String
         attrName, ComponentPath path, ActionExpressionRenderer actionExpressionRenderer)
     {
-        super(actionExpressionRenderer);
+        super(view, actionExpressionRenderer);
         this.application = application;
         this.view = view;
 

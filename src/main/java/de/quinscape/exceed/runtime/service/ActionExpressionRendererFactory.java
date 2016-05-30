@@ -17,7 +17,7 @@ public class ActionExpressionRendererFactory
         actionCallGenerators = collectGeneratorsFromRegisteredActions(actionService);
 
         // client actions available in all contexts
-        actionCallGenerators.put("update", (renderer, node) -> {
+        actionCallGenerators.put("update", (view, renderer, node) -> {
 
             if (node.jjtGetNumChildren() != 1 && node.jjtGetNumChildren() != 2)
             {
@@ -37,7 +37,7 @@ public class ActionExpressionRendererFactory
             buf.append(")");
         });
 
-        actionCallGenerators.put("action", (renderer, node) -> {
+        actionCallGenerators.put("action", (view, renderer, node) -> {
 
             if (node.jjtGetNumChildren() != 1)
             {
@@ -56,7 +56,7 @@ public class ActionExpressionRendererFactory
     {
         Map<String, ClientActionRenderer> map = new HashMap<>();
 
-        final ClientActionRenderer defaultGenerator = (renderer, node) -> {
+        final ClientActionRenderer defaultGenerator = (view, renderer, node) -> {
             if (node.jjtGetNumChildren() != 1)
             {
                 throw new InvalidClientExpressionException( node.getName() + "() takes one parameter (model)");

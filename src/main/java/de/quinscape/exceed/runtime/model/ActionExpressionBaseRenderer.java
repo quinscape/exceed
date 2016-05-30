@@ -6,6 +6,7 @@ import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTIdentifier;
 import de.quinscape.exceed.expression.ASTPropertyChain;
 import de.quinscape.exceed.expression.Node;
+import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.service.ActionExpressionRenderer;
 import de.quinscape.exceed.runtime.util.ExpressionUtil;
@@ -13,10 +14,14 @@ import de.quinscape.exceed.runtime.util.ExpressionUtil;
 public abstract class ActionExpressionBaseRenderer
     extends ExpressionRenderer
 {
+    private final View view;
+
     protected final ActionExpressionRenderer actionExpressionRenderer;
 
-    public ActionExpressionBaseRenderer(ActionExpressionRenderer actionExpressionRenderer)
+
+    public ActionExpressionBaseRenderer(View view, ActionExpressionRenderer actionExpressionRenderer)
     {
+        this.view = view;
         this.actionExpressionRenderer = actionExpressionRenderer;
     }
 
@@ -33,7 +38,7 @@ public abstract class ActionExpressionBaseRenderer
         {
             if (actionExpressionRenderer != null && actionExpressionRenderer.hasOperation(operationName))
             {
-                actionExpressionRenderer.render(operationName, node, this);
+                actionExpressionRenderer.render(view, operationName, node, this);
                 return data;
             }
             // render as-is
@@ -73,7 +78,7 @@ public abstract class ActionExpressionBaseRenderer
         if (ExpressionUtil.isChainOfActions(node, actionExpressionRenderer))
         {
             // yes -> delegate
-            actionExpressionRenderer.renderChain(node, this);
+            actionExpressionRenderer.renderChain(view, node, this);
             return data;
         }
         return super.visit(node, data);

@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.service;
 
 import de.quinscape.exceed.expression.ASTFunction;
+import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.action.ClientActionRenderer;
 import de.quinscape.exceed.runtime.model.ExpressionRenderer;
 
@@ -8,7 +9,7 @@ public class SyslogCallGenerator
     implements ClientActionRenderer
 {
     @Override
-    public void renderJsCode(ExpressionRenderer renderer, ASTFunction node)
+    public void renderJsCode(View view, ExpressionRenderer renderer, ASTFunction node)
     {
 
         StringBuilder buf = renderer.getBuffer();

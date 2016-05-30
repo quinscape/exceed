@@ -2,7 +2,7 @@ package de.quinscape.exceed.runtime.service;
 
 import de.quinscape.exceed.expression.ASTExpressionSequence;
 import de.quinscape.exceed.expression.ASTFunction;
-import de.quinscape.exceed.expression.ASTPropertyChain;
+import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.action.ClientActionRenderer;
 import de.quinscape.exceed.runtime.model.ActionExpressionBaseRenderer;
 import de.quinscape.exceed.runtime.model.ExpressionRenderer;
@@ -27,11 +27,11 @@ public class ActionExpressionRenderer
         return actionCallGenerators.containsKey(operationName);
     }
 
-    public void render(String operationName, ASTFunction node, ActionExpressionBaseRenderer baseRenderer)
+    public void render(View view, String operationName, ASTFunction node, ActionExpressionBaseRenderer baseRenderer)
     {
         ClientActionRenderer gen = actionCallGenerators.get(operationName);
         actionProlog(baseRenderer);
-        gen.renderJsCode(baseRenderer, node);
+        gen.renderJsCode(view, baseRenderer, node);
         actionEpilog(baseRenderer);
     }
 
@@ -48,7 +48,7 @@ public class ActionExpressionRenderer
     }
 
 
-    public void renderChain(ASTExpressionSequence node, ActionExpressionBaseRenderer baseRenderer)
+    public void renderChain(View view, ASTExpressionSequence node, ActionExpressionBaseRenderer baseRenderer)
     {
         actionProlog(baseRenderer);
 
@@ -58,14 +58,14 @@ public class ActionExpressionRenderer
         {
             ASTFunction kid = (ASTFunction) node.jjtGetChild(i);
 
-            String opName = ((ASTFunction) kid).getName();
+            String opName = kid.getName();
 
             if (i > 0)
             {
                 buffer.append(".then(function(){ return (");
             }
 
-            actionCallGenerators.get(opName).renderJsCode(baseRenderer, kid);
+            actionCallGenerators.get(opName).renderJsCode(view, baseRenderer, kid);
 
             if (i > 0)
             {
