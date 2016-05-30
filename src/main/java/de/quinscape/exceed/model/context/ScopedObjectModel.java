@@ -1,7 +1,7 @@
 package de.quinscape.exceed.model.context;
 
 public class ScopedObjectModel
-    extends ScopeElementDefinition
+    extends ScopedElementModel
 {
     private String type;
 

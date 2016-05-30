@@ -4,7 +4,7 @@ import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.view.AttributeValue;
 
 public class ScopedPropertyModel
-    extends ScopeElementDefinition
+    extends ScopedElementModel
 {
     private String type;
 

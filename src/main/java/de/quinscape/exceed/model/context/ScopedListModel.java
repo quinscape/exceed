@@ -1,7 +1,7 @@
 package de.quinscape.exceed.model.context;
 
 public class ScopedListModel
-    extends ScopeElementDefinition
+    extends ScopedElementModel
 {
     private String queryExpression;
 

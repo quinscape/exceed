@@ -1,5 +1,7 @@
 package de.quinscape.exceed.model.context;
 
+import de.quinscape.exceed.runtime.scope.ProcessContext;
+import de.quinscape.exceed.runtime.scope.ScopedContext;
 import org.svenson.JSONTypeHint;
 
 import java.util.Collections;
@@ -32,11 +34,16 @@ public class ContextModel
     }
 
 
-    private static void init(Map<String, ? extends ScopeElementDefinition> elems)
+    private static void init(Map<String, ? extends ScopedElementModel> elems)
     {
-        for (Map.Entry<String, ? extends ScopeElementDefinition> entry : elems.entrySet())
+        for (Map.Entry<String, ? extends ScopedElementModel> entry : elems.entrySet())
         {
-            entry.getValue().setName(entry.getKey());
+            String name = entry.getKey();
+            if (ProcessContext.RESERVED_NAMES.contains(name))
+            {
+                throw new IllegalStateException("'" + name + "' is a reserved name.");
+            }
+            entry.getValue().setName(name);
         }
     }
 
