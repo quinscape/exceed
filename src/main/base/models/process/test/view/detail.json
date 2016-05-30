@@ -18,8 +18,60 @@
                                 "name": "Heading",
                                 "attrs": {
                                     "id": "myHeading",
-                                    "value": "Detail"
+                                    "value": "{ 'Detail: ' + object('current').id }"
                                 }
+                            },
+                            {
+                                "name": "Form",
+                                "attrs": {
+                                    "id": "myForm",
+                                    "data" : "{ object('current') }"
+                                },
+                                "kids": [
+                                    {
+                                        "name": "StaticText",
+                                        "attrs": {
+                                            "name": "Foo.id"
+                                        }
+                                    },
+                                    {
+                                        "name": "Field",
+                                        "attrs": {
+                                            "name": "Foo.name"
+                                        }
+                                    },
+                                    {
+                                        "name": "Field",
+                                        "attrs": {
+                                            "name": "Foo.created"
+                                        }
+                                    },
+                                    {
+                                        "name": "Field",
+                                        "attrs": {
+                                            "name": "Foo.type"
+                                        }
+                                    },
+                                    {
+                                        "name": "Toolbar",
+                                        "kids": [
+                                            {
+                                                "name": "TButton",
+                                                "attrs": {
+                                                    "text": "Cancel",
+                                                    "transition": "cancel"
+                                                }
+                                            },
+                                            {
+                                                "name": "TButton",
+                                                "attrs": {
+                                                    "text": "Save",
+                                                    "transition": "save"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
                             }
                         ]
                     }

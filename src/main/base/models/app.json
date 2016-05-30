@@ -8,6 +8,10 @@
     ],
     "applicationContext": {
         "properties": {
+        }
+    },
+    "sessionContext": {
+        "properties": {
             "increment": {
                 "type": "Integer",
                 "defaultValue": "{ 2 }"
@@ -16,10 +20,6 @@
                 "type": "Integer",
                 "defaultValue": "{ 10 }"
             }
-        }
-    },
-    "sessionContext": {
-        "properties": {
         }
     }
 }

@@ -53,7 +53,7 @@
                 },
                 "save": {
                     "to": "list",
-                    "action": "store('')"
+                    "action": "object('current').num = 1 ; store(object('current'))"
                 }
             }
         }

@@ -72,7 +72,7 @@
                                     {
                                         "name": "DataGrid.Column",
                                         "attrs": {
-                                            "name": "created"
+                                            "name": "num"
                                         }
                                     }
                                 ]
