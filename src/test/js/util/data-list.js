@@ -12,7 +12,7 @@ var dl = new DataList(require("./test-lists/data-list.json"), function (newData,
     changeSpy(newData, path);
 });
 
-describe("DataList Helper", function ()
+describe("DataList", function ()
 {
     var cursor;
 
@@ -246,5 +246,22 @@ describe("DataList Helper", function ()
         });
     })
 
+    it("can be copied", function ()
+    {
+        var simpleList = new DataList(require("./test-lists/nested.json"), null);
+
+        var newChange = function () {};
+
+        var copy = new DataList(simpleList);
+        var copy2 = new DataList(simpleList, newChange);
+
+        // we expect the property lookup to be the same, saving on initialization costs for copies
+        assert(copy.propertyLookup === simpleList.propertyLookup);
+        assert(copy2.propertyLookup === simpleList.propertyLookup);
+
+        // change callback can be either kept as-is, or changed
+        assert(copy.onChange === simpleList.onChange);
+        assert(copy2.onChange === newChange);
+    });
 
 });

@@ -38,11 +38,20 @@ function DataList(dataList, onChange)
     this.columns = dataList.columns;
     this.rows = dataList.rows;
     this.rowCount = dataList.rowCount;
-    this.propertyLookup = createPropertyLookup(this.types);
-    this.onChange = onChange;
+
+    if (dataList instanceof DataList)
+    {
+        this.onChange = onChange || dataList.onChange;
+        this.propertyLookup = dataList.propertyLookup;
+    }
+    else
+    {
+        this.onChange = onChange;
+        this.propertyLookup = createPropertyLookup(this.types);
+    }
 }
 
-DataList.prototype.getRaw = function (key)
+DataList.prototype.getRaw = function ()
 {
     return {
         types: this.types,
@@ -52,6 +61,7 @@ DataList.prototype.getRaw = function (key)
         rowCount: this.rowCount
     }
 };
+
 
 DataList.prototype.lookupProperty = function (key)
 {
