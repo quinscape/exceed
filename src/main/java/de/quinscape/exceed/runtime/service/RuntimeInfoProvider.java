@@ -24,5 +24,5 @@ public interface RuntimeInfoProvider
      * @param runtimeContext    current runtime context
      * @return
      */
-    Object provide(HttpServletRequest request, RuntimeContext runtimeContext);
+    Object provide(HttpServletRequest request, RuntimeContext runtimeContext) throws Exception;
 }
