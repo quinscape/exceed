@@ -4,32 +4,41 @@ import de.quinscape.exceed.runtime.datalist.DataListService;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.DomainServiceImpl;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
+import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 /**
  * Creates domain services at runtime. Each runtime application has its own domain service.
  */
-@Service
 public class DomainServiceFactory
 {
     private final static Logger log = LoggerFactory.getLogger(DomainServiceFactory.class);
 
-    @Autowired
-    private DataListService dataListService;
+    private final DataListService dataListService;
 
-    @Autowired
-    private NamingStrategy namingStrategy;
+    private final NamingStrategy namingStrategy;
 
-    @Autowired
-    private DSLContext dslContext;
+    private final DSLContext dslContext;
+
+    private final Map<String, PropertyConverter> converters;
+
+
+    public DomainServiceFactory(DataListService dataListService, NamingStrategy namingStrategy, DSLContext dslContext, Map<String, PropertyConverter> converters)
+    {
+        this.dataListService = dataListService;
+        this.namingStrategy = namingStrategy;
+        this.dslContext = dslContext;
+        this.converters = converters;
+    }
+
 
     public DomainService create()
     {
-        return new DomainServiceImpl(dataListService, dslContext, namingStrategy);
+        return new DomainServiceImpl(dataListService, dslContext, namingStrategy, converters);
     }
 
 }

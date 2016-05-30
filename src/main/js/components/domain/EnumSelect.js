@@ -2,6 +2,7 @@ var React = require("react");
 var cx = require("classnames");
 
 var i18n  = require("../../service/i18n");
+var domainService  = require("../../service/domain");
 
 var FormContext = require("./form-context");
 
@@ -16,7 +17,7 @@ var EnumSelect = React.createClass({
 
     render: function ()
     {
-        var enumModel = this.context.formContext.dataList.enums[this.props.propertyType.typeParam];
+        var enumModel = domainService.getEnum(this.props.propertyType.typeParam);
 
         return (
             <select

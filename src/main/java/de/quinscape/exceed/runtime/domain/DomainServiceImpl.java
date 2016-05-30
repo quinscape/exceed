@@ -1,23 +1,31 @@
 package de.quinscape.exceed.runtime.domain;
 
+import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.datalist.DataListService;
+import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.util.DBUtil;
 import org.jooq.DSLContext;
 import org.jooq.DeleteQuery;
 import org.jooq.Field;
 import org.jooq.InsertQuery;
 import org.jooq.Record;
+import org.jooq.RecordMapper;
+import org.jooq.Table;
 import org.jooq.UpdateQuery;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.JSONParser;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,21 +40,33 @@ public class DomainServiceImpl
 
     private final NamingStrategy namingStrategy;
 
+    private final Map<String, PropertyConverter> converters;
+
     private final JSONParser parser;
 
     private String schema;
 
     private RuntimeApplication runtimeApplication;
 
-
-    public DomainServiceImpl(DataListService dataListService, DSLContext dslContext, NamingStrategy namingStrategy)
+    public DomainServiceImpl(DataListService dataListService, DSLContext dslContext, NamingStrategy namingStrategy,
+                             Map<String, PropertyConverter> converters)
     {
         this.dataListService = dataListService;
         this.dslContext = dslContext;
         this.namingStrategy = namingStrategy;
+        this.converters = converters;
 
         parser = new JSONParser();
         parser.addObjectFactory(new DomainFactory(this));
+        Map<Class, Class> mappings = new HashMap<>();
+
+        mappings.put(Collection.class, ArrayList.class);
+        mappings.put(Set.class, HashSet.class);
+        mappings.put(List.class, ArrayList.class);
+        mappings.put(Map.class, HashMap.class);
+        mappings.put(DomainObject.class, GenericDomainObject.class);
+
+        parser.setInterfaceMappings(mappings);
     }
 
 
@@ -73,7 +93,7 @@ public class DomainServiceImpl
      * @return Model instance of type embedded in JSON
      */
     @Override
-    public Object toDomainObject(Class<?> cls, String json)
+    public <T> T toDomainObject(Class<T> cls, String json)
     {
         return parser.parse(cls, json);
     }
@@ -152,15 +172,30 @@ public class DomainServiceImpl
 
 
     @Override
-    public GenericDomainObject read(String type, Object... pkFields)
+    public DomainObject create(String type, String id)
+    {
+        GenericDomainObject genericDomainObject = new GenericDomainObject();
+        genericDomainObject.setDomainType(type);
+        genericDomainObject.setId(id);
+        genericDomainObject.setDomainService(this);
+
+        return genericDomainObject;
+    }
+
+    @Override
+    public DomainObject read(String type, String id)
     {
         DomainType domainType = getDomainType(type);
 
+        Table<Record> table = DBUtil.jooqTableFor(domainType, domainType.getName());
+        Field<Object> idField = DSL.field(DSL.name(namingStrategy.getFieldName(domainType.getName(), "id")));
 
-        return null;
+        DomainObject genericDomainObject = dslContext.select()
+            .from(table)
+            .where(idField.eq(id))
+            .fetchOne(new DomainTypeRecordMapper(domainType));
+        return genericDomainObject;
     }
-
-
 
     @Override
     public void delete(DomainObject domainObject)
@@ -237,9 +272,53 @@ public class DomainServiceImpl
         }
     }
 
+
+    @Override
+    public PropertyConverter getPropertyConverter(String name)
+    {
+        String converterName = name + "Converter";
+        PropertyConverter propertyConverter = converters.get(converterName);
+
+        if (propertyConverter == null)
+        {
+            throw new IllegalStateException("No converter '" + converterName + "' for type '" + name + "'");
+        }
+        return propertyConverter;
+    }
+
+
     @Override
     public NamingStrategy getNamingStrategy()
     {
         return namingStrategy;
+    }
+
+
+    private class DomainTypeRecordMapper
+        implements RecordMapper
+        <Record,DomainObject>
+    {
+        private final DomainType domainType;
+
+
+        private DomainTypeRecordMapper(DomainType domainType)
+        {
+            this.domainType = domainType;
+        }
+
+
+        @Override
+        public DomainObject map(Record record)
+        {
+            DomainService domainService = domainType.getDomainService();
+            DomainObject domainObject = domainService.create(domainType.getName(), null);
+            for (DomainProperty property : domainType.getProperties())
+            {
+                String name = property.getName();
+                Object value = record.getValue(DSL.field(DSL.name(namingStrategy.getFieldName(domainType.getName(), name))));
+                domainObject.setProperty(name, value);
+            }
+            return domainObject;
+        }
     }
 }

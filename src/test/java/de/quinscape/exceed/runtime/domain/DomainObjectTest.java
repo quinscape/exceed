@@ -19,12 +19,12 @@ public class DomainObjectTest
         JSONParser parser = new JSONParser();
         ClassNameBasedTypeMapper typeMapper = new ClassNameBasedTypeMapper();
         typeMapper.setBasePackage(AppUser.class.getPackage().getName());
-        typeMapper.setEnforcedBaseType(AbstractDomainObject.class);
+        typeMapper.setEnforcedBaseType(DomainObjectBase.class);
         typeMapper.setDiscriminatorField("_type");
-        typeMapper.setPathMatcher(new SubtypeMatcher(AbstractDomainObject.class));
+        typeMapper.setPathMatcher(new SubtypeMatcher(DomainObjectBase.class));
         parser.setTypeMapper(typeMapper);
 
-        AppUser foo = (AppUser)parser.parse(AbstractDomainObject.class, "{ \"_type\" : \"AppUser\", \"login\" : " +
+        AppUser foo = (AppUser)parser.parse(DomainObjectBase.class, "{ \"_type\" : \"AppUser\", \"login\" : " +
             "\"Foolicious\", \"password\" : \"pw123\"}");
 
         assertThat(foo, is(notNullValue()));

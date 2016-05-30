@@ -12,6 +12,7 @@ import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.GenericDomainObject;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
+import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
 import org.jooq.Condition;
@@ -33,12 +34,18 @@ public class QueryTransformerTest
 {
     private final static Logger log = LoggerFactory.getLogger(QueryTransformerTest.class);
 
-    private QueryTransformerOperations  queryTransformerOperations = new QueryTransformerOperations();
-    private ExpressionService expressionService = new ExpressionServiceImpl(ImmutableSet.of(queryTransformerOperations));
+    private QueryTransformerOperations queryTransformerOperations = new QueryTransformerOperations();
+
+    private ExpressionService expressionService = new ExpressionServiceImpl(ImmutableSet.of
+        (queryTransformerOperations));
+
     private QueryTransformer transformer = new QueryTransformer(expressionService, new DefaultNamingStrategy());
+
+
     {
         queryTransformerOperations.setExpressionService(expressionService);
     }
+
 
     @Test
     public void testTypeDefinition() throws Exception
@@ -47,7 +54,7 @@ public class QueryTransformerTest
 
         assertThat(def, is(notNullValue()));
         QueryDomainType q1 = def.getQueryDomainType();
-        assertThat( q1, is(notNullValue()));
+        assertThat(q1, is(notNullValue()));
         assertThat(q1.getType().getName(), is("Foo"));
         assertThat(q1.getAlias(), is("f"));
 
@@ -59,10 +66,12 @@ public class QueryTransformerTest
 
     }
 
+
     @Test
     public void testQuery() throws Exception
     {
-        QueryDefinition def = transform("query(Foo.as('f').join(Bar).on(f.bar_id == Bar.id)).filter(f.type == 23).orderBy(f.name).limit(55).offset(12)");
+        QueryDefinition def = transform("query(Foo.as('f').join(Bar).on(f.bar_id == Bar.id)).filter(f.type == 23)" +
+            ".orderBy(f.name).limit(55).offset(12)");
 
         assertThat(def.getOrderBy(), is(Collections.singletonList("f.name")));
         assertThat(def.getLimit(), is(55));
@@ -84,12 +93,14 @@ public class QueryTransformerTest
             , is("Baz"));
 
 
-        List<String> list = def.getQueryDomainType().getFieldsInOrder().stream().map(DataField::getLocalName).collect(Collectors.toList());
+        List<String> list = def.getQueryDomainType().getFieldsInOrder().stream().map(DataField::getLocalName).collect
+            (Collectors.toList());
         // fields in definition order
         assertThat(list, is(Arrays.asList("Foo.value", "Foo.foo", "Bar.value", "Bar.bar", "Baz.value", "Baz.baz")));
 
         log.info("{}", list);
     }
+
 
     @Test
     public void testFields() throws Exception
@@ -97,7 +108,8 @@ public class QueryTransformerTest
         QueryDefinition def = transform("Foo.join(Bar.join(Baz).on(Bar.id == Baz.id)).on(Foo.id == Bar.id)");
         def.getQueryDomainType().setFields(Arrays.asList("foo", "baz", "bar"));
 
-        List<String> list = def.getQueryDomainType().getFieldsInOrder().stream().map(DataField::getLocalName).collect(Collectors.toList());
+        List<String> list = def.getQueryDomainType().getFieldsInOrder().stream().map(DataField::getLocalName).collect
+            (Collectors.toList());
         // local fields in definition order
         assertThat(list, is(Arrays.asList("foo", "baz", "bar")));
     }
@@ -106,7 +118,8 @@ public class QueryTransformerTest
     private QueryDefinition transform(String query) throws ParseException
     {
         TestDomainService domainService = new TestDomainService();
-        return transformer.transform(new TestApplication(null, new TestDomainService()).createRuntimeContext(), query, null, null);
+        return transformer.transform(new TestApplication(null, new TestDomainService()).createRuntimeContext(),
+            query, null, null);
     }
 
 
@@ -128,7 +141,7 @@ public class QueryTransformerTest
 
 
         @Override
-        public Object toDomainObject(Class<?> actionClass, String json)
+        public <T> T toDomainObject(Class<T> cls, String json)
         {
             return null;
         }
@@ -171,7 +184,14 @@ public class QueryTransformerTest
 
 
         @Override
-        public GenericDomainObject read(String type, Object... pkFields)
+        public DomainObject create(String type, String id)
+        {
+            return null;
+        }
+
+
+        @Override
+        public DomainObject read(String type, String id)
         {
             return null;
         }
@@ -182,6 +202,7 @@ public class QueryTransformerTest
         {
 
         }
+
 
         @Override
         public void insert(DomainObject genericDomainObject)
@@ -195,6 +216,14 @@ public class QueryTransformerTest
         {
 
         }
+
+
+        @Override
+        public PropertyConverter getPropertyConverter(String name)
+        {
+            return null;
+        }
+
 
         @Override
         public NamingStrategy getNamingStrategy()

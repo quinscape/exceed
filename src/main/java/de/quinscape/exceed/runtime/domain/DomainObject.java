@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.domain;
 
+import de.quinscape.exceed.runtime.RuntimeContext;
 import org.svenson.JSONProperty;
 
 import java.util.Set;
@@ -16,11 +17,11 @@ public interface DomainObject
 
     String getDomainType();
 
+    void setDomainType(String type);
+
     Set<String> propertyNames();
 
     Object getProperty(String name);
-
-    DomainObject copy();
 
     void setProperty(String name, Object value);
 

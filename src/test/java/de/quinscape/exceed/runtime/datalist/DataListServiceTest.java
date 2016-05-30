@@ -52,7 +52,6 @@ public class DataListServiceTest
                 "name", new ColumnDescriptor("Foo", "name"),
                 "created", new ColumnDescriptor("Foo", "created")
             ),
-            Collections.emptyMap(),
             ImmutableList.of(
                 ImmutableMap.of(
                     "name", "MyFoo", "created", new Date(0)
@@ -87,7 +86,6 @@ public class DataListServiceTest
                 "created", new ColumnDescriptor("Foo", "created"),
                 "barCreated", new ColumnDescriptor("Bar", "createdWithADifferentName")
             ),
-            Collections.emptyMap(),
             ImmutableList.of(
                 ImmutableMap.of(
                     "name", "MyFoo",
@@ -126,7 +124,6 @@ public class DataListServiceTest
                 "created", new ColumnDescriptor("Foo", "created"),
                 "bars", new ColumnDescriptor("Foo", "bars")
             ),
-            Collections.emptyMap(),
             ImmutableList.of(
                 ImmutableMap.of(
                     "name", "MyFoo",
@@ -171,7 +168,6 @@ public class DataListServiceTest
                 "created", new ColumnDescriptor("Foo", "created"),
                 "dates", new ColumnDescriptor("Foo", "dates")
             ),
-            Collections.emptyMap(),
             ImmutableList.of(
                 ImmutableMap.of(
                     "name", "MyFoo",
@@ -214,7 +210,6 @@ public class DataListServiceTest
                 "created", new ColumnDescriptor("Foo", "created"),
                 "bars", new ColumnDescriptor("Foo", "bars")
             ),
-            Collections.emptyMap(),
             ImmutableList.of(
                 ImmutableMap.of(
                     "name", "MyFoo",
@@ -259,7 +254,6 @@ public class DataListServiceTest
                 "created", new ColumnDescriptor("Foo", "created"),
                 "dates", new ColumnDescriptor("Foo", "dates")
             ),
-            Collections.emptyMap(),
             ImmutableList.of(
                 ImmutableMap.of(
                     "name", "MyFoo",

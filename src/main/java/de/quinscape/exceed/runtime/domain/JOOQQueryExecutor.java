@@ -166,11 +166,9 @@ public class JOOQQueryExecutor
 
     private DataList createDataList(RuntimeContext runtimeContext, QueryDefinition queryDefinition, List<DomainObject> rows, int rowCount)
     {
-        Map<String,EnumType> usedEnums = new HashMap<>();
         return new DataList(
             queryDefinition.createDomainTypeMap(),
-            queryDefinition.createColumnDescriptorMap(runtimeContext, usedEnums),
-            usedEnums,
+            queryDefinition.createColumnDescriptorMap(),
             rows,
             rowCount
         );

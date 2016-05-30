@@ -1,5 +1,15 @@
 var assert = require("power-assert");
 
+var domainService = require("../../../../src/main/js/service/domain");
+
+domainService.init({
+    MyEnum: {
+        name: "MyEnum",
+        values: ["A", "B", "C"]
+    }
+});
+
+
 var propertyConverter = require("../../../../src/main/js/service/property-converter");
 
 function assumeNeutralToUser(value, propertyType)
@@ -15,15 +25,6 @@ function assumeNeutralFromUser(value, propertyType)
     assert(result.ok === true);
     assert(result.value === value);
 }
-
-const ENUM_DATALIST = {
-    enums: {
-        MyEnum: {
-            name: "MyEnum",
-            values: ["A", "B", "C"]
-        }
-    }
-};
 
 function Foo(value)
 {
@@ -51,8 +52,6 @@ describe("PropertyConverter", function ()
             var result = propertyConverter.toUser(1, {
                 "type" : "Enum",
                 "typeParam" : "MyEnum",
-                // data list property resolution should provide the dataList property
-                dataList: ENUM_DATALIST
             });
             assert(result.ok === true);
             assert(result.value === "B");
@@ -101,9 +100,7 @@ describe("PropertyConverter", function ()
         {
             var result = propertyConverter.fromUser("C", {
                 "type" : "Enum",
-                "typeParam" : "MyEnum",
-                // data list property resolution should provide the dataList property
-                dataList: ENUM_DATALIST
+                "typeParam" : "MyEnum"
             });
             assert(result.ok === true);
             assert(result.value === 2);

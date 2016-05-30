@@ -81,7 +81,6 @@ public class DataListService
             JSONBuilder b = JSONBuilder.buildObject(generator, sink);
 
             b.property("types", dataList.getTypes());
-            b.property("enums", dataList.getEnums());
             b.property("columns", dataList.getColumns());
             b.arrayProperty("rows");
 

@@ -88,7 +88,8 @@ public class QueryDataProvider
     }
 
 
-    private Map<String, QueryDefinition> prepare(DataProviderContext dataProviderContext, ComponentModel elem, Map<String,
+    private Map<String, QueryDefinition> prepare(DataProviderContext dataProviderContext, ComponentModel elem,
+                                                 Map<String,
         Object> vars)
     {
         ComponentRegistration registration = elem.getComponentRegistration();
@@ -102,31 +103,39 @@ public class QueryDataProvider
         for (Map.Entry<String, Object> entry : queries.entrySet())
         {
             String name = entry.getKey();
-            Object value = entry.getValue();
 
+            if (elem.getAttribute(name) == null)
+            {
+                Object value = entry.getValue();
 
-            if (!(value instanceof String))
-            {
-                throw new QueryPreparationException("Queries for QueryDataProvider must be query expression strings" + registration + ", elem = " + elem);
-            }
+                if (!(value instanceof String))
+                {
+                    throw new QueryPreparationException("Queries for QueryDataProvider must be query expression " +
+                        "strings" + registration + ", elem = " + elem);
+                }
 
-            String queryExpression = (String)value;
-            try
-            {
-                QueryDefinition definition = queryTransformer.transform(dataProviderContext.getRuntimeContext(), queryExpression, elem, vars);
-                preparedQueries.put(name, definition);
-            }
-            catch(QueryTransformationException e)
-            {
-                throw new DataProviderPreparationException(elem.getComponentId(), "Error parsing expression '" + name + "' = " + queryExpression + " of " + elem, e.getCause());
-            }
-            catch(Exception e)
-            {
-                throw new DataProviderPreparationException(elem.getComponentId(), "Error parsing expression '" + name + "' = " + queryExpression + " of " + elem, e);
-            }
-            catch(TokenMgrError e)
-            {
-                throw new DataProviderPreparationException(elem.getComponentId(), "Token error parsing expression '" + name + "' = " + queryExpression + " of " + elem, e);
+                String queryExpression = (String) value;
+                try
+                {
+                    QueryDefinition definition = queryTransformer.transform(dataProviderContext.getRuntimeContext(),
+                        queryExpression, elem, vars);
+                    preparedQueries.put(name, definition);
+                }
+                catch (QueryTransformationException e)
+                {
+                    throw new DataProviderPreparationException(elem.getComponentId(), "Error parsing expression '" +
+                        name + "' = " + queryExpression + " of " + elem, e.getCause());
+                }
+                catch (Exception e)
+                {
+                    throw new DataProviderPreparationException(elem.getComponentId(), "Error parsing expression '" +
+                        name + "' = " + queryExpression + " of " + elem, e);
+                }
+                catch (TokenMgrError e)
+                {
+                    throw new DataProviderPreparationException(elem.getComponentId(), "Token error parsing expression" +
+                        " '" + name + "' = " + queryExpression + " of " + elem, e);
+                }
             }
 
         }

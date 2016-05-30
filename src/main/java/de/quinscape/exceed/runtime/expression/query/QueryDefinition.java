@@ -123,12 +123,10 @@ public class QueryDefinition
     }
 
 
-    public Map<String, ColumnDescriptor> createColumnDescriptorMap(RuntimeContext runtimeContext, Map<String, EnumType> usedEnums)
+    public Map<String, ColumnDescriptor> createColumnDescriptorMap()
     {
         Map<String, ColumnDescriptor> map = new HashMap<>();
         Map<String, DataField> fields = queryDomainType.getFields();
-
-        Map<String, EnumType> enums = runtimeContext.getRuntimeApplication().getApplicationModel().getEnums();
 
         for (Map.Entry<String, DataField> entry : fields.entrySet())
         {
@@ -141,19 +139,6 @@ public class QueryDefinition
                 dataField.getQueryDomainType().getType().getName(),
                 domainProperty.getName()
             ));
-
-            if (domainProperty.getType().equals("Enum"))
-            {
-                String name = (String) domainProperty.getTypeParam();
-
-                EnumType enumType = enums.get(name);
-                if (enumType == null)
-                {
-                    throw new IllegalStateException("Reference to unknown enum '" + name + "'");
-                }
-
-                usedEnums.put(name, enumType);
-            }
         }
 
         return map;

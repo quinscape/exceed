@@ -9,6 +9,7 @@ var componentService = require("./service/component");
 var actionService = require("./service/action");
 var security = require("./service/security");
 var viewService = require("./service/view");
+var domainService = require("./service/domain");
 var hub = require("./service/hub");
 
 var svgLayout = require("./util/svg-layout");
@@ -44,6 +45,7 @@ domready(function ()
     var systemInfo  = evaluateEmbedded("system-info", "x-ceed/system-info");
 
     sys.init( systemInfo.contextPath, bodyData.appName);
+    domainService.init(data._exceed.enums);
 
     console.info("Server actions", systemInfo.actions);
     actionService.initServerActions(systemInfo.actions);
@@ -54,6 +56,7 @@ domready(function ()
         hub.init(bodyData.connectionId)
     ]).then(function ()
     {
+
         return viewService.render(model, data);
     })
     .catch(function (e)

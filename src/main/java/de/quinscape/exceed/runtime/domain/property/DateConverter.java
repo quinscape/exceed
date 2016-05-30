@@ -1,6 +1,5 @@
 package de.quinscape.exceed.runtime.domain.property;
 
-import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.runtime.RuntimeContext;
 
 import java.sql.Date;
@@ -8,27 +7,29 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.temporal.IsoFields;
-import java.time.temporal.TemporalUnit;
+import java.time.LocalDateTime;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 public class DateConverter
     implements PropertyConverter<Date,String>
 {
+    private final static long MILLIS_PER_DAY = TimeUnit.DAYS.toMillis(1);
+
     @Override
-    public Date convertToJava(RuntimeContext runtimeContext, String value, DomainProperty param)
+    public Date convertToJava(RuntimeContext runtimeContext, String value)
     {
         if (value == null)
         {
             return null;
         }
 
-        Instant instant = Instant.parse(value);
-        return new Date(instant.toEpochMilli());
+        LocalDateTime instant = LocalDateTime.parse(value);
+        return new Date(instant.toLocalDate().toEpochDay() * MILLIS_PER_DAY);
     }
 
     @Override
-    public String convertToJSON(RuntimeContext runtimeContext, Date value, DomainProperty property)
+    public String convertToJSON(RuntimeContext runtimeContext, Date value)
     {
         if (value == null)
         {
@@ -36,7 +37,7 @@ public class DateConverter
         }
 
         TimeZone tz = TimeZone.getTimeZone("UTC");
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'00:00'Z'");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         df.setTimeZone(tz);
 
         return df.format(value);

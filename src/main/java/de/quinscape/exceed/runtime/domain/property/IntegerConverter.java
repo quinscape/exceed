@@ -1,6 +1,5 @@
 package de.quinscape.exceed.runtime.domain.property;
 
-import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.runtime.RuntimeContext;
 
 public class IntegerConverter
@@ -8,13 +7,13 @@ public class IntegerConverter
 {
 
     @Override
-    public Integer convertToJava(RuntimeContext runtimeContext, Long value, DomainProperty param)
+    public Integer convertToJava(RuntimeContext runtimeContext, Long value)
     {
-        return value.intValue();
+        return value != null ? value.intValue() : null;
     }
 
     @Override
-    public Long convertToJSON(RuntimeContext runtimeContext, Integer value, DomainProperty property)
+    public Long convertToJSON(RuntimeContext runtimeContext, Integer value)
     {
         return value != null ? value.longValue() : null;
     }

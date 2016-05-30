@@ -34,7 +34,6 @@ function createPropertyLookup(types)
 function DataList(dataList, onChange)
 {
     this.types = dataList.types;
-    this.enums = dataList.enums;
     this.columns = dataList.columns;
     this.rows = dataList.rows;
     this.rowCount = dataList.rowCount;
@@ -55,7 +54,6 @@ DataList.prototype.getRaw = function ()
 {
     return {
         types: this.types,
-        enums: this.enums,
         columns : this.columns,
         rows: this.rows,
         rowCount: this.rowCount

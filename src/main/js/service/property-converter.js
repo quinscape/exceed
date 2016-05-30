@@ -1,5 +1,7 @@
 var assign = require("object.assign").getPolyfill();
 
+var domainService = require("./domain");
+
 var i18n = require("./i18n");
 
 const INVALID_NUMBER = {
@@ -66,7 +68,7 @@ function resetConverters()
             //console.log("ToUserConverters.ENUM ", value, propertyType);
 
             var enumName = propertyType.typeParam;
-            var enumModel = propertyType.dataList.enums[enumName];
+            var enumModel = domainService.getEnum(enumName);
 
             if (value < 0 || value >= enumModel.values.length)
             {
@@ -104,7 +106,7 @@ function resetConverters()
         "Enum": function (value, propertyType)
         {
             var enumName = propertyType.typeParam;
-            var enumModel = propertyType.dataList.enums[enumName];
+            var enumModel = domainService.getEnum(enumName);
             var values = enumModel.values;
             for (var i = 0; i < values.length; i++)
             {

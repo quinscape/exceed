@@ -15,6 +15,7 @@ import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.GenericDomainObject;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
+import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
 import de.quinscape.exceed.runtime.editor.completion.expression.PropCompleteEnvironment;
@@ -114,7 +115,7 @@ public class PropCompleteEnvironmentTest
 
 
         @Override
-        public Object toDomainObject(Class<?> cls, String json)
+        public <T> T toDomainObject(Class<T> cls, String json)
         {
             return null;
         }
@@ -161,11 +162,17 @@ public class PropCompleteEnvironmentTest
 
 
         @Override
-        public GenericDomainObject read(String type, Object... pkFields)
+        public DomainObject create(String type, String id)
         {
             return null;
         }
 
+
+        @Override
+        public DomainObject read(String type, String id)
+        {
+            return null;
+        }
 
         @Override
         public void delete(DomainObject genericDomainObject)
@@ -185,6 +192,14 @@ public class PropCompleteEnvironmentTest
         {
 
         }
+
+
+        @Override
+        public PropertyConverter getPropertyConverter(String name)
+        {
+            return null;
+        }
+
 
         @Override
         public NamingStrategy getNamingStrategy()

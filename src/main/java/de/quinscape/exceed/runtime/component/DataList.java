@@ -14,8 +14,6 @@ public class DataList
 {
     private Map<String, DomainType> types;
 
-    private Map<String, EnumType> enums;
-
     private Map<String, ColumnDescriptor> columns;
 
     private List<?> rows;
@@ -24,10 +22,9 @@ public class DataList
 
     private Object id;
 
-    public DataList(Map<String, DomainType> types, Map<String, ColumnDescriptor> columns, Map<String, EnumType> enums, List<?> rows, int rowCount)
+    public DataList(Map<String, DomainType> types, Map<String, ColumnDescriptor> columns, List<?> rows, int rowCount)
     {
         this.types = types;
-        this.enums = enums;
         this.columns = columns;
         this.rows = rows;
         this.rowCount = rowCount;
@@ -43,18 +40,6 @@ public class DataList
     public void setTypes(Map<String, DomainType> types)
     {
         this.types = types;
-    }
-
-
-    public Map<String, EnumType> getEnums()
-    {
-        return enums;
-    }
-
-
-    public void setEnums(Map<String, EnumType> enums)
-    {
-        this.enums = enums;
     }
 
 
@@ -145,6 +130,6 @@ public class DataList
 
             copiedRows.add(copy);
         }
-        return new DataList(types, columns, enums, copiedRows, rowCount);
+        return new DataList(types, columns, copiedRows, rowCount);
     }
 }

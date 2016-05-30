@@ -1,8 +1,5 @@
 package de.quinscape.exceed.runtime.domain.property;
 
-import de.quinscape.exceed.expression.ExpressionParser;
-import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.runtime.RuntimeContext;
 
 import java.sql.Timestamp;
@@ -15,14 +12,19 @@ public class TimestampConverter
     implements PropertyConverter<Timestamp, String>
 {
     @Override
-    public Timestamp convertToJava(RuntimeContext runtimeContext, String value, DomainProperty property)
+    public Timestamp convertToJava(RuntimeContext runtimeContext, String value)
     {
+        if (value == null)
+        {
+            return null;
+        }
+
         Instant instant = Instant.parse(value);
         return new Timestamp(instant.toEpochMilli());
     }
 
     @Override
-    public String convertToJSON(RuntimeContext runtimeContext, Timestamp value, DomainProperty property)
+    public String convertToJSON(RuntimeContext runtimeContext, Timestamp value)
     {
 
         if (value != null)

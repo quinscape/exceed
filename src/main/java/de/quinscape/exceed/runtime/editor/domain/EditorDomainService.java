@@ -52,7 +52,7 @@ public class EditorDomainService
     private DataList createDomainDataList(Map<String, DomainType> domainTypes)
     {
         ArrayList<DomainType> rows = new ArrayList<>(domainTypes.values());
-        return new DataList(types, columns, Collections.emptyMap(), rows, rows.size());
+        return new DataList(types, columns, rows, rows.size());
     }
 
 

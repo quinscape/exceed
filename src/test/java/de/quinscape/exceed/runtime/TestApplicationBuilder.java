@@ -17,6 +17,7 @@ import org.svenson.tokenize.InputStreamSource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -107,7 +108,7 @@ public class TestApplicationBuilder
         if (domainService == null)
         {
             DataListService dataListService = new DataListService(new DefaultPropertyConverters().getConverters());
-            domainService = new DomainServiceImpl(dataListService,null, null);
+            domainService = new DomainServiceImpl(dataListService,null, null, Collections.emptyMap());
         }
 
         return new TestApplication(applicationModel, domainService);

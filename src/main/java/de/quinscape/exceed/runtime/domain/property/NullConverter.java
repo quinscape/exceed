@@ -1,6 +1,5 @@
 package de.quinscape.exceed.runtime.domain.property;
 
-import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.runtime.RuntimeContext;
 
 public abstract class NullConverter<T>
@@ -14,13 +13,13 @@ public abstract class NullConverter<T>
     }
 
     @Override
-    public T convertToJava(RuntimeContext runtimeContext, T value, DomainProperty param)
+    public T convertToJava(RuntimeContext runtimeContext, T value)
     {
         return value;
     }
 
     @Override
-    public T convertToJSON(RuntimeContext runtimeContext, T value, DomainProperty property)
+    public T convertToJSON(RuntimeContext runtimeContext, T value)
     {
         return value;
     }
