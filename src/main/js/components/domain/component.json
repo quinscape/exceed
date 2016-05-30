@@ -3,7 +3,7 @@
         "Form": {
             "classes": ["element"],
             "queries": {
-                "dataList": "query( prop('type').fields(childAttributes('field'))).filter( prop('filter') )"
+                "data": "query( prop('type').fields(childAttributes('field'))).filter( prop('filter') )"
             },
             "propTypes": {
                 "type": {
@@ -43,7 +43,7 @@
                     "type" : "CLASSES"
                 }
             },
-            "providesContext": "DataList"
+            "providesContext": "DataListCursor"
         },
         "Field": {
             "classes": ["field"],
@@ -70,7 +70,7 @@
             "propTypes": {
                 "context": {
                     "context" : true,
-                    "contextType" : "DataList"
+                    "contextType" : "DataListCursor"
                 },
                 "action" : {
                     "type" : "ACTION_EXPRESSION",
@@ -92,7 +92,14 @@
                     "required" : false
                 },
                 "transition" : {
+                    "description" : "Name of the transition to be execute from this button.",
                     "rule": "transitionNames()",
+                    "type" : "TRANSITION",
+                    "required" : true
+                },
+                "domainType" : {
+                    "description" : "Defines the domain type to use for this button when it is ambiguous",
+                    "rule": "",
                     "type" : "TRANSITION",
                     "required" : true
                 },
