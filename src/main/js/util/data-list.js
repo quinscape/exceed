@@ -92,10 +92,11 @@ DataList.prototype.getCursor = function (path)
         throw new Error("First key path entry must be a numeric row index");
     }
 
-    var type = ROOT_NAME, typeParam = null;
+    var type = ROOT_NAME, typeParam = null, isProperty = false;
 
     if (path.length > 1)
     {
+        isProperty = true;
         var column = path[1];
 
         var property = this.getColumnType(column);
@@ -109,15 +110,19 @@ DataList.prototype.getCursor = function (path)
             typeParam = typeInfo.typeParam;
         }
 
-
         if (type === "DomainType")
         {
             type = typeParam;
             typeParam = null;
         }
+
+        if (type === "Map" || type === "List" || this.types[type])
+        {
+            isProperty = false;
+        }
     }
 
-    return new DataListCursor(this, path, type, typeParam);
+    return new DataListCursor(this, path, type, typeParam, isProperty);
 };
 
 
@@ -228,7 +233,7 @@ function validatePath(path)
 }
 
 
-function DataListCursor(dataList, path, type, typeParam)
+function DataListCursor(dataList, path, type, typeParam, isProperty)
 {
     validatePath(path);
 
@@ -237,7 +242,13 @@ function DataListCursor(dataList, path, type, typeParam)
     this.type = type;
     this.typeParam = typeParam;
     this.path = path;
+    this.property = isProperty;
 }
+
+DataListCursor.prototype.isProperty = function ()
+{
+    return this.property;
+};
 
 DataListCursor.prototype.get = function (path)
 {
@@ -319,6 +330,15 @@ DataListCursor.prototype.getCursor = function (path)
     return this.dataList.getCursor(this.path.concat(path));
 };
 
+/**
+ * Extracts a domain object from the location the cursor currently points to. This can be either a domain object or
+ * a data list root with mixed types.
+ *
+ * The method will fail if the cursor currently points to a property.
+ *
+ * @param type
+ * @returns {*}
+ */
 DataListCursor.prototype.getDomainObject = function (type)
 {
     var object;

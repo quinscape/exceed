@@ -23,6 +23,7 @@ describe("DataList", function ()
         cursor = dl.getCursor([0]);
         assert(cursor.type === "[DataListRoot]");
         assert(cursor.value.name === "TestFoo");
+        assert(!cursor.isProperty());
 
         cursor.set(["name"], "AnotherFoo");
         call = changeSpy.getCall(0);
@@ -50,19 +51,25 @@ describe("DataList", function ()
         cursor = cursor.getCursor(["embedded"]);
         assert(cursor.type === "Embedded");
         assert(cursor.value.name === "Changed Embedded");
+        assert(!cursor.isProperty());
 
         cursor = cursor.pop();
         assert(cursor.value.name === "AnotherFoo");
 
         cursor = dl.getCursor([0, "bars", 0]);
         assert(cursor.value.name === "Bar 1");
+        assert(!cursor.isProperty());
         cursor = cursor.pop(2);
         assert(cursor.value.name === "AnotherFoo");
 
 
         // property cursor
         cursor = dl.getCursor([0, "name"]);
+
+        //console.log("PROPERTY CURSOR", cursor);
+
         assert(cursor.value === "AnotherFoo");
+        assert(cursor.isProperty());
 
         cursor.set(null, "YetAnotherFoo");
         call = changeSpy.getCall(3);
@@ -168,6 +175,8 @@ describe("DataList", function ()
             assert(propertyType.dataList === dl);
 
             cursor = dl.getCursor([0, "embedded", "name"]);
+
+            assert(cursor.isProperty());
 
             propertyType = cursor.getPropertyType();
             assert(propertyType.parent === "Embedded");
