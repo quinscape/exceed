@@ -4,6 +4,8 @@ import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.ExpressionParserDefaultVisitor;
 import de.quinscape.exceed.expression.Node;
+import de.quinscape.exceed.model.context.ScopedElementModel;
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.scope.ScopedValueType;
 
 import java.util.HashSet;
@@ -17,9 +19,12 @@ public class ScopedValueReferenceVisitor
 {
     private final Set<ScopeReference> references;
 
+    private final RuntimeContext runtimeContext;
 
-    public ScopedValueReferenceVisitor()
+
+    public ScopedValueReferenceVisitor(RuntimeContext runtimeContext)
     {
+        this.runtimeContext = runtimeContext;
         references = new HashSet<>();
     }
 
@@ -53,7 +58,7 @@ public class ScopedValueReferenceVisitor
             }
 
             String name = ((ASTString) n).getValue();
-            references.add(new ScopeReference(type, name));
+            references.add(new ScopeReference(type, name, ScopedElementModel.find(runtimeContext, name, type)));
         }
         return null;
     }
