@@ -14,9 +14,17 @@ public class AssignmentReplacementVisitorTest
     @Test
     public void testReplacement() throws Exception
     {
-        assertThat(replace("property('name') = 1"), is("(set({type: 'PROPERTY', name: 'name', value: 1}))"));
-        assertThat(replace("object('name') = a"), is("(set({type: 'OBJECT', name: 'name', value: a}))"));
-        assertThat(replace("list('name') = b"), is("(set({type: 'LIST', name: 'name', value: b}))"));
+        assertThat(replace("property('name') = 1"), is("(set({type: 'PROPERTY', name: 'name', value: 1, path: null}))"));
+        assertThat(replace("object('name') = a"), is("(set({type: 'OBJECT', name: 'name', value: a, path: null}))"));
+        assertThat(replace("list('name') = b"), is("(set({type: 'LIST', name: 'name', value: b, path: null}))"));
+
+    }
+
+    @Test
+    public void testPath() throws Exception
+    {
+        assertThat(replace("property('name').val = 1"), is("(set({type: 'PROPERTY', name: 'name', value: 1, path: 'val'}))"));
+        assertThat(replace("property('name').val.sub = 2"), is("(set({type: 'PROPERTY', name: 'name', value: 2, path: 'val.sub'}))"));
 
     }
 
@@ -24,7 +32,7 @@ public class AssignmentReplacementVisitorTest
     public void testNested() throws Exception
     {
         // nested doesn't work, is not transformed => runs into Assignment errors
-        assertThat(replace("property('name') = (property('name') = 1)"), is("(set({type: 'PROPERTY', name: 'name', value: (property('name') = 1)}))"));
+        assertThat(replace("property('name') = (property('name') = 1)"), is("(set({type: 'PROPERTY', name: 'name', value: (property('name') = 1), path: null}))"));
     }
 
 

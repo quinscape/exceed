@@ -1,22 +1,22 @@
 package de.quinscape.exceed.runtime.action;
 
-import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.model.action.SetActionModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.expression.ExpressionContext;
-import de.quinscape.exceed.runtime.model.ExpressionRenderer;
-import de.quinscape.exceed.runtime.model.InvalidClientExpressionException;
 import de.quinscape.exceed.runtime.scope.ScopedContext;
-import de.quinscape.exceed.runtime.service.ActionExecutionEnvironment;
+import de.quinscape.exceed.runtime.scope.ScopedContextChain;
+import de.quinscape.exceed.runtime.scope.ScopedValueType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import org.svenson.util.JSONPathUtil;
 
 @Transactional
 public class SetAction
     implements Action<SetActionModel>
 {
     private final static Logger log = LoggerFactory.getLogger(SetAction.class);
+
+    private JSONPathUtil util = new JSONPathUtil();
 
     public SetAction()
     {
@@ -26,11 +26,22 @@ public class SetAction
     @Override
     public void execute(RuntimeContext runtimeContext, SetActionModel model)
     {
-        ScopedContext scope = runtimeContext.getScopedContextChain().findScopeWithProperty(model.getName());
+        final ScopedValueType type = model.getType();
+        final ScopedContextChain chain = runtimeContext.getScopedContextChain();
 
-        log.debug("SetProperty '{}' to {}", model.getName(), model.getValue());
+        final String name = model.getName();
+        final String path = model.getPath();
+        final Object value = model.getValue();
 
-        scope.setProperty(model.getName(), model.getValue());
+        final ScopedContext scope = type.findScope(chain, name);
+        if (path == null)
+        {
+            type.set(scope, name, value);
+        }
+        else
+        {
+            util.setPropertyPath(type.get(scope,name), path, value);
+        }
     }
 
     @Override

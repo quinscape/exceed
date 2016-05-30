@@ -6,7 +6,11 @@ public class SetActionModel
     extends ActionModel
 {
     private ScopedValueType type;
+
     private String name;
+
+    private String path;
+
     private Object value;
 
 
@@ -43,5 +47,17 @@ public class SetActionModel
     public void setValue(Object value)
     {
         this.value = value;
+    }
+
+
+    public String getPath()
+    {
+        return path;
+    }
+
+
+    public void setPath(String path)
+    {
+        this.path = path;
     }
 }
