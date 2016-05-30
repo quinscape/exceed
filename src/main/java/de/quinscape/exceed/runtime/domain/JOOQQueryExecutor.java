@@ -149,7 +149,7 @@ public class JOOQQueryExecutor
             }
         }
 
-        List<DomainObject> rows = query.fetch(new QueryMapper(queryDefinition));
+        List<DomainObject> rows = query.fetch(new QueryMapper(runtimeContext.getRuntimeApplication().getDomainService(), queryDefinition));
 
         int rowCount;
         if (pagedQuery)
@@ -184,13 +184,16 @@ public class JOOQQueryExecutor
     private class QueryMapper
         implements RecordMapper<Record, DomainObject>
     {
+        private final DomainService domainService;
+
         private final QueryDefinition queryDefinition;
 
         private final List<DataField> fields;
 
 
-        public QueryMapper(QueryDefinition queryDefinition)
+        public QueryMapper(DomainService domainService, QueryDefinition queryDefinition)
         {
+            this.domainService = domainService;
             this.queryDefinition = queryDefinition;
             this.fields = queryDefinition.getQueryDomainType().getFieldsInOrder();
         }
@@ -202,7 +205,6 @@ public class JOOQQueryExecutor
             GenericDomainObject domainObject = new GenericDomainObject();
             for (DataField field : fields)
             {
-                QueryDomainType queryDomainType = field.getQueryDomainType();
                 Object value = record.getValue(DSL.field(DSL.name(field.getNameFromStrategy(namingStrategy))));
 
                 domainObject.setProperty(field.getLocalName(), value);

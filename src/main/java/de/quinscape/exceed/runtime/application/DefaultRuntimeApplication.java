@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.application;
 
+import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
@@ -21,7 +22,9 @@ import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.component.DataProviderPreparationException;
 import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
+import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
+import de.quinscape.exceed.runtime.domain.GenericDomainObject;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.process.ProcessExecutionState;
 import de.quinscape.exceed.runtime.resource.AppResource;
@@ -43,18 +46,22 @@ import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.service.StyleService;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
+import de.quinscape.exceed.runtime.util.DomainUtil;
 import de.quinscape.exceed.runtime.util.FileExtension;
 import de.quinscape.exceed.runtime.util.LocationUtil;
 import de.quinscape.exceed.runtime.util.RequestUtil;
 import de.quinscape.exceed.runtime.view.ComponentData;
 import de.quinscape.exceed.runtime.view.ViewData;
 import de.quinscape.exceed.runtime.view.ViewDataService;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.ModelMap;
+import org.springframework.util.StringUtils;
 import org.svenson.JSON;
 import org.svenson.JSONParseException;
 import org.svenson.JSONParser;
+import org.svenson.tokenize.InputStreamSource;
 import org.svenson.util.JSONBuilder;
 
 import javax.servlet.ServletContext;
@@ -216,7 +223,7 @@ public class DefaultRuntimeApplication
     }
 
 
-    public void route(HttpServletRequest request, HttpServletResponse response, ModelMap model, String inAppURI) throws IOException
+    public void route(HttpServletRequest request, HttpServletResponse response, ModelMap model, String inAppURI) throws Exception
     {
         SessionContext sessionContext = null;
         try
@@ -270,7 +277,14 @@ public class DefaultRuntimeApplication
                     String transition = request.getParameter(TRANSITION_PARAM);
                     if (transition != null)
                     {
-                        state = processService.resume(runtimeContext, initialState, transition);
+                        log.debug("Process state {}, transition = {}", stateId, transition);
+                        String json = RequestUtil.readRequestBody(request);
+                        DomainObject partialDomainObjectContext = null;
+                        if (StringUtils.hasText(json))
+                        {
+                            partialDomainObjectContext = getTransitionDomainContext(runtimeContext, json);
+                        }
+                        state = processService.resume(runtimeContext, initialState, transition, partialDomainObjectContext);
                         state.register(request.getSession());
 
                         runtimeContext.setVariable(STATE_ID_PARAMETER, state.getId());
@@ -279,6 +293,7 @@ public class DefaultRuntimeApplication
                     }
                     else
                     {
+                        log.debug("(Re)render state {}", stateId);
                         state = initialState;
                         runtimeContext.getScopedContextChain().addContext(state.getScopedContext());
 
@@ -287,6 +302,8 @@ public class DefaultRuntimeApplication
                 }
                 else
                 {
+                    log.debug("Start process {}", process.getName());
+
                     state = processService.start(runtimeContext, process);
                     state.register(request.getSession());
                     redirect = true;
@@ -345,7 +362,6 @@ public class DefaultRuntimeApplication
                 if (isPreview)
                 {
                     String json = RequestUtil.readRequestBody(request);
-                    ;
 
                     View previewView = modelCompositionService.createViewModel(this, view.getResource(), json, true);
                     if (!Objects.equals(view.getName(), previewView.getName()))
@@ -353,6 +369,7 @@ public class DefaultRuntimeApplication
                         throw new IllegalStateException("Cannot preview different view. view = " + view + ", preview " +
                             "= " + previewView);
                     }
+                    previewView.setProcessName(view.getProcessName());
                     modelCompositionService.postProcessView(this, previewView);
 
                     List<ComponentError> errors = new ArrayList<>();
@@ -413,8 +430,26 @@ public class DefaultRuntimeApplication
         finally
         {
             scopedContextFactory.updateSessionContext(request, applicationModel.getName(), sessionContext);
-            scopedContextFactory.updateApplicationContext(applicationModel.getName(), applicationContext);
+            scopedContextFactory.updateApplicationContext(applicationModel.getName(), applicationContext, domainService);
         }
+    }
+
+
+    private DomainObject getTransitionDomainContext(RuntimeContext runtimeContext, String json) throws ParseException
+    {
+        DomainObject partialDomainObjectContext;
+        log.debug("Domain Object context: {}", json);
+
+        partialDomainObjectContext = domainService.toDomainObject(GenericDomainObject.class, json);
+
+        if (partialDomainObjectContext != null && partialDomainObjectContext.getDomainType() == null)
+        {
+            partialDomainObjectContext = null;
+        }
+        partialDomainObjectContext = DomainUtil.convertToJava(runtimeContext, partialDomainObjectContext);
+
+        log.debug("Partial object context: {}", partialDomainObjectContext);
+        return partialDomainObjectContext;
     }
 
 
@@ -462,14 +497,21 @@ public class DefaultRuntimeApplication
 
     private Map<String, Object> getRuntimeInfo(HttpServletRequest request, RuntimeContext runtimeContext)
     {
-        Map<String, Object> map = new HashMap<>();
-
-        for (RuntimeInfoProvider provider : runtimeInfoProviders)
+        try
         {
-            map.put(provider.getName(), provider.provide(request, runtimeContext));
-        }
+            Map<String, Object> map = new HashMap<>();
 
-        return map;
+            for (RuntimeInfoProvider provider : runtimeInfoProviders)
+            {
+                map.put(provider.getName(), provider.provide(request, runtimeContext));
+            }
+
+            return map;
+        }
+        catch (Exception e)
+        {
+            throw new ExceedRuntimeException(e);
+        }
     }
 
 

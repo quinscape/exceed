@@ -221,10 +221,9 @@ public class ApplicationServiceImpl
 
     @Override
     @Transactional(propagation = Propagation.NESTED)
-    public void updateApplicationContext(String appName, ApplicationContext applicationContext)
+    public void updateApplicationContext(String appName, String json)
     {
-        log.info("Updating scoped context for {}", appName);
-        String json = applicationContext.toJSON();
+        log.info("Updating scoped context for {}", json);
 
         dslContext.update(APP_STATE)
             .set(APP_STATE.CONTEXT, json)

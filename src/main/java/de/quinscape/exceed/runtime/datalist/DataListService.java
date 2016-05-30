@@ -422,7 +422,7 @@ public class DataListService
 
         public Object convert(RuntimeContext runtimeContext, Object value)
         {
-            return propertyConverter.convertToJSON(runtimeContext, value, domainProperty);
+            return propertyConverter.convertToJSON(runtimeContext, value);
         }
 
 

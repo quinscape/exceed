@@ -5,6 +5,8 @@ import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 
+import java.util.Map;
+
 public interface ScopedContext
     extends ScopedResolver
 {
@@ -14,5 +16,5 @@ public interface ScopedContext
 
     boolean isInitialized();
 
-    void init(RuntimeContext runtimeContext, ExpressionService expressionService, ActionService actionService);
+    void init(RuntimeContext runtimeContext, ExpressionService expressionService, ActionService actionService, Map<String,Object> inputValues);
 }

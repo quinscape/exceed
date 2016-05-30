@@ -16,7 +16,8 @@ var TButton = React.createClass({
         transition: React.PropTypes.string.isRequired,
         discard: React.PropTypes.bool,
         className: React.PropTypes.string,
-        text: React.PropTypes.string.isRequired
+        text: React.PropTypes.string.isRequired,
+        domainType: React.PropTypes.string
     },
 
     contextTypes: {
@@ -42,9 +43,15 @@ var TButton = React.createClass({
                 onClick={ (ev) => {
                     if (!this.isDisabled())
                     {
-                        var cursor = this.props.context && this.props.context.pop();
+                        var cursor = this.props.context;
+                        if (cursor && cursor.isProperty())
+                        {
+                            cursor = cursor.pop();
+                        }
 
-                        processService.transition(this.props.transition).catch(function(err)
+                        const domainObject = cursor && cursor.getDomainObject(this.props.domainType);
+
+                        processService.transition( this.props.transition, domainObject).catch(function(err)
                         {
                             console.error(err);
                         });

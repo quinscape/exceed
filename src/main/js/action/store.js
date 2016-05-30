@@ -9,35 +9,27 @@ module.exports = function (model)
         throw new Error("No model");
     }
 
-    if (!model.data)
+    if (!model.object)
     {
         throw new Error("No data");
     }
 
-    var data =  model.data;
+    var data =  model.object;
 
     if (data instanceof DataList.Cursor)
     {
-        model.data = data.getDomainObject(model.type);
-        model.list = null;
-    }
-    else if (data instanceof DataList)
-    {
-        console.log("STORE LIST");
-        model.data = null;
-        model.list = data.dataList.getRaw();
+        model.object = data.getDomainObject(model.type);
     }
     else if (data._type)
     {
-        console.log("STORE DOMAIN OBJECT");
-        model.list = null;
+        model.object = data;
     }
     else
     {
         throw new Error("Cannot store unknown object" + model)
     }
 
-    console.log("STORE", model);
+    //console.log("STORE", model);
 
     return actionService.execute(model, true);
 };

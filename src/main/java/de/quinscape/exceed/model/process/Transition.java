@@ -21,6 +21,7 @@ public class Transition
 
     private boolean discard = false;
 
+    private boolean mergeContext = true;
 
     public String getName()
     {
@@ -96,6 +97,24 @@ public class Transition
     public ASTExpression getActionAST()
     {
         return actionAST;
+    }
+
+
+    public void setActionAST(ASTExpression actionAST)
+    {
+        this.actionAST = actionAST;
+    }
+
+
+    public boolean isMergeContext()
+    {
+        return mergeContext;
+    }
+
+
+    public void setMergeContext(boolean mergeContext)
+    {
+        this.mergeContext = mergeContext;
     }
 
 

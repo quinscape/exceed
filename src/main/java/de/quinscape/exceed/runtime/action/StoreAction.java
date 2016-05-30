@@ -2,17 +2,24 @@ package de.quinscape.exceed.runtime.action;
 
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.model.action.StoreActionModel;
+import de.quinscape.exceed.model.process.Process;
+import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.domain.DomainObject;
+import de.quinscape.exceed.runtime.domain.DomainObjectBase;
 import de.quinscape.exceed.runtime.domain.GenericDomainObject;
+import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.model.ExpressionRenderer;
 import de.quinscape.exceed.runtime.model.InvalidClientExpressionException;
+import de.quinscape.exceed.runtime.scope.ProcessContext;
+import de.quinscape.exceed.runtime.service.ActionExecutionEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 public class StoreAction
-    implements Action<StoreActionModel>, ClientActionRenderer
+    implements Action<StoreActionModel>, ClientActionRenderer, ServerActionConverter<StoreActionModel>
 {
     private final static Logger log = LoggerFactory.getLogger(StoreAction.class);
 
@@ -24,7 +31,11 @@ public class StoreAction
     @Override
     public void execute(RuntimeContext runtimeContext, StoreActionModel model)
     {
-        GenericDomainObject domainObject = model.getData();
+        DomainObject domainObject = model.getObject();
+        if (domainObject == null)
+        {
+            throw new IllegalStateException("No domain object in store action model");
+        }
         domainObject.update();
     }
 
@@ -36,28 +47,62 @@ public class StoreAction
 
 
     @Override
-    public void renderJsCode(ExpressionRenderer renderer, ASTFunction node)
+    public void renderJsCode(View view, ExpressionRenderer renderer, ASTFunction node)
     {
-        if (node.jjtGetNumChildren() != 1 && node.jjtGetNumChildren() != 2)
+        if (node.jjtGetNumChildren() > 1)
         {
-            throw new InvalidClientExpressionException("store() needs one or two parameters ( data , [ŧype])");
+            throw new InvalidClientExpressionException("store() needs at most one parameter ( [object] )");
         }
 
         StringBuilder buf = renderer.getBuffer();
-        buf.append("_a.action({ action: \"store\", data: ");
+        buf.append("_a.action({ action: \"store\", object: ");
 
-        node.jjtGetChild(0).jjtAccept(renderer, null);
-
-        if (node.jjtGetNumChildren() == 2)
+        if (node.jjtGetNumChildren() == 1)
         {
-            buf.append(",");
-            node.jjtGetChild(1).jjtAccept(renderer, null);
+            node.jjtGetChild(0).jjtAccept(renderer, null);
         }
         else
         {
-            buf.append("})");
+            if (view.isContainedInProcess())
+            {
+                buf.append("object('" + ProcessContext.DOMAIN_OBJECT_CONTEXT + "')");
+            }
+            else
+            {
+                buf.append("context");
+            }
         }
+        buf.append("})");
+
+    }
 
 
+    @Override
+    public StoreActionModel createModel(ExpressionContext<ActionExecutionEnvironment> ctx, ASTFunction node)
+    {
+        if (node.jjtGetNumChildren() > 1)
+        {
+            throw new InvalidClientExpressionException("store() needs at most one parameter ( [object] )");
+        }
+        StoreActionModel storeActionModel = new StoreActionModel();
+
+        DomainObject domainObject;
+        if (node.jjtGetNumChildren() == 1)
+        {
+            Object o = node.jjtGetChild(0).jjtAccept(ctx.getEnv(), null);
+
+            if (!(o instanceof DomainObject))
+            {
+                throw new IllegalStateException("Argument to store() did not resolve to domain object, but " + o);
+            }
+            domainObject = (DomainObject) o;
+        }
+        else
+        {
+            domainObject = ctx.getEnv().getScopedContext().getObject(ProcessContext.DOMAIN_OBJECT_CONTEXT);
+        }
+        domainObject.setDomainService(ctx.getEnv().getRuntimeContext().getRuntimeApplication().getDomainService());
+        storeActionModel.setObject((DomainObjectBase) domainObject);
+        return storeActionModel;
     }
 }

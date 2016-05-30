@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.scope;
 
 import de.quinscape.exceed.domain.tables.pojos.AppState;
 import de.quinscape.exceed.model.context.ContextModel;
+import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.domain.DomainService;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ScopedContextFactory
@@ -49,31 +51,10 @@ public class ScopedContextFactory
         {
             throw new IllegalArgumentException("domainService can't be null");
         }
-
-
-        AppState state = applicationService.getApplicationState(appName);
-        String json;
-        if (state != null && (json = state.getContext()) != null)
-        {
-            // restore from DB
-            try
-            {
-                log.info("Using application context from DB: {}", json);
-
-                Map<String, Object> context = (Map<String, Object>) domainService.toDomainObject(Map.class, json);
-                return new ApplicationContext(contextModel, context);
-            }
-            catch(Exception e)
-            {
-                // if we can't restore the context from DB, we just warn and create a new warn
-                log.warn("Could not restore application context from DB, creating default", e);
-            }
-        }
-        // create new with defaults
         ApplicationContext applicationContext = create(ApplicationContext.class, contextModel);
+        applicationContext.setName(appName);
         return applicationContext;
     }
-
 
     public SessionContext getSessionContext(HttpServletRequest request, String appName, ContextModel contextModel)
     {
@@ -113,7 +94,18 @@ public class ScopedContextFactory
         {
             return;
         }
-        scopedContext.init(runtimeContext, expressionService, actionService);
+
+        Map<String,Object> input = null;
+        if (scopedContext instanceof ApplicationContext)
+        {
+            String json = applicationService.getApplicationState(((ApplicationContext) scopedContext).getName())
+                .getContext();
+
+            //noinspection unchecked
+            input = runtimeContext.getRuntimeApplication().getDomainService().toDomainObject(Map.class, json);
+        }
+
+        scopedContext.init(runtimeContext, expressionService, actionService, input);
     }
 
 
@@ -141,11 +133,11 @@ public class ScopedContextFactory
     }
 
 
-    public void updateApplicationContext(String name, ApplicationContext applicationContext)
+    public void updateApplicationContext(String name, ApplicationContext applicationContext, DomainService domainService)
     {
         if (applicationContext != null && applicationContext.isDirty())
         {
-            applicationService.updateApplicationContext(name, applicationContext);
+            applicationService.updateApplicationContext(name, domainService.toJSON(applicationContext.getContextMap()));
             applicationContext.markClean();
         }
     }

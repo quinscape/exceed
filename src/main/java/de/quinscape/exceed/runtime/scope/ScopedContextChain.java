@@ -45,7 +45,7 @@ public final class ScopedContextChain
     @Override
     public DomainObject getObject(String name)
     {
-        ScopedContext scopedContext = findScopeWithProperty(name);
+        ScopedContext scopedContext = findScopeWithObject(name);
         if (scopedContext == null)
         {
             throw new ScopeResolutionException("No object '" + name + "' in either " + describe());
@@ -58,7 +58,7 @@ public final class ScopedContextChain
     @Override
     public DataList getList(String name)
     {
-        ScopedContext scopedContext = findScopeWithProperty(name);
+        ScopedContext scopedContext = findScopeWithList(name);
         if (scopedContext == null)
         {
             throw new ScopeResolutionException("No list '" + name + "' in either " + describe());

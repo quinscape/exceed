@@ -13,7 +13,10 @@ function createScopeFn(type)
 {
     return function(name)
     {
-        var value = getViewService().getRuntimeInfo().scope[name];
+        var scope = getViewService().getRuntimeInfo().scope;
+        console.log("SCOPE", scope);
+
+        var value = scope[name];
         if (value === undefined)
         {
             console.error("Scoped " + type + " '" + name + "' is undefined")
@@ -32,7 +35,11 @@ function createScopeFn(type)
 var Scope = {
     list: createScopeFn("list"),
     object: createScopeFn("object"),
-    property: createScopeFn("property")
+    property: createScopeFn("property"),
+    objectType: function (name)
+    {
+        return getViewService().getRuntimeInfo().scopeTypes[name];
+    }
 };
 
 module.exports = Scope;

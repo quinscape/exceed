@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.process;
 
+import de.quinscape.exceed.runtime.scope.ProcessContext;
 import de.quinscape.exceed.runtime.scope.ScopedContext;
 import de.quinscape.exceed.runtime.util.IdCounter;
 
@@ -19,14 +20,14 @@ public class ProcessExecutionState
 
     private final String currentState;
 
-    private final ScopedContext scopedContext;
+    private final ProcessContext scopedContext;
 
-    public ProcessExecutionState(ProcessExecution execution, ScopedContext scopedContext)
+    public ProcessExecutionState(ProcessExecution execution, ProcessContext scopedContext)
     {
         this(execution, scopedContext, null);
     }
 
-    public ProcessExecutionState(ProcessExecution execution, ScopedContext scopedContext, String currentState)
+    public ProcessExecutionState(ProcessExecution execution, ProcessContext scopedContext, String currentState)
     {
         this.id = COUNTER.nextId();
         this.execution = execution;
@@ -52,7 +53,7 @@ public class ProcessExecutionState
         return execution;
     }
 
-    public ScopedContext getScopedContext()
+    public ProcessContext getScopedContext()
     {
         return scopedContext;
     }

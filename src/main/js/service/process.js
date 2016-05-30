@@ -8,11 +8,15 @@ var RTView = require("./runtime-view-api");
 
 function renderURI(locInfo, transition)
 {
-    var params = assign({}, locInfo.params);
-    params._trans = transition;
+    var params = {
+        stateId: locInfo.params.stateId,
+        _trans : transition
+    };
 
     return uri( "/app/" + sys.appName + locInfo.routingTemplate, params)
 }
+
+const NO_OBJECT = { _type: null };
 
 module.exports = {
     transition: function(name, data)
@@ -20,7 +24,7 @@ module.exports = {
         var locInfo = viewService.getRuntimeInfo().location;
         return (
             viewService.navigateTo( renderURI(locInfo, name),
-                data || {},
+                data || NO_OBJECT,
                 function (data)
                 {
                     console.log(data);

@@ -42,5 +42,5 @@ public interface ApplicationService
     void signalComponentChanges(Set<String> componentNames);
 
     @Transactional(propagation = Propagation.NESTED)
-    void updateApplicationContext(String appName, ApplicationContext applicationContext);
+    void updateApplicationContext(String appName, String json);
 }

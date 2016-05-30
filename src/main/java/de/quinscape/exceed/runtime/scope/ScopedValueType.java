@@ -42,6 +42,13 @@ public enum ScopedValueType
             {
                 return scopedContext.hasObject(name);
             }
+
+
+            @Override
+            public ScopedContext findScope(ScopedContextChain scopedContext, String name)
+            {
+                return scopedContext.findScopeWithObject(name);
+            }
         },
     LIST
         {
@@ -78,6 +85,11 @@ public enum ScopedValueType
                 scopedContext.setList(name, (DataList) value);
             }
 
+            @Override
+            public ScopedContext findScope(ScopedContextChain scopedContext, String name)
+            {
+                return scopedContext.findScopeWithList(name);
+            }
         },
     PROPERTY
         {
@@ -113,10 +125,16 @@ public enum ScopedValueType
             {
                 scopedContext.setProperty(name, value);
             }
+            @Override
+            public ScopedContext findScope(ScopedContextChain scopedContext, String name)
+            {
+                return scopedContext.findScopeWithProperty(name);
+            }
         };
 
 
     public abstract Object get(ScopedResolver scopedContext, String name);
     public abstract void set(ScopedResolver scopedContext, String name, Object value);
     public abstract Object has(ScopedResolver scopedContext, String name);
+    public abstract ScopedContext findScope(ScopedContextChain scopedContext, String name);
 }

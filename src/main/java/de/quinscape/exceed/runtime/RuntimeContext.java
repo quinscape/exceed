@@ -24,13 +24,13 @@ public class RuntimeContext
 
     private final Translator translator;
 
+    private final ScopedContextChain scopedContextChain;
+
     private View view;
 
     private Map<String, Object> variables;
 
     private String routingTemplate;
-
-    private final ScopedContextChain scopedContextChain;
 
 
     public RuntimeContext(RuntimeApplication runtimeApplication,

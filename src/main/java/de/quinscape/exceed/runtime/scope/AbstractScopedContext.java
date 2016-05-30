@@ -1,16 +1,19 @@
 package de.quinscape.exceed.runtime.scope;
 
 import de.quinscape.exceed.expression.ASTExpression;
+import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataList;
 import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.domain.DomainObject;
+import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.service.ContextExpressionEnvironment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +23,8 @@ import java.util.Map;
 public abstract class AbstractScopedContext
     implements ScopedContext
 {
+    private final static Logger log = LoggerFactory.getLogger(AbstractScopedContext.class);
+
     protected final Map<String, Object> context;
 
     private final ContextModel contextModel;
@@ -143,26 +148,54 @@ public abstract class AbstractScopedContext
     public abstract ScopedContext copy(RuntimeContext runtimeContext);
 
     @Override
-    public void init(RuntimeContext runtimeContext, ExpressionService expressionService, ActionService actionService)
+    public void init(RuntimeContext runtimeContext, ExpressionService expressionService, ActionService actionService, Map<String,Object> inputValues)
     {
         initialized = true;
 
         if (contextModel != null)
         {
+            DomainService domainService = runtimeContext.getRuntimeApplication().getDomainService();
+
             for (ScopedPropertyModel scopedPropertyModel : contextModel.getProperties().values())
             {
-                Object value;
-                ASTExpression defaultValueExpression = scopedPropertyModel.getDefaultValueExpression();
-                if (defaultValueExpression != null)
+                String name = scopedPropertyModel.getName();
+
+                Object value = null;
+                if (inputValues != null)
                 {
-                    ContextExpressionEnvironment env = new ContextExpressionEnvironment(runtimeContext, actionService, runtimeContext.getLocationParams(), null);
-                    value = expressionService.evaluate(defaultValueExpression, env);
+                    Object input = inputValues.get(name);
+                    if (input != null)
+                    {
+                        try
+                        {
+                            value = domainService.getPropertyConverter(scopedPropertyModel.getType()).convertToJava(runtimeContext, input);
+                        }
+                        catch(Exception e)
+                        {
+                            if (log.isDebugEnabled())
+                            {
+                                log.debug("Error converting {} to '{}': {}", input , scopedPropertyModel.getType(), e);
+                            }
+                            // ignore error, use default
+                            value = null;
+                        }
+                    }
                 }
-                else
+
+                if (value == null)
                 {
-                    value = scopedPropertyModel.getDefaultValue();
+                    ASTExpression defaultValueExpression = scopedPropertyModel.getDefaultValueExpression();
+                    if (defaultValueExpression != null)
+                    {
+                        ContextExpressionEnvironment env = new ContextExpressionEnvironment(runtimeContext, actionService, runtimeContext.getLocationParams(), null);
+                        value = expressionService.evaluate(defaultValueExpression, env);
+                    }
+                    else
+                    {
+                        value = scopedPropertyModel.getDefaultValue();
+                    }
                 }
-                context.put(scopedPropertyModel.getName(), value);
+                context.put(name, value);
             }
         }
     }

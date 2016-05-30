@@ -221,6 +221,7 @@ var viewService = {
         else
         {
             ajaxOpts.method =  opts.method;
+            ajaxOpts.contentType = "application/json";
             ajaxOpts.data = opts.data || {};
             ajaxOpts.dataType = opts.dataType;
         }

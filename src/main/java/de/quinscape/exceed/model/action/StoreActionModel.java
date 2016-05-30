@@ -1,40 +1,21 @@
 package de.quinscape.exceed.model.action;
 
-import de.quinscape.exceed.runtime.component.DataList;
-import de.quinscape.exceed.runtime.domain.GenericDomainObject;
-import org.svenson.JSONTypeHint;
-
-import java.util.List;
+import de.quinscape.exceed.runtime.domain.DomainObjectBase;
 
 public class StoreActionModel
     extends ActionModel
 {
-    private GenericDomainObject data;
-
-    private List<GenericDomainObject> list;
+    private DomainObjectBase object;
 
 
-    public GenericDomainObject getData()
+    public DomainObjectBase getObject()
     {
-        return data;
+        return object;
     }
 
 
-    public void setData(GenericDomainObject data)
+    public void setObject(DomainObjectBase object)
     {
-        this.data = data;
-    }
-
-
-    public List<GenericDomainObject> getList()
-    {
-        return list;
-    }
-
-
-    @JSONTypeHint(GenericDomainObject.class)
-    public void setList(List<GenericDomainObject> list)
-    {
-        this.list = list;
+        this.object = object;
     }
 }

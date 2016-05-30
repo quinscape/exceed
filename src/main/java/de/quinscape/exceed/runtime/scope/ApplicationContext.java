@@ -2,9 +2,6 @@ package de.quinscape.exceed.runtime.scope;
 
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.controller.ActionService;
-import de.quinscape.exceed.runtime.expression.ExpressionService;
-import org.svenson.JSON;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +12,9 @@ import java.util.Map;
 public final class ApplicationContext
     extends AbstractChangeTrackingScopedContext
 {
+    private String name;
+
+
     public ApplicationContext(ContextModel contextModel)
     {
         super(contextModel);
@@ -31,8 +31,21 @@ public final class ApplicationContext
         return new ApplicationContext(getContextModel(), new HashMap<>(context));
     }
 
-    public String toJSON()
+
+    public Map<String, Object> getContextMap()
     {
-        return JSON.defaultJSON().forValue(context);
+        return context;
+    }
+
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+
+    public String getName()
+    {
+        return name;
     }
 }

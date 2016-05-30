@@ -11,10 +11,13 @@ import de.quinscape.exceed.model.process.Transition;
 import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.controller.ActionService;
+import de.quinscape.exceed.runtime.domain.DomainObject;
+import de.quinscape.exceed.runtime.domain.DomainService;
+import de.quinscape.exceed.runtime.domain.GenericDomainObject;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.process.ProcessExecution;
 import de.quinscape.exceed.runtime.process.ProcessExecutionState;
-import de.quinscape.exceed.runtime.scope.ScopedContext;
+import de.quinscape.exceed.runtime.scope.ProcessContext;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,15 +40,15 @@ public class ProcessService
 
         ContextModel contextModel = process.getContext();
 
-        ScopedContext scopedContext = scopedContextFactory.createProcessContext(contextModel);
+        ProcessContext scopedContext = scopedContextFactory.createProcessContext(contextModel);
         scopedContextFactory.initializeContext(runtimeContext, scopedContext);
 
         ProcessExecution execution = new ProcessExecution(appName, process.getName());
 
-        return transition(runtimeContext, execution, scopedContext, process.getStartTransition());
+        return transition(runtimeContext, execution, scopedContext, process.getStartTransition(), null);
     }
 
-    public ProcessExecutionState resume(RuntimeContext runtimeContext, ProcessExecutionState state, String transition)
+    public ProcessExecutionState resume(RuntimeContext runtimeContext, ProcessExecutionState state, String transition, DomainObject partialDomainObjectContext)
     {
         if (transition == null)
         {
@@ -72,15 +75,37 @@ public class ProcessService
             throw new IllegalArgumentException("View state '" + processState.getName() + "' has no transition '" + transition + "'");
         }
 
-        return transition(runtimeContext, state.getExecution(), state.getScopedContext(), transitionModel);
+        return transition(runtimeContext, state.getExecution(), state.getScopedContext(), transitionModel, partialDomainObjectContext);
     }
 
 
-    private ProcessExecutionState transition(RuntimeContext runtimeContext, ProcessExecution execution, ScopedContext scopedContext, Transition transitionModel)
+    private ProcessExecutionState transition(RuntimeContext runtimeContext, ProcessExecution execution, ProcessContext scopedContext, Transition transitionModel, DomainObject partialDomainObjectContext)
     {
         ApplicationModel applicationModel = runtimeContext.getRuntimeApplication().getApplicationModel();
 
-        ScopedContext newScopedCtx = scopedContext.copy(runtimeContext);
+        ProcessContext newScopedCtx = (ProcessContext) scopedContext.copy(runtimeContext);
+
+
+        DomainObject domainObjectContext;
+        if (transitionModel.isMergeContext())
+        {
+            DomainService domainService = runtimeContext.getRuntimeApplication().getDomainService();
+            DomainObject fullObject = partialDomainObjectContext != null ? domainService.read(partialDomainObjectContext.getDomainType(), partialDomainObjectContext.getId()) : null;
+            if (fullObject != null)
+            {
+                domainObjectContext = mergeInto(fullObject, partialDomainObjectContext);
+            }
+            else
+            {
+                domainObjectContext = partialDomainObjectContext;
+            }
+        }
+        else
+        {
+            domainObjectContext = partialDomainObjectContext;
+        }
+
+        newScopedCtx.setDomainObjectContext(domainObjectContext);
 
         runtimeContext.getScopedContextChain().addContext(newScopedCtx);
 
@@ -100,7 +125,7 @@ public class ProcessService
         // internally handled states
         if (targetStateModel instanceof DecisionState)
         {
-            return decide(runtimeContext, execution, newScopedCtx, (DecisionState) targetStateModel);
+            return decide(runtimeContext, execution, newScopedCtx, (DecisionState) targetStateModel, domainObjectContext);
         }
 
         // user handled states
@@ -108,7 +133,24 @@ public class ProcessService
     }
 
 
-    private ProcessExecutionState decide(RuntimeContext runtimeContext, ProcessExecution execution, ScopedContext newScopedCtx, DecisionState decisionStateModel)
+    private DomainObject mergeInto(DomainObject fullObject, DomainObject partialDomainObjectContext)
+    {
+        for (String name : partialDomainObjectContext.propertyNames())
+        {
+            if (!name.equals("_type"))
+            {
+                Object value = partialDomainObjectContext.getProperty(name);
+                if (value != null)
+                {
+                    fullObject.setProperty(name, value);
+                }
+            }
+        }
+        return fullObject;
+    }
+
+
+    private ProcessExecutionState decide(RuntimeContext runtimeContext, ProcessExecution execution, ProcessContext newScopedCtx, DecisionState decisionStateModel, DomainObject domainObjectContext)
     {
 
         for (DecisionModel decisionModel : decisionStateModel.getDecisions())
@@ -123,10 +165,11 @@ public class ProcessService
 
             if ((Boolean)result)
             {
-                return transition(runtimeContext, execution, newScopedCtx, decisionModel.getTransition());
+                return transition(runtimeContext, execution, newScopedCtx, decisionModel.getTransition(),
+                    domainObjectContext);
             }
         }
 
-        return transition(runtimeContext, execution, newScopedCtx, decisionStateModel.getDefaultTransition());
+        return transition(runtimeContext, execution, newScopedCtx, decisionStateModel.getDefaultTransition(), domainObjectContext);
     }
 }

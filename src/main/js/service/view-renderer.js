@@ -296,7 +296,7 @@ module.exports = {
     {
         //console.log("\nVIEWMODEL:\n", JSON.stringify(viewModel, null, "  "));
         var code = renderViewComponentSource(viewModel);
-        console.log("\nRENDER-FN:\n", code);
+        //console.log("\nRENDER-FN:\n", code);
 
         var renderFn = new Function("_React", "_components", "_RTView", "_catchErrors", "_ErrorReport", "_sys", "_a", code);
         return function (component)

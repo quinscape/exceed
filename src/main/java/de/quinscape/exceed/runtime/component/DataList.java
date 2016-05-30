@@ -2,7 +2,9 @@ package de.quinscape.exceed.runtime.component;
 
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumType;
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.domain.DomainObject;
+import de.quinscape.exceed.runtime.util.DomainUtil;
 import org.svenson.JSONProperty;
 
 import java.util.ArrayList;
@@ -108,7 +110,7 @@ public class DataList
      *
      * @return
      */
-    public DataList copy()
+    public DataList copy(RuntimeContext runtimeContext)
     {
         List copiedRows = new ArrayList<>(rows.size());
 
@@ -117,7 +119,7 @@ public class DataList
             Object copy;
             if (o instanceof DomainObject)
             {
-                copy = ((DomainObject) o).copy();
+                copy = DomainUtil.copy(runtimeContext, (DomainObject) o);
             }
             else if (o instanceof Map)
             {

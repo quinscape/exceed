@@ -7,6 +7,7 @@ import de.quinscape.exceed.runtime.datalist.DataListService;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.JOOQQueryExecutor;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
+import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.editor.completion.CompletionService;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
@@ -16,6 +17,8 @@ import de.quinscape.exceed.runtime.resource.DefaultResourceCacheFactory;
 import de.quinscape.exceed.runtime.resource.ResourceCacheFactory;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.service.ApplicationService;
+import de.quinscape.exceed.runtime.service.DomainServiceFactory;
+import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
 import de.quinscape.exceed.runtime.view.ViewDataService;
 import org.jooq.DSLContext;
 import org.springframework.context.ApplicationContext;
@@ -115,5 +118,22 @@ public class ServiceConfiguration
     )
     {
         return new ScopedContextFactory(applicationService, expressionService, actionService);
+    }
+
+    @Bean
+    public RuntimeContextFactory runtimeContextFactory(Translator translator)
+    {
+        return new RuntimeContextFactory(translator);
+    }
+
+    @Bean
+    public DomainServiceFactory domainServiceFactory(
+        DataListService dataListService,
+        NamingStrategy namingStrategy,
+        DSLContext dslContext,
+        Map<String, PropertyConverter> converters
+    )
+    {
+        return new DomainServiceFactory(dataListService, namingStrategy, dslContext, converters);
     }
 }

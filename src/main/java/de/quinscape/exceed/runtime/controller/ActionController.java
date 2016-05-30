@@ -18,6 +18,7 @@ import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.util.ContentType;
+import de.quinscape.exceed.runtime.util.DomainUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -274,7 +275,7 @@ public class ActionController
             {
                 return;
             }
-            convertDomainObject(runtimeContext, value);
+            value = DomainUtil.convertToJava(runtimeContext, value);
         }
     }
 
@@ -318,29 +319,13 @@ public class ActionController
 
                 for (DomainObject domainObject : (List<DomainObject>) value)
                 {
-                    convertDomainObject(runtimeContext, domainObject);
+                    domainObject = DomainUtil.convertToJava(runtimeContext, domainObject);
                 }
             }
         }
     }
 
 
-    private void convertDomainObject(RuntimeContext runtimeContext, DomainObject domainObject) throws ParseException
-    {
-        final DomainService domainService = domainObject.getDomainService();
-
-
-        DomainType domainType = domainService.getDomainType(domainObject.getDomainType());
-        for (DomainProperty property : domainType.getProperties())
-        {
-            String propertyName = property.getName();
-            Object value = domainObject.getProperty(propertyName);
-            PropertyConverter propertyConverter = getConverter(property.getType());
-            Object converted = propertyConverter.convertToJava(runtimeContext, value, property);
-
-            domainObject.setProperty(propertyName, converted);
-        }
-    }
 
 
     private PropertyConverter getConverter(String type)
