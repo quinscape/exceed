@@ -10,6 +10,7 @@ import de.quinscape.exceed.runtime.util.Util;
 import de.quinscape.exceed.runtime.view.DataProviderContext;
 import de.quinscape.exceed.tooling.GenerateModelDocs;
 import de.quinscape.exceed.tooling.JavaDocs;
+import de.quinscape.exceed.tooling.JavaSourceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -310,7 +311,7 @@ public class ModelDocsProvider
             Class cls = this.cls;
             do
             {
-                if (GenerateModelDocs.sourceFile(sourceDir, cls).lastModified() > created)
+                if (JavaSourceUtil.sourceFile(sourceDir, cls).lastModified() > created)
                 {
                     return true;
                 }

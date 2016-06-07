@@ -60,7 +60,7 @@ public class JavaDocs
             Comment javadoc = n.getComment();
             if (javadoc != null)
             {
-                this.javadoc = getJavaDocText(javadoc.getContent());
+                this.javadoc = JavaSourceUtil.getJavaDocText(javadoc);
             }
 
         }
@@ -91,38 +91,12 @@ public class JavaDocs
                 if (n.getParameters().size() == 0 && getter || isser)
                 {
                     String propName = Introspector.decapitalize(methodName.substring(getter ? 3 : 2));
-                    javaDocTexts.put(propName, getJavaDocText(javadoc.getContent()));
+                    javaDocTexts.put(propName, JavaSourceUtil.getJavaDocText(javadoc));
                 }
             }
         }
     }
 
-
-    /**
-     * Extract and filter the comment text from the javadoc
-     *
-     * @param content
-     * @return
-     */
-    public static String getJavaDocText(String content)
-    {
-        return content.replace("*", "").trim();
-
-//        return content.replaceAll("\n\\s*\\*", "\n");
-    }
-
-
-    static String getJavaDocText(JavadocComment javadoc)
-    {
-        if (javadoc != null)
-        {
-            return getJavaDocText(javadoc.getContent());
-        }
-        else
-        {
-            return "";
-        }
-    }
 
 
     public String getClassDoc()

@@ -63,7 +63,7 @@ var ViewComponentRenderer = proxyquire("../../../../src/main/js/service/view-ren
             return {
                 Foo: {
                     component: Foo,
-                    modelAware: true
+                    classes: ["model-aware"]
                 },
                 Bar: {
                     component: Bar

@@ -47,7 +47,7 @@ public class ClientViewJSONGeneratorTest
         descriptors.put("Row", defaultDescriptor);
         descriptors.put("Col", defaultDescriptor);
         descriptors.put("Heading", defaultDescriptor);
-        descriptors.put("Foo", descriptor("{'modelAware': true}"));
+        descriptors.put("Foo", descriptor("{'classes': ['model-aware']}"));
         ComponentRegistry registry = new TestRegistry(descriptors);
 
 

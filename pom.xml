@@ -459,17 +459,30 @@
                 <version>1.4.0</version>
                 <executions>
                     <execution>
+                        <id>generate-component-classes</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>
+                                java
+                            </goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>de.quinscape.exceed.tooling.GenerateComponentClasses</mainClass>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-resource-lists</id>
                         <phase>generate-resources</phase>
                         <goals>
                             <goal>
                                 java
                             </goal>
                         </goals>
+                        <configuration>
+                            <mainClass>de.quinscape.exceed.tooling.GenerateLibraryResourceLists</mainClass>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <mainClass>de.quinscape.exceed.tooling.GenerateLibraryResourceLists</mainClass>
-                </configuration>
             </plugin>
         </plugins>
     </build>

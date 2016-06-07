@@ -27,6 +27,10 @@ var components = componentService.getComponents();
 var rtViewAPI = require("./runtime-view-api");
 var rtActionAPI = require("./runtime-action-api");
 
+var ComponentClasses = require("../components/component-classes");
+
+const VISIBLE_IF_PROP = "visibleIf";
+
 function RenderContext(out)
 {
     this.usedComponents = {};
@@ -43,6 +47,12 @@ function indent(ctx, depth)
 }
 
 var trivialExpr = /^(true|false|null|\d+|\w+)$/;
+
+
+function hasClass(componentDescriptor, cls)
+{
+    return componentDescriptor && componentDescriptor.classes && componentDescriptor.classes.indexOf(cls) >= 0;
+}
 
 function evaluateExpression(componentModel,attrName)
 {
@@ -109,6 +119,12 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
 
     var attrsStartIndex;
 
+    if (hasClass(componentDescriptor, ComponentClasses.VISIBLE_IF) && exprs && exprs[VISIBLE_IF_PROP])
+    {
+        ctx.out.push("!!(" + evaluateExpression(componentModel, VISIBLE_IF_PROP) + ") && ");
+    }
+
+
     ctx.out.push("_React.createElement(", component, ", ");
 
     var hasInjection = !!queries || componentDescriptor.dataProvider;
@@ -156,7 +172,7 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
     {
         for (attrName in exprs)
         {
-            if (exprs.hasOwnProperty(attrName))
+            if (exprs.hasOwnProperty(attrName) && attrName !== VISIBLE_IF_PROP)
             {
                 commaIfNotFirst();
                 indent(ctx, depth + 2);
@@ -169,7 +185,7 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
         }
     }
 
-    if (componentDescriptor && componentDescriptor.modelAware)
+    if (hasClass(componentDescriptor, ComponentClasses.MODEL_AWARE))
     {
         commaIfNotFirst();
         indent(ctx, depth + 2);

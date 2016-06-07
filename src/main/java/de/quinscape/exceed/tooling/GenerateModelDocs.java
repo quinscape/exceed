@@ -75,13 +75,9 @@ public class GenerateModelDocs
     }
 
 
-    public static File sourceFile(File base, Class<?> declaringClass)
-    {
-        return new File(base, declaringClass.getName().replace('.', File.separatorChar) + ".java");
-    }
     public static JavaDocs readJavadocs(File base, Class<?> declaringClass) throws IOException
     {
-        File source =  sourceFile(base, declaringClass);
+        File source =  JavaSourceUtil.sourceFile(base, declaringClass);
         if (!source.exists())
         {
             throw new RuntimeException("Source " + source + " does not exist: pwd is " + new File(".").getAbsolutePath());

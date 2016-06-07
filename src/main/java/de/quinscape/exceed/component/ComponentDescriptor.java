@@ -89,12 +89,6 @@ public class ComponentDescriptor
      */
     private final Map<String,ComponentPropWizard> componentPropWizards;
 
-    /**
-     * If set to <code>true</code> the corresponding component will receive a <em>model</em> prop containing the original
-     * model JSON data.
-     */
-    private final boolean modelAware;
-
     private final Map<String,String> queryExecutors;
 
     public ComponentDescriptor(
@@ -131,16 +125,12 @@ public class ComponentDescriptor
         @JSONParameter("providesContext")
         String providesContext,
 
-        @JSONParameter("modelAware")
-        Boolean modelAware,
-
         @JSONParameter("parentRule")
         String parentRule) throws ParseException
 
     {
         this.vars = vars;
         this.parentRule = parentRule;
-        this.modelAware = modelAware != null && modelAware;
         this.queries = Util.immutableMap(queries);
         this.propTypes = Util.immutableMap(propTypes);
         this.templates = Util.immutableList(templates);
@@ -206,12 +196,6 @@ public class ComponentDescriptor
     }
 
 
-    public boolean isModelAware()
-    {
-        return modelAware;
-    }
-
-
     public Set<String> getClasses()
     {
         return classes;
@@ -239,5 +223,10 @@ public class ComponentDescriptor
     public Map<String, ComponentPropWizard> getComponentPropWizards()
     {
         return componentPropWizards;
+    }
+
+    public boolean hasClass(String cls)
+    {
+        return classes.contains(cls);
     }
 }

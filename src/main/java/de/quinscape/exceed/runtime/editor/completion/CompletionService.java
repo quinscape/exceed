@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.editor.completion;
 
+import de.quinscape.exceed.component.ComponentClasses;
 import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.component.ComponentTemplate;
 import de.quinscape.exceed.component.PropDeclaration;
@@ -21,8 +22,10 @@ import de.quinscape.exceed.runtime.util.ComponentUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.svenson.JSONParser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +41,13 @@ public class CompletionService
     private static final String DEFAULT_TEMPLATE_META = "component";
 
     private final static Logger log = LoggerFactory.getLogger(CompletionService.class);
+
+    private static final PropDeclaration VISIBLE_IF_DECLARATION = JSONParser.defaultJSONParser().parse(
+        PropDeclaration.class,
+        "{ \"description\" : \"Expression that determines whether the component is rendered or not.\", \"type\" : \"FILTER_EXPRESSION\" }"
+    );
+
+    private static final String VISIBLE_IF_PROP = "visibleIf";
 
     @Autowired
     private ComponentRegistry componentRegistry;
@@ -184,7 +194,15 @@ public class CompletionService
         List<AceCompletion> completions = new ArrayList<>();
         for (String propName : unusedPropNames)
         {
-            PropDeclaration propDecl = propTypes.get(propName);
+            PropDeclaration propDecl;
+            if (propName.equals(VISIBLE_IF_PROP))
+            {
+                propDecl = VISIBLE_IF_DECLARATION;
+            }
+            else
+            {
+                propDecl = propTypes.get(propName);
+            }
 
             String meta = propDecl.getType().name().toLowerCase() + (propDecl.isRequired() ? "*" : "");
 
@@ -198,8 +216,16 @@ public class CompletionService
 
     private Set<String> getUnusedPropNames(ComponentModel componentModel)
     {
-        Map<String, PropDeclaration> propTypes = componentModel.getComponentRegistration().getDescriptor().getPropTypes();
+        final ComponentDescriptor descriptor = componentModel.getComponentRegistration().getDescriptor();
+
+        Map<String, PropDeclaration> propTypes = descriptor.getPropTypes();
+
         Set<String> unusedPropNames = new HashSet<>(propTypes.keySet());
+
+        if (descriptor.hasClass(ComponentClasses.VISIBLE_IF))
+        {
+            unusedPropNames.add(VISIBLE_IF_PROP);
+        }
         unusedPropNames.removeAll(componentModel.getAttrs().getNames());
         return unusedPropNames;
     }

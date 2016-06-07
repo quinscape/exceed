@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.model;
 
 import com.google.common.base.Objects;
+import de.quinscape.exceed.component.ComponentClasses;
 import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.component.PropDeclaration;
 import de.quinscape.exceed.component.PropType;
@@ -187,7 +188,7 @@ public class ClientViewJSONGenerator
             {
                 ComponentDescriptor descriptor = componentRegistration.getDescriptor();
 
-                if (descriptor.isModelAware())
+                if (descriptor.hasClass(ComponentClasses.MODEL_AWARE))
                 {
                     builder.property(MODEL_ATTR_NAME, path.modelPath());
                 }

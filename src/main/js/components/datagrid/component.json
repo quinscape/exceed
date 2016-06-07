@@ -2,7 +2,7 @@
     "components": {
         "DataGrid": {
 
-            "classes" : [ "element", "iterative-context" ],
+            "classes" : [ "element", "iterative-context", "model-aware", "visible-if" ],
 
             "vars": {
                 "orderBy": "prop('orderBy')",
@@ -41,8 +41,7 @@
             },
             "providesContext" : "DataListCursor",
             "childRule" : "component('DataGrid.Column')",
-            "parentRule" : "!parentHasClass('iterative-context')",
-            "modelAware" : true
+            "parentRule" : "!parentHasClass('iterative-context')"
         },
         "DataGrid.Column": {
             "providesContext" : "DataGrid.Field",
