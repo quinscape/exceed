@@ -30,7 +30,7 @@ public class ViewStateProvider
             String processName = view.getProcessName();
             if (processName != null)
             {
-                Process process = runtimeContext.getRuntimeApplication().getApplicationModel().getProcess(processName);
+                Process process = runtimeContext.getApplicationModel().getProcess(processName);
 
                 String localName = view.getLocalName();
                 ProcessState state = process.getStates().get(localName);

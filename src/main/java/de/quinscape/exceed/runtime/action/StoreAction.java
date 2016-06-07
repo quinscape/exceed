@@ -101,7 +101,7 @@ public class StoreAction
         {
             domainObject = ctx.getEnv().getScopedContext().getObject(ProcessContext.DOMAIN_OBJECT_CONTEXT);
         }
-        domainObject.setDomainService(ctx.getEnv().getRuntimeContext().getRuntimeApplication().getDomainService());
+        domainObject.setDomainService(ctx.getEnv().getRuntimeContext().getDomainService());
         storeActionModel.setObject((DomainObjectBase) domainObject);
         return storeActionModel;
     }

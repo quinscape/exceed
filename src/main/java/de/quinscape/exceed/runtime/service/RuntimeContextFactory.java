@@ -2,12 +2,11 @@ package de.quinscape.exceed.runtime.service;
 
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
-import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
+import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 
 import java.util.Locale;
-import java.util.Map;
 
 public class RuntimeContextFactory
 {
@@ -20,8 +19,8 @@ public class RuntimeContextFactory
     }
 
 
-    public RuntimeContext create(RuntimeApplication runtimeApplication, String path, Locale locale, ScopedContextChain scopedContextChain)
+    public RuntimeContext create(RuntimeApplication runtimeApplication, String path, Locale locale, ScopedContextChain scopedContextChain, DomainService domainService)
     {
-        return new RuntimeContext(runtimeApplication, path, translator, locale, scopedContextChain);
+        return new RuntimeContext(runtimeApplication, path, translator, locale, scopedContextChain, domainService);
     }
 }

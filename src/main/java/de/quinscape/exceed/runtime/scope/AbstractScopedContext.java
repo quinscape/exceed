@@ -154,7 +154,7 @@ public abstract class AbstractScopedContext
 
         if (contextModel != null)
         {
-            DomainService domainService = runtimeContext.getRuntimeApplication().getDomainService();
+            DomainService domainService = runtimeContext.getDomainService();
 
             for (ScopedPropertyModel scopedPropertyModel : contextModel.getProperties().values())
             {

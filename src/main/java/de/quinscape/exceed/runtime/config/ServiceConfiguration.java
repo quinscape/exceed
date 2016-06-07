@@ -18,6 +18,7 @@ import de.quinscape.exceed.runtime.resource.ResourceCacheFactory;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.service.DomainServiceFactory;
+import de.quinscape.exceed.runtime.service.ProcessService;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
 import de.quinscape.exceed.runtime.view.ViewDataService;
 import org.jooq.DSLContext;
@@ -136,4 +137,11 @@ public class ServiceConfiguration
     {
         return new DomainServiceFactory(dataListService, namingStrategy, dslContext, converters);
     }
+    @Bean
+    public ProcessService ProcessService(ActionService actionService, ExpressionService expressionService, ScopedContextFactory
+        scopedContextFactory)
+    {
+        return new ProcessService(actionService, expressionService, scopedContextFactory);
+    }
+
 }

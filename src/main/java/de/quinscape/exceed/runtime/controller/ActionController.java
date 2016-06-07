@@ -2,19 +2,17 @@ package de.quinscape.exceed.runtime.controller;
 
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.action.ActionModel;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.action.Action;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.config.DefaultPropertyConverters;
 import de.quinscape.exceed.runtime.domain.DomainObject;
-import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 import de.quinscape.exceed.runtime.scope.SessionContext;
 import de.quinscape.exceed.runtime.service.ApplicationService;
+import de.quinscape.exceed.runtime.service.DomainServiceRepository;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.util.ContentType;
@@ -81,6 +79,9 @@ public class ActionController
     @Autowired
     private ScopedContextFactory scopedContextFactory;
 
+    @Autowired
+    private DomainServiceRepository domainServiceRepository;
+
     private final JSON resultGenerator;
 
     private Map<String, Class<? extends ActionModel>> modelsByName;
@@ -124,14 +125,14 @@ public class ActionController
                     runtimeApplication.getApplicationContext(),
                     sessionContext
                 )
-            ));
+            ), domainServiceRepository.getDomainService(appName));
 
         RuntimeContextHolder.register(runtimeContext);
         scopedContextFactory.initializeContext(runtimeContext, sessionContext);
 
         RuntimeContextHolder.register(runtimeContext);
 
-        ActionModel model = (ActionModel) runtimeApplication.getDomainService().toDomainObject(actionClass, actionModelJSON);
+        ActionModel model = (ActionModel) runtimeContext.getDomainService().toDomainObject(actionClass, actionModelJSON);
         convertProperties(runtimeContext, model);
 
         response.setContentType(ContentType.JSON);

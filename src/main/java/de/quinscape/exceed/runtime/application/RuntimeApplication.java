@@ -20,13 +20,12 @@ import java.util.Map;
  */
 public interface RuntimeApplication
 {
-    ServletContext getServletContext();
+    default String getName()
+    {
+        return getApplicationModel().getName();
+    }
 
     ApplicationModel getApplicationModel();
 
-    DomainService getDomainService();
-
     ScopedContext getApplicationContext();
-
-    StaticFunctionReferences getStaticFunctionReferences();
 }

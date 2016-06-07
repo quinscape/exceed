@@ -102,7 +102,7 @@ public class ScopedContextFactory
                 .getContext();
 
             //noinspection unchecked
-            input = runtimeContext.getRuntimeApplication().getDomainService().toDomainObject(Map.class, json);
+            input = runtimeContext.getDomainService().toDomainObject(Map.class, json);
         }
 
         scopedContext.init(runtimeContext, expressionService, actionService, input);

@@ -6,6 +6,7 @@ import de.quinscape.exceed.domain.tables.pojos.AppState;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.action.ClientActionRenderer;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
+import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.resource.ResourceCacheFactory;
 import de.quinscape.exceed.runtime.resource.ResourceLoader;
@@ -63,9 +64,6 @@ public class RuntimeApplicationFactory
     private List<RuntimeInfoProvider> runtimeInfoProviders;
 
     @Autowired
-    private ActionExpressionRendererFactory actionExpressionRendererFactory;
-
-    @Autowired
     private ProcessService processService;
 
     @Autowired
@@ -74,12 +72,16 @@ public class RuntimeApplicationFactory
     @Autowired
     private ScopedContextFactory scopedContextFactory;
 
+    @Autowired
+    private DomainServiceRepository domainServiceRepository;
+
 
     public DefaultRuntimeApplication createRuntimeApplication(ServletContext servletContext, AppState state)
     {
         List<ResourceRoot> resourceRoots = configureExtensions(servletContext, state);
 
-        log.info("Creating runtime application '{}', roots = {}", state.getName(), resourceRoots);
+        final String appName = state.getName();
+        log.info("Creating runtime application '{}', roots = {}", appName, resourceRoots);
 
         ResourceLoader resourceLoader = new ResourceLoader(resourceRoots);
         LoadingCache<String, CachedResource> cache = resourceCacheFactory.createCache(resourceLoader);
@@ -91,7 +93,11 @@ public class RuntimeApplicationFactory
         Map<String, ClientActionRenderer> generators = new HashMap<>();
         generators.put("syslog", new SyslogCallGenerator());
 
-        return new DefaultRuntimeApplication( servletContext, viewDataService, componentRegistry, styleService,  modelCompositionService, resourceLoader, domainServiceFactory.create(), runtimeInfoProviders, processService, state.getName(), runtimeContextFactory, scopedContextFactory);
+        final DomainService domainService = domainServiceFactory.create();
+
+        domainServiceRepository.register(appName, domainService);
+
+        return new DefaultRuntimeApplication( servletContext, viewDataService, componentRegistry, styleService,  modelCompositionService, resourceLoader, domainService, runtimeInfoProviders, processService, appName, runtimeContextFactory, scopedContextFactory);
     }
 
     private List<ResourceRoot> configureExtensions(ServletContext servletContext, AppState state)

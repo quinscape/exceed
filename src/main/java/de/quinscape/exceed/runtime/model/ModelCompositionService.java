@@ -5,7 +5,6 @@ import de.quinscape.exceed.model.Layout;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.AutoVersionedModel;
-import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.PropertyType;
@@ -16,6 +15,7 @@ import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
@@ -24,7 +24,6 @@ import de.quinscape.exceed.runtime.util.FileExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.Charset;
@@ -69,20 +68,20 @@ public class ModelCompositionService
     private ComponentRegistry componentRegistry;
 
     public void compose(RuntimeApplication runtimeApplication, Map<String, ResourceLocation> resourceLocations,
-                        ApplicationModel applicationModel)
+                        ApplicationModel applicationModel, DomainService domainService)
     {
         for (ResourceLocation resource : resourceLocations.values())
         {
             if (resource.getRelativePath().endsWith(FileExtension.JSON))
             {
-                updateInternal(runtimeApplication, applicationModel, resource.getHighestPriorityResource());
+                updateInternal(runtimeApplication, applicationModel, resource.getHighestPriorityResource(), domainService);
             }
         }
     }
 
 
     public TopLevelModel update(RuntimeApplication runtimeApplication, ApplicationModel applicationModel, AppResource
-        resource)
+        resource, DomainService domainService)
     {
         String path = resource.getRelativePath();
 
@@ -91,7 +90,7 @@ public class ModelCompositionService
             throw new IllegalArgumentException(resource + " is not a JSON resource");
         }
 
-        TopLevelModel topLevelModel = updateInternal(runtimeApplication, applicationModel, resource);
+        TopLevelModel topLevelModel = updateInternal(runtimeApplication, applicationModel, resource, domainService);
 
         if (topLevelModel instanceof View)
         {
@@ -103,7 +102,7 @@ public class ModelCompositionService
 
 
     private TopLevelModel updateInternal(RuntimeApplication runtimeApplication, ApplicationModel applicationModel,
-                                         AppResource resource)
+                                         AppResource resource, DomainService domainService)
     {
         String path = resource.getRelativePath();
         String json = new String(resource.read(), UTF8);
@@ -145,7 +144,7 @@ public class ModelCompositionService
                     log.debug("Reading {} as DomainType", path);
 
                     DomainType domainType = create(DomainType.class, json, resource);
-                    domainType.setDomainService(runtimeApplication.getDomainService());
+                    domainType.setDomainService(domainService);
                     applicationModel.addDomainType(domainType.getName(), domainType);
                     return domainType;
                 }

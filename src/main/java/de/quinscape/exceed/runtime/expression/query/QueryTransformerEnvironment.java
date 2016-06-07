@@ -44,7 +44,7 @@ public class QueryTransformerEnvironment
     public Object resolveIdentifier(String name)
     {
 
-        DomainType domainType = runtimeContext.getRuntimeApplication().getDomainService().getDomainType(name);
+        DomainType domainType = runtimeContext.getDomainService().getDomainType(name);
         if (domainType == null)
         {
             throw new QueryTransformationException("Unknown domain type '" + name + "'");

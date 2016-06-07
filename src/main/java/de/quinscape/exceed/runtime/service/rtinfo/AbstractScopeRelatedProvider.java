@@ -58,7 +58,7 @@ public abstract class AbstractScopeRelatedProvider
 
         private Set<ScopeReference> findReferences(RuntimeContext runtimeContext)
         {
-            StaticFunctionReferences staticFunctionReferences = runtimeContext.getRuntimeApplication().getStaticFunctionReferences();
+            StaticFunctionReferences staticFunctionReferences = runtimeContext.getRuntimeApplication().getApplicationModel().getStaticFunctionReferences();
             if (staticFunctionReferences == null)
             {
                 throw new IllegalStateException("No static function references provided");

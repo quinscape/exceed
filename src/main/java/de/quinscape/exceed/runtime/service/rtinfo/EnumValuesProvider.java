@@ -38,6 +38,6 @@ public class EnumValuesProvider
             return null;
         }
 
-        return runtimeContext.getRuntimeApplication().getDomainService().getEnums();
+        return runtimeContext.getDomainService().getEnums();
     }
 }

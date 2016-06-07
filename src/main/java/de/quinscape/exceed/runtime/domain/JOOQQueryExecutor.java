@@ -149,7 +149,7 @@ public class JOOQQueryExecutor
             }
         }
 
-        List<DomainObject> rows = query.fetch(new QueryMapper(runtimeContext.getRuntimeApplication().getDomainService(), queryDefinition));
+        List<DomainObject> rows = query.fetch(new QueryMapper(runtimeContext.getDomainService(), queryDefinition));
 
         int rowCount;
         if (pagedQuery)

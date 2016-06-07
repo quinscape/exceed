@@ -1,7 +1,9 @@
 package de.quinscape.exceed.runtime;
 
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 
@@ -26,20 +28,23 @@ public class RuntimeContext
 
     private final ScopedContextChain scopedContextChain;
 
+    private final DomainService domainService;
+
     private View view;
 
     private Map<String, Object> variables;
 
     private String routingTemplate;
 
-
     public RuntimeContext(RuntimeApplication runtimeApplication,
-                          String path, Translator translator, Locale locale, ScopedContextChain scopedContextChain)
+                          String path, Translator translator, Locale locale, ScopedContextChain scopedContextChain,
+                          DomainService domainService)
     {
         this.path = path;
         this.runtimeApplication = runtimeApplication;
         this.translator = translator;
         this.locale = locale;
+        this.domainService = domainService;
         this.scopedContextChain = scopedContextChain != null ? scopedContextChain : new ScopedContextChain(Collections.emptyList());
     }
 
@@ -126,5 +131,17 @@ public class RuntimeContext
     public void setVariable(String stateId, String id)
     {
         this.variables.put(stateId, id);
+    }
+
+
+    public DomainService getDomainService()
+    {
+        return domainService;
+    }
+
+
+    public ApplicationModel getApplicationModel()
+    {
+        return runtimeApplication.getApplicationModel();
     }
 }

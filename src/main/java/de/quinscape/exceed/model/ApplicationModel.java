@@ -7,6 +7,7 @@ import de.quinscape.exceed.model.domain.PropertyType;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.model.ModelNotFoundException;
 import de.quinscape.exceed.runtime.scope.SessionContext;
 import org.svenson.JSONProperty;
@@ -55,6 +56,8 @@ public class ApplicationModel
     private ContextModel applicationContextModel;
 
     private ContextModel sessionContextModel;
+
+    private StaticFunctionReferences staticFunctionReferences;
 
 
     public ApplicationModel()
@@ -322,5 +325,17 @@ public class ApplicationModel
     public void setSessionContext(ContextModel sessionContext)
     {
         this.sessionContextModel = sessionContext;
+    }
+
+
+    public void setStaticFunctionReferences(StaticFunctionReferences staticFunctionReferences)
+    {
+        this.staticFunctionReferences = staticFunctionReferences;
+    }
+
+
+    public StaticFunctionReferences getStaticFunctionReferences()
+    {
+        return staticFunctionReferences;
     }
 }

@@ -68,7 +68,7 @@ public class ScopedValuesProvider
                     ScopedPropertyModel scopedPropertyModel = (ScopedPropertyModel) reference.getModel();
 
 
-                    PropertyConverter converter = runtimeContext.getRuntimeApplication().getDomainService()
+                    PropertyConverter converter = runtimeContext.getDomainService()
                         .getPropertyConverter(scopedPropertyModel.getType());
                     value = converter.convertToJSON(runtimeContext, value);
                 }

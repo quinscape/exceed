@@ -14,6 +14,7 @@ import de.quinscape.exceed.model.view.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.ComponentModelBuilder;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.editor.completion.AceCompletion;
 import de.quinscape.exceed.runtime.editor.completion.CompletionType;
@@ -41,10 +42,10 @@ public class PropCompleteOperations
     @Operation
     public List<AceCompletion> domainType(ExpressionContext<PropCompleteEnvironment> ctx)
     {
-        RuntimeApplication application = ctx.getEnv().getRuntimeContext().getRuntimeApplication();
+        final RuntimeContext runtimeContext = ctx.getEnv().getRuntimeContext();
 
         List<AceCompletion> suggestions = new ArrayList<>();
-        for (String domainType : application.getDomainService().getDomainTypeNames())
+        for (String domainType : runtimeContext.getDomainService().getDomainTypeNames())
         {
             suggestions.add(new AceCompletion(CompletionType.PROP, domainType, "DomainType", null));
 

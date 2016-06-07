@@ -1,6 +1,5 @@
 package de.quinscape.exceed.runtime.application;
 
-import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
@@ -22,9 +21,7 @@ import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.component.DataProviderPreparationException;
 import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
-import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
-import de.quinscape.exceed.runtime.domain.GenericDomainObject;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.process.ProcessExecutionState;
 import de.quinscape.exceed.runtime.resource.AppResource;
@@ -46,22 +43,18 @@ import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.service.StyleService;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
-import de.quinscape.exceed.runtime.util.DomainUtil;
 import de.quinscape.exceed.runtime.util.FileExtension;
 import de.quinscape.exceed.runtime.util.LocationUtil;
 import de.quinscape.exceed.runtime.util.RequestUtil;
 import de.quinscape.exceed.runtime.view.ComponentData;
 import de.quinscape.exceed.runtime.view.ViewData;
 import de.quinscape.exceed.runtime.view.ViewDataService;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.ModelMap;
-import org.springframework.util.StringUtils;
 import org.svenson.JSON;
 import org.svenson.JSONParseException;
 import org.svenson.JSONParser;
-import org.svenson.tokenize.InputStreamSource;
 import org.svenson.util.JSONBuilder;
 
 import javax.servlet.ServletContext;
@@ -141,9 +134,6 @@ public class DefaultRuntimeApplication
 
     private Model changeModel = null;
 
-    private StaticFunctionReferences staticFunctionReferences;
-
-
     public DefaultRuntimeApplication(
         ServletContext servletContext,
         ViewDataService viewDataService,
@@ -179,18 +169,18 @@ public class DefaultRuntimeApplication
         applicationModel.setName(appName);
 
         this.domainService = domainService;
-        modelCompositionService.compose(this, resourceLoader.getResourceLocations(), applicationModel);
+        modelCompositionService.compose(this, resourceLoader.getResourceLocations(), applicationModel, domainService);
         domainService.init(this, applicationModel.getSchema());
 
         ContextModel context = applicationModel.getApplicationContext();
 
-        this.applicationContext = scopedContextFactory.createApplicationContext(context, appName, domainService);
+        this.applicationContext = scopedContextFactory.createApplicationContext(context, appName);
         RuntimeContext systemContext = runtimeContextFactory.create(
             this,
             SYSTEM_CONTEXT_PATH,
             Locale.forLanguageTag("en-US"),
-            new ScopedContextChain(Collections.singletonList(applicationContext))
-        );
+            new ScopedContextChain(Collections.singletonList(applicationContext)),
+            domainService);
 
         scopedContextFactory.initializeContext(systemContext, applicationContext);
 
@@ -205,14 +195,10 @@ public class DefaultRuntimeApplication
             }
         }
 
-        loadUsageData(resourceLoader.getResourceLocation(TRACK_USAGE_DATA_RESOURCE).getHighestPriorityResource());
-    }
-
-
-    @Override
-    public ServletContext getServletContext()
-    {
-        return servletContext;
+        final StaticFunctionReferences staticFnRefs = loadUsageData(
+            resourceLoader.getResourceLocation(TRACK_USAGE_DATA_RESOURCE).getHighestPriorityResource()
+        );
+        this.applicationModel.setStaticFunctionReferences(staticFnRefs);
     }
 
 
@@ -234,13 +220,16 @@ public class DefaultRuntimeApplication
                 applicationModel.getName(),
                 applicationModel.getSessionContext()
             );
-            RuntimeContext runtimeContext = runtimeContextFactory.create(this, inAppURI, request.getLocale(),
+            RuntimeContext runtimeContext = runtimeContextFactory.create(
+                this, inAppURI,
+                request.getLocale(),
                 new ScopedContextChain(
                     Arrays.asList(
                         applicationContext,
                         sessionContext
                     )
-                ));
+                ),
+                domainService);
 
             RuntimeContextHolder.register(runtimeContext);
             scopedContextFactory.initializeContext(runtimeContext, sessionContext);
@@ -278,13 +267,7 @@ public class DefaultRuntimeApplication
                     if (transition != null)
                     {
                         log.debug("Process state {}, transition = {}", stateId, transition);
-                        String json = RequestUtil.readRequestBody(request);
-                        DomainObject partialDomainObjectContext = null;
-                        if (StringUtils.hasText(json))
-                        {
-                            partialDomainObjectContext = getTransitionDomainContext(runtimeContext, json);
-                        }
-                        state = processService.resume(runtimeContext, initialState, transition, partialDomainObjectContext);
+                        state = processService.resume(runtimeContext, initialState, transition, RequestUtil.readRequestBody(request));
                         state.register(request.getSession());
 
                         runtimeContext.setVariable(STATE_ID_PARAMETER, state.getId());
@@ -715,11 +698,12 @@ public class DefaultRuntimeApplication
             }
             else if (modulePath.equals(TRACK_USAGE_DATA_RESOURCE))
             {
-                loadUsageData(topResource);
+                final StaticFunctionReferences staticFnRefs = loadUsageData(topResource);
+                this.applicationModel.setStaticFunctionReferences(staticFnRefs);
             }
             else if (modulePath.endsWith(FileExtension.JSON))
             {
-                TopLevelModel model = modelCompositionService.update(this, applicationModel, topResource);
+                TopLevelModel model = modelCompositionService.update(this, applicationModel, topResource, domainService);
                 if (model != null)
                 {
                     notifyChange(model);
@@ -734,7 +718,7 @@ public class DefaultRuntimeApplication
     }
 
 
-    private void loadUsageData(AppResource resource)
+    private StaticFunctionReferences loadUsageData(AppResource resource)
     {
         if (resource.exists())
         {
@@ -742,9 +726,10 @@ public class DefaultRuntimeApplication
             if (json.length() > 0)
             {
                 log.info("Load function usage data");
-                staticFunctionReferences = JSONParser.defaultJSONParser().parse(StaticFunctionReferences.class, json);
+                return JSONParser.defaultJSONParser().parse(StaticFunctionReferences.class, json);
             }
         }
+        return null;
     }
 
 
@@ -794,13 +779,6 @@ public class DefaultRuntimeApplication
     }
 
 
-    @Override
-    public DomainService getDomainService()
-    {
-        return domainService;
-    }
-
-
     public void notifyShutdown()
     {
         notifyChange(Shutdown.INSTANCE);
@@ -832,12 +810,6 @@ public class DefaultRuntimeApplication
     public ApplicationContext getApplicationContext()
     {
         return applicationContext;
-    }
-
-
-    public StaticFunctionReferences getStaticFunctionReferences()
-    {
-        return staticFunctionReferences;
     }
 }
 
