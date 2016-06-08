@@ -24,8 +24,8 @@ public class DateConverter
             return null;
         }
 
-        LocalDateTime instant = LocalDateTime.parse(value);
-        return new Date(instant.toLocalDate().toEpochDay() * MILLIS_PER_DAY);
+        LocalDate data = LocalDate.parse(value);
+        return new Date(data.toEpochDay() * MILLIS_PER_DAY);
     }
 
     @Override

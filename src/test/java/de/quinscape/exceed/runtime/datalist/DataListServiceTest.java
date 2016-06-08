@@ -63,7 +63,7 @@ public class DataListServiceTest
         String json = dataListService.toJSON(dataList);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
-        assertThat(json, containsString("\"created\":\"1970-01-01T00:00Z\""));
+        assertThat(json, containsString("\"created\":\"1970-01-01\""));
 
         //log.info(JSON.formatJSON(json));
     }
@@ -98,7 +98,7 @@ public class DataListServiceTest
         String json = dataListService.toJSON(dataList);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
-        assertThat(json, containsString("\"created\":\"1970-01-02T00:00Z\""));
+        assertThat(json, containsString("\"created\":\"1970-01-02\""));
         assertThat(json, containsString("\"barCreated\":\"1970-01-03T00:00:00Z\""));
 
         //log.info(JSON.formatJSON(json));
@@ -143,10 +143,10 @@ public class DataListServiceTest
         String json = dataListService.toJSON(dataList);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
-        assertThat(json, containsString("\"created\":\"1970-01-02T00:00Z\""));
+        assertThat(json, containsString("\"created\":\"1970-01-02\""));
         assertThat(json, containsString("\"bars\":["));
-        assertThat(json, containsString("\"created\":\"1970-01-04T00:00Z\""));
-        assertThat(json, containsString("\"created\":\"1970-01-05T00:00Z\""));
+        assertThat(json, containsString("\"created\":\"1970-01-04\""));
+        assertThat(json, containsString("\"created\":\"1970-01-05\""));
 
         //log.info(JSON.formatJSON(json));
     }
@@ -183,8 +183,8 @@ public class DataListServiceTest
         String json = dataListService.toJSON(dataList);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
-        assertThat(json, containsString("\"created\":\"1970-01-02T00:00Z\""));
-        assertThat(json, containsString("[\"1970-01-06T00:00Z\",\"1970-01-07T00:00Z\"]"));
+        assertThat(json, containsString("\"created\":\"1970-01-02\""));
+        assertThat(json, containsString("[\"1970-01-06\",\"1970-01-07\"]"));
 
 
         //log.info(JSON.formatJSON(json));
@@ -229,10 +229,10 @@ public class DataListServiceTest
         String json = dataListService.toJSON(dataList);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
-        assertThat(json, containsString("\"created\":\"1970-01-02T00:00Z\""));
+        assertThat(json, containsString("\"created\":\"1970-01-02\""));
         assertThat(json, containsString("\"bars\":{"));
-        assertThat(json, containsString("\"Bar1\":{\"created\":\"1970-01-08T00:00Z\""));
-        assertThat(json, containsString("\"Bar2\":{\"created\":\"1970-01-09T00:00Z\""));
+        assertThat(json, containsString("\"Bar1\":{\"created\":\"1970-01-08\""));
+        assertThat(json, containsString("\"Bar2\":{\"created\":\"1970-01-09\""));
 
         //log.info(JSON.formatJSON(json));
     }
@@ -269,9 +269,9 @@ public class DataListServiceTest
         String json = dataListService.toJSON(dataList);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
-        assertThat(json, containsString("\"created\":\"1970-01-02T00:00Z\""));
-        assertThat(json, containsString("\"Event1\":\"1970-01-08T00:00Z\""));
-        assertThat(json, containsString("\"Event2\":\"1970-01-09T00:00Z\""));
+        assertThat(json, containsString("\"created\":\"1970-01-02\""));
+        assertThat(json, containsString("\"Event1\":\"1970-01-08\""));
+        assertThat(json, containsString("\"Event2\":\"1970-01-09\""));
 
 
         //log.info(JSON.formatJSON(json));
