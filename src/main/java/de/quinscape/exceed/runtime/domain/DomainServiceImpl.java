@@ -34,7 +34,6 @@ public class DomainServiceImpl
 {
     private final static Logger log = LoggerFactory.getLogger(DomainServiceImpl.class);
 
-    private final DataListService dataListService;
 
     private final DSLContext dslContext;
 
@@ -48,10 +47,16 @@ public class DomainServiceImpl
 
     private RuntimeApplication runtimeApplication;
 
-    public DomainServiceImpl(DataListService dataListService, DSLContext dslContext, NamingStrategy namingStrategy,
-                             Map<String, PropertyConverter> converters)
+    private DataListService dataListService;
+
+
+    public DomainServiceImpl(
+        DSLContext dslContext, 
+        NamingStrategy namingStrategy,
+        Map<String, PropertyConverter> converters,
+        StorageConfigurationRepository storageConfigurationRepository
+    )
     {
-        this.dataListService = dataListService;
         this.dslContext = dslContext;
         this.namingStrategy = namingStrategy;
         this.converters = converters;
@@ -74,6 +79,9 @@ public class DomainServiceImpl
     {
         this.runtimeApplication = runtimeApplication;
         this.schema = schema;
+
+        this.dataListService = new DataListService(runtimeApplication.getApplicationModel().getDomainTypes(),
+            converters);
     }
 
 
@@ -114,10 +122,11 @@ public class DomainServiceImpl
 
 
     @Override
-    public Set<String> getDomainTypeNames()
+    public Map<String, DomainType> getDomainTypes()
     {
-        return Collections.unmodifiableSet(runtimeApplication.getApplicationModel().getDomainTypes().keySet());
+        return runtimeApplication.getApplicationModel().getDomainTypes();
     }
+
 
     private class DomainFactory
         implements org.svenson.ObjectFactory<GenericDomainObject>

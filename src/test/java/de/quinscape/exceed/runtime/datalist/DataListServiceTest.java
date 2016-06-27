@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.runtime.component.ColumnDescriptor;
 import de.quinscape.exceed.runtime.component.DataList;
 import de.quinscape.exceed.runtime.domain.property.DateConverter;
 import de.quinscape.exceed.runtime.domain.property.PlainTextConverter;
@@ -12,18 +11,16 @@ import de.quinscape.exceed.runtime.domain.property.TimestampConverter;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.svenson.JSON;
 
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 public class DataListServiceTest
 {

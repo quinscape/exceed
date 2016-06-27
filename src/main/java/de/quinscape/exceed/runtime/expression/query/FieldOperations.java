@@ -5,7 +5,6 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-import javax.servlet.Registration;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;

@@ -1,43 +1,22 @@
 {
-    "types": {
-        "Foo": {
-            "name" : "Foo",
-            "properties": [
-                {
-                    "name": "name",
-                    "type": "PlainText",
-                    "data" : 1
-                },
-                {
-                    "name": "num",
-                    "type": "Integer",
-                    "data" : 2
-                }
-            ]
-        },
-        "Baz": {
-            "name" : "Baz",
-            "properties": [
-                {
-                    "name": "num",
-                    "type": "Integer",
-                    "data" : 8
-                }
-            ]
-        }
-    },
     "columns": {
         "name": {
-            "type": "Foo",
-            "name": "name"
+            "name": "name",
+            "type": "PlainText",
+            "domainType" : "Foo",
+            "data": 1
         },
         "num": {
-            "type": "Foo",
-            "name": "num"
+            "name": "num",
+            "type": "PlainText",
+            "domainType" : "Foo",
+            "data": 2
         },
         "bnum": {
-            "type": "Baz",
-            "name": "num"
+            "name": "num",
+            "type": "Integer",
+            "domainType" : "Baz",
+            "data": 8
         }
     },
     "rows": [

@@ -1,59 +1,48 @@
-var immutableUpdate = require("react-addons-update");
-var assign = require("object.assign").getPolyfill();
+const assign = require("object.assign").getPolyfill();
+const DataListCursor = require("./data-list-cursor");
 
-const ROOT_NAME = "[DataListRoot]";
+const util = require("./datalist-util");
+const keys = require("./keys");
 
-function createPropertyLookup(types)
-{
-    var propertyLookup = {};
-
-    for (var typeName in types)
-    {
-        if (types.hasOwnProperty(typeName))
-        {
-            var type = types[typeName];
-            var properties = type.properties;
-            for (var i = 0; i < properties.length; i++)
-            {
-                var property = properties[i];
-                propertyLookup[typeName + "." + property.name] = property;
-            }
-        }
-    }
-
-    return propertyLookup;
-}
 
 /**
  * Encapsulates a data-list structure and provides immutable update function on it.
  *
- * @param dataList
- * @param onChange
+ * @param types         map of domain types for the application
+ * @param dataList      raw data list JSON or DataList instance
+ * @param onChange      change callback
  * @constructor
  */
-function DataList(dataList, onChange)
+function DataList(types, dataList, onChange)
 {
-    this.types = dataList.types;
     this.columns = dataList.columns;
     this.rows = dataList.rows;
     this.rowCount = dataList.rowCount;
 
     if (dataList instanceof DataList)
     {
+        this.types = dataList.types;
         this.onChange = onChange || dataList.onChange;
-        this.propertyLookup = dataList.propertyLookup;
     }
     else
     {
+        this.types = types;
         this.onChange = onChange;
-        this.propertyLookup = createPropertyLookup(this.types);
     }
 }
+
+DataList.prototype.update = function (rawList)
+{
+    this.columns = rawList.columns;
+    this.rows = rawList.rows;
+    this.rowCount = rawList.rowCount;
+
+    this.onChange.call(this, rawList.rows, null);
+};
 
 DataList.prototype.getRaw = function ()
 {
     return {
-        types: this.types,
         columns : this.columns,
         rows: this.rows,
         rowCount: this.rowCount
@@ -61,38 +50,28 @@ DataList.prototype.getRaw = function ()
 };
 
 
-DataList.prototype.lookupProperty = function (key)
-{
-
-    var property = this.propertyLookup[key];
-    if (!property)
-    {
-        throw new Error("Column '" + key + "' not found in data list");
-    }
-
-    return property;
-};
-
 DataList.prototype.getColumnType = function (column)
 {
-    var e = this.columns[column];
-    if (!e)
+
+    var property = this.columns[column];
+    if (!property)
     {
-        throw new Error("No column '" + column + "' in dataList columns ( '" + JSON.stringify(this.columns) + " )");
+        throw new Error("No column '" + column + "' in dataList columns ( '" + JSON.stringify(keys(this.columns)) + " )");
     }
-    return this.lookupProperty(e.type + "." + e.name);
+    return property;
+
 };
 
 DataList.prototype.getCursor = function (path)
 {
-    validatePath(path);
+    util.validatePath(path);
 
     if (typeof path[0] !== "number")
     {
         throw new Error("First key path entry must be a numeric row index");
     }
 
-    var type = ROOT_NAME, typeParam = null, isProperty = false;
+    var type = util.ROOT_NAME, typeParam = null, isProperty = false;
 
     if (path.length > 1)
     {
@@ -128,7 +107,7 @@ DataList.prototype.getCursor = function (path)
 
 DataList.prototype.followTypeDefinitionPath = function(path, startIndex, type, typeParam, resolve)
 {
-    var key, lookupKey, property = null, parent;
+    var key, property = null, parent;
 
     for (var i = startIndex; i < path.length; i++)
     {
@@ -165,11 +144,10 @@ DataList.prototype.followTypeDefinitionPath = function(path, startIndex, type, t
                 property = null;
             }
 
-            lookupKey = type + "." + key;
-            property = this.propertyLookup[lookupKey];
+            property = this.getPropertyModel(type, key);
             if (!property)
             {
-                throw new Error("Cannot find property for '" + lookupKey + "'");
+                throw new Error("Cannot find property for '" + type + "." + key + "'");
             }
 
             parent = type;
@@ -207,273 +185,27 @@ DataList.prototype.followTypeDefinitionPath = function(path, startIndex, type, t
     }
 };
 
-function walk(obj, path)
-{
-    //console.log("WALK", obj, path);
-
-    for (var i = 0; i < path.length; i++)
-    {
-        //console.log("W", obj, path[i]);
-        obj = obj[path[i]];
-    }
-    return obj;
-}
-
 DataList.prototype.resolveProperty = function (path, startIndex, type, typeParam)
 {
     return this.followTypeDefinitionPath(path, startIndex, type, typeParam, true);
 };
 
-function validatePath(path)
+DataList.prototype.getPropertyModel = function(type, name)
 {
-    if (!path || typeof path !== "object" || !path.length)
+    var domainType = this.types[type];
+    var properties = domainType && domainType.properties;
+    if (properties)
     {
-        throw new Error("Invalid path: "+ JSON.stringify(path));
-    }
-}
-
-
-function DataListCursor(dataList, path, type, typeParam, isProperty)
-{
-    validatePath(path);
-
-    this.value = walk(dataList.rows, path);
-    this.dataList = dataList;
-    this.type = type;
-    this.typeParam = typeParam;
-    this.path = path;
-    this.property = isProperty;
-}
-
-DataListCursor.prototype.isProperty = function ()
-{
-    return this.property;
-};
-
-DataListCursor.prototype.get = function (path)
-{
-    path = path && path.length ? this.path.concat(path) : this.path;
-
-    var obj = this.dataList.rows;
-
-    for (var i = 0; i < path.length; i++)
-    {
-        obj = obj[path[i]];
-    }
-    return obj;
-};
-
-// Create an immutable update method for every command supported by "react-addons-update"
-(function (cursorProto)
-{
-    var operations = [
-        "push",
-        "unshift",
-        "splice",
-        "set",
-        "merge",
-        "apply"
-    ];
-
-    function spec(path, op, value)
-    {
-        var root = {};
-        var spec = root;
-
-        for (var i = 0; i < path.length; i++)
+        for (var i = 0; i < properties.length; i++)
         {
-            spec = spec[path[i]] = {};
-        }
-
-        spec[op] = value;
-
-        //console.log("SPEC", JSON.stringify(root));
-
-        return root;
-    }
-
-    function createOperand(op)
-    {
-        return function (path, value)
-        {
-            path = path && path.length ? this.path.concat(path) : this.path;
-            this.update(spec(
-                path,
-                "$" + op,
-                value
-            ), path);
-        }
-    }
-
-    for (var i = 0; i < operations.length; i++)
-    {
-        var op = operations[i];
-        cursorProto[op] = createOperand(op);
-    }
-
-})(DataListCursor.prototype);
-
-DataListCursor.prototype.update = function (spec, path)
-{
-    var newRows = immutableUpdate(this.dataList.rows, spec);
-    this.dataList.onChange.call(this, newRows, path);
-    this.dataList.rows = newRows;
-};
-
-DataListCursor.prototype.pop = function (howMany)
-{
-    return this.dataList.getCursor(this.path.slice(0, this.path.length - ( howMany || 1)));
-};
-
-DataListCursor.prototype.getCursor = function (path)
-{
-    return this.dataList.getCursor(this.path.concat(path));
-};
-
-/**
- * Extracts a domain object from the location the cursor currently points to. This can be either a domain object or
- * a data list root with mixed types.
- *
- * The method will fail if the cursor currently points to a property.
- *
- * @param type
- * @returns {*}
- */
-DataListCursor.prototype.getDomainObject = function (type)
-{
-    var object;
-
-    var rowIndex = this.path[0];
-    var dataList = this.dataList;
-
-    var row = dataList.rows[rowIndex];
-
-    if (this.path.length == 1)
-    {
-        object = {};
-
-        var cols = dataList.columns;
-        if (!cols)
-        {
-            throw new Error("No cols");
-        }
-        var checkImplicit = false;
-
-        for (var name in cols)
-        {
-            if (cols.hasOwnProperty(name))
+            var prop = properties[i];
+            if (prop.name === name)
             {
-                var entry = cols[name];
-
-                if (!type)
-                {
-                    type = entry.type;
-                    checkImplicit = true;
-                }
-
-                if (entry.type === type)
-                {
-                    object[entry.name] = row[name];
-                }
-                else if (checkImplicit)
-                {
-                    throw new Error("Implicit type detection failed: DataList contains '" + type + "' and '" + entry.type + "' objects");
-                }
+                return prop;
             }
         }
-        var typeDef = dataList.types[type];
-        object._type = typeDef.name;
-        return object;
     }
-    else
-    {
-        var propType = this.getPropertyType();
-        if (propType.type === "List")
-        {
-            throw new Error("Cannot extract single domain object from List");
-        }
-        else if (propType.type === "Map")
-        {
-            throw new Error("Cannot extract single domain object from Map");
-        }
-        else if (propType.type === "DomainType")
-        {
-            object = assign({
-                _type: propType.typeParam
-                },
-                this.value
-            );
-        }
-        else
-        {
-            object = assign({
-                _type: propType.type
-            }, this.value);
-        }
-
-        if (type && type !== object._type)
-        {
-            throw new Error("Type parameter requests '" + type + "' but cursor points to '" + object._type + "'");
-        }
-
-        return object;
-    }
+    return null;
 };
-
-
-DataListCursor.prototype.getPropertyType = function (path)
-{
-    var property;
-
-    var type = this.type;
-    var typeParam = this.typeParam;
-
-    if (!path || !path.length)
-    {
-        type = ROOT_NAME;
-        typeParam = null;
-        path = this.path.slice(1);
-    }
-
-    if (type === ROOT_NAME)
-    {
-        var column = path[0];
-        var e = this.dataList.columns[column];
-        if (!e)
-        {
-            throw new Error("No column '" + column + "' in dataList columns ( '" + JSON.stringify(this.columns) + " )");
-        }
-        property =  this.dataList.lookupProperty(e.type + "." + e.name);
-
-        if (path.length == 1)
-        {
-            return assign({
-                parent: e.type,
-                dataList: this.dataList
-            }, property);
-        }
-
-        //console.log("property", property, key);
-        type = property.type;
-        typeParam = property.typeParam;
-    }
-
-    //console.log("getPropertyType start", type, typeParam)
-    return this.dataList.resolveProperty(path, 1, type, typeParam);
-
-};
-
-DataListCursor.prototype.valueOf = function ()
-{
-    return this.value;
-};
-
-DataListCursor.prototype.toString = function ()
-{
-    return String(this.value);
-};
-
-
-DataList.Cursor = DataListCursor;
 
 module.exports = DataList;

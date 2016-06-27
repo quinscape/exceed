@@ -5,7 +5,196 @@ var changeSpy = sinon.spy();
 
 var DataList = require("../../../../src/main/js/util/data-list");
 
-var dl = new DataList(require("./test-lists/data-list.json"), function (newData, path)
+const TYPES = {
+    "Foo": {
+        "properties": [
+            {
+                "name": "name",
+                "type": "PlainText",
+                "data" : 1
+            },
+            {
+                "name": "num",
+                "type": "Integer",
+                "data" : 2
+            },
+            {
+                "name": "embedded",
+                "type": "DomainType",
+                "typeParam": "Embedded",
+                "data" : 3
+            },
+            {
+                "name": "bars",
+                "type": "List",
+                "typeParam": "Bar",
+                "data" : 4
+            },
+            {
+                "name": "bazes",
+                "type": "Map",
+                "typeParam": "Baz",
+                "data" : 5
+            }
+        ]
+    },
+    "Embedded": {
+        "properties": [
+            {
+                "name": "name",
+                "type": "PlainText",
+                "data" : 6
+            }
+        ]
+    },
+    "Bar": {
+        "properties": [
+            {
+                "name": "name",
+                "type": "PlainText",
+                "data" : 7
+            }
+        ]
+    },
+    "Baz": {
+        "properties": [
+            {
+                "name": "num",
+                "type": "Integer",
+                "data" : 8
+            }
+        ]
+    },
+    "Joined": {
+        "properties": [
+            {
+                "name": "name",
+                "type": "PlainText",
+                "data" : 9
+            }
+        ]
+    }
+};
+
+const SIMPLE_LIST_TYPES = {
+    "Foo": {
+        "name" : "Foo",
+        "properties": [
+            {
+                "name": "name",
+                "type": "PlainText",
+                "data" : 1
+            },
+            {
+                "name": "num",
+                "type": "Integer",
+                "data" : 2
+            }
+        ]
+    }
+};
+
+const JOINED_LIST_TYPES = {
+    "Foo": {
+        "name" : "Foo",
+        "properties": [
+            {
+                "name": "name",
+                "type": "PlainText",
+                "data" : 1
+            },
+            {
+                "name": "num",
+                "type": "Integer",
+                "data" : 2
+            }
+        ]
+    },
+    "Baz": {
+        "name" : "Baz",
+        "properties": [
+            {
+                "name": "num",
+                "type": "Integer",
+                "data" : 8
+            }
+        ]
+    }
+};
+
+
+const NESTED_TYPES = {
+    "Foo": {
+        "properties": [
+            {
+                "name": "name",
+                "type": "PlainText",
+                "data" : 1
+            },
+            {
+                "name": "num",
+                "type": "Integer",
+                "data" : 2
+            },
+            {
+                "name": "embedded",
+                "type": "DomainType",
+                "typeParam": "Embedded",
+                "data" : 3
+            },
+            {
+                "name": "bars",
+                "type": "List",
+                "typeParam": "Bar",
+                "data" : 4
+            },
+            {
+                "name": "bazes",
+                "type": "Map",
+                "typeParam": "Baz",
+                "data" : 5
+            }
+        ]
+    },
+    "Embedded": {
+        "properties": [
+            {
+                "name": "name",
+                "type": "PlainText",
+                "data" : 6
+            }
+        ]
+    },
+    "Bar": {
+        "properties": [
+            {
+                "name": "name",
+                "type": "PlainText",
+                "data" : 7
+            }
+        ]
+    },
+    "Baz": {
+        "properties": [
+            {
+                "name": "num",
+                "type": "Integer",
+                "data" : 8
+            }
+        ]
+    },
+    "Joined": {
+        "properties": [
+            {
+                "name": "name",
+                "type": "PlainText",
+                "data" : 9
+            }
+        ]
+    }
+};
+
+var dl = new DataList(TYPES, require("./test-lists/data-list.json"), function (newData, path)
 {
     //console.log("CHANGED", newData, path);
 
@@ -22,7 +211,8 @@ describe("DataList", function ()
 
         cursor = dl.getCursor([0]);
         assert(cursor.type === "[DataListRoot]");
-        assert(cursor.value.name === "TestFoo");
+        assert(cursor.get().name === "TestFoo");
+        assert(cursor.get(['name']) === "TestFoo");
         assert(!cursor.isProperty());
 
         cursor.set(["name"], "AnotherFoo");
@@ -30,6 +220,8 @@ describe("DataList", function ()
         newRows = call.args[0];
         assert(newRows[0].name === "AnotherFoo");
         assert.deepEqual(call.args[1], [0, "name"]);
+
+        assert(cursor.get(["embedded", "name"]) === "EmbeddedObject");
 
         cursor.set(["embedded", "name"], "Changed Embedded");
         call = changeSpy.getCall(1);
@@ -50,17 +242,17 @@ describe("DataList", function ()
 
         cursor = cursor.getCursor(["embedded"]);
         assert(cursor.type === "Embedded");
-        assert(cursor.value.name === "Changed Embedded");
+        assert(cursor.get().name === "Changed Embedded");
         assert(!cursor.isProperty());
 
         cursor = cursor.pop();
-        assert(cursor.value.name === "AnotherFoo");
+        assert(cursor.get().name === "AnotherFoo");
 
         cursor = dl.getCursor([0, "bars", 0]);
-        assert(cursor.value.name === "Bar 1");
+        assert(cursor.get().name === "Bar 1");
         assert(!cursor.isProperty());
         cursor = cursor.pop(2);
-        assert(cursor.value.name === "AnotherFoo");
+        assert(cursor.get().name === "AnotherFoo");
 
 
         // property cursor
@@ -68,7 +260,7 @@ describe("DataList", function ()
 
         //console.log("PROPERTY CURSOR", cursor);
 
-        assert(cursor.value === "AnotherFoo");
+        assert(cursor.get() === "AnotherFoo");
         assert(cursor.isProperty());
 
         cursor.set(null, "YetAnotherFoo");
@@ -188,7 +380,8 @@ describe("DataList", function ()
 
         it("extracts implicitly typed domain objects", function ()
         {
-            var simpleList = new DataList(require("./test-lists/simple-list.json"), null);
+
+            var simpleList = new DataList(SIMPLE_LIST_TYPES, require("./test-lists/simple-list.json"), null);
 
             var obj = simpleList.getCursor([1]).getDomainObject();
 
@@ -199,7 +392,7 @@ describe("DataList", function ()
 
         it("extracts typed domain objects", function ()
         {
-            var joinedList = new DataList(require("./test-lists/joined-list.json"), null);
+            var joinedList = new DataList(JOINED_LIST_TYPES, require("./test-lists/joined-list.json"), null);
 
             var obj = joinedList.getCursor([0]).getDomainObject("Foo");
 
@@ -226,47 +419,47 @@ describe("DataList", function ()
 
         it("extracts nested domain objects", function ()
         {
-            var simpleList = new DataList(require("./test-lists/nested.json"), null);
 
-            var obj = simpleList.getCursor([0, "embedded"]).getDomainObject();
+            var nestedList = new DataList(NESTED_TYPES, require("./test-lists/nested.json"), null);
+
+            var obj = nestedList.getCursor([0, "embedded"]).getDomainObject();
 
             assert(obj._type === "Embedded");
             assert(obj.name === "EmbeddedObject");
 
-            obj = simpleList.getCursor([0, "bars", 1]).getDomainObject();
+            obj = nestedList.getCursor([0, "bars", 1]).getDomainObject();
             assert(obj._type === "Bar");
             assert(obj.name === "Bar 2");
 
-            obj = simpleList.getCursor([0, "bazes", "one"]).getDomainObject();
+            obj = nestedList.getCursor([0, "bazes", "one"]).getDomainObject();
             assert(obj._type === "Baz");
             assert(obj.num === 1);
 
             assert.throws(function ()
             {
-                simpleList.getCursor([0, "bars"]).getDomainObject();
-            }, /Cannot extract single domain object from List/)
+                nestedList.getCursor([0, "bars"]).getDomainObject();
+            }, /Cannot extract single domain object from List/);
 
             assert.throws(function ()
             {
-                simpleList.getCursor([0, "bazes"]).getDomainObject();
+                nestedList.getCursor([0, "bazes"]).getDomainObject();
 
             }, /Cannot extract single domain object from Map/)
 
         });
-    })
+    });
 
     it("can be copied", function ()
     {
-        var simpleList = new DataList(require("./test-lists/nested.json"), null);
+        var simpleList = new DataList(NESTED_TYPES, require("./test-lists/nested.json"), null);
 
         var newChange = function () {};
 
-        var copy = new DataList(simpleList);
-        var copy2 = new DataList(simpleList, newChange);
+        var copy = new DataList(NESTED_TYPES, simpleList);
+        var copy2 = new DataList(null, simpleList, newChange);
 
-        // we expect the property lookup to be the same, saving on initialization costs for copies
-        assert(copy.propertyLookup === simpleList.propertyLookup);
-        assert(copy2.propertyLookup === simpleList.propertyLookup);
+        assert(copy.types === NESTED_TYPES);
+        assert(copy2.types === NESTED_TYPES);
 
         // change callback can be either kept as-is, or changed
         assert(copy.onChange === simpleList.onChange);

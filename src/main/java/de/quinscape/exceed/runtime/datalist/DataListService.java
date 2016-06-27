@@ -3,9 +3,9 @@ package de.quinscape.exceed.runtime.datalist;
 import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
-import de.quinscape.exceed.runtime.component.ColumnDescriptor;
 import de.quinscape.exceed.runtime.component.DataList;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import org.svenson.JSON;
@@ -27,6 +27,8 @@ public class DataListService
 
     private final DataListJSONifier jsonifier;
 
+    private final Map<String, DomainType> domainTypes;
+
     private JSON generator = JSON.defaultJSON();
 
     private JSONParser parser;
@@ -34,8 +36,9 @@ public class DataListService
     private final static JSONBeanUtil util = JSONBeanUtil.defaultUtil();
 
 
-    public DataListService(Map<String, PropertyConverter> propertyConverters)
+    public DataListService(Map<String, DomainType> domainTypes, Map<String, PropertyConverter> propertyConverters)
     {
+        this.domainTypes = domainTypes;
         this.propertyConverters = ImmutableMap.copyOf(propertyConverters);
 
         generator = new JSON();
@@ -46,7 +49,14 @@ public class DataListService
 
     public String toJSON(Object domainObject)
     {
-        return generator.forValue(domainObject);
+        try
+        {
+            return generator.forValue(domainObject);
+        }
+        catch(Exception e)
+        {
+            throw new ExceedRuntimeException("Error generating JSON for " + domainObject, e);
+        }
     }
 
 
@@ -80,7 +90,6 @@ public class DataListService
 
             JSONBuilder b = JSONBuilder.buildObject(generator, sink);
 
-            b.property("types", dataList.getTypes());
             b.property("columns", dataList.getColumns());
             b.arrayProperty("rows");
 
@@ -102,37 +111,43 @@ public class DataListService
 
         private Map<String, PropertyLookup> lookupConverters(DataList dataList)
         {
-            Map<String, PropertyLookup> converters = new HashMap<>();
-            for (Map.Entry<String, ColumnDescriptor> entry : dataList.getColumns().entrySet())
-            {
-                ColumnDescriptor descriptor = entry.getValue();
-                String columnName = descriptor.getName();
 
-                DomainType type = dataList.getTypes().get(descriptor.getType());
+            Map<String, PropertyLookup> converters = new HashMap<>();
+            for (Map.Entry<String, DomainProperty> entry : dataList.getColumns().entrySet())
+            {
+                DomainProperty propertyModel = entry.getValue();
+                String columnName = propertyModel.getName();
 
                 PropertyLookup lookup = null;
 
-                if (type.getPkFields().contains(columnName))
+                final String domainType = propertyModel.getDomainType();
+                if (domainType != null)
                 {
-                    // TODO: non-string PKs
-                    lookup = new PropertyLookup((PropertyConverter) converters.get("UUIDConverter"));
+                    DomainType type = domainTypes.get(domainType);
+
+                    if (type == null)
+                    {
+                        throw new IllegalStateException("No type found for name '" + domainType + "'");
+                    }
+
+                    if (type.getPkFields().contains(columnName))
+                    {
+                        // TODO: non-string PKs
+                        lookup = new PropertyLookup((PropertyConverter) converters.get("UUIDConverter"));
+                    }
+                    else
+                    {
+                        lookup = createLookup(dataList, propertyModel);
+                    }
                 }
                 else
                 {
-                    List<DomainProperty> properties = type.getProperties();
-                    for (DomainProperty property : properties)
-                    {
-                        if (property.getName().equals(columnName))
-                        {
-                            lookup = createLookup(dataList, property);
-                            break;
-                        }
-                    }
+                    lookup = createLookup(dataList, propertyModel);
                 }
 
                 if (lookup == null)
                 {
-                    throw new IllegalStateException(descriptor.getType() + " has no property descriptor for '"
+                    throw new IllegalStateException(propertyModel.getType() + " has no property descriptor for '"
                         + columnName + "'");
                 }
 
@@ -151,7 +166,7 @@ public class DataListService
             {
                 String name = (String) property.getTypeParam();
 
-                DomainType domainType = dataList.getTypes().get(name);
+                DomainType domainType = domainTypes.get(name);
                 if (domainType != null)
                 {
                     lookup = new PropertyLookup(property, null, createSubLookup(dataList, domainType), false);
@@ -273,37 +288,52 @@ public class DataListService
                     {
                         Map<String, Object> map = (Map) value;
 
-                        if (localName != null)
+                        if (map == null)
                         {
-                            b.objectProperty(localName);
-                        }
-                        else
-                        {
-                            b.objectElement();
-                        }
-
-                        for (Map.Entry<String, Object> mapEntry : map.entrySet())
-                        {
-                            String mapKey = mapEntry.getKey();
-                            Object mapValue = mapEntry.getValue();
-
-                            Map<String, PropertyLookup> subLookup = lookup.getSubLookup();
-
-
-                            if (lookup.isPropertyComplexValue())
+                            if (localName != null)
                             {
-                                convertValue(b, runtimeContext, dataList, mapKey, subLookup.get
-                                    (PROPERTY_COMPLEX_NAME), mapValue);
+                                b.includeProperty(localName, "null");
                             }
                             else
                             {
-                                b.objectProperty(mapKey);
-                                convertInnerObject(b, runtimeContext, dataList, mapValue, subLookup);
-                                b.close();
+                                b.includeElement("null");
+                            }
+                        }
+                        else
+                        {
+                            if (localName != null)
+                            {
+                                b.objectProperty(localName);
+                            }
+                            else
+                            {
+                                b.objectElement();
                             }
 
+                            for (Map.Entry<String, Object> mapEntry : map.entrySet())
+                            {
+                                String mapKey = mapEntry.getKey();
+                                Object mapValue = mapEntry.getValue();
+
+                                Map<String, PropertyLookup> subLookup = lookup.getSubLookup();
+
+
+                                if (lookup.isPropertyComplexValue())
+                                {
+                                    convertValue(b, runtimeContext, dataList, mapKey, subLookup.get
+                                        (PROPERTY_COMPLEX_NAME), mapValue);
+                                }
+                                else
+                                {
+                                    b.objectProperty(mapKey);
+                                    convertInnerObject(b, runtimeContext, dataList, mapValue, subLookup);
+                                    b.close();
+                                }
+
+                            }
+                            b.close();
                         }
-                        b.close();
+
                         break;
                     }
                     default:
@@ -434,7 +464,6 @@ public class DataListService
         public boolean isPKField()
         {
             return domainProperty == null;
-
         }
     }
 }

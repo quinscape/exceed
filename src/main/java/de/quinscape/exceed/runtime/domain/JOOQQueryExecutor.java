@@ -164,10 +164,10 @@ public class JOOQQueryExecutor
     }
 
 
-    private DataList createDataList(RuntimeContext runtimeContext, QueryDefinition queryDefinition, List<DomainObject> rows, int rowCount)
+    private DataList createDataList(RuntimeContext runtimeContext, QueryDefinition queryDefinition,
+                                    List<DomainObject> rows, int rowCount)
     {
         return new DataList(
-            queryDefinition.createDomainTypeMap(),
             queryDefinition.createColumnDescriptorMap(),
             rows,
             rowCount

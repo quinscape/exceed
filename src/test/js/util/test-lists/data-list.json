@@ -1,98 +1,43 @@
 {
-    "types": {
-        "Foo": {
-            "properties": [
-                {
-                    "name": "name",
-                    "type": "PlainText",
-                    "data" : 1
-                },
-                {
-                    "name": "num",
-                    "type": "Integer",
-                    "data" : 2
-                },
-                {
-                    "name": "embedded",
-                    "type": "DomainType",
-                    "typeParam": "Embedded",
-                    "data" : 3
-                },
-                {
-                    "name": "bars",
-                    "type": "List",
-                    "typeParam": "Bar",
-                    "data" : 4
-                },
-                {
-                    "name": "bazes",
-                    "type": "Map",
-                    "typeParam": "Baz",
-                    "data" : 5
-                }
-            ]
-        },
-        "Embedded": {
-            "properties": [
-                {
-                    "name": "name",
-                    "type": "PlainText",
-                    "data" : 6
-                }
-            ]
-        },
-        "Bar": {
-            "properties": [
-                {
-                    "name": "name",
-                    "type": "PlainText",
-                    "data" : 7
-                }
-            ]
-        },
-        "Baz": {
-            "properties": [
-                {
-                    "name": "num",
-                    "type": "Integer",
-                    "data" : 8
-                }
-            ]
-        },
-        "Joined": {
-            "properties": [
-                {
-                    "name": "name",
-                    "type": "PlainText",
-                    "data" : 9
-                }
-            ]
-        }
-    },
     "columns": {
         "name": {
-            "type": "Foo",
-            "name": "name"
+            "name": "name",
+            "type": "PlainText",
+            "domainType": "Foo",
+            "data": 1
         },
         "num": {
-            "type": "Foo",
-            "name": "num"
+            "name": "num",
+            "type": "Integer",
+            "domainType": "Foo",
+            "data": 2
         },
         "embedded": {
-            "type": "Foo",
-            "name": "embedded"
+            "name": "embedded",
+            "type": "DomainType",
+            "typeParam": "Embedded",
+            "domainType": "Foo",
+            "data": 3
         },
         "bars": {
-            "type": "Foo",
-            "name": "bars"
+            "name": "bars",
+            "type": "List",
+            "typeParam": "Bar",
+            "domainType": "Foo",
+            "data": 4
         },
         "bazes": {
-            "type": "Foo",
-            "name": "bazes"
+            "name": "bazes",
+            "type": "Map",
+            "typeParam": "Baz",
+            "domainType": "Foo",
+            "data": 5
         },
         "joinedName": {
-            "type": "Joined",
-            "name": "name"
+            "name": "name",
+            "type": "PlainText",
+            "domainType": "Joined",
+            "data": 9
         }
     },
     "rows": [
@@ -103,12 +48,20 @@
                 "name": "EmbeddedObject"
             },
             "bars": [
-                {"name": "Bar 1"},
-                {"name": "Bar 2"}
+                {
+                    "name": "Bar 1"
+                },
+                {
+                    "name": "Bar 2"
+                }
             ],
             "bazes": {
-                "one": {"num": 1},
-                "two": {"num": 2}
+                "one": {
+                    "num": 1
+                },
+                "two": {
+                    "num": 2
+                }
             }
         },
         {
@@ -118,12 +71,20 @@
                 "name": "EmbeddedObject #2"
             },
             "bars": [
-                {"name": "Bar 3"},
-                {"name": "Bar 4"}
+                {
+                    "name": "Bar 3"
+                },
+                {
+                    "name": "Bar 4"
+                }
             ],
             "bazes": {
-                "three": {"num": 3},
-                "four": {"num": 4}
+                "three": {
+                    "num": 3
+                },
+                "four": {
+                    "num": 4
+                }
             }
         }
     ]

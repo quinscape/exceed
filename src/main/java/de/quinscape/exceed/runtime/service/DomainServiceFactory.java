@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.service;
 
-import de.quinscape.exceed.runtime.datalist.DataListService;
+import de.quinscape.exceed.runtime.config.DefaultPropertyConverters;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.DomainServiceImpl;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
@@ -18,27 +18,26 @@ public class DomainServiceFactory
 {
     private final static Logger log = LoggerFactory.getLogger(DomainServiceFactory.class);
 
-    private final DataListService dataListService;
+    private final Map<String, PropertyConverter> converters;
 
     private final NamingStrategy namingStrategy;
 
     private final DSLContext dslContext;
 
-    private final Map<String, PropertyConverter> converters;
+
+    public DomainServiceFactory(DefaultPropertyConverters defaultPropertyConverters)
 
 
-    public DomainServiceFactory(DataListService dataListService, NamingStrategy namingStrategy, DSLContext dslContext, Map<String, PropertyConverter> converters)
     {
-        this.dataListService = dataListService;
         this.namingStrategy = namingStrategy;
         this.dslContext = dslContext;
-        this.converters = converters;
+        this.converters = defaultPropertyConverters.getConverters();
     }
 
 
     public DomainService create()
     {
-        return new DomainServiceImpl(dataListService, dslContext, namingStrategy, converters);
+        return new DomainServiceImpl(dslContext, namingStrategy, converters);
     }
 
 }

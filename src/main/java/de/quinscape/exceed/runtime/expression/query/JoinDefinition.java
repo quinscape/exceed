@@ -1,6 +1,5 @@
 package de.quinscape.exceed.runtime.expression.query;
 
-import de.quinscape.exceed.expression.SimpleNode;
 import org.jooq.Condition;
 
 public class JoinDefinition

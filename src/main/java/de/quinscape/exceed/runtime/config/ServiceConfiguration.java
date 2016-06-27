@@ -3,11 +3,9 @@ package de.quinscape.exceed.runtime.config;
 import de.quinscape.exceed.runtime.component.QueryDataProvider;
 import de.quinscape.exceed.runtime.component.QueryExecutor;
 import de.quinscape.exceed.runtime.controller.ActionService;
-import de.quinscape.exceed.runtime.datalist.DataListService;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.JOOQQueryExecutor;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
-import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.editor.completion.CompletionService;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
@@ -90,16 +88,6 @@ public class ServiceConfiguration
     }
 
     @Bean
-    public DataListService dataListService(ApplicationContext applicationContext, DefaultPropertyConverters defaultPropertyConverters)
-    {
-        if (applicationContext == null)
-        {
-            throw new IllegalArgumentException("applicationContext can't be null");
-        }
-        return new DataListService(defaultPropertyConverters.getConverters());
-    }
-
-    @Bean
     public DefaultPropertyConverters defaultPropertyConverters()
     {
         return new DefaultPropertyConverters();
@@ -129,13 +117,12 @@ public class ServiceConfiguration
 
     @Bean
     public DomainServiceFactory domainServiceFactory(
-        DataListService dataListService,
         NamingStrategy namingStrategy,
         DSLContext dslContext,
-        Map<String, PropertyConverter> converters
+        DefaultPropertyConverters defaultPropertyConverters,
     )
     {
-        return new DomainServiceFactory(dataListService, namingStrategy, dslContext, converters);
+        return new DomainServiceFactory(namingStrategy, dslContext, defaultPropertyConverters);
     }
     @Bean
     public ProcessService ProcessService(ActionService actionService, ExpressionService expressionService, ScopedContextFactory

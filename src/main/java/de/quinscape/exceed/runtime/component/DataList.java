@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.component;
 
-import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.domain.EnumType;
+import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.util.DomainUtil;
@@ -14,9 +13,7 @@ import java.util.Map;
 
 public class DataList
 {
-    private Map<String, DomainType> types;
-
-    private Map<String, ColumnDescriptor> columns;
+    private Map<String, DomainProperty> columns;
 
     private List<?> rows;
 
@@ -24,34 +21,22 @@ public class DataList
 
     private Object id;
 
-    public DataList(Map<String, DomainType> types, Map<String, ColumnDescriptor> columns, List<?> rows, int rowCount)
+    public DataList(Map<String, DomainProperty> columns, List<?> rows, int rowCount)
     {
-        this.types = types;
         this.columns = columns;
         this.rows = rows;
         this.rowCount = rowCount;
     }
 
 
-    public Map<String, DomainType> getTypes()
-    {
-        return types;
-    }
 
-
-    public void setTypes(Map<String, DomainType> types)
-    {
-        this.types = types;
-    }
-
-
-    public Map<String, ColumnDescriptor> getColumns()
+    public Map<String, DomainProperty> getColumns()
     {
         return columns;
     }
 
 
-    public void setColumns(Map<String, ColumnDescriptor> columns)
+    public void setColumns(Map<String, DomainProperty> columns)
     {
         this.columns = columns;
     }
@@ -73,7 +58,6 @@ public class DataList
     public String toString()
     {
         return super.toString() + ": "
-            + "types = " + types
             + ", columns = " + columns
             + ", rows = " + rows
             ;
@@ -132,6 +116,6 @@ public class DataList
 
             copiedRows.add(copy);
         }
-        return new DataList(types, columns, copiedRows, rowCount);
+        return new DataList(columns, copiedRows, rowCount);
     }
 }
