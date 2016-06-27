@@ -8,14 +8,12 @@ import de.quinscape.exceed.message.Query;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.component.DataList;
-import de.quinscape.exceed.runtime.datalist.DataListService;
+import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
 import de.quinscape.exceed.runtime.util.AppAuthentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.svenson.AbstractPropertyValueBasedTypeMapper;
 import org.svenson.JSON;
 import org.svenson.JSONParseException;
@@ -41,16 +39,12 @@ public class EditorWebSocketHandler
 
     private final static Logger log = LoggerFactory.getLogger(EditorWebSocketHandler.class);
 
-    @Autowired
-    private DataListService dataListService;
 
     private final ConcurrentMap<String, EditorClientConnection> connections;
 
     private final Map<String, EditorMessageHandler<? extends IncomingMessage>> handlers;
 
     private JSONParser parser;
-
-    private JSON generator;
 
 
     public EditorWebSocketHandler(
@@ -72,11 +66,13 @@ public class EditorWebSocketHandler
 
     public void send(String connectionId, Object message)
     {
-        EditorClientConnection connection = this.connections.get(connectionId);
+        final EditorClientConnection connection = this.connections.get(connectionId);
         if (connection != null)
         {
+            final DomainService domainService = connection.getRuntimeContext().getDomainService();
             WebSocketConnection webSocketConnection = connection.getWebSocketConnection();
-            webSocketConnection.send(generator.forValue(message));
+
+            webSocketConnection.send(domainService.toJSON(message));
         }
     }
 
@@ -91,8 +87,10 @@ public class EditorWebSocketHandler
             EditorClientConnection connection = connections.get(connectionId);
             if (connection == null)
             {
-                webSocketConnection.send(generator.forValue(new Error("Unregistered connection id '" +
-                    connectionId + "'.")));
+                final String errorJSON = JSON.defaultJSON().forValue(
+                    new Error("Unregistered connection id '" +connectionId + "'.")
+                );
+                webSocketConnection.send(errorJSON);
                 return;
             }
 
@@ -182,9 +180,6 @@ public class EditorWebSocketHandler
     {
         parser = new JSONParser();
         parser.setTypeMapper(new MessageAndModelMapper());
-
-        generator = new JSON();
-        generator.registerJSONifier(DataList.class, dataListService.getJSONifier());
     }
 
 

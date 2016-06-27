@@ -5,18 +5,17 @@ var count = 0;
 /**
  * Creates a new Form context
  *
- * @param dataList          dataList instance
  * @param horizontal        true if horizontal form
  * @param labelClass        default label classes
  * @param wrapperClass      defaul wrapper classes
+ * @param errorsLink        ValueLink for the errors map.
  * @constructor
  */
-function FormContext( dataList, horizontal, labelClass, wrapperClass, errorsLink)
+function FormContext(horizontal, labelClass, wrapperClass, errorsLink)
 {
     this.id = ++count;
     this.fieldIdCount = 0;
 
-    this.dataList = dataList;
     this.horizontal = horizontal;
     this._labelClass = labelClass;
     this._wrapperClass = wrapperClass;

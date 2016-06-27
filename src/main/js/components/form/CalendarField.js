@@ -200,6 +200,12 @@ var CalendarField = React.createClass({
     {
         var date = new Date(this.props.valueLink.value);
 
+        if (isNaN(date.valueOf()))
+        {
+            console.log("DEFAULT DATE");
+            date = new Date();
+        }
+
         var selectedMonth = date.getMonth()+1;
         var selectedYear = date.getFullYear();
         var selectedDay = date.getDate();

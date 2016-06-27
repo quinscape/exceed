@@ -79,7 +79,6 @@ public class ModelJSONServiceImpl
     @Override
     public <M> M toModel(Class<M> cls, String json) throws IllegalArgumentException
     {
-
         try
         {
             Object model = parser.parse((Class)cls, json);

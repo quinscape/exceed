@@ -1,10 +1,6 @@
 package de.quinscape.exceed.runtime.domain.property;
 
 public class EnumConverter
-    extends NullConverter<Long>
+    extends IntegerConverter
 {
-    public EnumConverter()
-    {
-        super(Long.class);
-    }
 }

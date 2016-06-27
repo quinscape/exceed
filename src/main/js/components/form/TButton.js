@@ -1,22 +1,27 @@
-var React = require("react");
+    var React = require("react");
 var cx = require("classnames");
 
 var i18n  = require("../../service/i18n");
 
 var processService  = require("../../service/process");
 
-var FormContext = require("./form-context");
+var FormContext = require("../../util/form-context");
 
 /**
- * Action executing button
+ * Process transition executing button.
  */
 var TButton = React.createClass({
 
     propTypes: {
+        /** transition to execute */
         transition: React.PropTypes.string.isRequired,
+        /** true if the transition execution discards all user changes / does not depend on field validation */
         discard: React.PropTypes.bool,
+        /** HTML classes */
         className: React.PropTypes.string,
+        /** Text for the button */
         text: React.PropTypes.string.isRequired,
+        /** Domain type to extract as context for the transition. Can be undefined if the context is unambiguous */
         domainType: React.PropTypes.string
     },
 
@@ -43,18 +48,22 @@ var TButton = React.createClass({
                 onClick={ (ev) => {
                     if (!this.isDisabled())
                     {
+                        var domainObject = null;
                         var cursor = this.props.context;
-                        if (cursor && cursor.isProperty())
+                        if (!this.props.discard && cursor)
                         {
-                            cursor = cursor.pop();
+                            if (cursor.isProperty())
+                            {
+                                cursor = cursor.pop();
+                            }
+                            domainObject = cursor.getDomainObject(this.props.domainType);
                         }
 
-                        const domainObject = cursor && cursor.getDomainObject(this.props.domainType);
-
-                        processService.transition( this.props.transition, domainObject).catch(function(err)
-                        {
-                            console.error(err);
-                        });
+                        processService.transition( this.props.transition, domainObject)
+                            .catch(function(err)
+                            {
+                                console.error(err);
+                            });
                     }
                     ev.preventDefault();
                 } }/>

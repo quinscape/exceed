@@ -1,11 +1,14 @@
 package de.quinscape.exceed.runtime.scope;
 
+import com.google.common.collect.ImmutableMap;
+import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.runtime.component.DataList;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Encapsulates all existing scopes for an execution context.
@@ -17,6 +20,13 @@ public final class ScopedContextChain
 {
     private final List<ScopedContext> chainedScopes;
 
+    private final static Map<Class<? extends ScopedContext>, Integer> scopeIndexMap = ImmutableMap.of(
+        ApplicationContext.class, 0,
+        SessionContext.class, 1,
+        ProcessContext.class, 2,
+        ViewContext.class, 3
+    );
+
     public ScopedContextChain(List<ScopedContext> chainedScopes)
     {
         if (chainedScopes == null)
@@ -24,7 +34,18 @@ public final class ScopedContextChain
             throw new IllegalArgumentException("chainedScopes can't be null");
         }
 
-        this.chainedScopes = new ArrayList<>(chainedScopes);
+        final ArrayList<ScopedContext> list = new ArrayList<>(chainedScopes);
+
+        final int numScopes = scopeIndexMap.size();
+        list.ensureCapacity(numScopes);
+
+        final int missing = numScopes - list.size();
+        for (int i=0; i < missing; i++)
+        {
+            list.add(null);
+        }
+
+        this.chainedScopes = list;
     }
 
 
@@ -132,7 +153,7 @@ public final class ScopedContextChain
         for (int i = chainedScopes.size() - 1; i >= 0; i--)
         {
             ScopedContext scopedContext = chainedScopes.get(i);
-            if (scopedContext.hasProperty(name))
+            if (scopedContext != null && scopedContext.hasProperty(name))
             {
                 return scopedContext;
             }
@@ -146,7 +167,7 @@ public final class ScopedContextChain
         for (int i = chainedScopes.size() - 1; i >= 0; i--)
         {
             ScopedContext scopedContext = chainedScopes.get(i);
-            if (scopedContext.hasObject(name))
+            if (scopedContext != null && scopedContext.hasObject(name))
             {
                 return scopedContext;
             }
@@ -160,7 +181,7 @@ public final class ScopedContextChain
         for (int i = chainedScopes.size() - 1; i >= 0; i--)
         {
             ScopedContext scopedContext = chainedScopes.get(i);
-            if (scopedContext.hasList(name))
+            if (scopedContext != null && scopedContext.hasList(name))
             {
                 return scopedContext;
             }
@@ -175,11 +196,14 @@ public final class ScopedContextChain
         for (Iterator<ScopedContext> iterator = chainedScopes.iterator(); iterator.hasNext(); )
         {
             ScopedContext ctx = iterator.next();
-            sb.append(ctx.getClass().getSimpleName());
-
-            if (iterator.hasNext())
+            if (ctx != null)
             {
-                sb.append(", ");
+                sb.append(ctx.getClass().getSimpleName());
+
+                if (iterator.hasNext())
+                {
+                    sb.append(", ");
+                }
             }
         }
         return sb.toString();
@@ -193,6 +217,43 @@ public final class ScopedContextChain
      */
     public void addContext(ScopedContext scopedContext)
     {
-        this.chainedScopes.add(scopedContext);
+        final Integer index = scopeIndexMap.get(scopedContext.getClass());
+        if (index == null)
+        {
+            throw new IllegalStateException("Unhandled scope type: " + scopedContext);
+        }
+
+        chainedScopes.set(index, scopedContext);
+    }
+
+    public ApplicationContext getApplicationContext()
+    {
+        return getContext(ApplicationContext.class);
+    }
+
+    public SessionContext getSessionContext()
+    {
+        return getContext(SessionContext.class);
+    }
+
+    public ProcessContext getProcessContext()
+    {
+        return getContext(ProcessContext.class);
+    }
+
+    public ViewContext getViewContext()
+    {
+        return getContext(ViewContext.class);
+    }
+
+
+    private <T extends ScopedContext> T getContext(Class<T> type)
+    {
+        final Integer index = scopeIndexMap.get(type);
+        if (index == null)
+        {
+            throw new IllegalStateException("Unhandled scope type: " + type);
+        }
+        return (T) chainedScopes.get(index);
     }
 }

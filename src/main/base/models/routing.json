@@ -27,6 +27,24 @@
                         "processName": "test"
                     }
                 }]
+            },
+            {
+                "name": "testvc",
+                "kids" : [{
+                    "name" : "{stateId}",
+                    "mapping": {
+                        "processName": "testvc"
+                    }
+                }]
+            },
+            {
+                "name": "scoped",
+                "kids" : [{
+                    "name" : "{stateId}",
+                    "mapping": {
+                        "processName": "scoped"
+                    }
+                }]
             }
         ],
         "mapping": {

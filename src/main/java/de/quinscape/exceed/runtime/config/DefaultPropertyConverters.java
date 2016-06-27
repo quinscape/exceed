@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.config;
 
 import de.quinscape.exceed.runtime.domain.property.BooleanConverter;
 import de.quinscape.exceed.runtime.domain.property.DateConverter;
+import de.quinscape.exceed.runtime.domain.property.DomainTypeConverter;
 import de.quinscape.exceed.runtime.domain.property.EnumConverter;
 import de.quinscape.exceed.runtime.domain.property.IntegerConverter;
 import de.quinscape.exceed.runtime.domain.property.LongConverter;
@@ -31,6 +32,7 @@ public class DefaultPropertyConverters
         add(map, new RichTextConverter());
         add(map, new TimestampConverter());
         add(map, new UUIDConverter());
+        add(map, new DomainTypeConverter());
 
         return map;
     }

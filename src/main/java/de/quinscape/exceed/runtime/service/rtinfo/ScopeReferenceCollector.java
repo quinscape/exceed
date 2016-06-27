@@ -4,8 +4,9 @@ import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.ExpressionParserDefaultVisitor;
 import de.quinscape.exceed.expression.Node;
-import de.quinscape.exceed.model.context.ScopedElementModel;
+import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.scope.ScopedContext;
 import de.quinscape.exceed.runtime.scope.ScopedValueType;
 
 import java.util.HashSet;
@@ -14,17 +15,29 @@ import java.util.Set;
 /**
  * Expression visitor that collects scoped value references
  */
-public class ScopedValueReferenceVisitor
+public class ScopeReferenceCollector
     extends ExpressionParserDefaultVisitor
 {
     private final Set<ScopeReference> references;
 
     private final RuntimeContext runtimeContext;
 
+    private final Class<? extends ScopedContext> filterByType;
 
-    public ScopedValueReferenceVisitor(RuntimeContext runtimeContext)
+    private final ComponentModel componentModel;
+
+
+    public ScopeReferenceCollector(RuntimeContext runtimeContext, ComponentModel componentModel)
+    {
+        this(runtimeContext, null, componentModel);
+    }
+
+
+    public ScopeReferenceCollector(RuntimeContext runtimeContext, Class<? extends ScopedContext> filterByType, ComponentModel componentModel)
     {
         this.runtimeContext = runtimeContext;
+        this.filterByType = filterByType;
+        this.componentModel = componentModel;
         references = new HashSet<>();
     }
 
@@ -58,7 +71,17 @@ public class ScopedValueReferenceVisitor
             }
 
             String name = ((ASTString) n).getValue();
-            references.add(new ScopeReference(type, name, ScopedElementModel.find(runtimeContext, name, type)));
+            ScopedContext scope = type.findScope(runtimeContext.getScopedContextChain(), name);
+
+            if (scope == null)
+            {
+                throw new IllegalStateException("Scope definition not found for '" + name + "' ( component = " + componentModel.toString() + " )");
+            }
+
+            if (filterByType == null || scope.getClass().equals(filterByType))
+            {
+                references.add(new ScopeReference(type, name, scope.getClass(), scope.getModel(type, name)));
+            }
         }
         return null;
     }

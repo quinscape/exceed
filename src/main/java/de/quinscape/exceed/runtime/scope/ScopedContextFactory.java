@@ -1,8 +1,7 @@
 package de.quinscape.exceed.runtime.scope;
 
-import de.quinscape.exceed.domain.tables.pojos.AppState;
 import de.quinscape.exceed.model.context.ContextModel;
-import de.quinscape.exceed.model.context.ScopedPropertyModel;
+import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.domain.DomainService;
@@ -13,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.HashMap;
 import java.util.Map;
 
 public class ScopedContextFactory
@@ -39,18 +37,13 @@ public class ScopedContextFactory
     }
 
 
-    public ApplicationContext createApplicationContext(ContextModel contextModel, String appName, DomainService
-        domainService)
+    public ApplicationContext createApplicationContext(ContextModel contextModel, String appName)
     {
         if (appName == null)
         {
             throw new IllegalArgumentException("appName can't be null");
         }
 
-        if (domainService == null)
-        {
-            throw new IllegalArgumentException("domainService can't be null");
-        }
         ApplicationContext applicationContext = create(ApplicationContext.class, contextModel);
         applicationContext.setName(appName);
         return applicationContext;
@@ -140,5 +133,11 @@ public class ScopedContextFactory
             applicationService.updateApplicationContext(name, domainService.toJSON(applicationContext.getContextMap()));
             applicationContext.markClean();
         }
+    }
+
+
+    public ViewContext createViewContext(View view)
+    {
+        return new ViewContext(view.getContextModel(), view.getName());
     }
 }

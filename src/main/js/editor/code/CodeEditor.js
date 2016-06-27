@@ -76,10 +76,9 @@ ExceedCompleter.prototype.insertMatch = function(editor, completion)
 
     var completer = this;
 
-    if (completion.wizard)
+    var wizardComponent = completion.wizardComponent;
+    if (wizardComponent)
     {
-        var wizardComponent = completion.wizardComponent;
-
         if (isComponent(wizardComponent))
         {
             var modalControl = this.xmlEditor.props.modalControl;
@@ -116,9 +115,8 @@ ExceedCompleter.prototype.insertMatch = function(editor, completion)
     {
         this.cleanupAfter(editor, completion);
 
-
         // if we're a prop completion that had a template, replace the component
-        if (completion.type ===  CompletionType.PROP && completion.model && !editor.getSession().getAnnotations().length)
+        if (completion.type === CompletionType.PROP && completion.model && !editor.getSession().getAnnotations().length)
         {
             var selection = editor.getSelection();
             var range = selection.getRange();
@@ -226,6 +224,11 @@ ExceedCompleter.prototype.prepareCompletions = function (editor, session, compon
                 }
 
                 wizardComponent = template.wizardComponent;
+
+                if (completion.model && !completion.snippet)
+                {
+                    completion.snippet = toXml(completion.model);
+                }
             }
             else if (type === CompletionType.PROP)
             {
@@ -241,11 +244,7 @@ ExceedCompleter.prototype.prepareCompletions = function (editor, session, compon
         }
         else
         {
-            if (type === CompletionType.COMPONENT)
-            {
-                completion.snippet = toXml(completion.model);
-            }
-            else if (completion.type === CompletionType.PROP)
+            if (completion.type === CompletionType.PROP)
             {
                 if (completion.model)
                 {

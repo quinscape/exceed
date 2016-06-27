@@ -1,25 +1,30 @@
 {
     "root": {
-        "name": "Grid",
-        "attrs": {
-            "fluid": "{ true }"
-        },
+        "name": "View",
         "kids": [
             {
-                "name": "Row",
+                "name": "Grid",
+                "attrs": {
+                    "fluid": "{ true }"
+                },
                 "kids": [
                     {
-                        "name": "Col",
-                        "attrs": {
-                            "md": "{ 12 }"
-                        },
+                        "name": "Row",
                         "kids": [
                             {
-                                "name": "Heading",
+                                "name": "Col",
                                 "attrs": {
-                                    "id": "myHeading",
-                                    "value": "Detail 2"
-                                }
+                                    "md": "{ 12 }"
+                                },
+                                "kids": [
+                                    {
+                                        "name": "Heading",
+                                        "attrs": {
+                                            "id": "myHeading",
+                                            "value": "Detail 2"
+                                        }
+                                    }
+                                ]
                             }
                         ]
                     }

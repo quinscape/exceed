@@ -10,12 +10,4 @@ public interface ComponentClasses
      * respectively.
      */
     String MODEL_AWARE = "model-aware";
-
-    /**
-     * If set, the component can have "visibleIf" attribute that determines if the element is rendered or not. If such an
-     * attribute is not given, the element is supposed to be visible.
-     *
-     * visibility is handled by view-renderer.js.
-     */
-    String VISIBLE_IF = "visible-if";
 }

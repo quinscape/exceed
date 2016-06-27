@@ -15,12 +15,17 @@ public class ParentRuleEnvironment
 
     private final Set<String> parentClasses;
 
-    public ParentRuleEnvironment(RuntimeApplication runtimeApplication, View viewModel, Set<String> parentClasses)
+    private final int index;
+
+
+    public ParentRuleEnvironment(RuntimeApplication runtimeApplication, View viewModel, Set<String> parentClasses,
+                                 int index)
     {
         this.runtimeApplication = runtimeApplication;
         this.viewModel = viewModel;
         this.parentClasses = parentClasses;
 
+        this.index = index;
     }
 
     @Override
@@ -73,5 +78,11 @@ public class ParentRuleEnvironment
     public View getViewModel()
     {
         return viewModel;
+    }
+
+
+    public int getIndex()
+    {
+        return index;
     }
 }

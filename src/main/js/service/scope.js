@@ -1,5 +1,6 @@
 var viewService;
 
+
 function getViewService()
 {
     if (!viewService)
@@ -13,15 +14,26 @@ function createScopeFn(type)
 {
     return function(name)
     {
-        var scope = getViewService().getRuntimeInfo().scope;
+        var scope = getViewService().getScope();
         console.log("SCOPE", scope);
 
-        var value = scope[name];
+        var value = scope.get([name]);
         if (value === undefined)
         {
             console.error("Scoped " + type + " '" + name + "' is undefined")
         }
         return value;
+    };
+}
+
+function createScopeCursorFn(type)
+{
+    return function(name)
+    {
+        var scope = getViewService().getScope();
+        console.log("SCOPE", scope);
+
+        return scope.getCursor([name]);
     };
 }
 
@@ -33,12 +45,50 @@ function createScopeFn(type)
  * @type {{list: Scope.list, object: Scope.object, property: Scope.property}}
  */
 var Scope = {
+
     list: createScopeFn("list"),
+
     object: createScopeFn("object"),
+
     property: createScopeFn("property"),
+
+    listCursor: createScopeCursorFn("list"),
+
+    objectCursor: createScopeCursorFn("object"),
+
+    propertyCursor: createScopeCursorFn("property"),
+
     objectType: function (name)
     {
-        return getViewService().getRuntimeInfo().scopeTypes[name];
+        return getViewService().getRuntimeInfo().scopeInfo.objectTypes[name];
+    },
+
+    propertyType: function (name)
+    {
+        return getViewService().getRuntimeInfo().scopeInfo.propertyTypes[name];
+    },
+
+    getScopeUpdate: function (names)
+    {
+
+        var viewService = getViewService();
+
+        // if we're not asked for specific keys, we use all view context keys
+        names = names || viewService.getViewContextKeys();
+
+        //
+        names = names.concat(viewService.getDirtyScopeKeys());
+
+        var values = {};
+
+        var scope = viewService.getScope().get();
+
+        for (var i = 0; i < names.length; i++)
+        {
+            var name = names[i];
+            values[name] = scope[name];
+        }
+        return values;
     }
 };
 

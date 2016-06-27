@@ -1,92 +1,118 @@
 {
     "root": {
-        "name": "Grid",
-        "attrs": {
-            "fluid": "{ true }"
-        },
+        "name": "View",
         "kids": [
             {
-                "name": "Row",
+                "name": "Grid",
+                "attrs": {
+                    "fluid": "{ true }"
+                },
                 "kids": [
                     {
-                        "name": "Col",
-                        "attrs": {
-                            "md": "{ 6 }"
-                        },
+                        "name": "Row",
                         "kids": [
                             {
-                                "name": "Heading",
+                                "name": "Col",
                                 "attrs": {
-                                    "id": "myHeading",
-                                    "value": "{ 'Heading: ' + props.id }"
-                                }
-                            },
-                            {
-                                "name": "DataGrid",
-                                "attrs": {
-                                    "id": "myDG",
-                                    "limit": "{ 3 }",
-                                    "type": "{ Foo }"
+                                    "md": "{ 6 }"
                                 },
                                 "kids": [
                                     {
-                                        "name": "DataGrid.Column",
+                                        "name": "Heading",
                                         "attrs": {
-                                            "name": "id",
-                                            "heading": "Detail"
+                                            "id": "myHeading",
+                                            "value": "Tests"
+                                        }
+                                    },
+                                    {
+                                        "name": "Link",
+                                        "attrs": {
+                                            "location": "/process",
+                                            "text": "Counter"
+                                        }
+                                    },
+                                    {
+                                        "name": "Link",
+                                        "attrs": {
+                                            "location": "/process",
+                                            "text": "Counter"
+                                        }
+                                    },
+                                    {
+                                        "name": "Heading",
+                                        "attrs": {
+                                            "id": "myHeading",
+                                            "value": "{ 'Heading: ' + props.id }"
+                                        }
+                                    },
+                                    {
+                                        "name": "DataGrid",
+                                        "attrs": {
+                                            "id": "myDG",
+                                            "limit": "{ 3 }",
+                                            "type": "{ Foo }"
                                         },
                                         "kids": [
                                             {
-                                                "name": "Link",
+                                                "name": "DataGrid.Column",
                                                 "attrs": {
-                                                    "location": "/detail/{id}",
-                                                    "text": "Detail"
+                                                    "name": "id",
+                                                    "heading": "Detail"
                                                 },
                                                 "kids": [
                                                     {
-                                                        "name": "Link.Param",
+                                                        "name": "Link",
                                                         "attrs": {
-                                                            "name": "id",
-                                                            "value": "{ context }"
-                                                        }
+                                                            "location": "/detail/{id}",
+                                                            "text": "Detail"
+                                                        },
+                                                        "kids": [
+                                                            {
+                                                                "name": "Link.Param",
+                                                                "attrs": {
+                                                                    "name": "id",
+                                                                    "value": "{ context }"
+                                                                }
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "name": "Link",
+                                                        "attrs": {
+                                                            "location": "/detail2/{id}",
+                                                            "text": "Detail 2"
+                                                        },
+                                                        "kids": [
+                                                            {
+                                                                "name": "Link.Param",
+                                                                "attrs": {
+                                                                    "name": "id",
+                                                                    "value": "{ context }"
+                                                                }
+                                                            }
+                                                        ]
                                                     }
                                                 ]
                                             },
                                             {
-                                                "name": "Link",
+                                                "name": "DataGrid.Column",
                                                 "attrs": {
-                                                    "location": "/detail2/{id}",
-                                                    "text": "Detail 2"
-                                                },
-                                                "kids": [
-                                                    {
-                                                        "name": "Link.Param",
-                                                        "attrs": {
-                                                            "name": "id",
-                                                            "value": "{ context }"
-                                                        }
-                                                    }
-                                                ]
+                                                    "name": "name"
+                                                }
+                                            },
+                                            {
+                                                "name": "DataGrid.Column",
+                                                "attrs": {
+                                                    "name": "type"
+                                                }
+                                            },
+                                            {
+                                                "name": "DataGrid.Column",
+                                                "attrs": {
+                                                    "name": "created"
+                                                }
                                             }
                                         ]
-                                    },
-                                    {
-                                        "name": "DataGrid.Column",
-                                        "attrs": {
-                                            "name": "name"
-                                        }
-                                    },
-                                    {
-                                        "name": "DataGrid.Column",
-                                        "attrs": {
-                                            "name": "type"
-                                        }
-                                    },
-                                    {
-                                        "name": "DataGrid.Column",
-                                        "attrs": {
-                                            "name": "created"
-                                        }
                                     }
                                 ]
                             }

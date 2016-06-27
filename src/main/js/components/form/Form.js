@@ -2,18 +2,19 @@ var React = require("react");
 var cx = require("classnames");
 
 var DataList = require("../../util/data-list");
+var DataListCursor = require("../../util/data-list-cursor");
 var Scope = require("../../service/scope");
+var domainService = require("../../service/domain");
 
-var FormContext = require("./form-context");
+var FormContext = require("../../util/form-context");
 
 var LinkedStateMixin = require("react-addons-linked-state-mixin");
 
+
 function isRawDataList(input)
 {
-    return input && input.types && input.rows && input.columns;
+    return input && input.rows && input.columns;
 }
-
-
 
 function objectToDataList(input)
 {
@@ -51,25 +52,13 @@ function objectToDataList(input)
         rowCount: 1
     };
 }
+
 var Form = React.createClass({
 
     mixins: [ LinkedStateMixin ],
 
     childContextTypes: {
         formContext: React.PropTypes.instanceOf(FormContext)
-    },
-
-    getChildContext: function()
-    {
-        return {
-            formContext: new FormContext(
-                this.state.dataList,
-                this.props.horizontal,
-                this.props.labelClass,
-                this.props.wrapperClass,
-                this.linkState("errors")
-            )
-        };
     },
 
     propTypes: {
@@ -90,32 +79,44 @@ var Form = React.createClass({
         };
     },
 
-    getDataList: function(input)
+    cursorFromData: function(data)
     {
-        if (!input)
+        if (!data)
         {
             throw new Error("No data");
         }
 
-        if (isRawDataList(input))
-        {
-            return new DataList(input, this.onChange);
-        }
-        else if (input._type)
-        {
-            return new DataList( objectToDataList(input), this.onChange);
+        var types = domainService.getDomainTypes();
 
+        if (isRawDataList(data))
+        {
+            return new DataList(types, data, this.onChange).getCursor([this.props.index]);
+        }
+        else if (data instanceof DataListCursor)
+        {
+            console.log("CURSOR", data);
+
+            var value = data.get();
+            if (!value || typeof value !== "object")
+            {
+                throw new Error("Invalid form cursor: points to " + value);
+            }
+            return data;
+
+        }
+        else if (data._type)
+        {
+            return new DataList(types, objectToDataList(data), this.onChange).getCursor([this.props.index]);
         }
         else
         {
-            console.error("Cannot handle data", input);
+            console.error("Cannot handle data", data);
         }
     },
     getInitialState: function ()
     {
         return {
-            dataList: this.getDataList(this.props.data),
-            errors: {}
+            cursor: this.cursorFromData(this.props.data)
         };
     },
 
@@ -124,43 +125,27 @@ var Form = React.createClass({
     {
         console.log("onChange", JSON.stringify(newRows), path);
 
-        var dataList =  new DataList(this.state.dataList);
+        var dataList = this.state.cursor.dataList;
         dataList.rows = newRows;
-
-        this.setState({
-            dataList: dataList
-        });
+        this.forceUpdate();
     },
 
-    componentWillReceiveProps: function (nextProps)
-    {
-        //console.log("NEXTPROPS", nextProps);
-
-        if (nextProps.dataList !== this.props.data)
-        {
-            // XXX: merge changed props in current state with new state?
-
-            this.setState({
-                dataList: new DataList(nextProps.dataList, this.onChange)
-            });
-        }
-    },
+    //componentWillReceiveProps: function (nextProps)
+    //{
+    //
+    //    if (nextProps.data !== this.props.data)
+    //    {
+    //        // XXX: merge changed props in current state with new state?
+    //        console.log("Update state", nextProps);
+    //        this.setState({
+    //            cursor: this.cursorFromData(nextProps.data)
+    //        });
+    //    }
+    //},
 
     render: function ()
     {
-        var dataList = this.state.dataList;
-
-        //console.log(this.props.data);
-
-        if (dataList.rowCount != 1)
-        {
-            throw new Error("Need exactly 1 result here");
-        }
-
-        var cursor = dataList.getCursor([this.props.index]);
-
-        //console.log("CURSOR", cursor);
-
+        var cursor = this.state.cursor;
         return ( <form className={ cx("form", this.props.horizontal && "form-horizontal") } onSubmit={ this.onSubmit }>
             { this.props.renderChildrenWithContext(cursor) }
         </form> );

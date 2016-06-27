@@ -35,8 +35,9 @@ public class DecisionState
             }
 
             transition.setName("t" + i);
-            transition.setFrom(getName());
         }
+
+
         this.decisions = decisions;
     }
 
@@ -56,6 +57,8 @@ public class DecisionState
     @Override
     public void validate(Process process)
     {
+        final String decisionStateName = getName();
+        defaultTransition.setFrom(decisionStateName);
         for (DecisionModel decision : decisions)
         {
             Transition transition = decision.getTransition();
@@ -69,6 +72,7 @@ public class DecisionState
                 throw new IllegalStateException("Process '" + process.getName() + "':  Transition for '" + decision.getExpression() + "' references non-existing process-state '" + to + "'");
             }
 
+            transition.setFrom(decisionStateName);
         }
 
         Transition defaultTransition = getDefaultTransition();

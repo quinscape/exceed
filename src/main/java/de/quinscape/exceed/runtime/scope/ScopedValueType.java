@@ -15,7 +15,7 @@ public enum ScopedValueType
              *
              * @param scopedContext     scoped context
              * @param name              name
-             * @return  domain object
+             * @return domain object
              */
             @Override
             public DomainObject get(ScopedResolver scopedContext, String name)
@@ -29,6 +29,7 @@ public enum ScopedValueType
             {
                 scopedContext.setObject(name, (DomainObject) value);
             }
+
 
             /**
              * Returns <code>true</code> of the given scope contains a domain object with the given name.
@@ -57,7 +58,7 @@ public enum ScopedValueType
              *
              * @param scopedContext     scoped context
              * @param name              name
-             * @return  domain object list
+             * @return domain object list
              */
             @Override
             public DataList get(ScopedResolver scopedContext, String name)
@@ -79,11 +80,13 @@ public enum ScopedValueType
                 return scopedContext.hasList(name);
             }
 
+
             @Override
             public void set(ScopedResolver scopedContext, String name, Object value)
             {
                 scopedContext.setList(name, (DataList) value);
             }
+
 
             @Override
             public ScopedContext findScope(ScopedContextChain scopedContext, String name)
@@ -98,7 +101,7 @@ public enum ScopedValueType
              *
              * @param scopedContext     scoped context
              * @param name              name
-             * @return  property
+             * @return property
              */
             @Override
             public Object get(ScopedResolver scopedContext, String name)
@@ -115,16 +118,19 @@ public enum ScopedValueType
              * @return <code>true</code> if such a property exists
              */
             @Override
-            public  Object has(ScopedResolver scopedContext, String name)
+            public Object has(ScopedResolver scopedContext, String name)
             {
                 return scopedContext.hasProperty(name);
             }
+
 
             @Override
             public void set(ScopedResolver scopedContext, String name, Object value)
             {
                 scopedContext.setProperty(name, value);
             }
+
+
             @Override
             public ScopedContext findScope(ScopedContextChain scopedContext, String name)
             {
@@ -134,7 +140,11 @@ public enum ScopedValueType
 
 
     public abstract Object get(ScopedResolver scopedContext, String name);
+
     public abstract void set(ScopedResolver scopedContext, String name, Object value);
+
     public abstract Object has(ScopedResolver scopedContext, String name);
+
     public abstract ScopedContext findScope(ScopedContextChain scopedContext, String name);
+
 }

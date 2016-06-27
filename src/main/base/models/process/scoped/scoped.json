@@ -1,0 +1,40 @@
+{
+    "startTransition": {
+        "to": "main",
+        "action": "object('scopedFoo').created = now()"
+    },
+    "context": {
+        "objects": {
+            "scopedFoo": {
+                "type": "Foo",
+                "defaultValue": "newObject()"
+            }
+        }
+    },
+    "states": {
+        "main": {
+            "type": "process.ViewState",
+            "transitions": {
+                "cancel": {
+                    "to": "end",
+                    "discard": true
+                },
+                "update": {
+                    "to": "main",
+                    "action": "syslog('Current : ', object('current'))"
+                },
+                "save": {
+                    "to": "main",
+                    "action": "store(object('current'))"
+                },
+                "save-scoped": {
+                    "to": "main",
+                    "action": "store(object('scopedFoo'))"
+                }
+            }
+        },
+        "end": {
+            "type": "process.ViewState"
+        }
+    }
+}

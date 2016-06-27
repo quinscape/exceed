@@ -1,12 +1,8 @@
 package de.quinscape.exceed.runtime.component;
 
-import org.apache.commons.io.FileUtils;
 import org.svenson.JSONParameter;
-import org.svenson.JSONParser;
 import org.svenson.JSONTypeHint;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 

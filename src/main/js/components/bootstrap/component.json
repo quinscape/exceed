@@ -1,7 +1,7 @@
 {
     "components": {
         "Grid": {
-            "classes" : [ "toplevel" ],
+            "classes" : [ "view-child" ],
 
             "childRule": "component('Row')",
             "templates": [

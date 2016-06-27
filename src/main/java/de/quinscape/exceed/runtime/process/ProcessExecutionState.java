@@ -22,11 +22,6 @@ public class ProcessExecutionState
 
     private final ProcessContext scopedContext;
 
-    public ProcessExecutionState(ProcessExecution execution, ProcessContext scopedContext)
-    {
-        this(execution, scopedContext, null);
-    }
-
     public ProcessExecutionState(ProcessExecution execution, ProcessContext scopedContext, String currentState)
     {
         this.id = COUNTER.nextId();

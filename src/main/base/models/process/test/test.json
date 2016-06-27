@@ -32,7 +32,7 @@
                     "expression": "property('value') >= property('limit')",
                     "transition": {
                         "to": "end",
-                        "action" : "syslog('Jumping to End'); property('increment') = property('increment') + 1"
+                        "action" : "syslog('Jumping to End')"
                     }
                 }
             ],

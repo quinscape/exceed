@@ -45,7 +45,7 @@ domready(function ()
     var systemInfo  = evaluateEmbedded("system-info", "x-ceed/system-info");
 
     sys.init( systemInfo.contextPath, bodyData.appName);
-    domainService.init(data._exceed.enums);
+    domainService.init(data._exceed.applicationDomain);
 
     console.info("Server actions", systemInfo.actions);
     actionService.initServerActions(systemInfo.actions);

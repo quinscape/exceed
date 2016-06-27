@@ -3,22 +3,53 @@
         "Form": {
             "classes": ["element"],
             "queries": {
-                "data": "query( prop('type').fields(childAttributes('field'))).filter( prop('filter') )"
+                "data": "query( prop('type').fields(childAttributes('field', 'value'))).filter( prop('filter') )"
             },
             "propTypes": {
+                "data": {
+                    "type": "CURSOR_EXPRESSION"
+                },
                 "type": {
                     "client": false,
                     "type": "QUERY_EXPRESSION",
                     "rule": "domainType()",
                     "required" : true
                 },
+                "filter": {
+                    "client": false,
+                    "type" : "FILTER_EXPRESSION",
+                    "rule": "filterExpr(query(prop('type')))",
+                    "required" : true
+                },
                 "horizontal": {
                     "type": "BOOLEAN"
                 },
-                "filter": {
-                    "client": false,
-                    "rule": "filterExpr(query(prop('type')))",
-                    "required" : true
+                "labelClass": {
+                    "type": "CLASSES",
+                    "description" : "HTML classes to apply to the label element"
+                },
+                "wrapperClass": {
+                    "type": "CLASSES",
+                    "description" : "HTML classes to apply to the field wrapper element in horizontal mode"
+                }
+            },
+            "providesContext": "DataListCursor",
+            "childRule": "hasClass('element') || hasClass('field')",
+            "parentRule": "!parentHasClass('iterative-context')"
+        },
+        "FormBlock": {
+            "classes": ["element"],
+            "propTypes": {
+                "horizontal": {
+                    "type": "BOOLEAN"
+                },
+                "labelClass": {
+                    "type": "CLASSES",
+                    "description" : "HTML classes to apply to the label element"
+                },
+                "wrapperClass": {
+                    "type": "CLASSES",
+                    "description" : "HTML classes to apply to the field wrapper element in horizontal mode"
                 }
             },
             "providesContext": "DataList",
@@ -26,15 +57,16 @@
             "parentRule": "!parentHasClass('iterative-context')"
         },
         "StaticText": {
-            "classes": ["field"],
+            "classes": ["field", "element"],
             "propTypes": {
-                "name": {
-                    "rule": "fieldOf(parent.prop('type'))",
-                    "required" : true
+                "context" : {
+                    "context": true,
+                    "contextType" : "DataListCursor"
                 },
-                "context": {
-                    "context": "context.getCursor(props.name)",
-                    "contextType" : "DataList"
+                "value": {
+                    "rule": "fieldOf(parent.prop('type'))",
+                    "type": "CURSOR_EXPRESSION",
+                    "required" : true
                 },
                 "wrapperClass" : {
                     "type" : "CLASSES"
@@ -43,18 +75,23 @@
                     "type" : "CLASSES"
                 }
             },
-            "providesContext": "DataListCursor"
+            "providesContext": "DataListCursor",
+            "viewContext": {
+                "propertyType" : "Integer",
+                "defaultValue"  : "0"
+            }
         },
         "Field": {
-            "classes": ["field"],
+            "classes": ["element", "field"],
             "propTypes": {
-                "name": {
-                    "rule": "fieldOf(parent.prop('type'))",
-                    "required" : true
+                "context" : {
+                    "context": true,
+                    "contextType" : "DataListCursor"
                 },
-                "context": {
-                    "context": "context.getCursor(props.name)",
-                    "contextType" : "DataList"
+                "value": {
+                    "rule": "fieldOf(parent.prop('type'))",
+                    "type": "CURSOR_EXPRESSION",
+                    "required" : true
                 },
                 "wrapperClass" : {
                     "type" : "CLASSES"
@@ -65,7 +102,7 @@
             }
         },
         "Button": {
-            "classes": ["field", "toolbar-child"],
+            "classes": ["element", "field", "toolbar-child"],
             "parentRule" : "!viewInProcess()",
             "propTypes": {
                 "context": {
@@ -83,7 +120,7 @@
             }
         },
         "TButton": {
-            "classes": ["field", "toolbar-child"],
+            "classes": ["element", "field", "toolbar-child"],
             "parentRule" : "viewInProcess()",
             "propTypes": {
                 "context": {
@@ -105,7 +142,7 @@
                 },
                 "discard" : {
                     "type" : "BOOLEAN",
-                    "defaultValue" : "{ transition(props.transition).discard }"
+                    "defaultValue" : "transition(props.transition).discard"
                 }
             }
         },

@@ -1,0 +1,17 @@
+{
+    "name": "EnumTypeModel",
+    "storage": "modelStorage",
+    "properties": [
+        {
+            "name": "name",
+            "type": "PlainText",
+            "required": true
+        },
+        {
+            "name": "values",
+            "type": "List",
+            "typeParam": "PlainText",
+            "required": true
+        }
+    ]
+}

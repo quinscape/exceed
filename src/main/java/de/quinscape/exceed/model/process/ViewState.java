@@ -17,14 +17,14 @@ public class ViewState
     @JSONTypeHint(Transition.class)
     public void setTransitions(Map<String, Transition> transitions)
     {
-        for (Map.Entry<String, Transition> entry : transitions.entrySet())
-        {
-            String name = entry.getKey();
-            Transition transition = entry.getValue();
-            transition.setName(name);
-            transition.setFrom(this.getName());
-        }
         this.transitions = transitions;
+    }
+
+
+    @Override
+    public void setName(String name)
+    {
+        super.setName(name);
     }
 
 
@@ -36,7 +36,8 @@ public class ViewState
         {
             for (Map.Entry<String, Transition> entry : transitions.entrySet())
             {
-                String to = entry.getValue().getTo();
+                Transition transition = entry.getValue();
+                String to = transition.getTo();
                 if (to == null)
                 {
                     throw new IllegalStateException("Process '" + process.getName() + "':  Transition '" + entry.getKey() + "' has no target process state");
@@ -45,6 +46,8 @@ public class ViewState
                 {
                     throw new IllegalStateException("Process '" + process.getName() + "':  Transition '" + entry.getKey() + "' references non-existing process-state '" + to + "'");
                 }
+
+                transition.setFrom(getName());
             }
         }
     }

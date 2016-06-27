@@ -1,9 +1,11 @@
-var actionService = require("../service/action");
+const actionService = require("../service/action");
 
-var DataList = require("../util/data-list");
+const DataListCursor = require("../util/data-list-cursor");
 
 module.exports = function (model)
 {
+    console.log("STORE", model);
+
     if (!model)
     {
         throw new Error("No model");
@@ -14,9 +16,9 @@ module.exports = function (model)
         throw new Error("No data");
     }
 
-    var data =  model.object;
+    var data = model.object;
 
-    if (data instanceof DataList.Cursor)
+    if (data instanceof DataListCursor)
     {
         model.object = data.getDomainObject(model.type);
     }
@@ -29,7 +31,6 @@ module.exports = function (model)
         throw new Error("Cannot store unknown object" + model)
     }
 
-    //console.log("STORE", model);
 
     return actionService.execute(model, true);
 };

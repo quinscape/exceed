@@ -42,12 +42,12 @@ public class CompletionService
 
     private final static Logger log = LoggerFactory.getLogger(CompletionService.class);
 
-    private static final PropDeclaration VISIBLE_IF_DECLARATION = JSONParser.defaultJSONParser().parse(
+    private static final PropDeclaration RENDERED_IF_DECLARATION = JSONParser.defaultJSONParser().parse(
         PropDeclaration.class,
         "{ \"description\" : \"Expression that determines whether the component is rendered or not.\", \"type\" : \"FILTER_EXPRESSION\" }"
     );
 
-    private static final String VISIBLE_IF_PROP = "visibleIf";
+    private static final String RENDERED_IF_PROP = "renderedIf";
 
     @Autowired
     private ComponentRegistry componentRegistry;
@@ -92,7 +92,7 @@ public class CompletionService
                 ComponentRegistration componentRegistration = componentRegistry.getComponentRegistration(componentName);
                 ComponentDescriptor currentDescriptor = componentRegistration.getDescriptor();
 
-                if (matchesRule(runtimeContext.getRuntimeApplication(), viewModel, childRuleExpression, componentRegistration.getComponentName(), currentDescriptor, parentClasses))
+                if (matchesRule(runtimeContext.getRuntimeApplication(), viewModel, childRuleExpression, componentRegistration.getComponentName(), currentDescriptor, parentClasses, index))
                 {
                     List<ComponentTemplate> templates = currentDescriptor.getTemplates();
                     if (templates.size() == 0)
@@ -144,7 +144,7 @@ public class CompletionService
     }
 
 
-    private boolean matchesRule(RuntimeApplication runtimeApplication, View viewModel, ASTExpression childRuleExpression, String componentName, ComponentDescriptor componentDescriptor, Set<String> parentClasses)
+    private boolean matchesRule(RuntimeApplication runtimeApplication, View viewModel, ASTExpression childRuleExpression, String componentName, ComponentDescriptor componentDescriptor, Set<String> parentClasses, int index)
     {
         if (!(Boolean) expressionService.evaluate(childRuleExpression,  new ChildRuleEnvironment(runtimeApplication, viewModel, componentName, componentDescriptor)))
         {
@@ -152,7 +152,7 @@ public class CompletionService
         }
 
         ASTExpression parentRuleExpression = componentDescriptor.getParentRuleExpression();
-        return parentRuleExpression == null || (Boolean) expressionService.evaluate(parentRuleExpression, new ParentRuleEnvironment(runtimeApplication, viewModel, parentClasses));
+        return parentRuleExpression == null || (Boolean) expressionService.evaluate(parentRuleExpression, new ParentRuleEnvironment(runtimeApplication, viewModel, parentClasses, index));
     }
 
 
@@ -195,9 +195,9 @@ public class CompletionService
         for (String propName : unusedPropNames)
         {
             PropDeclaration propDecl;
-            if (propName.equals(VISIBLE_IF_PROP))
+            if (propName.equals(RENDERED_IF_PROP))
             {
-                propDecl = VISIBLE_IF_DECLARATION;
+                propDecl = RENDERED_IF_DECLARATION;
             }
             else
             {
@@ -221,11 +221,7 @@ public class CompletionService
         Map<String, PropDeclaration> propTypes = descriptor.getPropTypes();
 
         Set<String> unusedPropNames = new HashSet<>(propTypes.keySet());
-
-        if (descriptor.hasClass(ComponentClasses.VISIBLE_IF))
-        {
-            unusedPropNames.add(VISIBLE_IF_PROP);
-        }
+        unusedPropNames.add(RENDERED_IF_PROP);
         unusedPropNames.removeAll(componentModel.getAttrs().getNames());
         return unusedPropNames;
     }

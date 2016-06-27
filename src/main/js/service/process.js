@@ -1,5 +1,6 @@
 var uri = require("../util/uri");
 var viewService = require("./view");
+var Scope = require("./scope");
 var sys = require("../sys");
 
 var assign = require("object.assign").getPolyfill();
@@ -16,15 +17,21 @@ function renderURI(locInfo, transition)
     return uri( "/app/" + sys.appName + locInfo.routingTemplate, params)
 }
 
-const NO_OBJECT = { _type: null };
-
 module.exports = {
     transition: function(name, data)
     {
-        var locInfo = viewService.getRuntimeInfo().location;
+        var runtimeInfo = viewService.getRuntimeInfo();
+        var locInfo = runtimeInfo.location;
+        var scopeInfo = runtimeInfo.scopeInfo;
+
+        var names = scopeInfo.queryRefs.concat(scopeInfo.transitionRefs[name].viewScopeRefs);
+
         return (
             viewService.navigateTo( renderURI(locInfo, name),
-                data || NO_OBJECT,
+                {
+                    objectContext: data,
+                    contextUpdate: Scope.getScopeUpdate(names)
+                },
                 function (data)
                 {
                     console.log(data);

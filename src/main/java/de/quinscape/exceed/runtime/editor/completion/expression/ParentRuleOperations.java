@@ -15,6 +15,12 @@ public class ParentRuleOperations
     }
 
     @Operation
+    public Integer index(ExpressionContext<ParentRuleEnvironment> ctx)
+    {
+        return ctx.getEnv().getIndex();
+    }
+
+    @Operation
     public boolean viewInProcess(ExpressionContext<ParentRuleEnvironment> ctx)
     {
         ParentRuleEnvironment env = ctx.getEnv();

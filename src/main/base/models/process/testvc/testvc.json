@@ -1,0 +1,43 @@
+{
+    "startTransition": {
+        "to": "main"
+    },
+    "context": {
+        "properties": {
+            "limit": {
+                "type": "Integer",
+                "defaultValue": "10"
+            }
+        }
+    },
+    "states": {
+        "main": {
+            "type": "process.ViewState",
+            "transitions": {
+                "inc": {
+                    "to": "check",
+                    "action": "property('value') = property('value') + 1"
+                }
+            }
+        },
+        "check": {
+            "type": "process.DecisionState",
+            "decisions": [
+                {
+                    "expression": "property('value') >= property('limit')",
+                    "transition": {
+                        "to": "end",
+                        "action" : "syslog('Jumping to End')"
+                    }
+                }
+            ],
+            "defaultTransition": {
+                "to": "main",
+                "discard": true
+            }
+        },
+        "end": {
+            "type": "process.ViewState"
+        }
+    }
+}

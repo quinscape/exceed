@@ -1,0 +1,94 @@
+{
+    "root": {
+        "name": "View",
+        "kids": [
+            {
+                "name": "ViewContext",
+                "kids": [
+                ]
+            },
+            {
+                "name": "Grid",
+                "attrs": {
+                    "fluid": "{ true }"
+                },
+                "kids": [
+                    {
+                        "name": "Row",
+                        "kids": [
+                            {
+                                "name": "Col",
+                                "attrs": {
+                                    "md": "{ 6 }"
+                                },
+                                "kids": [
+                                    {
+                                        "name": "Heading",
+                                        "attrs": {
+                                            "id": "myHeading",
+                                            "value": "Scoped Object Edit x6"
+                                        }
+                                    },
+                                    {
+                                        "name": "Form",
+                                        "attrs": {
+                                            "id": "myForm",
+                                            "data": "{ object('scopedFoo') }"
+                                        },
+                                        "kids": [
+                                            {
+                                                "name": "StaticText",
+                                                "attrs": {
+                                                    "value": "id"
+                                                }
+                                            },
+                                            {
+                                                "name": "Field",
+                                                "attrs": {
+                                                    "value": "name"
+                                                }
+                                            },
+                                            {
+                                                "name": "Toolbar",
+                                                "kids": [
+                                                    {
+                                                        "name": "TButton",
+                                                        "attrs": {
+                                                            "transition": "cancel",
+                                                            "text": "Cancel"
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "TButton",
+                                                        "attrs": {
+                                                            "transition": "update",
+                                                            "text": "Update"
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "TButton",
+                                                        "attrs": {
+                                                            "transition": "save",
+                                                            "text": "Save (current)"
+                                                        }
+                                                    },
+                                                    {
+                                                        "name": "TButton",
+                                                        "attrs": {
+                                                            "transition": "save-scoped",
+                                                            "text": "Save (scoped)"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

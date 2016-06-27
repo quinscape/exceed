@@ -1,10 +1,14 @@
 {
     "components": {
+        "View": {
+            "classes": ["toplevel"],
+            "childRule" : "hasClass('view-child')"
+        },
         "Heading": {
             "classes": ["element"],
             "propTypes": {
                 "value": {
-                    "rule": "plaintText()"
+                    "type" : "PLAINTEXT"
                 },
                 "size": {
                     "rule": "range(1,6)"

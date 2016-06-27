@@ -35,28 +35,6 @@ public abstract class ScopedElementModel
         this.description = description;
     }
 
-
-    public static ScopedElementModel find(RuntimeContext runtimeContext, String name, ScopedValueType type)
-    {
-        ScopedContextChain scopedContextChain = runtimeContext.getScopedContextChain();
-
-        ScopedContext context;
-        switch (type)
-        {
-
-            case PROPERTY:
-                context = scopedContextChain.findScopeWithProperty(name);
-                return context != null ? context.getContextModel().getProperties().get(name) : null;
-            case OBJECT:
-                context = scopedContextChain.findScopeWithObject(name);
-                return context != null ? context.getContextModel().getObjects().get(name) : null;
-            case LIST:
-                context = scopedContextChain.findScopeWithList(name);
-                return context != null ? context.getContextModel().getLists().get(name) : null;
-            default:
-                throw new IllegalStateException("Unhandled type: " + type);
-        }
-
-    }
 }
+
 

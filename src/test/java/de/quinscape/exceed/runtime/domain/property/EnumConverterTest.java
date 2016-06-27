@@ -25,7 +25,7 @@ public class EnumConverterTest
         final EnumConverter converter = new EnumConverter();
         final TestApplication application = new TestApplicationBuilder().build();
 
-        assertThat(converter.convertToJSON(application.createRuntimeContext(), 3L), is(3L));
-        assertThat(converter.convertToJSON(application.createRuntimeContext(), 4L), is(4L));
+        assertThat(converter.convertToJSON(application.createRuntimeContext(), 3), is(3L));
+        assertThat(converter.convertToJSON(application.createRuntimeContext(), 4), is(4L));
     }
 }

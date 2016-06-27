@@ -16,4 +16,14 @@ public class ScopedListModel
     {
         this.queryExpression = queryExpression;
     }
+
+
+    @Override
+    public String toString()
+    {
+        return super.toString() + ": "
+            + "name = '" + getName() + '\''
+            + "queryExpression = '" + queryExpression + '\''
+            ;
+    }
 }

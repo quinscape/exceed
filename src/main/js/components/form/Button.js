@@ -4,7 +4,7 @@ var cx = require("classnames");
 var i18n  = require("../../service/i18n");
 var actionService  = require("../../service/action");
 
-var FormContext = require("./form-context");
+var FormContext = require("../../util/form-context");
 
 /**
  * Action executing button
@@ -40,7 +40,6 @@ var Button = React.createClass({
     render: function ()
     {
         var formContext = this.context.formContext;
-        var dataList = formContext.dataList;
         var id = this.state.id;
         var isDisabled = this.isDisabled();
         return (
@@ -56,7 +55,7 @@ var Button = React.createClass({
 
                     if (!this.isDisabled())
                     {
-                        actionService.execute( this.props.action, dataList.getRaw());
+                        actionService.execute( this.props.action, false);
                     }
                     ev.preventDefault();
                 } }/>

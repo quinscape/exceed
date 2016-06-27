@@ -8,6 +8,7 @@ import de.quinscape.exceed.model.change.Shutdown;
 import de.quinscape.exceed.model.change.StyleChange;
 import de.quinscape.exceed.model.change.Timeout;
 import de.quinscape.exceed.model.context.ContextModel;
+import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.routing.Mapping;
@@ -24,6 +25,7 @@ import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.process.ProcessExecutionState;
+import de.quinscape.exceed.runtime.process.TransitionData;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.ResourceChangeListener;
 import de.quinscape.exceed.runtime.resource.ResourceLoader;
@@ -32,15 +34,17 @@ import de.quinscape.exceed.runtime.resource.ResourceWatcher;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.ModuleResourceEvent;
 import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
+import de.quinscape.exceed.runtime.schema.SchemaConfigurationService;
 import de.quinscape.exceed.runtime.scope.ApplicationContext;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
+import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.scope.SessionContext;
+import de.quinscape.exceed.runtime.scope.ViewContext;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.service.ProcessService;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
 import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;
-import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.service.StyleService;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
 import de.quinscape.exceed.runtime.util.FileExtension;
@@ -127,8 +131,6 @@ public class DefaultRuntimeApplication
     private final ScopedContextFactory scopedContextFactory;
 
     private long lastChange;
-
-    public final static String RUNTIME_INFO_NAME = "_exceed";
 
     private final RuntimeContextFactory runtimeContextFactory;
 
@@ -255,7 +257,15 @@ public class DefaultRuntimeApplication
                 String stateId = (String) runtimeContext.getLocationParams().get(STATE_ID_PARAMETER);
 
                 boolean redirect;
-                if (stateId != null)
+                if (stateId == null)
+                {
+                    log.debug("Start process {}", process.getName());
+
+                    state = processService.start(runtimeContext, process);
+                    state.register(request.getSession());
+                    redirect = true;
+                }
+                else
                 {
                     ProcessExecutionState initialState = ProcessExecutionState.lookup(request.getSession(), stateId);
                     if (initialState == null)
@@ -267,7 +277,8 @@ public class DefaultRuntimeApplication
                     if (transition != null)
                     {
                         log.debug("Process state {}, transition = {}", stateId, transition);
-                        state = processService.resume(runtimeContext, initialState, transition, RequestUtil.readRequestBody(request));
+                        final String json = RequestUtil.readRequestBody(request);
+                        state = processService.resume(runtimeContext, initialState, transition, TransitionData.parse(runtimeContext, initialState.getExecution().getProcessName(), initialState.getCurrentState(), json));
                         state.register(request.getSession());
 
                         runtimeContext.setVariable(STATE_ID_PARAMETER, state.getId());
@@ -282,14 +293,6 @@ public class DefaultRuntimeApplication
 
                         redirect = false;
                     }
-                }
-                else
-                {
-                    log.debug("Start process {}", process.getName());
-
-                    state = processService.start(runtimeContext, process);
-                    state.register(request.getSession());
-                    redirect = true;
                 }
 
                 if (redirect)
@@ -337,6 +340,14 @@ public class DefaultRuntimeApplication
             {
                 updateComponentVars(runtimeContext, request, response, state, view);
                 return;
+            }
+
+            // process service will have already initialized a view context unless a start state is redirect-after-posted to.
+            if (runtimeContext.getScopedContextChain().getViewContext() == null)
+            {
+                final ViewContext viewContext = scopedContextFactory.createViewContext(view);
+                scopedContextFactory.initializeContext(runtimeContext, viewContext);
+                runtimeContext.getScopedContextChain().addContext(viewContext);
             }
 
             ViewResult data;
@@ -418,24 +429,6 @@ public class DefaultRuntimeApplication
     }
 
 
-    private DomainObject getTransitionDomainContext(RuntimeContext runtimeContext, String json) throws ParseException
-    {
-        DomainObject partialDomainObjectContext;
-        log.debug("Domain Object context: {}", json);
-
-        partialDomainObjectContext = domainService.toDomainObject(GenericDomainObject.class, json);
-
-        if (partialDomainObjectContext != null && partialDomainObjectContext.getDomainType() == null)
-        {
-            partialDomainObjectContext = null;
-        }
-        partialDomainObjectContext = DomainUtil.convertToJava(runtimeContext, partialDomainObjectContext);
-
-        log.debug("Partial object context: {}", partialDomainObjectContext);
-        return partialDomainObjectContext;
-    }
-
-
     private ViewResult processView(HttpServletRequest request, HttpServletResponse response, RuntimeContext runtimeContext, ModelMap model, View view, ProcessExecutionState state) throws IOException
     {
         runtimeContext.setView(view);
@@ -453,7 +446,7 @@ public class DefaultRuntimeApplication
             throw new IllegalStateException("No view model JSON set in view");
         }
 
-        return new ViewResult(viewModelJSON, viewDataJSON);
+        return new ViewResult(viewModelJSON, JSON.formatJSON(viewDataJSON));
     }
 
 
@@ -516,7 +509,7 @@ public class DefaultRuntimeApplication
         Map<String,Object> vars = parseVars(varsJSON);
 
         ComponentModel componentModel = view.find((m) -> {
-            AttributeValue value = m.getAttribute("id");
+            AttributeValue value = m.getAttribute(DomainType.ID_PROPERTY);
             return value != null && componentId.equals(value.getValue());
         });
 
@@ -676,6 +669,11 @@ public class DefaultRuntimeApplication
         log.debug("onResourceChange:  {}:{}", resourceEvent, root, modulePath);
 
         ResourceLocation resourceLocation = resourceLoader.getResourceLocation(modulePath);
+
+        if (resourceLocation == null)
+        {
+            return;
+        }
 
         AppResource topResource = resourceLocation.getHighestPriorityResource();
         ResourceRoot rootOfTopResource = topResource.getResourceRoot();

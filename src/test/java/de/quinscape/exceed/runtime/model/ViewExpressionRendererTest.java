@@ -4,6 +4,7 @@ import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import org.junit.Before;
@@ -12,10 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.JSONParser;
 
-import static org.hamcrest.Matchers.*;
+import static de.quinscape.exceed.model.view.ComponentModelBuilder.*;
 import static org.hamcrest.MatcherAssert.*;
-
-import static de.quinscape.exceed.model.view.ComponentModelBuilder.component;
+import static org.hamcrest.Matchers.*;
 
 public class ViewExpressionRendererTest
 {
@@ -35,7 +35,7 @@ public class ViewExpressionRendererTest
 
         componentModel =
             component("TestComponent")
-                .withAttribute("id", "testComponentId")
+                .withAttribute(DomainType.ID_PROPERTY, "testComponentId")
                 .withAttribute("intProp", "{ 123 }")
                 .withAttribute("floatProp", "{ 123.3 }")
                 .withAttribute("boolProp", "{ true }")
@@ -49,11 +49,11 @@ public class ViewExpressionRendererTest
         componentModel.setComponentRegistration(new ComponentRegistration("TestComponent", componentDescriptor, "",
             null, null));
 
-        path = new ComponentPath().firstChildPath();
-        path.increment();
-        path.increment();
-        path = path.firstChildPath();
-        path.increment();
+        path = new ComponentPath().firstChildPath("");
+        path.increment("");
+        path.increment("");
+        path = path.firstChildPath("");
+        path.increment("");
     }
 
 

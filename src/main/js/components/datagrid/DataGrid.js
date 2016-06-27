@@ -16,6 +16,7 @@ var PagingComponent = require("../../ui/PagingComponent");
 var Enum = require("../../util/enum");
 
 var converter = require("../../service/property-converter");
+var domainService = require("../../service/domain");
 
 var immutableUpdate = require("react-addons-update");
 
@@ -35,7 +36,7 @@ var Column = React.createClass({
             return (
                 <td>
                     <p className="form-control-static">
-                        { converter.toUser(this.props.context.value, propertyType).value }
+                        { converter.toUser(this.props.context.get(), propertyType).value }
                     </p>
                 </td>
             );
@@ -177,7 +178,7 @@ var DataGrid = React.createClass({
                 <Header
                     key={ i }
                     currentSortLink={ currentSortLink }
-                    heading={ i18n(kid.attrs.heading || (column.type + "." + column.name)) }
+                    heading={ i18n(kid.attrs.heading || (column.domainType  ? column.domainType : column.type) + "." + column.name) }
                     sort={ name }
                     />
             );
@@ -231,9 +232,13 @@ var DataGrid = React.createClass({
     {
         //console.log("DATAGRID");
         //console.dir(this.props);
-        var queryResult = new DataList(this.props.result, this.onChange);
+        var resultList = new DataList(
+            domainService.getDomainTypes(),
+            this.props.result,
+            this.onChange
+        );
 
-        var count = queryResult.rows.length;
+        var count = resultList.rows.length;
         var rows;
         if (!count)
         {
@@ -247,7 +252,7 @@ var DataGrid = React.createClass({
             {
                 rows[i] = (
                     <tr key = { i }>
-                        { this.props.renderChildrenWithContext( queryResult.getCursor([i])) }
+                        { this.props.renderChildrenWithContext( resultList.getCursor([i])) }
                     </tr>
                 )
             }

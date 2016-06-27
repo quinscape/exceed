@@ -68,27 +68,27 @@ public class ClientViewJSONGenerator
     public String toJSON(RuntimeApplication application, View view, JSONFormat jsonFormat)
     {
         JSONBuilder builder = JSONBuilder.buildObject();
+
+        builder.property("type", "view.View")
+            .property("name", view.getName())
+            .property("preview", view.isPreview())
+            .property("processName", view.getProcessName());
+
+        String version = view.getVersion();
+        if (version != null)
         {
-            builder.property("type", "view.View")
-                .property("name", view.getName())
-                .property("preview", view.isPreview())
-                .property("processName", view.getProcessName());
-
-            String version = view.getVersion();
-            if (version != null)
-            {
-                builder.property("version", version);
-            }
-
-            JSONBuilder.Level lvl = builder.getCurrentLevel();
-
-            builder.objectProperty("root");
-            {
-                dumpComponentRecursive(builder, application, view, view.getRoot(), new ComponentPath(), jsonFormat);
-                builder.closeUntil(lvl);
-            }
-            builder.property("comments", view.getComments());
+            builder.property("version", version);
         }
+
+        JSONBuilder.Level lvl = builder.getCurrentLevel();
+
+        builder.objectProperty("root");
+
+        dumpComponentRecursive(builder, application, view, view.getRoot(), new ComponentPath(), jsonFormat);
+        builder.closeUntil(lvl);
+
+        builder.property("comments", view.getComments());
+
         return builder.output();
     }
 
@@ -209,29 +209,38 @@ public class ClientViewJSONGenerator
         if (kids != null)
         {
             builder.arrayProperty("kids");
-            ComponentPath kidPath = path.firstChildPath();
+            ComponentPath kidPath = null;
             for (ComponentModel kid : kids)
             {
-                if (kid.getName().equals(ComponentModel.STRING_MODEL_NAME))
+                final String name = kid.getName();
+
+                if (kidPath == null)
+                {
+                    kidPath = path.firstChildPath(name);
+                }
+                else
+                {
+                    kidPath.increment(name);
+                }
+
+                if (name.equals(ComponentModel.STRING_MODEL_NAME))
                 {
                     AttributeValue value = kid.getAttribute("value");
                     ASTExpression astExpression = value.getAstExpression();
 
                     builder.objectElement();
-                    {
-                        builder.property("name", ComponentModel.STRING_MODEL_NAME);
 
-                        builder.objectProperty("attrs");
-                        builder.property("value", value.getValue());
-                        builder.close();
-                    }
+                    builder.property("name", ComponentModel.STRING_MODEL_NAME);
+
+                    builder.objectProperty("attrs");
+                    builder.property("value", value.getValue());
+                    builder.close();
 
                     if (astExpression != null)
                     {
                         builder.objectProperty("exprs");
                         builder.property("value", transformExpression(astExpression, application, view, componentModel, "value", path, false));
                         builder.close();
-
                     }
                     builder.close();
                 }
@@ -240,7 +249,6 @@ public class ClientViewJSONGenerator
                     builder.objectElement();
                     dumpComponentRecursive(builder, application, view, kid, kidPath, jsonFormat);
                 }
-                kidPath.increment();
             }
             builder.close();
         }
@@ -258,7 +266,11 @@ public class ClientViewJSONGenerator
             AttributeValue defaultValue = propDecl.getDefaultValue();
             if ((defaultValue.getAstExpression() != null) == isExpression)
             {
-                if (!isExpression)
+                if (isExpression)
+                {
+                    builder.property(name, transformExpression(defaultValue.getAstExpression(), application, view, componentModel, name, path, propDecl.getType() == PropType.ACTION_EXPRESSION));
+                }
+                else
                 {
                     if (defaultValue.getType() == AttributeValueType.EXPRESSION_ERROR)
                     {
@@ -269,10 +281,6 @@ public class ClientViewJSONGenerator
                         builder.property(name, defaultValue.getValue());
                     }
 
-                }
-                else
-                {
-                    builder.property(name, transformExpression(defaultValue.getAstExpression(), application, view, componentModel, name, path, propDecl.getType() == PropType.ACTION_EXPRESSION));
                 }
             }
         }
@@ -316,7 +324,7 @@ public class ClientViewJSONGenerator
                         }
                         else
                         {
-                            renameIdentifier(contextAST, "context", contextAttrAST.jjtGetChild(0));
+                            contextAST = contextAttrAST;
                         }
                     }
                     else
@@ -423,7 +431,7 @@ public class ClientViewJSONGenerator
 
         if (isActionExpression)
         {
-            expression = (SimpleNode) ExpressionUtil.handleAssignmentAction(expression);
+            expression = ExpressionUtil.handleAssignmentAction(expression);
         }
 
         expression.childrenAccept(renderer, null);

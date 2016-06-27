@@ -2,7 +2,7 @@
     "components": {
         "DataGrid": {
 
-            "classes" : [ "element", "iterative-context", "model-aware", "visible-if" ],
+            "classes" : [ "element", "iterative-context", "model-aware"],
 
             "vars": {
                 "orderBy": "prop('orderBy')",
@@ -52,7 +52,7 @@
                 },
                 "filterTemplate": {
                     "type": "FILTER_EXPRESSION",
-                    "defaultValue" : "{ field().contains(filterValue()) }",
+                    "defaultValue" : "field().contains(filterValue())",
                     "client" : false
                 },
                 "heading": {
@@ -60,7 +60,7 @@
                 },
 
                 "context" : {
-                    "context": "context.getCursor(props.name)",
+                    "context": "context.getCursor([props.name])",
                     "contextType" : "DataListCursor"
                 }
             },

@@ -4,6 +4,8 @@ public class ComponentPath
 {
     private final ComponentPath parent;
 
+    private String description;
+
     private String contextName;
     private int index;
 
@@ -12,13 +14,20 @@ public class ComponentPath
 
     public ComponentPath()
     {
-        this( null, 0);
+        this( null, 0, "");
     }
 
-    private ComponentPath(ComponentPath parent, int index)
+    private ComponentPath(ComponentPath parent, int index, String description)
     {
         this.parent = parent;
         this.index = index;
+        this.description = description;
+    }
+
+
+    public String getDescription()
+    {
+        return description;
     }
 
 
@@ -33,9 +42,11 @@ public class ComponentPath
         return index;
     }
 
-    public void increment()
+    public void increment(String s)
     {
         this.index++;
+        this.description = s;
+        this.providedContext = null;
     }
 
 
@@ -51,9 +62,9 @@ public class ComponentPath
     }
 
 
-    public ComponentPath firstChildPath()
+    public ComponentPath firstChildPath(String name)
     {
-        return new ComponentPath(this, 0);
+        return new ComponentPath(this, 0, name);
     }
 
 

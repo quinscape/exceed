@@ -1,0 +1,22 @@
+{
+    "context": {
+    },
+    "startTransition": {
+        "to": "main"
+    },
+    "states": {
+        "main": {
+            "type": "process.ViewState",
+            "transitions": {
+                "cancel": {
+                    "to": "end",
+                    "discard": true
+                },
+                "save": {
+                    "to": "main",
+                    "action": "syslog('STORE')"
+                }
+            }
+        }
+    }
+}

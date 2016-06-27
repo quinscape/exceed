@@ -96,4 +96,8 @@ RTView.prototype.scopedList = Scope.list;
 RTView.prototype.scopedObject = Scope.object;
 RTView.prototype.scopedProperty = Scope.property;
 
+RTView.prototype.scopedListCursor = Scope.listCursor;
+RTView.prototype.scopedObjectCursor = Scope.objectCursor;
+RTView.prototype.scopedPropertyCursor = Scope.propertyCursor;
+
 module.exports = RTView;

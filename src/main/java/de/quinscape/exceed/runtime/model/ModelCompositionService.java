@@ -106,6 +106,12 @@ public class ModelCompositionService
     {
         String path = resource.getRelativePath();
         String json = new String(resource.read(), UTF8);
+
+        if (json.length() == 0)
+        {
+            return null;
+        }
+
         try
         {
             if (path.equals(APP_MODEL_NAME))
@@ -321,6 +327,7 @@ public class ModelCompositionService
 
     public void postProcessView(RuntimeApplication application, View view)
     {
+        view.initContext();
         view.setCachedJSON(modelJSONService.toJSON(application, view, JSONFormat.CLIENT));
     }
 

@@ -51,6 +51,8 @@ public class ComponentDescriptor
      */
     private final String parentRule;
 
+    private final ComponentViewContext componentViewContext;
+
     /**
      * AST for {@link #parentRule}
      */
@@ -126,11 +128,15 @@ public class ComponentDescriptor
         String providesContext,
 
         @JSONParameter("parentRule")
-        String parentRule) throws ParseException
+        String parentRule,
+        @JSONParameter("viewContext")
+        ComponentViewContext componentViewContext
+    ) throws ParseException
 
     {
         this.vars = vars;
         this.parentRule = parentRule;
+        this.componentViewContext = componentViewContext;
         this.queries = Util.immutableMap(queries);
         this.propTypes = Util.immutableMap(propTypes);
         this.templates = Util.immutableList(templates);
@@ -228,5 +234,11 @@ public class ComponentDescriptor
     public boolean hasClass(String cls)
     {
         return classes.contains(cls);
+    }
+
+
+    public ComponentViewContext getComponentViewContext()
+    {
+        return componentViewContext;
     }
 }

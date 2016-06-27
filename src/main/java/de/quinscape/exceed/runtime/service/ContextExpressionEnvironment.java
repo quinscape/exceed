@@ -1,13 +1,11 @@
 package de.quinscape.exceed.runtime.service;
 
-import de.quinscape.exceed.expression.ASTFunction;
-import de.quinscape.exceed.model.action.ActionModel;
+import de.quinscape.exceed.model.context.ScopedElementModel;
+import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.action.Action;
 import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
-import de.quinscape.exceed.runtime.scope.ScopedContext;
-import org.svenson.util.JSONBeanUtil;
+import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 
 import java.util.Map;
 
@@ -23,16 +21,19 @@ public class ContextExpressionEnvironment
 
     private final Map<String, Object> params;
 
-    private final ScopedContext scopedContext;
+    private final ScopedElementModel scopedElementModel;
+
+    private final ScopedContextChain scopedContext;
 
 
     public ContextExpressionEnvironment(RuntimeContext runtimeContext, ActionService actionService, Map<String,
-        Object> locationParams, ScopedContext scopedContext)
+        Object> locationParams, ScopedElementModel scopedElementModel)
     {
         this.runtimeContext = runtimeContext;
         this.actionService = actionService;
         this.params = locationParams;
-        this.scopedContext = scopedContext;
+        this.scopedElementModel = scopedElementModel;
+        this.scopedContext = runtimeContext.getScopedContextChain();
     }
 
 
@@ -76,12 +77,6 @@ public class ContextExpressionEnvironment
         return params;
     }
 
-    public ScopedContext getScopedContext()
-    {
-        return scopedContext;
-    }
-
-
     public RuntimeContext getRuntimeContext()
     {
         return runtimeContext;
@@ -91,5 +86,11 @@ public class ContextExpressionEnvironment
     public ActionService getActionService()
     {
         return actionService;
+    }
+
+
+    public ScopedElementModel getScopedElementModel()
+    {
+        return scopedElementModel;
     }
 }

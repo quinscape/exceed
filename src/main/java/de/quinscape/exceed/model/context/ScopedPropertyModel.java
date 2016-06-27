@@ -8,7 +8,13 @@ public class ScopedPropertyModel
 {
     private String type;
 
+    private Object typeParam;
+
     private AttributeValue defaultValue;
+
+    private boolean required;
+
+    private int maxLength = -1;
 
 
     public String getType()
@@ -38,5 +44,49 @@ public class ScopedPropertyModel
     public void setDefaultValue(String defaultValue)
     {
         this.defaultValue = AttributeValue.forValue(defaultValue, true);
+    }
+
+
+    public Object getTypeParam()
+    {
+        return typeParam;
+    }
+
+
+    public void setTypeParam(Object typeParam)
+    {
+        this.typeParam = typeParam;
+    }
+
+
+    public int getMaxLength()
+    {
+        return maxLength;
+    }
+
+
+    public void setMaxLength(int maxLength)
+    {
+        this.maxLength = maxLength;
+    }
+
+
+    public boolean isRequired()
+    {
+        return required;
+    }
+
+
+    @Override
+    public String toString()
+    {
+        return super.toString() + ": "
+            + "name = '" + getName() + '\''
+            + "type = '" + type + '\''
+            + ", typeParam = " + typeParam
+            + ", defaultValue = " + defaultValue
+            + ", required = " + required
+            + ", maxLength = " + maxLength
+            ;
     }
 }

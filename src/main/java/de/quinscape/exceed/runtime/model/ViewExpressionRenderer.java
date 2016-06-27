@@ -1,6 +1,8 @@
 package de.quinscape.exceed.runtime.model;
 
 import de.quinscape.exceed.component.ComponentDescriptor;
+import de.quinscape.exceed.component.PropDeclaration;
+import de.quinscape.exceed.component.PropType;
 import de.quinscape.exceed.expression.ASTBool;
 import de.quinscape.exceed.expression.ASTComputedPropertyChain;
 import de.quinscape.exceed.expression.ASTExpression;
@@ -11,6 +13,7 @@ import de.quinscape.exceed.expression.ASTInteger;
 import de.quinscape.exceed.expression.ASTPropertyChain;
 import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.Node;
+import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.AttributeValueType;
 import de.quinscape.exceed.model.view.ComponentModel;
@@ -66,7 +69,7 @@ public class ViewExpressionRenderer
         {
             throw new IllegalArgumentException("path can't be null");
         }
-        AttributeValue attr = componentModel.getAttribute("id");
+        AttributeValue attr = componentModel.getAttribute(DomainType.ID_PROPERTY);
         this.componentId = attr != null ? attr.getValue() : null;
         this.path = path;
         this.componentModel = componentModel;
@@ -252,26 +255,52 @@ public class ViewExpressionRenderer
             buf.append(")");
             return true;
         }
-        else if (operationName.equals("list"))
+        else
         {
-            buf.append("_v.scopedList(");
-            renderMultiBinary(node, ", ", null);
-            buf.append(")");
-            return true;
-        }
-        else if (operationName.equals("object"))
-        {
-            buf.append("_v.scopedObject(");
-            renderMultiBinary(node, ", ", null);
-            buf.append(")");
-            return true;
-        }
-        else if (operationName.equals("property"))
-        {
-            buf.append("_v.scopedProperty(");
-            renderMultiBinary(node, ", ", null);
-            buf.append(")");
-            return true;
+            final PropDeclaration propDeclaration = componentDescriptor.getPropTypes().get(attrName);
+            if (operationName.equals("list"))
+            {
+                if (propDeclaration != null && propDeclaration.getType() == PropType.CURSOR_EXPRESSION)
+                {
+                    buf.append("_v.scopedListCursor(");
+                }
+                else
+                {
+                    buf.append("_v.scopedList(");
+                }
+
+                renderMultiBinary(node, ", ", null);
+                buf.append(")");
+                return true;
+            }
+            else if (operationName.equals("object"))
+            {
+                if (propDeclaration != null && propDeclaration.getType() == PropType.CURSOR_EXPRESSION)
+                {
+                    buf.append("_v.scopedObjectCursor(");
+                }
+                else
+                {
+                    buf.append("_v.scopedObject(");
+                }
+                renderMultiBinary(node, ", ", null);
+                buf.append(")");
+                return true;
+            }
+            else if (operationName.equals("property"))
+            {
+                if (propDeclaration != null && propDeclaration.getType() == PropType.CURSOR_EXPRESSION)
+                {
+                    buf.append("_v.scopedPropertyCursor(");
+                }
+                else
+                {
+                    buf.append("_v.scopedProperty(");
+                }
+                renderMultiBinary(node, ", ", null);
+                buf.append(")");
+                return true;
+            }
         }
         return false;
     }

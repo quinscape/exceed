@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.model;
 
 import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.TestApplication;
 import de.quinscape.exceed.runtime.TestApplicationBuilder;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
@@ -17,8 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 
 
@@ -34,23 +35,7 @@ public class ClientViewJSONGeneratorTest
     @Test
     public void testViewModelClientTransformation() throws Exception
     {
-        Map<String, ComponentDescriptor> descriptors = new HashMap<>();
-
-        descriptors.put("Provider", descriptor("{'providesContext': 'Test'}"));
-        descriptors.put("AnotherProvider", descriptor("{'providesContext' : 'AnotherContext'}"));
-        descriptors.put("Consumer", descriptor("{ 'providesContext': 'Test.Deriv', 'propTypes': { 'ctx': { 'context': true, 'contextType': 'Test'} } }"));
-        descriptors.put("ComputedConsumer", descriptor("{ 'providesContext': 'Test.Deriv2', 'propTypes': { 'ctx': { 'context': 'context[props.name]'} } }"));
-        descriptors.put("DefaultProps", descriptor("{ 'propTypes': { 'defVal' :{ 'defaultValue': 'defVal default'}, 'defExpr' :{ 'defaultValue': '{ \\'default\\' }'}, 'defClient' :{ 'client': false, 'defaultValue': '{ \\'xxx\\' }'}} }"));
-
-        ComponentDescriptor defaultDescriptor = descriptor("{}");
-        descriptors.put("Grid", defaultDescriptor);
-        descriptors.put("Row", defaultDescriptor);
-        descriptors.put("Col", defaultDescriptor);
-        descriptors.put("Heading", defaultDescriptor);
-        descriptors.put("Foo", descriptor("{'classes': ['model-aware']}"));
-        ComponentRegistry registry = new TestRegistry(descriptors);
-
-
+        ComponentRegistry registry = createrTestRegistry();
 
         String json = FileUtils.readFileToString(new File("./src/test/java/de/quinscape/exceed/runtime/model/test-views/client-json-1.json"));
         // external view json
@@ -61,14 +46,15 @@ public class ClientViewJSONGeneratorTest
         //log.info("FLAT: {}", view.getRoot().flattened().map(ComponentModel::getName).collect(Collectors.toList()));
 
         // to client format
-        String out = viewJSONGenerator.toJSON(new TestApplicationBuilder().build(), view, JSONFormat.CLIENT);
+        final TestApplication app = new TestApplicationBuilder().build();
+        String out = viewJSONGenerator.toJSON(app, view, JSONFormat.CLIENT);
 
         //log.info(JSON.formatJSON(out));
 
         // .. and then parsed as Map for testing ( the client format is only used on the client side )
 
         Map viewAsMap = JSONParser.defaultJSONParser().parse(Map.class, out);
-        Map<String,Object> grid = (Map<String, Object>) viewAsMap.get("root");
+        Map<String,Object> grid = kid((Map<String, Object>) viewAsMap.get("root"), 0);
 
         {
             assertThat(grid.get("name"),is("Grid"));
@@ -118,7 +104,7 @@ public class ClientViewJSONGeneratorTest
         {
             Map<String, Object> foo = kid(col, 2);
             assertThat(foo.get("name"),is("Foo"));
-            assertThat(expr(foo, "model"),is("_v.root.kids[0].kids[0].kids[2]"));
+            assertThat(expr(foo, "model"),is("_v.root.kids[0].kids[0].kids[0].kids[2]"));
         }
 
         {
@@ -146,13 +132,57 @@ public class ClientViewJSONGeneratorTest
 
             assertThat(defaultPropsComponent.get("name"), is("DefaultProps"));
             assertThat(expr(defaultPropsComponent, "defExpr"),is("'default'"));
-            assertThat(attr(defaultPropsComponent, "defVal"),is("defVal default"));
 
             // don't dump client=false props
             assertThat(attr(defaultPropsComponent, "defClient"),is((String)null));
         }
     }
 
+    @Test
+    public void testContextExpr() throws Exception
+    {
+        ComponentRegistry registry = createrTestRegistry();
+
+        String json = FileUtils.readFileToString(new File("" +
+            "./src/test/java/de/quinscape/exceed/runtime/model/test-views/client-json-2.json"));
+        // external view json
+        View view = modelJSONService.toModel(View.class, json);
+
+        ComponentUtil.updateComponentRegsAndParents(registry, view, null);
+
+        //log.info(JSON.formatJSON(out));
+
+        // to client format
+        final TestApplication application = new TestApplicationBuilder().build();
+        String out = viewJSONGenerator.toJSON(application, view, JSONFormat.CLIENT);
+
+        // .. and then parsed as Map for testing ( the client format is only used on the client side )
+        Map viewAsMap = JSONParser.defaultJSONParser().parse(Map.class, out);
+        Map<String,Object> col = kid((Map<String, Object>) viewAsMap.get("root"), 0);
+        assertThat(attr(col, "ctx"),is("{ 'from prop' }"));
+        assertThat(expr(col, "ctx"),is("'from prop'"));
+
+    }
+
+    private ComponentRegistry createrTestRegistry()
+    {
+        Map<String, ComponentDescriptor> descriptors = new HashMap<>();
+
+        descriptors.put("Provider", descriptor("{'providesContext': 'Test'}"));
+        descriptors.put("AnotherProvider", descriptor("{'providesContext' : 'AnotherContext'}"));
+        descriptors.put("Consumer", descriptor("{ 'providesContext': 'Test.Deriv', 'propTypes': { 'ctx': { 'context': true, 'contextType': 'Test'} } }"));
+        descriptors.put("ComputedConsumer", descriptor("{ 'providesContext': 'Test.Deriv2', 'propTypes': { 'ctx': { 'context': 'context[props.name]'} } }"));
+        descriptors.put("DefaultProps", descriptor("{ 'propTypes': {'defExpr' :{ 'defaultValue': '\\'default\\''}, 'defClient' :{ 'client': false, 'defaultValue': '\\'xxx\\''}} }"));
+
+        ComponentDescriptor defaultDescriptor = descriptor("{}");
+        descriptors.put("View", defaultDescriptor);
+        descriptors.put("Grid", defaultDescriptor);
+        descriptors.put("Row", defaultDescriptor);
+        descriptors.put("Col", defaultDescriptor);
+        descriptors.put("Heading", defaultDescriptor);
+        descriptors.put("Foo", descriptor("{'classes': ['model-aware']}"));
+        return new TestRegistry(descriptors);
+    }
 
 
     private ComponentDescriptor descriptor(String json)
@@ -185,6 +215,7 @@ public class ClientViewJSONGeneratorTest
             throw new IllegalStateException("kids is no list:" + kids);
         }
     }
+
 
 
     private Object mapProp(Map<String, Object> root, String mapPropertyName, String attrName)

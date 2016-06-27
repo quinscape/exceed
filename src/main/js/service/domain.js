@@ -2,7 +2,7 @@
 
 var Promise = require("es6-promise-polyfill").Promise;
 
-var enumsMap;
+var applicationDomain;
 
 var uuid = require("node-uuid");
 
@@ -15,14 +15,21 @@ module.exports =
             "_type" : type
         });
     },
-    init: function (enums)
+    init: function (domainData)
     {
-        //console.log("INIT ENUMS", enums)
-        enumsMap = enums;
+        //console.log("INIT DOMAIN", domainData);
+        applicationDomain = domainData;
     },
     getEnum: function (name)
     {
-        return enumsMap[name];
+        return applicationDomain.enums[name];
+    },
+    getDomainType: function (name)
+    {
+        return applicationDomain.domainTypes[name];
+    },
+    getDomainTypes: function ()
+    {
+        return applicationDomain.domainTypes;
     }
-
 };

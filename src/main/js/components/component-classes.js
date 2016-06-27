@@ -9,12 +9,5 @@ module.exports = {
     If set, the js component will receive "model" and "viewModel" props pointing to its own model and the view model
       respectively.
     */
-    MODEL_AWARE: "model-aware",
-    /**
-    If set, the component can have "visibleIf" attribute that determines if the element is rendered or not. If such an
-      attribute is not given, the element is supposed to be visible.
-     
-      visibility is handled by view-renderer.js.
-    */
-    VISIBLE_IF: "visible-if"
+    MODEL_AWARE: "model-aware"
 };

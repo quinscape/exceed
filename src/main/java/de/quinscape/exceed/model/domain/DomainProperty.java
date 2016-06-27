@@ -8,6 +8,12 @@ import java.util.Map;
 
 public class DomainProperty
 {
+    public final static String DATA_LIST_ROOT_PROPERTY_TYPE = "DataListRoot";
+
+    public final static String DATA_LIST_PROPERTY_TYPE = "DataList";
+
+    public final static String DOMAIN_TYPE_PROPERTY_TYPE = "DomainType";
+
     private String name;
 
     private String type;

@@ -1,8 +1,10 @@
 package de.quinscape.exceed.runtime.scope;
 
 import de.quinscape.exceed.expression.ASTExpression;
-import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.context.ContextModel;
+import de.quinscape.exceed.model.context.ScopedElementModel;
+import de.quinscape.exceed.model.context.ScopedListModel;
+import de.quinscape.exceed.model.context.ScopedObjectModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataList;
@@ -154,51 +156,84 @@ public abstract class AbstractScopedContext
 
         if (contextModel != null)
         {
-            DomainService domainService = runtimeContext.getDomainService();
+            initProperties(runtimeContext, expressionService, actionService, inputValues);
+            initObjects(runtimeContext, expressionService, actionService);
+        }
+    }
 
-            for (ScopedPropertyModel scopedPropertyModel : contextModel.getProperties().values())
+
+    private void initObjects(RuntimeContext runtimeContext, ExpressionService expressionService,
+                             ActionService actionService)
+    {
+        for (ScopedObjectModel scopedObjectModel : contextModel.getObjects().values())
+        {
+
+            final ASTExpression expr = scopedObjectModel.getDefaultValueExpression();
+            if (expr != null)
             {
-                String name = scopedPropertyModel.getName();
-
-                Object value = null;
-                if (inputValues != null)
-                {
-                    Object input = inputValues.get(name);
-                    if (input != null)
-                    {
-                        try
-                        {
-                            value = domainService.getPropertyConverter(scopedPropertyModel.getType()).convertToJava(runtimeContext, input);
-                        }
-                        catch(Exception e)
-                        {
-                            if (log.isDebugEnabled())
-                            {
-                                log.debug("Error converting {} to '{}': {}", input , scopedPropertyModel.getType(), e);
-                            }
-                            // ignore error, use default
-                            value = null;
-                        }
-                    }
-                }
-
-                if (value == null)
-                {
-                    ASTExpression defaultValueExpression = scopedPropertyModel.getDefaultValueExpression();
-                    if (defaultValueExpression != null)
-                    {
-                        ContextExpressionEnvironment env = new ContextExpressionEnvironment(runtimeContext, actionService, runtimeContext.getLocationParams(), null);
-                        value = expressionService.evaluate(defaultValueExpression, env);
-                    }
-                    else
-                    {
-                        value = scopedPropertyModel.getDefaultValue();
-                    }
-                }
-                context.put(name, value);
+                Object value = evaluateDefault(runtimeContext, expressionService, actionService, scopedObjectModel,
+                    expr);
+                context.put(scopedObjectModel.getName(), value);
             }
         }
     }
+
+    private void initProperties(RuntimeContext runtimeContext, ExpressionService expressionService, ActionService
+        actionService, Map<String, Object> inputValues)
+    {
+        DomainService domainService = runtimeContext.getDomainService();
+
+        for (ScopedPropertyModel scopedPropertyModel : contextModel.getProperties().values())
+        {
+            String name = scopedPropertyModel.getName();
+
+            Object value = null;
+            if (inputValues != null)
+            {
+                Object input = inputValues.get(name);
+                if (input != null)
+                {
+                    try
+                    {
+                        value = domainService.getPropertyConverter(scopedPropertyModel.getType()).convertToJava(runtimeContext, input);
+                    }
+                    catch(Exception e)
+                    {
+                        if (log.isDebugEnabled())
+                        {
+                            log.debug("Error converting {} to '{}': {}", input , scopedPropertyModel.getType(), e);
+                        }
+                        // ignore error, use default
+                        value = null;
+                    }
+                }
+            }
+
+            if (value == null)
+            {
+                ASTExpression defaultValueExpression = scopedPropertyModel.getDefaultValueExpression();
+                if (defaultValueExpression != null)
+                {
+                    value = evaluateDefault(runtimeContext, expressionService, actionService, scopedPropertyModel,
+                        defaultValueExpression);
+                }
+                else
+                {
+                    value = scopedPropertyModel.getDefaultValue();
+                }
+            }
+            context.put(name, value);
+        }
+    }
+
+
+    private Object evaluateDefault(RuntimeContext runtimeContext, ExpressionService expressionService, ActionService actionService, ScopedElementModel scopedPropertyModel, ASTExpression defaultValueExpression)
+    {
+        Object value;ContextExpressionEnvironment env = new ContextExpressionEnvironment(runtimeContext, actionService, runtimeContext.getLocationParams(), scopedPropertyModel);
+        value = expressionService.evaluate(defaultValueExpression, env);
+        return value;
+    }
+
 
     private void ensureInitialized()
     {
@@ -213,5 +248,37 @@ public abstract class AbstractScopedContext
     public boolean isInitialized()
     {
         return initialized;
+    }
+
+    public void update(Map<String, Object> contextUpdates)
+    {
+        if (contextUpdates == null || contextUpdates.size() == 0)
+        {
+            return;
+        }
+
+        for (String name : getContextModel().getLists().keySet())
+        {
+            if (contextUpdates.containsKey(name))
+            {
+                context.put(name, contextUpdates.get(name));
+            }
+        }
+
+        for (String name : getContextModel().getObjects().keySet())
+        {
+            if (contextUpdates.containsKey(name))
+            {
+                context.put(name, contextUpdates.get(name));
+            }
+        }
+
+        for (String name : getContextModel().getProperties().keySet())
+        {
+            if (contextUpdates.containsKey(name))
+            {
+                context.put(name, contextUpdates.get(name));
+            }
+        }
     }
 }

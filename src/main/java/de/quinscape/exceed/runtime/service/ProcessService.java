@@ -4,27 +4,37 @@ import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.context.ContextModel;
+import de.quinscape.exceed.model.context.ScopedObjectModel;
+import de.quinscape.exceed.model.context.ScopedPropertyModel;
+import de.quinscape.exceed.model.domain.DomainProperty;
+import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.process.DecisionModel;
 import de.quinscape.exceed.model.process.DecisionState;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.process.Transition;
 import de.quinscape.exceed.model.process.ViewState;
+import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.GenericDomainObject;
+import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.process.ProcessExecution;
 import de.quinscape.exceed.runtime.process.ProcessExecutionState;
 import de.quinscape.exceed.runtime.process.TransitionData;
 import de.quinscape.exceed.runtime.scope.ProcessContext;
+import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
+import de.quinscape.exceed.runtime.scope.ViewContext;
 import de.quinscape.exceed.runtime.util.DomainUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
+
+import java.util.Map;
 
 public class ProcessService
 {
@@ -57,12 +67,12 @@ public class ProcessService
 
         ProcessExecution execution = new ProcessExecution(appName, process.getName());
 
-        return transition(runtimeContext, execution, scopedContext, process.getStartTransition(), null);
+        return transition(runtimeContext, execution, scopedContext, process.getStartTransition(), new TransitionData());
     }
 
 
     public ProcessExecutionState resume(RuntimeContext runtimeContext, ProcessExecutionState state, String
-        transition, String contextJSON)
+        transition, TransitionData transitionData)
     {
         if (transition == null)
         {
@@ -70,27 +80,14 @@ public class ProcessService
         }
 
 
-        DomainObject partialDomainObjectContext = null;
-        if (StringUtils.hasText(contextJSON))
-        {
-            try
-            {
-                partialDomainObjectContext = getTransitionDomainContext(runtimeContext, contextJSON);
-            }
-            catch (ParseException e)
-            {
-                throw new ProcessExecutionException("Error converting context JSON for state '" + state + "':", e);
-            }
-        }
+        final ApplicationModel applicationModel = runtimeContext.getApplicationModel();
 
+        final ProcessExecution execution = state.getExecution();
 
-        ApplicationModel applicationModel = runtimeContext.getApplicationModel();
+        final Process process = applicationModel.getProcess(execution.getProcessName());
 
-        ProcessExecution execution = state.getExecution();
-
-        Process process = applicationModel.getProcess(execution.getProcessName());
-
-        ProcessState processState = process.getStates().get(state.getCurrentState());
+        final String currentState = state.getCurrentState();
+        final ProcessState processState = process.getStates().get(currentState);
 
         if (!(processState instanceof ViewState))
         {
@@ -106,20 +103,23 @@ public class ProcessService
         }
 
         return transition(runtimeContext, state.getExecution(), state.getScopedContext(), transitionModel,
-            partialDomainObjectContext);
+            transitionData);
     }
 
 
     private ProcessExecutionState transition(RuntimeContext runtimeContext, ProcessExecution execution,
-                                             ProcessContext scopedContext, Transition transitionModel, DomainObject
-                                                 partialDomainObjectContext)
+                                             ProcessContext scopedContext, Transition transitionModel, TransitionData transitionData)
     {
-        ApplicationModel applicationModel = runtimeContext.getApplicationModel();
+        final ScopedContextChain scopedContextChain = runtimeContext.getScopedContextChain();
+
+        final ApplicationModel applicationModel = runtimeContext.getApplicationModel();
 
         ProcessContext newScopedCtx = (ProcessContext) scopedContext.copy(runtimeContext);
 
+        newScopedCtx.update(transitionData.getContextUpdate());
 
         DomainObject domainObjectContext;
+        DomainObject partialDomainObjectContext = transitionData.getObjectContext();
         if (transitionModel.isMergeContext())
         {
             DomainService domainService = runtimeContext.getDomainService();
@@ -141,27 +141,42 @@ public class ProcessService
 
         newScopedCtx.setDomainObjectContext(domainObjectContext);
 
-        runtimeContext.getScopedContextChain().addContext(newScopedCtx);
+        scopedContextChain.addContext(newScopedCtx);
+
+        final Process process = applicationModel.getProcess(execution.getProcessName());
+        final ProcessState sourceState = process.getStates().get(transitionModel.getFrom());
+
+        ViewContext viewContext = null;
+        if (sourceState instanceof ViewState)
+        {
+            final View view = process.getView(sourceState.getName());
+            viewContext = scopedContextFactory.createViewContext(view);
+            scopedContextFactory.initializeContext(runtimeContext, viewContext);
+
+            if (sourceState.getName().equals(transitionData.getStateName()))
+            {
+                viewContext.update(transitionData.getContextUpdate());
+            }
+
+            scopedContextChain.addContext(viewContext);
+        }
 
         ASTExpression actionAST = transitionModel.getActionAST();
         if (actionAST != null)
         {
-            ActionExecutionEnvironment environment = new ActionExecutionEnvironment(runtimeContext, runtimeContext
-                .getScopedContextChain(), actionService);
+            ActionExecutionEnvironment environment = new ActionExecutionEnvironment(runtimeContext, scopedContextChain, actionService);
             expressionService.evaluate(actionAST, environment);
+            transitionData.setContextUpdate(viewContext != null ? viewContext.getContext() : null);
         }
 
         String newStateName = transitionModel.getTo();
-
-        Process process = applicationModel.getProcess(execution.getProcessName());
 
         ProcessState targetStateModel = process.getStates().get(newStateName);
 
         // internally handled states
         if (targetStateModel instanceof DecisionState)
         {
-            return decide(runtimeContext, execution, newScopedCtx, (DecisionState) targetStateModel,
-                domainObjectContext);
+            return decide(runtimeContext, execution, newScopedCtx, (DecisionState) targetStateModel, transitionData);
         }
 
         // user handled states
@@ -187,7 +202,7 @@ public class ProcessService
 
 
     private ProcessExecutionState decide(RuntimeContext runtimeContext, ProcessExecution execution, ProcessContext
-        newScopedCtx, DecisionState decisionStateModel, DomainObject domainObjectContext)
+        newScopedCtx, DecisionState decisionStateModel, TransitionData transitionData)
     {
 
         for (DecisionModel decisionModel : decisionStateModel.getDecisions())
@@ -204,31 +219,12 @@ public class ProcessService
 
             if ((Boolean) result)
             {
-                return transition(runtimeContext, execution, newScopedCtx, decisionModel.getTransition(),
-                    domainObjectContext);
+                return transition(runtimeContext, execution, newScopedCtx, decisionModel.getTransition(), transitionData);
             }
         }
 
-        return transition(runtimeContext, execution, newScopedCtx, decisionStateModel.getDefaultTransition(),
-            domainObjectContext);
+        return transition(runtimeContext, execution, newScopedCtx, decisionStateModel.getDefaultTransition(), transitionData);
     }
 
 
-    private DomainObject getTransitionDomainContext(RuntimeContext runtimeContext, String json) throws ParseException
-    {
-        DomainObject partialDomainObjectContext;
-        log.debug("Domain Object context: {}", json);
-
-        TransitionData transitionData = runtimeContext.getDomainService().toDomainObject(TransitionData.class, json);
-        partialDomainObjectContext = transitionData.getObjectContext();
-
-        if (partialDomainObjectContext != null && partialDomainObjectContext.getDomainType() == null)
-        {
-            partialDomainObjectContext = null;
-        }
-        partialDomainObjectContext = DomainUtil.convertToJava(runtimeContext, partialDomainObjectContext);
-
-        log.debug("Partial object context: {}", partialDomainObjectContext);
-        return partialDomainObjectContext;
-    }
 }

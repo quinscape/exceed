@@ -1,0 +1,13 @@
+{
+    "root": {
+        "name": "View",
+        "kids": [
+            {
+                "name": "Consumer",
+                "attrs": {
+                    "ctx": "{ 'from prop' }"
+                }
+            }
+        ]
+    }
+}

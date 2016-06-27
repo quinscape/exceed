@@ -29,7 +29,7 @@ var rtActionAPI = require("./runtime-action-api");
 
 var ComponentClasses = require("../components/component-classes");
 
-const VISIBLE_IF_PROP = "visibleIf";
+const RENDERED_IF_PROP = "renderedIf";
 
 function RenderContext(out)
 {
@@ -83,6 +83,12 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
     var isComponent = components.hasOwnProperty(name);
     if (isComponent)
     {
+        if (name === "ViewContext")
+        {
+            ctx.out.push("false");
+            return;
+        }
+
         componentDescriptor = components[name];
         component = name;
 
@@ -119,9 +125,9 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
 
     var attrsStartIndex;
 
-    if (hasClass(componentDescriptor, ComponentClasses.VISIBLE_IF) && exprs && exprs[VISIBLE_IF_PROP])
+    if (exprs && exprs[RENDERED_IF_PROP])
     {
-        ctx.out.push("!!(" + evaluateExpression(componentModel, VISIBLE_IF_PROP) + ") && ");
+        ctx.out.push("!!(" + evaluateExpression(componentModel, RENDERED_IF_PROP) + ") && ");
     }
 
 
@@ -172,7 +178,7 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
     {
         for (attrName in exprs)
         {
-            if (exprs.hasOwnProperty(attrName) && attrName !== VISIBLE_IF_PROP)
+            if (exprs.hasOwnProperty(attrName) && attrName !== RENDERED_IF_PROP)
             {
                 commaIfNotFirst();
                 indent(ctx, depth + 2);
@@ -315,9 +321,12 @@ module.exports = {
         //console.log("\nRENDER-FN:\n", code);
 
         var renderFn = new Function("_React", "_components", "_RTView", "_catchErrors", "_ErrorReport", "_sys", "_a", code);
-        return function (component)
-        {
-            return renderFn.call(component, React, components, rtViewAPI, catchErrors, ErrorReport, sys, rtActionAPI);
+        return {
+            src: code,
+            fn: function (component)
+            {
+                return renderFn.call(component, React, components, rtViewAPI, catchErrors, ErrorReport, sys, rtActionAPI);
+            }
         };
     }
 };

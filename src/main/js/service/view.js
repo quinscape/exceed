@@ -1,13 +1,21 @@
-var React = require("react");
-var assign = require("object.assign").getPolyfill();
-var Promise = require("es6-promise-polyfill").Promise;
-var security = require("./security");
-var uri = require("../util/uri");
-var ajax = require("./ajax");
+const React = require("react");
+const assign = require("object.assign").getPolyfill();
+const Promise = require("es6-promise-polyfill").Promise;
+const security = require("./security");
+const uri = require("../util/uri");
+const ajax = require("./ajax");
 
-var modelUtil = require("../util/model");
+const DataList = require("../util/data-list");
 
-var update = require("react-addons-update");
+const modelUtil = require("../util/model");
+
+const update = require("react-addons-update");
+
+const FormContext = require("../util/form-context");
+
+const LinkedStateMixin = require("react-addons-linked-state-mixin");
+
+const keys = require("../util/keys");
 
 var InPageEditor = false;
 if (process.env.NODE_ENV !== "production")
@@ -15,11 +23,11 @@ if (process.env.NODE_ENV !== "production")
     InPageEditor = require("../editor/InPageEditor");
 }
 
-var ThrobberComponent = require("../ui/throbber").ThrobberComponent;
+const ThrobberComponent = require("../ui/throbber").ThrobberComponent;
 
-var ErrorReport = require("../ui/ErrorReport.es5");
+const ErrorReport = require("../ui/ErrorReport.es5");
 
-var viewRenderer = require("./view-renderer");
+const viewRenderer = require("./view-renderer");
 
 var currentViewModel = {
     root: {
@@ -31,6 +39,62 @@ var currentViewModel = {
 };
 
 var currentViewData = {};
+
+var scopeDataList;
+var scopeCursor;
+var scopeDirty = {};
+
+function updateViewData(newViewData)
+{
+    console.log("UPDATE VIEW-DATA", newViewData);
+
+    currentViewData = newViewData;
+
+    var scopeData = viewService.getRuntimeInfo().scope;
+    if (scopeData)
+    {
+        if (scopeDataList)
+        {
+            scopeDataList.update(scopeData);
+        }
+        else
+        {
+            scopeDataList = new DataList(require("./domain").getDomainTypes(), scopeData, function (newRows, path)
+            {
+                if (path == null)
+                {
+                    // assume global update with fresh context data
+                    scopeDirty = {};
+                }
+                else
+                {
+                    if (path[0] !== 0)
+                    {
+                        throw new Error("Invalid scope path" + JSON.stringify(path));
+                    }
+
+                    var name = path[1];
+                    if (!viewService.getRuntimeInfo().scopeInfo.viewContext[name])
+                    {
+                        console.log("MARK DIRTY ", name);
+                        scopeDirty[name] = true;
+                    }
+                }
+
+                scopeDataList.rows = newRows;
+
+                //render(
+                //    <ViewComponent model={ currentViewModel } componentData={ currentViewData } />
+                //).catch(function (err)
+                //{
+                //    console.error(err);
+                //});
+            });
+        }
+
+        scopeCursor = scopeDataList.getCursor([0])
+    }
+}
 
 // maps logical view names to view components. Used as a cache to make sure we only generate every view once per version
 // we encounter.
@@ -46,11 +110,8 @@ function lookupRenderFn(viewModel)
     if (!entry || entry.version !== viewModel.version)
     {
         // we (re)create the view component
-        entry = {
-            version: viewModel.version,
-            fn: viewRenderer.createRenderFunction(viewModel)
-        };
-
+        entry = viewRenderer.createRenderFunction(viewModel);
+        entry.version = viewModel.version;
         renderFnCache[viewName] = entry;
     }
 
@@ -101,6 +162,33 @@ function render(viewElem)
 
 
 var ViewComponent = React.createClass({
+
+    mixins: [ LinkedStateMixin ],
+
+    childContextTypes: {
+        formContext: React.PropTypes.instanceOf(FormContext)
+    },
+
+    getInitialState: function ()
+    {
+        return {
+            errors: {}
+        };
+
+    },
+
+    getChildContext: function()
+    {
+        return {
+            formContext: new FormContext(
+                false,
+                "col-md-2",
+                "col-md-4",
+                this.linkState("errors")
+            )
+        };
+    },
+
     render: function ()
     {
         return lookupRenderFn(this.props.model)(this);
@@ -291,7 +379,7 @@ var viewService = {
         }
 
         currentViewModel = viewModel;
-        currentViewData = viewData;
+        updateViewData(viewData);
 
         !noReplaceState && viewService.updateState();
 
@@ -329,7 +417,19 @@ var viewService = {
     {
         return currentViewData;
     },
+    /**
+     * Returns the current scope data list
+     */
+    getScope: function ()
+    {
+        return scopeCursor;
+    },
 
+    /**
+     * The runtime info data map contains the information the registered
+     * de.quinscape.exceed.runtime.service.RuntimeInfoProvider implementations provided.
+     * @returns {Object} map mapping declared info names to the current result.
+     */
     getRuntimeInfo: function()
     {
         return currentViewData['_exceed'];
@@ -338,9 +438,23 @@ var viewService = {
 
     renderFn: function()
     {
-        return lookupRenderFn(currentViewModel);
+        return renderFnCache[currentViewModel.name].src;
     },
 
-    ViewComponent: ViewComponent
+    getViewContextKeys: function ()
+    {
+        return keys(viewService.getRuntimeInfo().scopeInfo.viewContext);
+    },
+
+    getDirtyScopeKeys: function ()
+    {
+        return keys(scopeDirty);
+    },
+
+    ViewComponent: ViewComponent,
+    scopeDirty : scopeDirty
 };
+
+window.ViewService = viewService;
+
 module.exports = viewService;

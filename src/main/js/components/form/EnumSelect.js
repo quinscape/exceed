@@ -4,7 +4,7 @@ var cx = require("classnames");
 var i18n  = require("../../service/i18n");
 var domainService  = require("../../service/domain");
 
-var FormContext = require("./form-context");
+var FormContext = require("../../util/form-context");
 
 /**
  * Internal enum select component used by Field

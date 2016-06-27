@@ -36,7 +36,7 @@ public class StoreAction
         {
             throw new IllegalStateException("No domain object in store action model");
         }
-        domainObject.update();
+        domainObject.insertOrUpdate();
     }
 
     @Override
