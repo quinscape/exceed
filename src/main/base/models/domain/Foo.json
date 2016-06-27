@@ -14,16 +14,22 @@
         },
         {
             "name": "num",
-            "type": "Integer"
+            "type": "Integer",
+            "required": true,
+            "defaultValue" : "0"
         },
         {
             "name": "type",
             "type": "Enum",
-            "typeParam": "MyEnum"
+            "typeParam": "MyEnum",
+            "required": true,
+            "defaultValue" : "0"
         },
         {
             "name": "created",
-            "type": "Timestamp"
+            "type": "Timestamp",
+            "required": true,
+            "defaultValue" : "now()"
         },
         {
             "name": "description",

@@ -8,15 +8,13 @@ import de.quinscape.exceed.domain.tables.AppState;
 import de.quinscape.exceed.domain.tables.AppUser;
 import de.quinscape.exceed.domain.tables.Foo;
 import de.quinscape.exceed.domain.tables.PersistentLogins;
+import org.jooq.Table;
+import org.jooq.impl.SchemaImpl;
 
+import javax.annotation.Generated;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.annotation.Generated;
-
-import org.jooq.Table;
-import org.jooq.impl.SchemaImpl;
 
 
 /**

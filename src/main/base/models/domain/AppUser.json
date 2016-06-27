@@ -1,28 +1,38 @@
 {
-  "name": "AppUser",
-  "properties": [
-    { "name": "id",
-      "type" : "UUID",
-      "maxLength" : 36
-    },
-    { "name": "login",
-      "type" : "PlainText",
-      "maxLength" : 64
-    },
-    { "name": "password",
-      "type" : "PlainText",
-      "maxLength" : 255
-    },
-    { "name": "created",
-      "type" : "Timestamp"
-    },
-    { "name": "last_login",
-      "type" : "Timestamp"
-    },
-    {
-      "name": "roles",
-      "type" : "PlainText",
-      "maxLength" : 255
-    }
-  ]
+    "name": "AppUser",
+    "properties": [
+        {
+            "name": "id",
+            "type": "UUID",
+            "maxLength": 36
+        },
+        {
+            "name": "login",
+            "type": "PlainText",
+            "required": true,
+            "maxLength": 64
+        },
+        {
+            "name": "password",
+            "type": "PlainText",
+            "required": true,
+            "maxLength": 255
+        },
+        {
+            "name": "created",
+            "required": true,
+            "type": "Timestamp"
+        },
+        {
+            "name": "last_login",
+            "type": "Timestamp",
+            "required": true
+        },
+        {
+            "name": "roles",
+            "type": "PlainText",
+            "required": true,
+            "maxLength": 255
+        }
+    ]
 }

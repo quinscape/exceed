@@ -7,18 +7,16 @@ package de.quinscape.exceed.domain.tables;
 import de.quinscape.exceed.domain.Keys;
 import de.quinscape.exceed.domain.Public;
 import de.quinscape.exceed.domain.tables.records.FooRecord;
-
-import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.annotation.Generated;
-
 import org.jooq.Field;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.UniqueKey;
 import org.jooq.impl.TableImpl;
+
+import javax.annotation.Generated;
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
