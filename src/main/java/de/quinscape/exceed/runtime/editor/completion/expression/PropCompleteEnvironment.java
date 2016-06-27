@@ -6,7 +6,6 @@ import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.editor.completion.AceCompletion;
 import de.quinscape.exceed.runtime.editor.completion.CompletionType;
 import de.quinscape.exceed.runtime.editor.completion.PropWizard;

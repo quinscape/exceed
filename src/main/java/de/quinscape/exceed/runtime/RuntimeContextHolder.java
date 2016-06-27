@@ -1,11 +1,5 @@
 package de.quinscape.exceed.runtime;
 
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
-import org.springframework.ui.ModelMap;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 /**
  * Provides access to the {@link RuntimeContext} associated with the current Thread.
  *

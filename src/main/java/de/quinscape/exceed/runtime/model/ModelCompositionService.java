@@ -1,10 +1,10 @@
 package de.quinscape.exceed.runtime.model;
 
 import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.Layout;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
-import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.PropertyType;

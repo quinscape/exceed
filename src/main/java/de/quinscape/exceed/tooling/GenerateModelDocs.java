@@ -1,9 +1,7 @@
 package de.quinscape.exceed.tooling;
 
-import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
 import de.quinscape.exceed.model.Model;
-import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;

@@ -1,15 +1,8 @@
 package de.quinscape.exceed.runtime.config;
 
-import de.quinscape.exceed.runtime.component.QueryDataProvider;
-import de.quinscape.exceed.runtime.component.QueryExecutor;
 import de.quinscape.exceed.runtime.controller.ActionService;
-import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
-import de.quinscape.exceed.runtime.domain.JOOQQueryExecutor;
-import de.quinscape.exceed.runtime.domain.ModelQueryExecutor;
-import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.editor.completion.CompletionService;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
-import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
 import de.quinscape.exceed.runtime.i18n.DefaultTranslator;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.resource.DefaultResourceCacheFactory;
@@ -21,14 +14,9 @@ import de.quinscape.exceed.runtime.service.DomainServiceFactory;
 import de.quinscape.exceed.runtime.service.ProcessService;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
 import de.quinscape.exceed.runtime.view.ViewDataService;
-import org.jooq.DSLContext;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.transaction.PlatformTransactionManager;
-
-import java.util.Map;
 
 @Configuration
 @ComponentScan(value = {

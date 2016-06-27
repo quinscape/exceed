@@ -3,14 +3,10 @@ package de.quinscape.exceed.runtime.service;
 import de.quinscape.exceed.runtime.config.DefaultPropertyConverters;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.DomainServiceImpl;
-import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
-import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
-import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import java.util.Map;
 

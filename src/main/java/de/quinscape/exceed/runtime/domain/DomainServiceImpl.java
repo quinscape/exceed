@@ -1,31 +1,14 @@
 package de.quinscape.exceed.runtime.domain;
 
-import de.quinscape.exceed.expression.ASTExpression;
-import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.datalist.DataListService;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
-import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.schema.StorageConfiguration;
 import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
-import de.quinscape.exceed.runtime.util.DBUtil;
-import org.jooq.DSLContext;
-import org.jooq.DeleteQuery;
-import org.jooq.Field;
-import org.jooq.InsertQuery;
-import org.jooq.Record;
-import org.jooq.RecordMapper;
-import org.jooq.Table;
-import org.jooq.UpdateQuery;
-import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.svenson.JSONParser;
 
 import java.util.ArrayList;

@@ -1,6 +1,5 @@
 package de.quinscape.exceed.runtime.util;
 
-import org.svenson.JSON;
 import org.svenson.JSONParser;
 
 /**

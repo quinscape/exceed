@@ -1,8 +1,5 @@
 package de.quinscape.exceed.model.annotation;
 
-import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
-import de.quinscape.exceed.runtime.expression.annotation.Identifier;
-import de.quinscape.exceed.runtime.expression.annotation.Operation;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Documented;

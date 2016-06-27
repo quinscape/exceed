@@ -6,7 +6,6 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-import de.quinscape.exceed.runtime.util.RequestUtil;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;

@@ -1,7 +1,5 @@
 package de.quinscape.exceed.message;
 
-import de.quinscape.exceed.message.IncomingMessage;
-import de.quinscape.exceed.message.MessageMeta;
 import org.svenson.JSONParameter;
 import org.svenson.JSONTypeHint;
 

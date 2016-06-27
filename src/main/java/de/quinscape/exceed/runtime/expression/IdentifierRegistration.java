@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.expression;
 
 import com.esotericsoftware.reflectasm.MethodAccess;
-import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
 
 public final class IdentifierRegistration
 {

@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.svenson.JSON;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class SyslogAction

@@ -3,7 +3,6 @@ package de.quinscape.exceed.runtime.expression.query;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
 import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import org.slf4j.Logger;

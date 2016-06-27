@@ -1,7 +1,6 @@
 package de.quinscape.exceed.model.context;
 
 import de.quinscape.exceed.runtime.scope.ProcessContext;
-import de.quinscape.exceed.runtime.scope.ScopedContext;
 import org.svenson.JSONTypeHint;
 
 import java.util.Collections;

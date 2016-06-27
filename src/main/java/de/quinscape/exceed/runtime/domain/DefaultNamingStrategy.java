@@ -1,7 +1,5 @@
 package de.quinscape.exceed.runtime.domain;
 
-import de.quinscape.exceed.model.domain.DomainType;
-
 public class DefaultNamingStrategy
     implements NamingStrategy
 {

@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.scope;
 
 import com.google.common.collect.ImmutableMap;
-import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.runtime.component.DataList;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 

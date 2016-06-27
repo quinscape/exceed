@@ -1,7 +1,5 @@
 package de.quinscape.exceed.runtime.view;
 
-import java.util.Map;
-
 public class ComponentData
 {
     private final Object vars;

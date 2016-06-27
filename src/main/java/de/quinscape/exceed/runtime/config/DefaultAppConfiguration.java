@@ -2,8 +2,8 @@ package de.quinscape.exceed.runtime.config;
 
 import de.quinscape.exceed.domain.tables.pojos.AppState;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
-import de.quinscape.exceed.runtime.resource.stream.ClassPathResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
+import de.quinscape.exceed.runtime.resource.stream.ClassPathResourceRoot;
 import de.quinscape.exceed.runtime.resource.stream.ServletResourceRoot;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.service.ComponentRegistryImpl;

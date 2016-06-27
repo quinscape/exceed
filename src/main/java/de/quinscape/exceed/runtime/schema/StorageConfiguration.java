@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.schema;
 
 import de.quinscape.exceed.runtime.component.QueryExecutor;
-import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainOperations;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 

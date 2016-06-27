@@ -1,13 +1,8 @@
 package de.quinscape.exceed.runtime.service;
 
 import de.quinscape.exceed.expression.ASTExpression;
-import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.context.ContextModel;
-import de.quinscape.exceed.model.context.ScopedObjectModel;
-import de.quinscape.exceed.model.context.ScopedPropertyModel;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.process.DecisionModel;
 import de.quinscape.exceed.model.process.DecisionState;
 import de.quinscape.exceed.model.process.Process;
@@ -19,8 +14,6 @@ import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
-import de.quinscape.exceed.runtime.domain.GenericDomainObject;
-import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.process.ProcessExecution;
 import de.quinscape.exceed.runtime.process.ProcessExecutionState;
@@ -29,12 +22,8 @@ import de.quinscape.exceed.runtime.scope.ProcessContext;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.scope.ViewContext;
-import de.quinscape.exceed.runtime.util.DomainUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
-
-import java.util.Map;
 
 public class ProcessService
 {

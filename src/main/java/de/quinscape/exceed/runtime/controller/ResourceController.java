@@ -2,9 +2,6 @@ package de.quinscape.exceed.runtime.controller;
 
 import com.google.common.cache.LoadingCache;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
-import de.quinscape.exceed.runtime.resource.AppResource;
-import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.service.CachedResource;
 import de.quinscape.exceed.runtime.util.MediaTypeService;
@@ -18,14 +15,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.concurrent.ExecutionException;
 
 @Controller

@@ -2,8 +2,6 @@ package de.quinscape.exceed.runtime.resource.file.watch;
 
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 
-import java.io.IOException;
-
 public class ResourceWatcherException
     extends ExceedRuntimeException
 {

@@ -1,20 +1,9 @@
 package de.quinscape.exceed.runtime.controller;
 
-import de.quinscape.exceed.component.ComponentDescriptor;
-import de.quinscape.exceed.component.ComponentTemplate;
-import de.quinscape.exceed.component.PropDeclaration;
-import de.quinscape.exceed.expression.ASTExpression;
-import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.Layout;
-import de.quinscape.exceed.model.view.Attributes;
-import de.quinscape.exceed.model.view.ComponentModel;
-import de.quinscape.exceed.model.view.View;
-import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.service.ApplicationService;
-import de.quinscape.exceed.runtime.service.ComponentRegistration;
-import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.util.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,21 +14,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.svenson.JSON;
-import org.svenson.JSONParameter;
 import org.svenson.JSONParser;
-import org.svenson.util.JSONBuilder;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Controller
 public class EditorController

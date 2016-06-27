@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.service;
 
 import de.quinscape.exceed.model.context.ScopedElementModel;
-import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;

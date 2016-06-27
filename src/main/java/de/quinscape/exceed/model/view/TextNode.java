@@ -1,17 +1,5 @@
 package de.quinscape.exceed.model.view;
 
-import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.runtime.ExceedRuntimeException;
-import de.quinscape.exceed.runtime.service.ComponentRegistration;
-import de.quinscape.exceed.runtime.util.Util;
-import org.svenson.JSON;
-import org.svenson.JSONProperty;
-import org.svenson.JSONTypeHint;
-import org.svenson.StringBuilderSink;
-
-import java.util.Collections;
-import java.util.List;
-
 public class TextNode
     extends ComponentModel
 {

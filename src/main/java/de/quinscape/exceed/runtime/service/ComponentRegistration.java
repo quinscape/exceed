@@ -3,8 +3,6 @@ package de.quinscape.exceed.runtime.service;
 import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.runtime.component.DataProvider;
 
-import java.util.Map;
-
 /**
  * Encapsulates the registration of a component definition and contains the component descriptor, the processed styles
  * for the component and the data provider implementation.

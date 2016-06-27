@@ -11,7 +11,6 @@ import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
 import de.quinscape.exceed.runtime.expression.annotation.Operation;
-import de.quinscape.exceed.runtime.scope.ScopedContext;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 
 import java.sql.Timestamp;

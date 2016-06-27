@@ -31,8 +31,6 @@ import de.quinscape.exceed.expression.OperatorNode;
 import de.quinscape.exceed.expression.SimpleNode;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
-import de.quinscape.exceed.runtime.util.SingleQuoteJSONParser;
-import org.svenson.JSON;
 
 /**
  * Renders the abstract syntax tree of an expression into it's normal string form.

@@ -2,18 +2,11 @@ package de.quinscape.exceed.runtime.service;
 
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTString;
-import de.quinscape.exceed.expression.Node;
-import de.quinscape.exceed.model.context.ScopedElementModel;
-import de.quinscape.exceed.model.context.ScopedListModel;
-import de.quinscape.exceed.model.context.ScopedObjectModel;
-import de.quinscape.exceed.model.context.ScopedPropertyModel;
-import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.runtime.component.DataList;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
 import de.quinscape.exceed.runtime.expression.annotation.Operation;
-import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 
 import java.sql.Timestamp;
 import java.time.Instant;

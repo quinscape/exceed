@@ -1,7 +1,5 @@
 package de.quinscape.exceed.runtime.domain;
 
-import de.quinscape.exceed.model.domain.DomainType;
-
 /**
  * A neutral naming strategy that uses domain type names and property names as-is.
  */

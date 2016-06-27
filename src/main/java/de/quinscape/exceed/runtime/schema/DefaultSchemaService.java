@@ -7,7 +7,6 @@ import de.quinscape.exceed.model.domain.ForeignKeyDefinition;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

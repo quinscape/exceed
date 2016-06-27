@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.expression;
 
 import de.quinscape.exceed.expression.ASTFunction;
-import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
 
 /**
  * Context class for expression environment operation invocations

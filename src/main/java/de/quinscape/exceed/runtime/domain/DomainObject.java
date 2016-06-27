@@ -1,8 +1,5 @@
 package de.quinscape.exceed.runtime.domain;
 
-import de.quinscape.exceed.runtime.RuntimeContext;
-import org.svenson.JSONProperty;
-
 import java.util.Set;
 
 public interface DomainObject

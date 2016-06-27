@@ -1,6 +1,5 @@
 package de.quinscape.exceed.runtime.editor.completion;
 
-import de.quinscape.exceed.message.IncomingMessage;
 import de.quinscape.exceed.message.MessageMeta;
 import de.quinscape.exceed.message.Query;
 import de.quinscape.exceed.model.view.View;

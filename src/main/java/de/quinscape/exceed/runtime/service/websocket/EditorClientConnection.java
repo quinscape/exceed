@@ -1,11 +1,9 @@
 package de.quinscape.exceed.runtime.service.websocket;
 
-import de.quinscape.exceed.message.IncomingMessage;
 import de.quinscape.exceed.message.MessageMeta;
 import de.quinscape.exceed.message.Query;
 import de.quinscape.exceed.message.Reply;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.util.AppAuthentication;
 import org.springframework.web.util.WebUtils;
 import org.webbitserver.WebSocketConnection;

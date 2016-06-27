@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.security;
 
-import de.quinscape.exceed.domain.tables.pojos.AppUser;
 import de.quinscape.exceed.domain.Tables;
+import de.quinscape.exceed.domain.tables.pojos.AppUser;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

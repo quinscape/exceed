@@ -3,7 +3,6 @@ package de.quinscape.exceed.runtime.scope;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.context.ScopedElementModel;
-import de.quinscape.exceed.model.context.ScopedListModel;
 import de.quinscape.exceed.model.context.ScopedObjectModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.runtime.RuntimeContext;

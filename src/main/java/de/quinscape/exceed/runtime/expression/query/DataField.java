@@ -3,7 +3,6 @@ package de.quinscape.exceed.runtime.expression.query;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
-import org.jooq.Field;
 import org.svenson.JSONProperty;
 
 /**

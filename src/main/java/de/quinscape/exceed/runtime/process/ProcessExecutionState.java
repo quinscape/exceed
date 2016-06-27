@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.process;
 
 import de.quinscape.exceed.runtime.scope.ProcessContext;
-import de.quinscape.exceed.runtime.scope.ScopedContext;
 import de.quinscape.exceed.runtime.util.IdCounter;
 
 import javax.servlet.http.HttpSession;

@@ -2,16 +2,12 @@ package de.quinscape.exceed.runtime.editor.domain;
 
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
-import de.quinscape.exceed.runtime.editor.completion.PropCompleteQuery;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.file.FileAppResource;
 import de.quinscape.exceed.runtime.service.websocket.EditorMessageHandler;
 import de.quinscape.exceed.runtime.service.websocket.MessageContext;
 import de.quinscape.exceed.runtime.util.RequestUtil;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-
-import java.nio.charset.Charset;
 
 public class SaveViewHandler
     implements EditorMessageHandler<SaveViewRequest>

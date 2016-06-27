@@ -9,7 +9,6 @@ import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
 
 @Service
 public class ViewStateProvider

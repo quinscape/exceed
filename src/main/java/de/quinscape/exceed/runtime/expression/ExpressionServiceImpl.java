@@ -3,10 +3,9 @@ package de.quinscape.exceed.runtime.expression;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.Node;
-import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
+import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
 import de.quinscape.exceed.runtime.expression.annotation.Identifier;
 import de.quinscape.exceed.runtime.expression.annotation.Operation;
-import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
