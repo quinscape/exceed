@@ -7,7 +7,7 @@
         "properties": {
             "value": {
                 "type": "Integer",
-                "defaultValue": "{ 0 }"
+                "defaultValue": "0"
             }
         }
     },

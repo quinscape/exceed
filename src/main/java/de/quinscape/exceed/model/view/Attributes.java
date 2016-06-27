@@ -1,13 +1,10 @@
 package de.quinscape.exceed.model.view;
 
-import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import org.svenson.JSONParameters;
 import org.svenson.JSONProperty;
 import org.svenson.JSONable;
 import org.svenson.util.JSONBuilder;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -53,7 +50,7 @@ public class Attributes
         Map<String, AttributeValue> newAttrs = new HashMap<>(attrs.size());
         for (Map.Entry<String, String> entry : attrs.entrySet())
         {
-            newAttrs.put(entry.getKey(), AttributeValue.forValue(entry.getValue()));
+            newAttrs.put(entry.getKey(), AttributeValue.forValue(entry.getValue(), false));
         }
         return newAttrs;
     }
@@ -61,7 +58,7 @@ public class Attributes
 
     public void setAttribute(String name, String value)
     {
-        setAttribute(name, AttributeValue.forValue(value));
+        setAttribute(name, AttributeValue.forValue(value, false));
     }
 
     public void setAttribute(String name, Object value)

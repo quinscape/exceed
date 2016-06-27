@@ -77,7 +77,7 @@ public class PropDeclaration
     {
         this.rule = rule;
         this.description = description;
-        this.defaultValue = AttributeValue.forValue(defaultValue);
+        this.defaultValue = AttributeValue.forValue(defaultValue, true);
         this.ruleExpression = ExpressionParser.parse(rule);
         this.type = type != null ? type :  PropType.PLAINTEXT;
 

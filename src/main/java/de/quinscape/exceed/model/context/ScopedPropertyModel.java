@@ -37,6 +37,6 @@ public class ScopedPropertyModel
 
     public void setDefaultValue(String defaultValue)
     {
-        this.defaultValue = AttributeValue.forValue(defaultValue);
+        this.defaultValue = AttributeValue.forValue(defaultValue, true);
     }
 }

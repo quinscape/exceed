@@ -1,7 +1,10 @@
 package de.quinscape.exceed.model.domain;
 
-import de.quinscape.exceed.model.Model;
+import de.quinscape.exceed.expression.ASTExpression;
+import de.quinscape.exceed.model.view.AttributeValue;
 import org.svenson.JSONProperty;
+
+import java.util.Map;
 
 public class DomainProperty
 {
@@ -11,7 +14,7 @@ public class DomainProperty
 
     private Object typeParam;
 
-    private String defaultValue;
+    private AttributeValue defaultValue;
 
     private boolean required;
 
@@ -37,7 +40,7 @@ public class DomainProperty
         this.name = name;
         this.type = type;
         this.typeParam = typeParam;
-        this.defaultValue = defaultValue;
+        setDefaultValue(defaultValue);
         this.required = required;
         this.maxLength = maxLength;
     }
@@ -63,6 +66,7 @@ public class DomainProperty
 
     /**
      * Logical property type for this property.
+     *
      * @return
      */
     @JSONProperty(priority = 90)
@@ -80,6 +84,7 @@ public class DomainProperty
 
     /**
      * Type parameter for the property. Set for List, Map, Enum.
+     *
      * @return
      */
     @JSONProperty(ignoreIfNull = true, priority = 80)
@@ -115,6 +120,7 @@ public class DomainProperty
 
     /**
      * Maximum length for this property if applicable.
+     *
      * @return
      */
     @JSONProperty(ignoreIfNull = true, priority = 60)
@@ -132,23 +138,32 @@ public class DomainProperty
 
     /**
      * Default value for this property.
+     *
      * @return
      */
     @JSONProperty(ignoreIfNull = true, priority = 50)
     public String getDefaultValue()
     {
-        return defaultValue;
+        return defaultValue != null ? defaultValue.getValue() : null;
     }
 
 
     public void setDefaultValue(String defaultValue)
     {
-        this.defaultValue = defaultValue;
+        this.defaultValue = AttributeValue.forValue(defaultValue, true);
+    }
+
+
+    @JSONProperty(ignore = true)
+    public ASTExpression getDefaultValueExpression()
+    {
+        return defaultValue != null ? defaultValue.getAstExpression() : null;
     }
 
 
     /**
      * User data field. Not used by the system.
+     *
      * @return
      */
     @JSONProperty(ignoreIfNull = true, priority = 40)
@@ -171,9 +186,10 @@ public class DomainProperty
             + "name = '" + name + '\''
             + ", type = '" + type + '\''
             + ", typeParam = " + typeParam
-            + ", defaultValue = '" + defaultValue + '\''
+            + ", defaultValue = " + defaultValue
             + ", required = " + required
             + ", maxLength = " + maxLength
+            + ", domainType = '" + domainType + '\''
             + ", data = " + data
             ;
     }

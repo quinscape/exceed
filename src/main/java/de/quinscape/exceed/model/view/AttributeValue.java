@@ -5,14 +5,11 @@ import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.expression.TokenMgrError;
-import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
-import org.svenson.DynamicProperties;
 import org.svenson.JSON;
 import org.svenson.JSONProperty;
 import org.svenson.JSONable;
 
-import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Map;
 
@@ -40,9 +37,10 @@ public class AttributeValue
 
     private final static JSON generator = SingleQuoteJSONGenerator.INSTANCE;
 
-    public AttributeValue(
+    private AttributeValue(
         AttributeValueType type,
-        String value)
+        final String value,
+        boolean forceExpression)
     {
 
         if (type == AttributeValueType.EXPRESSION)
@@ -51,7 +49,7 @@ public class AttributeValue
             Throwable exception;
             try
             {
-                astExpression = ExpressionParser.parse(value.substring(1, value.length() - 1));
+                astExpression = ExpressionParser.parse(forceExpression ? value : value.substring(1, value.length() - 1));
                 exception = null;
             }
             catch(TokenMgrError | ParseException e)
@@ -131,7 +129,7 @@ public class AttributeValue
      * @param value string or expression string
      * @return  attribute value
      */
-    public static AttributeValue forValue(String value)
+    public static AttributeValue forValue(String value, boolean forceExpression)
     {
         if (value == null)
         {
@@ -139,13 +137,17 @@ public class AttributeValue
         }
 
         String stringValue = (String) value;
-        if (stringValue.startsWith("{") && stringValue.endsWith("}"))
+        if (forceExpression)
         {
-            return new AttributeValue(AttributeValueType.EXPRESSION, formatExpression(stringValue));
+            return new AttributeValue(AttributeValueType.EXPRESSION, stringValue, forceExpression);
+        }
+        else if (stringValue.startsWith("{") && stringValue.endsWith("}"))
+        {
+            return new AttributeValue(AttributeValueType.EXPRESSION, formatExpression(stringValue), false);
         }
         else
         {
-            return new AttributeValue(AttributeValueType.STRING, (String) value);
+            return new AttributeValue(AttributeValueType.STRING, value, false);
         }
     }
 
@@ -203,7 +205,7 @@ public class AttributeValue
      */
     static AttributeValue toExpression(Object value)
     {
-        return new AttributeValue(AttributeValueType.EXPRESSION, "{ " + generator.forValue(value) + " }");
+        return new AttributeValue(AttributeValueType.EXPRESSION, "{ " + generator.forValue(value) + " }", false);
     }
 
     static String formatExpression(String expr)
