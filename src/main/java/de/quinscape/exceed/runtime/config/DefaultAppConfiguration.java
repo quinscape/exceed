@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
@@ -42,6 +43,9 @@ public class DefaultAppConfiguration
 
     @Autowired
     private ComponentRegistryImpl componentRegistry;
+
+    @Autowired
+    private Environment env;
 
     @PostConstruct
     public void initialize() throws IOException
@@ -86,18 +90,21 @@ public class DefaultAppConfiguration
 
         String extensionPath = getExtensionBasePath();
 
-        String extensions = System.getProperty("exceed.application.extensions");
+        String extensions = env.getProperty("exceed.application.extensions");
 
         AppState applicationState = applicationService.getApplicationState(defaultAppName);
+
+        log.info("Initializing exceed application '{}' ( extensions: {} )", defaultAppName, extensions);
+
         if (applicationState == null)
         {
-            log.info("Activating default application {}: path = {}, extensions = {}", defaultAppName, extensions);
+            log.debug("Activating default application");
             // if no application state exists, we activate this app
             applicationService.activateApplication(servletContext, defaultAppName, extensionPath, extensions);
         }
         else
         {
-            log.debug("Updating  application {}: path = {}, extensions = {}", defaultAppName, extensions);
+            log.debug("Updating default application");
             applicationService.updateApplication(servletContext, defaultAppName, extensionPath, extensions);
         }
     }

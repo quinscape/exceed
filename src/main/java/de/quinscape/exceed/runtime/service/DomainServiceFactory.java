@@ -5,9 +5,12 @@ import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.DomainServiceImpl;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
+import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import java.util.Map;
 
@@ -20,24 +23,23 @@ public class DomainServiceFactory
 
     private final Map<String, PropertyConverter> converters;
 
-    private final NamingStrategy namingStrategy;
-
-    private final DSLContext dslContext;
+    private final StorageConfigurationRepository storageConfigurationRepository;
 
 
-    public DomainServiceFactory(DefaultPropertyConverters defaultPropertyConverters)
+
+    public DomainServiceFactory(DefaultPropertyConverters defaultPropertyConverters,
+                                StorageConfigurationRepository storageConfigurationRepository)
 
 
     {
-        this.namingStrategy = namingStrategy;
-        this.dslContext = dslContext;
+        this.storageConfigurationRepository = storageConfigurationRepository;
         this.converters = defaultPropertyConverters.getConverters();
     }
 
 
     public DomainService create()
     {
-        return new DomainServiceImpl(dslContext, namingStrategy, converters);
+        return new DomainServiceImpl(converters, storageConfigurationRepository);
     }
 
 }

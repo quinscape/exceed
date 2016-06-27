@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.editor.completion;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
@@ -13,17 +14,18 @@ import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
-import de.quinscape.exceed.runtime.domain.GenericDomainObject;
-import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
-import de.quinscape.exceed.runtime.expression.ExpressionService;
-import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
 import de.quinscape.exceed.runtime.editor.completion.expression.PropCompleteEnvironment;
 import de.quinscape.exceed.runtime.editor.completion.expression.PropCompleteOperations;
+import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
 import de.quinscape.exceed.runtime.model.TestRegistry;
+import de.quinscape.exceed.runtime.schema.DefaultStorageConfiguration;
+import de.quinscape.exceed.runtime.schema.DefaultStorageConfigurationRepository;
+import de.quinscape.exceed.runtime.schema.StorageConfiguration;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
@@ -36,10 +38,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 public class PropCompleteEnvironmentTest
 {
@@ -67,15 +68,18 @@ public class PropCompleteEnvironmentTest
         ComponentUtil.updateComponentRegsAndParents(testRegistry, viewModel, null);
 
         TestApplication app = new TestApplicationBuilder().withDomainService(new TestDomainService()).build();
-        ExpressionService svc = new ExpressionServiceImpl(ImmutableSet.of(new PropCompleteOperations()));
+        ExpressionService expressionService = new ExpressionServiceImpl(ImmutableSet.of(new PropCompleteOperations()));
 
-        QueryTransformer queryTransformer = new QueryTransformer(svc, new DefaultNamingStrategy());
+        QueryTransformer queryTransformer = new QueryTransformer(expressionService, new DefaultStorageConfigurationRepository(
+            ImmutableMap.of("testStorage", new DefaultStorageConfiguration(null, new DefaultNamingStrategy(), null, null)),
+            null));
+
         {
 
             PropCompleteEnvironment env = new PropCompleteEnvironment( app.createRuntimeContext(), queryTransformer,
                 viewModel, componentModel, "name");
 
-            List<AceCompletion> completions = env.evaluate(svc);
+            List<AceCompletion> completions = env.evaluate(expressionService);
 
             // no "value", no "foo", already used
             assertThat(completions.size(), is(2));
@@ -89,7 +93,7 @@ public class PropCompleteEnvironmentTest
             PropCompleteEnvironment env = new PropCompleteEnvironment(app.createRuntimeContext(), queryTransformer,
                 viewModel, componentModel.getParent(), "type");
 
-            List<AceCompletion> suggestions = env.evaluate(svc);
+            List<AceCompletion> suggestions = env.evaluate(expressionService);
 
             log.info(JSON.defaultJSON().forValue(suggestions));
 
@@ -148,9 +152,13 @@ public class PropCompleteEnvironmentTest
 
 
         @Override
-        public Set<String> getDomainTypeNames()
+        public Map<String, DomainType> getDomainTypes()
         {
-            return ImmutableSet.of("Foo", "Bar", "Qux");
+            return ImmutableMap.of(
+                "Foo", getDomainType("Foo"),
+                "Bar", getDomainType("Bar"),
+                "Qux", getDomainType("Baz")
+            );
         }
 
 
@@ -188,6 +196,13 @@ public class PropCompleteEnvironmentTest
 
 
         @Override
+        public void insertOrUpdate(DomainObject genericDomainObject)
+        {
+
+        }
+
+
+        @Override
         public void update(DomainObject genericDomainObject)
         {
 
@@ -202,10 +217,12 @@ public class PropCompleteEnvironmentTest
 
 
         @Override
-        public NamingStrategy getNamingStrategy()
+        public StorageConfiguration getStorageConfiguration(String domainType)
         {
             return null;
         }
+
+
     }
 
 }

@@ -13,6 +13,7 @@ import de.quinscape.exceed.runtime.resource.ResourceLoader;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.stream.ClassPathResourceRoot;
+import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.util.Util;
 import de.quinscape.exceed.runtime.view.ViewDataService;
@@ -75,6 +76,9 @@ public class RuntimeApplicationFactory
     @Autowired
     private DomainServiceRepository domainServiceRepository;
 
+    @Autowired
+    private StorageConfigurationRepository storageConfigurationRepository;
+
 
     public DefaultRuntimeApplication createRuntimeApplication(ServletContext servletContext, AppState state)
     {
@@ -97,7 +101,7 @@ public class RuntimeApplicationFactory
 
         domainServiceRepository.register(appName, domainService);
 
-        return new DefaultRuntimeApplication( servletContext, viewDataService, componentRegistry, styleService,  modelCompositionService, resourceLoader, domainService, runtimeInfoProviders, processService, appName, runtimeContextFactory, scopedContextFactory);
+        return new DefaultRuntimeApplication( servletContext, viewDataService, componentRegistry, styleService,  modelCompositionService, resourceLoader, domainService, runtimeInfoProviders, processService, appName, runtimeContextFactory, scopedContextFactory, storageConfigurationRepository);
     }
 
     private List<ResourceRoot> configureExtensions(ServletContext servletContext, AppState state)

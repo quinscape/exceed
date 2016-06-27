@@ -1,6 +1,5 @@
 package de.quinscape.exceed.model.routing;
 
-import de.quinscape.exceed.model.annotation.IncludeDocs;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 

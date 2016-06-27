@@ -11,6 +11,8 @@ import java.io.IOException;
 public class FileAppResource
     implements AppResource
 {
+    private static final byte[] EMPTY = new byte[0];
+
     private final File file;
     private final String relative;
 
@@ -35,6 +37,11 @@ public class FileAppResource
     @Override
     public byte[] read()
     {
+        if (!file.exists())
+        {
+            return EMPTY;
+        }
+
         try
         {
             return FileUtils.readFileToByteArray(file);

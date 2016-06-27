@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.domain;
 
+import de.quinscape.exceed.model.domain.DomainType;
 import org.svenson.DynamicProperties;
 import org.svenson.JSONProperty;
 
@@ -27,14 +28,14 @@ public class GenericDomainObject
     @JSONProperty(ignore = true)
     public String getId()
     {
-        return (String) getProperty("id");
+        return (String) getProperty(DomainType.ID_PROPERTY);
     }
 
 
     @Override
     public void setId(String id)
     {
-        setProperty("id", id);
+        setProperty(DomainType.ID_PROPERTY, id);
     }
 
     @Override

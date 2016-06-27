@@ -29,25 +29,53 @@ public class DataListServiceTest
     // we mostly test conversion of different types  in "row" here because "types" and "columns" are just
     // straightforward JSON generation without any transformation or conversion
 
-    private DataListService dataListService = new DataListService(ImmutableMap.of(
-        "PlainTextConverter", new PlainTextConverter(),
-        "DateConverter", new DateConverter(),
-        "TimestampConverter", new TimestampConverter()
-    ));
+    private DataListService dataListService = new DataListService(
+        domainTypeMap(
+            createDomainType("Foo", ImmutableList.of(
+                new DomainProperty("name", "PlainText", null, false),
+                new DomainProperty("created", "Date", null, false)
+            )),
+            createDomainType("CContainer", ImmutableList.of(
+                new DomainProperty("name", "PlainText", null, false, null, -1, "CContainer"),
+                new DomainProperty("created", "Date", null, false, null, -1, "CContainer"),
+                new DomainProperty("bazes", "List", null, false, "Baz", -1, "CContainer")
+            )),
+            createDomainType("PLContainer", ImmutableList.of(
+                new DomainProperty("name", "PlainText", null, false, null, -1, "PLContainer"),
+                new DomainProperty("created", "Date", null, false, null, -1, "PLContainer"),
+                new DomainProperty("dates", "List", null, false, "Date", -1, "PLContainer")
+            )),
+            createDomainType("MapContainer", ImmutableList.of(
+                new DomainProperty("name", "PlainText", null, false, null, -1, "MapContainer"),
+                new DomainProperty("created", "Date", null, false, null, -1, "MapContainer"),
+                new DomainProperty("bazes", "Map", null, false, "Baz", -1, "MapContainer")
+            )),
+            createDomainType("PropMapContainer", ImmutableList.of(
+                new DomainProperty("name", "PlainText", null, false, null, -1, "PropMapContainer"),
+                new DomainProperty("created", "Date", null, false, null, -1, "PropMapContainer"),
+                new DomainProperty("dates", "Map", null, false, "Date", -1, "PropMapContainer")
+            )),
+            createDomainType("Bar", ImmutableList.of(
+                new DomainProperty("createdWithADifferentName", "Timestamp", null, false)
+            )),
+            createDomainType("Baz", ImmutableList.of(
+                new DomainProperty("created", "Timestamp", null, false)
+            ))
+        ),
+        ImmutableMap.of(
+            "PlainTextConverter", new PlainTextConverter(),
+            "DateConverter", new DateConverter(),
+            "TimestampConverter", new TimestampConverter()
+        )
+    );
 
     @Test
     public void testSimpleToJSON() throws Exception
     {
         DataList dataList = new DataList(
-            domainTypeMap(
-                createDomainType("Foo", ImmutableList.of(
-                    new DomainProperty("name", "PlainText", null, false),
-                    new DomainProperty("created", "Date", null, false)
-                ))
-            ),
             ImmutableMap.of(
-                "name", new ColumnDescriptor("Foo", "name"),
-                "created", new ColumnDescriptor("Foo", "created")
+                "name", new DomainProperty("name", "PlainText", null, false, null, -1, "Foo"),
+                "created", new DomainProperty("created", "Date", null, false, null, -1, "Foo")
             ),
             ImmutableList.of(
                 ImmutableMap.of(
@@ -69,19 +97,10 @@ public class DataListServiceTest
     public void testJoinedToJSON() throws Exception
     {
         DataList dataList = new DataList(
-            domainTypeMap(
-                createDomainType("Foo", ImmutableList.of(
-                    new DomainProperty("name", "PlainText", null, false),
-                    new DomainProperty("created", "Date", null, false)
-                )),
-                createDomainType("Bar", ImmutableList.of(
-                    new DomainProperty("createdWithADifferentName", "Timestamp", null, false)
-                ))
-            ),
             ImmutableMap.of(
-                "name", new ColumnDescriptor("Foo", "name"),
-                "created", new ColumnDescriptor("Foo", "created"),
-                "barCreated", new ColumnDescriptor("Bar", "createdWithADifferentName")
+                "name", new DomainProperty("name", "PlainText", null, false, null, -1, "Foo"),
+                "created", new DomainProperty("created", "Date", null, false, null, -1, "Foo"),
+                "barCreated", new DomainProperty("createdWithADifferentName", "Timestamp", null, false, null, -1, "Bar")
             ),
             ImmutableList.of(
                 ImmutableMap.of(
@@ -106,31 +125,21 @@ public class DataListServiceTest
     public void testComplexListToJSON() throws Exception
     {
         DataList dataList = new DataList(
-            domainTypeMap(
-                createDomainType("Foo", ImmutableList.of(
-                    new DomainProperty("name", "PlainText", null, false),
-                    new DomainProperty("created", "Date", null, false),
-                    new DomainProperty("bars", "List", null, false, "Bar", 0)
-                )),
-                createDomainType("Bar", ImmutableList.of(
-                    new DomainProperty("created", "Date", null, false)
-                ))
-            ),
             ImmutableMap.of(
-                "name", new ColumnDescriptor("Foo", "name"),
-                "created", new ColumnDescriptor("Foo", "created"),
-                "bars", new ColumnDescriptor("Foo", "bars")
+                "name", new DomainProperty("name", "PlainText", null, false, null, -1, "CContainer"),
+                "created", new DomainProperty("created", "Date", null, false, null, -1, "CContainer"),
+                "bazes", new DomainProperty("bazes", "List", null, false, "Baz", -1, "CContainer")
             ),
             ImmutableList.of(
                 ImmutableMap.of(
                     "name", "MyFoo",
                     "created", new Date(TimeUnit.DAYS.toMillis(1)),
-                    "bars", ImmutableList.of(
+                    "bazes", ImmutableList.of(
                         ImmutableMap.of(
-                            "created", new Date(TimeUnit.DAYS.toMillis(3))
+                            "created", new Timestamp(TimeUnit.DAYS.toMillis(3))
                         ),
                         ImmutableMap.of(
-                            "created", new Date(TimeUnit.DAYS.toMillis(4))
+                            "created", new Timestamp(TimeUnit.DAYS.toMillis(4))
                         )
                     )
                 )
@@ -141,9 +150,9 @@ public class DataListServiceTest
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
         assertThat(json, containsString("\"created\":\"1970-01-02\""));
-        assertThat(json, containsString("\"bars\":["));
-        assertThat(json, containsString("\"created\":\"1970-01-04\""));
-        assertThat(json, containsString("\"created\":\"1970-01-05\""));
+        assertThat(json, containsString("\"bazes\":["));
+        assertThat(json, containsString("\"created\":\"1970-01-04T00:00:00Z\""));
+        assertThat(json, containsString("\"created\":\"1970-01-05T00:00:00Z\""));
 
         //log.info(JSON.formatJSON(json));
     }
@@ -153,17 +162,10 @@ public class DataListServiceTest
     public void testPropertyListToJSON() throws Exception
     {
         DataList dataList = new DataList(
-            domainTypeMap(
-                createDomainType("Foo", ImmutableList.of(
-                    new DomainProperty("name", "PlainText", null, false),
-                    new DomainProperty("created", "Date", null, false),
-                    new DomainProperty("dates", "List", null, false, "Date", 0)
-                ))
-            ),
             ImmutableMap.of(
-                "name", new ColumnDescriptor("Foo", "name"),
-                "created", new ColumnDescriptor("Foo", "created"),
-                "dates", new ColumnDescriptor("Foo", "dates")
+                "name", new DomainProperty("name", "PlainText", null, false, null, -1, "PLContainer"),
+                "created", new DomainProperty("created", "Date", null, false, null, -1, "PLContainer"),
+                "dates", new DomainProperty("dates", "List", null, false, "Date", -1, "PLContainer")
             ),
             ImmutableList.of(
                 ImmutableMap.of(
@@ -192,31 +194,21 @@ public class DataListServiceTest
     public void testComplexMapToJSON() throws Exception
     {
         DataList dataList = new DataList(
-            domainTypeMap(
-                createDomainType("Foo", ImmutableList.of(
-                    new DomainProperty("name", "PlainText", null, false),
-                    new DomainProperty("created", "Date", null, false),
-                    new DomainProperty("bars", "Map", null, false, "Bar", 0)
-                )),
-                createDomainType("Bar", ImmutableList.of(
-                    new DomainProperty("created", "Date", null, false)
-                ))
-            ),
             ImmutableMap.of(
-                "name", new ColumnDescriptor("Foo", "name"),
-                "created", new ColumnDescriptor("Foo", "created"),
-                "bars", new ColumnDescriptor("Foo", "bars")
+                "name", new DomainProperty("name", "PlainText", null, false, null, -1, "MapContainer"),
+                "created", new DomainProperty("created", "Date", null, false, null, -1, "MapContainer"),
+                "bazes", new DomainProperty("bazes", "Map", null, false, "Baz", -1, "MapContainer")
             ),
             ImmutableList.of(
                 ImmutableMap.of(
                     "name", "MyFoo",
                     "created", new Date(TimeUnit.DAYS.toMillis(1)),
-                    "bars", ImmutableMap.of(
+                    "bazes", ImmutableMap.of(
                         "Bar1", ImmutableMap.of(
-                            "created", new Date(TimeUnit.DAYS.toMillis(7))
+                            "created", new Timestamp(TimeUnit.DAYS.toMillis(7))
                         ),
                         "Bar2", ImmutableMap.of(
-                            "created", new Date(TimeUnit.DAYS.toMillis(8))
+                            "created", new Timestamp(TimeUnit.DAYS.toMillis(8))
                         )
                     )
                 )
@@ -227,9 +219,9 @@ public class DataListServiceTest
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
         assertThat(json, containsString("\"created\":\"1970-01-02\""));
-        assertThat(json, containsString("\"bars\":{"));
-        assertThat(json, containsString("\"Bar1\":{\"created\":\"1970-01-08\""));
-        assertThat(json, containsString("\"Bar2\":{\"created\":\"1970-01-09\""));
+        assertThat(json, containsString("\"bazes\":{"));
+        assertThat(json, containsString("\"Bar1\":{\"created\":\"1970-01-08T00:00:00Z\""));
+        assertThat(json, containsString("\"Bar2\":{\"created\":\"1970-01-09T00:00:00Z\""));
 
         //log.info(JSON.formatJSON(json));
     }
@@ -239,17 +231,10 @@ public class DataListServiceTest
     public void testPropertyMapToJSON() throws Exception
     {
         DataList dataList = new DataList(
-            domainTypeMap(
-                createDomainType("Foo", ImmutableList.of(
-                    new DomainProperty("name", "PlainText", null, false),
-                    new DomainProperty("created", "Date", null, false),
-                    new DomainProperty("dates", "Map", null, false, "Date", 0)
-                ))
-            ),
             ImmutableMap.of(
-                "name", new ColumnDescriptor("Foo", "name"),
-                "created", new ColumnDescriptor("Foo", "created"),
-                "dates", new ColumnDescriptor("Foo", "dates")
+                "name", new DomainProperty("name", "PlainText", null, false, null, -1, "PropMapContainer"),
+                "created", new DomainProperty("created", "Date", null, false, null, -1, "PropMapContainer"),
+                "dates", new DomainProperty("dates", "Map", null, false, "Date", -1, "PropMapContainer")
             ),
             ImmutableList.of(
                 ImmutableMap.of(

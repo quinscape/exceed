@@ -10,7 +10,10 @@ import org.svenson.tokenize.InputStreamSource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,11 +42,17 @@ public class TestRegistry
     public static TestRegistry loadComponentPackages(String... componentNames) throws FileNotFoundException
     {
         Map<String, ComponentDescriptor> map = new HashMap<>();
-        for (String componentName : componentNames)
+
+        List<String> names = new ArrayList<>();
+        Collections.addAll(names, componentNames);
+        names.add("common");
+
+        for (String componentName : names)
         {
             ComponentPackageDescriptor pkg = JSONParser.defaultJSONParser().parse(ComponentPackageDescriptor.class, new InputStreamSource(new FileInputStream(new File("./src/main/js/components/" + componentName + "/component.json")), true));
             map.putAll(pkg.getComponents());
         }
+
         return new TestRegistry(map);
     }
 

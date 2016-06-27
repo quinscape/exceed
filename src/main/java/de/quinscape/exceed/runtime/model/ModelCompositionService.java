@@ -227,6 +227,7 @@ public class ModelCompositionService
 
         M model = modelJSONService.toModel(cls, json);
 
+
         if (model instanceof TopLevelModel)
         {
             TopLevelModel namedModel = (TopLevelModel) model;

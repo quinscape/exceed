@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.expression.query;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.domain.DomainProperty;
@@ -10,11 +11,12 @@ import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
-import de.quinscape.exceed.runtime.domain.GenericDomainObject;
-import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
+import de.quinscape.exceed.runtime.schema.DefaultStorageConfiguration;
+import de.quinscape.exceed.runtime.schema.DefaultStorageConfigurationRepository;
+import de.quinscape.exceed.runtime.schema.StorageConfiguration;
 import org.jooq.Condition;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -24,11 +26,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 public class QueryTransformerTest
 {
@@ -39,7 +40,9 @@ public class QueryTransformerTest
     private ExpressionService expressionService = new ExpressionServiceImpl(ImmutableSet.of
         (queryTransformerOperations));
 
-    private QueryTransformer transformer = new QueryTransformer(expressionService, new DefaultNamingStrategy());
+    private QueryTransformer transformer = new QueryTransformer(expressionService, new DefaultStorageConfigurationRepository(
+        ImmutableMap.of("testStorage", new DefaultStorageConfiguration( null, new DefaultNamingStrategy(), null, null)),
+        null));
 
 
     {
@@ -56,13 +59,13 @@ public class QueryTransformerTest
         QueryDomainType q1 = def.getQueryDomainType();
         assertThat(q1, is(notNullValue()));
         assertThat(q1.getType().getName(), is("Foo"));
-        assertThat(q1.getAlias(), is("f"));
+        assertThat(q1.getNameOrAlias(), is("f"));
 
         JoinDefinition j = q1.getJoinedType();
         assertThat(j, is(notNullValue()));
         QueryDomainType q2 = j.getRight();
         assertThat(q2.getType().getName(), is("Bar"));
-        assertThat(q2.getAlias(), is("Bar"));
+        assertThat(q2.getNameOrAlias(), is("Bar"));
 
     }
 
@@ -153,6 +156,7 @@ public class QueryTransformerTest
             DomainType domainType = new DomainType();
             domainType.setName(name);
             domainType.setAnnotation("Test domain type " + name);
+            domainType.setStorageConfiguration("testStorage");
 
             domainType.setProperties(Arrays.asList(
                 new DomainProperty("value", "PlainText", null, false),
@@ -170,9 +174,13 @@ public class QueryTransformerTest
 
 
         @Override
-        public Set<String> getDomainTypeNames()
+        public Map<String, DomainType> getDomainTypes()
         {
-            return ImmutableSet.of("Foo", "Bar", "Baz");
+            return ImmutableMap.of(
+                "Foo", getDomainType("Foo"),
+                "Bar", getDomainType("Bar"),
+                "Baz", getDomainType("Baz")
+            );
         }
 
 
@@ -212,6 +220,13 @@ public class QueryTransformerTest
 
 
         @Override
+        public void insertOrUpdate(DomainObject genericDomainObject)
+        {
+
+        }
+
+
+        @Override
         public void update(DomainObject genericDomainObject)
         {
 
@@ -226,9 +241,10 @@ public class QueryTransformerTest
 
 
         @Override
-        public NamingStrategy getNamingStrategy()
+        public StorageConfiguration getStorageConfiguration(String domainType)
         {
             return null;
         }
+
     }
 }

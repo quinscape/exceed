@@ -7,6 +7,8 @@ import de.quinscape.exceed.runtime.service.CachedResource;
 public class ResourceCacheLoader
     extends CacheLoader<String, CachedResource>
 {
+    private static final byte[] EMPTY = new byte[0];
+
     private final ResourceLoader resourceLoader;
 
 
@@ -29,7 +31,7 @@ public class ResourceCacheLoader
         AppResource resource = resourceLocation.getHighestPriorityResource();
         if (!resource.exists())
         {
-            throw new IllegalStateException("Resource " + key + " does not exist.");
+            return new CachedResource(EMPTY);
         }
 
         return new CachedResource(resource.read());

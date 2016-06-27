@@ -1,25 +1,19 @@
 package de.quinscape.exceed.runtime.config;
 
 import de.quinscape.exceed.model.Model;
-import de.quinscape.exceed.model.view.AttributeValue;
-import de.quinscape.exceed.model.view.Attributes;
-import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.model.routing.RoutingTable;
+import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.AttributeValueType;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 public class ModelJSONServiceTest
 {
@@ -48,11 +42,12 @@ public class ModelJSONServiceTest
             assertThat(routingTable.getRootNode().getMapping(), is(nullValue()));
         }
 
-        View view = (View) modelJSONService.toModel(Model.class, "{\"type\":\"view.View\",\"root\":{\"name\":\"div\", \"kids\": [\"String child\"]}}");
+        View view = (View) modelJSONService.toModel(Model.class, "{\"type\":\"view.View\"," +
+            "\"root\":{\"name\":\"View\",\"kids\": [{\"name\":\"div\", \"kids\": [\"String child\"]}]}}");
 
         assertThat(view,is(notNullValue()));
         assertThat(view.getRoot().getKids().size(),is(1));
-        ComponentModel strModel = view.getRoot().getKids().get(0);
+        ComponentModel strModel = view.getRoot().getKids().get(0).getKids().get(0);
         AttributeValue valueAttr = strModel.getAttribute("value");
         assertThat(strModel.getName(),is("[String]"));
         assertThat(valueAttr.getType(),is(AttributeValueType.STRING));

@@ -1,12 +1,14 @@
 package de.quinscape.exceed.runtime.domain;
 
-import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.runtime.expression.query.QueryDomainType;
 
 public interface NamingStrategy
 {
-    String getTableName(DomainType type);
+    String getTableName(String typeName);
 
-    String[] getFieldName(String tableName, String propertyName);
+    String[] getFieldName(String typeName, String propertyName);
+
+    String getForeignKeyName(String typeName, String propertyName, String targetType, String targetProperty);
+
+    String getPrimaryKeyName(String typeName);
 }

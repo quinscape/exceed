@@ -142,7 +142,7 @@ public class ApplicationServiceImpl
         }
 
         applicationState.setPath(path);
-        applicationState.setPath(extensions);
+        applicationState.setExtensions(extensions);
 
         AppStateRecord record = dslContext.newRecord(APP_STATE, applicationState);
         dslContext.executeUpdate(record);

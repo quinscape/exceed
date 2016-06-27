@@ -17,6 +17,12 @@ public class DomainUtil
 
     public static DomainObject copy(RuntimeContext runtimeContext, DomainObject domainObject)
     {
+        if (domainObject == null)
+        {
+            return null;
+        }
+
+
         DomainObject copy = domainObject.getDomainService().create(domainObject.getDomainType(), domainObject.getId());
         DomainUtil.copyProperties(runtimeContext, domainObject, copy, false);
         return copy;
@@ -92,6 +98,8 @@ public class DomainUtil
 
         log.debug("Converting domain object of type '{}'", domainType.getName());
 
+        DomainObject copy = domainObject.getDomainService().create(domainObject.getDomainType(), domainObject.getId());
+
         for (DomainProperty property : domainType.getProperties())
         {
             String propertyName = property.getName();
@@ -107,9 +115,9 @@ public class DomainUtil
 
             Object converted = propertyConverter.convertToJSON(runtimeContext, value);
 
-            domainObject.setProperty(propertyName, converted);
+            copy.setProperty(propertyName, converted);
         }
 
-        return domainObject;
+        return copy;
     }
 }

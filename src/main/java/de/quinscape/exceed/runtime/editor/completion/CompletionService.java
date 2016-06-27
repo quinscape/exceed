@@ -1,6 +1,5 @@
 package de.quinscape.exceed.runtime.editor.completion;
 
-import de.quinscape.exceed.component.ComponentClasses;
 import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.component.ComponentTemplate;
 import de.quinscape.exceed.component.PropDeclaration;
@@ -11,10 +10,10 @@ import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.editor.completion.expression.ChildRuleEnvironment;
-import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.editor.completion.expression.ParentComponent;
 import de.quinscape.exceed.runtime.editor.completion.expression.ParentRuleEnvironment;
 import de.quinscape.exceed.runtime.editor.completion.expression.PropCompleteEnvironment;
+import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;

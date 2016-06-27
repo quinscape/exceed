@@ -5,9 +5,9 @@ import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,13 +22,13 @@ public class QueryTransformer
 
     private ExpressionService expressionService;
 
-    private final NamingStrategy namingStrategy;
+    private final StorageConfigurationRepository storageConfigurationRepository;
 
 
-    public QueryTransformer(ExpressionService expressionService, NamingStrategy namingStrategy)
+    public QueryTransformer(ExpressionService expressionService, StorageConfigurationRepository storageConfigurationRepository)
     {
         this.expressionService = expressionService;
-        this.namingStrategy = namingStrategy;
+        this.storageConfigurationRepository = storageConfigurationRepository;
     }
 
 
@@ -63,7 +63,7 @@ public class QueryTransformer
      */
     public Object evaluate(RuntimeContext runtimeContext, ASTExpression astExpression, ComponentModel componentModel, Map<String, Object> vars)
     {
-        QueryTransformerEnvironment visitor = new QueryTransformerEnvironment(runtimeContext, namingStrategy, componentModel, vars);
+        QueryTransformerEnvironment visitor = new QueryTransformerEnvironment(runtimeContext, storageConfigurationRepository, componentModel, vars);
         return expressionService.evaluate(astExpression, visitor);
     }
 

@@ -9,7 +9,6 @@ import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.model.ModelNotFoundException;
-import de.quinscape.exceed.runtime.scope.SessionContext;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 
@@ -338,4 +337,5 @@ public class ApplicationModel
     {
         return staticFunctionReferences;
     }
+
 }

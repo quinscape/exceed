@@ -34,7 +34,8 @@ import de.quinscape.exceed.runtime.resource.ResourceWatcher;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.ModuleResourceEvent;
 import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
-import de.quinscape.exceed.runtime.schema.SchemaConfigurationService;
+import de.quinscape.exceed.runtime.schema.SchemaService;
+import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import de.quinscape.exceed.runtime.scope.ApplicationContext;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
@@ -148,7 +149,9 @@ public class DefaultRuntimeApplication
         ProcessService processService,
         String appName,
         RuntimeContextFactory runtimeContextFactory,
-        ScopedContextFactory scopedContextFactory)
+        ScopedContextFactory scopedContextFactory,
+        StorageConfigurationRepository storageConfigurationRepository
+    )
     {
         this.processService = processService;
         this.scopedContextFactory = scopedContextFactory;
@@ -197,10 +200,49 @@ public class DefaultRuntimeApplication
             }
         }
 
+        synchronizeDomainTypeSchemata(systemContext, storageConfigurationRepository);
+
         final StaticFunctionReferences staticFnRefs = loadUsageData(
             resourceLoader.getResourceLocation(TRACK_USAGE_DATA_RESOURCE).getHighestPriorityResource()
         );
         this.applicationModel.setStaticFunctionReferences(staticFnRefs);
+    }
+
+
+    private void synchronizeDomainTypeSchemata(RuntimeContext systemContext, StorageConfigurationRepository
+        storageConfigurationRepository)
+    {
+        final Map<String, List<DomainType>> map = mapDomainTypesByStorageConfig(systemContext);
+
+        for (Map.Entry<String, List<DomainType>> entry : map.entrySet())
+        {
+            final SchemaService schemaService = storageConfigurationRepository.getConfiguration(entry.getKey()).getSchemaService();
+            if (schemaService != null)
+            {
+                schemaService.synchronizeSchema(systemContext, entry.getValue());
+            }
+        }
+    }
+
+
+    private Map<String, List<DomainType>> mapDomainTypesByStorageConfig(RuntimeContext systemContext)
+    {
+        Map<String,List<DomainType>> bySchemaService = new HashMap<>();
+        for (DomainType type : systemContext.getDomainService().getDomainTypes().values())
+        {
+            final String storageConfig = type.getStorageConfiguration();
+
+            List<DomainType> domainTypes = bySchemaService.get(storageConfig);
+            if (domainTypes == null)
+            {
+                domainTypes = new ArrayList<>();
+                bySchemaService.put(storageConfig, domainTypes);
+            }
+
+            domainTypes.add(type);
+        }
+
+        return bySchemaService;
     }
 
 
@@ -216,7 +258,6 @@ public class DefaultRuntimeApplication
         SessionContext sessionContext = null;
         try
         {
-
             sessionContext = scopedContextFactory.getSessionContext(
                 request,
                 applicationModel.getName(),

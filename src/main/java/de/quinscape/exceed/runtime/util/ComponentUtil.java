@@ -36,14 +36,14 @@ public class ComponentUtil
         {
             ComponentRegistration registration = componentRegistry.getComponentRegistration(elem.getName());
 
-            if (registration == null)
+            if (registration != null)
             {
-                throw new IllegalStateException("No component registered for name '" + elem.getName() + "'");
-            }
+                //throw new IllegalStateException("No component registered for name '" + elem.getName() + "'");
 
-            if (registration.getDataProvider() != null && elem.getComponentId() == null)
-            {
-                throw new ModelCompositionException(elem + " must have a id attribute");
+                if (registration.getDataProvider() != null && elem.getComponentId() == null)
+                {
+                    throw new ModelCompositionException(elem + " must have a id attribute");
+                }
             }
             elem.setComponentRegistration(registration);
             elem.setParent(parent);

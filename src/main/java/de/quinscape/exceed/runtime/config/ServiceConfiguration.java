@@ -5,6 +5,7 @@ import de.quinscape.exceed.runtime.component.QueryExecutor;
 import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.JOOQQueryExecutor;
+import de.quinscape.exceed.runtime.domain.ModelQueryExecutor;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.editor.completion.CompletionService;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
@@ -13,6 +14,7 @@ import de.quinscape.exceed.runtime.i18n.DefaultTranslator;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.resource.DefaultResourceCacheFactory;
 import de.quinscape.exceed.runtime.resource.ResourceCacheFactory;
+import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.service.DomainServiceFactory;
@@ -24,6 +26,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import java.util.Map;
 
@@ -40,25 +43,11 @@ public class ServiceConfiguration
     }
 
     @Bean
-    public QueryTransformer queryTransformer(ExpressionService expressionService, NamingStrategy namingStrategy)
-    {
-        return new QueryTransformer(expressionService, namingStrategy);
-    }
-
-    @Bean
     public ResourceCacheFactory resourceCacheFactory()
     {
         DefaultResourceCacheFactory cacheFactory = new DefaultResourceCacheFactory();
         cacheFactory.setCacheSizePerApplication(10000);
         return cacheFactory;
-    }
-
-    private final static String DEFAULT_QUERY_EXECUTOR = "jooqQueryExecutor";
-
-    @Bean(name = DEFAULT_QUERY_EXECUTOR)
-    public JOOQQueryExecutor defaultQueryExecutor(DSLContext dslContext, NamingStrategy namingStrategy)
-    {
-        return new JOOQQueryExecutor(dslContext, namingStrategy);
     }
 
     @Bean
@@ -67,19 +56,6 @@ public class ServiceConfiguration
         return new ModelDocsProvider();
     }
 
-    @Bean
-    public NamingStrategy namingStrategy()
-    {
-        return new DefaultNamingStrategy();
-    }
-
-    @Bean
-    public QueryDataProvider queryDataProvider(ApplicationContext applicationContext, QueryTransformer
-        queryTransformer)
-    {
-        Map<String, QueryExecutor> executors = applicationContext.getBeansOfType(QueryExecutor.class);
-        return new QueryDataProvider(queryTransformer, executors, DEFAULT_QUERY_EXECUTOR);
-    }
 
     @Bean
     public Translator translator()
@@ -117,12 +93,11 @@ public class ServiceConfiguration
 
     @Bean
     public DomainServiceFactory domainServiceFactory(
-        NamingStrategy namingStrategy,
-        DSLContext dslContext,
         DefaultPropertyConverters defaultPropertyConverters,
+        StorageConfigurationRepository storageConfigurationRepository
     )
     {
-        return new DomainServiceFactory(namingStrategy, dslContext, defaultPropertyConverters);
+        return new DomainServiceFactory(defaultPropertyConverters,storageConfigurationRepository);
     }
     @Bean
     public ProcessService ProcessService(ActionService actionService, ExpressionService expressionService, ScopedContextFactory

@@ -1,14 +1,40 @@
 package de.quinscape.exceed.runtime.config;
 
 import com.jolbox.bonecp.BoneCPDataSource;
+import de.quinscape.exceed.runtime.component.QueryDataProvider;
 import de.quinscape.exceed.runtime.db.JOOQConfigFactory;
-import de.quinscape.exceed.runtime.model.ModelCompositionService;
+import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
+import de.quinscape.exceed.runtime.domain.JOOQDomainOperations;
+import de.quinscape.exceed.runtime.domain.JOOQQueryExecutor;
+import de.quinscape.exceed.runtime.domain.ModelQueryExecutor;
+import de.quinscape.exceed.runtime.domain.NeutralNamingStrategy;
+import de.quinscape.exceed.runtime.domain.PropertyDefaultOperations;
+import de.quinscape.exceed.runtime.domain.property.BooleanConverter;
+import de.quinscape.exceed.runtime.domain.property.DateConverter;
+import de.quinscape.exceed.runtime.domain.property.EnumConverter;
+import de.quinscape.exceed.runtime.domain.property.IntegerConverter;
+import de.quinscape.exceed.runtime.domain.property.LongConverter;
+import de.quinscape.exceed.runtime.domain.property.ObjectConverter;
+import de.quinscape.exceed.runtime.domain.property.PlainTextConverter;
+import de.quinscape.exceed.runtime.domain.property.RichTextConverter;
+import de.quinscape.exceed.runtime.domain.property.TimestampConverter;
+import de.quinscape.exceed.runtime.domain.property.UUIDConverter;
+import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
+import de.quinscape.exceed.runtime.schema.DefaultSchemaService;
+import de.quinscape.exceed.runtime.schema.DefaultStorageConfiguration;
+import de.quinscape.exceed.runtime.schema.DefaultStorageConfigurationRepository;
+import de.quinscape.exceed.runtime.schema.InformationSchemaOperations;
+import de.quinscape.exceed.runtime.schema.StorageConfiguration;
+import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DataSourceConnectionProvider;
 import org.jooq.impl.DefaultDSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -17,11 +43,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import de.quinscape.exceed.runtime.domain.property.*;
-
 import javax.sql.DataSource;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
@@ -31,6 +57,9 @@ public class DomainConfiguration
 {
     private final static Logger log = LoggerFactory.getLogger(DomainConfiguration.class);
 
+    @Autowired
+    private ApplicationContext applicationContext;
+
 
     @Bean
     public JdbcTemplate jdbcTemplate(DataSource dataSource)
@@ -38,6 +67,11 @@ public class DomainConfiguration
         return new JdbcTemplate(dataSource);
     }
 
+    @Bean
+    public PropertyDefaultOperations propertyDefaultOperations()
+    {
+        return new PropertyDefaultOperations();
+    }
 
     @Bean
     public TransactionAwareDataSourceProxy transactionAwareDataSourceProxy(Environment environment)
@@ -104,6 +138,66 @@ public class DomainConfiguration
         return tokenRepository;
     }
 
+    @Bean
+    public QueryDataProvider queryDataProvider(QueryTransformer queryTransformer, StorageConfigurationRepository storageConfigurationRepository)
+    {
+        return new QueryDataProvider(queryTransformer, storageConfigurationRepository);
+    }
+
+    @Bean
+    public ModelQueryExecutor modelQueryExecutor()
+    {
+        return new ModelQueryExecutor();
+    }
+
+    @Bean
+    public StorageConfigurationRepository storageConfigurationRepository()
+    {
+        final Map<String, StorageConfiguration> configurations = applicationContext.getBeansOfType(StorageConfiguration.class);
+
+        log.info("STORAGE CONFIGURATIONS: {}", configurations);
+
+        return new DefaultStorageConfigurationRepository(configurations);
+    }
+
+    @Bean
+    public StorageConfiguration modelStorage(ModelQueryExecutor modelQueryExecutor)
+    {
+        return new DefaultStorageConfiguration(null, new NeutralNamingStrategy(), modelQueryExecutor, null);
+    }
+    @Bean
+    public StorageConfiguration jooqDatabaseStorage(
+        DSLContext dslContext,
+        JOOQDomainOperations jooqDomainOperations,
+        DefaultSchemaService defaultSchemaService
+    )
+    {
+        final JOOQQueryExecutor jooqQueryExecutor = new JOOQQueryExecutor(dslContext);
+        return new DefaultStorageConfiguration(
+            jooqDomainOperations,
+            new DefaultNamingStrategy(),
+            jooqQueryExecutor,
+            defaultSchemaService);
+    }
+
+    @Bean
+    public QueryTransformer queryTransformer(ExpressionService expressionService, StorageConfigurationRepository storageConfigurationRepository)
+    {
+        return new QueryTransformer(expressionService, storageConfigurationRepository);
+    }
+
+    @Bean
+    public JOOQDomainOperations jooqDomainOperations(DSLContext dslContext, ExpressionService expressionService, PlatformTransactionManager txManager)
+    {
+        return new JOOQDomainOperations(dslContext, expressionService, txManager);
+    }
+
+    @Bean
+    public DefaultSchemaService defaultSchemaService(DataSource dataSource)
+    {
+        final DefaultNamingStrategy namingStrategy = new DefaultNamingStrategy();
+        return new DefaultSchemaService(namingStrategy, new InformationSchemaOperations(dataSource, namingStrategy));
+    }
 
     @Bean
     public BooleanConverter BooleanConverter()

@@ -3,6 +3,7 @@ package de.quinscape.exceed.runtime.service;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -11,7 +12,7 @@ import java.util.concurrent.ConcurrentMap;
 @Service
 public class DomainServiceRepository
 {
-    private ConcurrentMap<String,DomainService> allServices;
+    private final ConcurrentMap<String,DomainService> allServices = new ConcurrentHashMap<>();
 
     public DomainService getDomainService(String appName)
     {

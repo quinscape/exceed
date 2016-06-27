@@ -45,7 +45,7 @@ public class PropCompleteOperations
         final RuntimeContext runtimeContext = ctx.getEnv().getRuntimeContext();
 
         List<AceCompletion> suggestions = new ArrayList<>();
-        for (String domainType : runtimeContext.getDomainService().getDomainTypeNames())
+        for (String domainType : runtimeContext.getDomainService().getDomainTypes().keySet())
         {
             suggestions.add(new AceCompletion(CompletionType.PROP, domainType, "DomainType", null));
 
@@ -71,7 +71,16 @@ public class PropCompleteOperations
         Mapping mapping = node.getMapping();
         if (mapping != null)
         {
+
+
             String path = locationPath.path();
+
+            final boolean isProcess = mapping.getProcessName() != null;
+            if (isProcess)
+            {
+                path = path.substring(0, path.indexOf("/{stateId}"));
+            }
+
             String currentText = componentModel.getAttribute("text").getValue();
             ComponentModelBuilder builder =
                 component("Link")
@@ -87,11 +96,14 @@ public class PropCompleteOperations
                 String varName = variables.get(i);
                 String value = current.get(varName);
 
-                builder.withKids(
-                    component("Link.Param")
-                        .withAttribute("name", varName)
-                        .withAttribute("value", "${" + (i + 1) + ":" + (value != null ? value : "value") + "}")
-                );
+                if (!isProcess || !varName.equals("stateId"))
+                {
+                    builder.withKids(
+                        component("Link.Param")
+                            .withAttribute("name", varName)
+                            .withAttribute("value", "${" + (i + 1) + ":" + (value != null ? value : "value") + "}")
+                    );
+                }
             }
 
             suggestions.add(new AceCompletion(CompletionType.PROP, path, mapping

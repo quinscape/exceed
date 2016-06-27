@@ -4,8 +4,8 @@ import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.PropertyType;
+import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.runtime.config.DefaultPropertyConverters;
-import de.quinscape.exceed.runtime.datalist.DataListService;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.DomainServiceImpl;
 import org.apache.commons.io.FileUtils;
@@ -33,6 +33,8 @@ public class TestApplicationBuilder
     private boolean registerBaseProperties = true;
 
     private Map<String, PropertyType> propertyTypes = new HashMap<>();
+
+    private Map<String, Process> processes = new HashMap<>();
 
     private DomainService domainService;
 
@@ -72,7 +74,6 @@ public class TestApplicationBuilder
         return this;
     }
 
-
     public TestApplicationBuilder withDomainService(DomainService domainService)
     {
         this.domainService = domainService;
@@ -107,8 +108,7 @@ public class TestApplicationBuilder
 
         if (domainService == null)
         {
-            DataListService dataListService = new DataListService(new DefaultPropertyConverters().getConverters());
-            domainService = new DomainServiceImpl(dataListService,null, null, Collections.emptyMap());
+            domainService = new DomainServiceImpl(new DefaultPropertyConverters().getConverters(), null);
         }
 
         return new TestApplication(applicationModel, domainService);

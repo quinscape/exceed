@@ -134,7 +134,7 @@ public class ResourceLoader
     public void onResourceChange(ModuleResourceEvent resourceEvent, FileResourceRoot root, String resourcePath)
     {
         ResourceLocation resourceLocation = getResourceLocation(resourcePath);
-        if (resourceLocation.getHighestPriorityResource().getResourceRoot().equals(root))
+        if (resourceLocation != null && resourceLocation.getHighestPriorityResource().getResourceRoot().equals(root))
         {
             log.debug("Refresh cache for {}:{}", root, resourcePath);
             // we should only be registered if cache is not null

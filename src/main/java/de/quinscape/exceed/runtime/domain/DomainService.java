@@ -4,9 +4,9 @@ import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
+import de.quinscape.exceed.runtime.schema.StorageConfiguration;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  *  Handles registration of domain types in the system and converts domain objects to JSON and back.
@@ -23,7 +23,7 @@ public interface DomainService
 
     String getSchema();
 
-    Set<String> getDomainTypeNames();
+    Map<String,DomainType> getDomainTypes();
 
     Map<String,EnumType> getEnums();
 
@@ -35,9 +35,11 @@ public interface DomainService
 
     void insert(DomainObject genericDomainObject);
 
+    void insertOrUpdate(DomainObject genericDomainObject);
+
     void update(DomainObject genericDomainObject);
 
     PropertyConverter getPropertyConverter(String name);
 
-    NamingStrategy getNamingStrategy();
+    StorageConfiguration getStorageConfiguration(String domainType);
 }

@@ -25,6 +25,10 @@ public interface DomainObject
 
     void setProperty(String name, Object value);
 
+    default void insertOrUpdate()
+    {
+        getDomainService().insertOrUpdate(this);
+    }
     default void update()
     {
         getDomainService().update(this);

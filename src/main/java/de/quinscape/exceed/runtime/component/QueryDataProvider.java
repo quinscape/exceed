@@ -3,16 +3,15 @@ package de.quinscape.exceed.runtime.component;
 import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.expression.TokenMgrError;
 import de.quinscape.exceed.model.view.ComponentModel;
-import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformationException;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
+import de.quinscape.exceed.runtime.schema.StorageConfiguration;
+import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.view.DataProviderContext;
-import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,17 +27,13 @@ public class QueryDataProvider
 
     private final QueryTransformer queryTransformer;
 
-    private final Map<String, QueryExecutor> queryExecutors;
-
-    private final String defaultExecutor;
+    private final StorageConfigurationRepository storageConfigurationRepository;
 
 
-    public QueryDataProvider(QueryTransformer queryTransformer, Map<String, QueryExecutor>
-        queryExecutors, String defaultExecutor)
+    public QueryDataProvider(QueryTransformer queryTransformer, StorageConfigurationRepository storageConfigurationRepository)
     {
         this.queryTransformer = queryTransformer;
-        this.queryExecutors = queryExecutors;
-        this.defaultExecutor = defaultExecutor;
+        this.storageConfigurationRepository = storageConfigurationRepository;
     }
 
 
@@ -59,21 +54,20 @@ public class QueryDataProvider
             return null;
         }
 
-        Map<String, String> executors = componentRegistration.getDescriptor().getQueryExecutors();
-
         Map<String, Object> map = new HashMap<>();
         for (Map.Entry<String, QueryDefinition> entry : runtimeQueries.entrySet())
         {
             String name = entry.getKey();
             QueryDefinition queryDefinition = entry.getValue();
 
-            String nameFromRegistration = executors != null ? executors.get(name) : null;
-            String beanName = nameFromRegistration != null ? nameFromRegistration : defaultExecutor;
 
-            QueryExecutor executor = queryExecutors.get(beanName);
+            final String config = queryDefinition.getQueryDomainType().getType().getStorageConfiguration();
+            final StorageConfiguration configuration = storageConfigurationRepository.getConfiguration(config);
+            QueryExecutor executor = configuration.getQueryExecutor();
+
             if (executor == null)
             {
-                throw new IllegalStateException("No query executor with name '" + beanName + "'");
+                throw new UnsupportedOperationException("Querying not supported by storage config '"  +  config + "'");
             }
 
             Object result = executor.execute(dataProviderContext.getRuntimeContext(), queryDefinition);

@@ -3,9 +3,9 @@ package de.quinscape.exceed.runtime.expression.query;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
+import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +17,7 @@ public class QueryTransformerEnvironment
 
     private final static Logger log = LoggerFactory.getLogger(QueryTransformerEnvironment.class);
 
-    private final NamingStrategy namingStrategy;
+    private final StorageConfigurationRepository storageConfigurationRepository;
 
     private final ComponentModel componentModel;
 
@@ -28,13 +28,13 @@ public class QueryTransformerEnvironment
 
     public QueryTransformerEnvironment(
         RuntimeContext runtimeContext,
-        NamingStrategy namingStrategy,
+        StorageConfigurationRepository storageConfigurationRepository,
         ComponentModel componentModel,
         Map<String, Object> vars
     )
     {
         this.runtimeContext = runtimeContext;
-        this.namingStrategy = namingStrategy;
+        this.storageConfigurationRepository = storageConfigurationRepository;
         this.componentModel = componentModel;
         this.vars = vars;
     }
@@ -120,8 +120,8 @@ public class QueryTransformerEnvironment
     }
 
 
-    public NamingStrategy getNamingStrategy()
+    public StorageConfigurationRepository getStorageConfigurationRepository()
     {
-        return namingStrategy;
+        return storageConfigurationRepository;
     }
 }

@@ -1,11 +1,15 @@
 package de.quinscape.exceed.runtime.domain;
 
+import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.datalist.DataListService;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
+import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.schema.StorageConfiguration;
+import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import de.quinscape.exceed.runtime.util.DBUtil;
 import org.jooq.DSLContext;
 import org.jooq.DeleteQuery;
@@ -18,11 +22,14 @@ import org.jooq.UpdateQuery;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.svenson.JSONParser;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,12 +41,9 @@ public class DomainServiceImpl
 {
     private final static Logger log = LoggerFactory.getLogger(DomainServiceImpl.class);
 
-
-    private final DSLContext dslContext;
-
-    private final NamingStrategy namingStrategy;
-
     private final Map<String, PropertyConverter> converters;
+
+    private final StorageConfigurationRepository storageConfigurationRepository;
 
     private final JSONParser parser;
 
@@ -51,15 +55,12 @@ public class DomainServiceImpl
 
 
     public DomainServiceImpl(
-        DSLContext dslContext, 
-        NamingStrategy namingStrategy,
         Map<String, PropertyConverter> converters,
         StorageConfigurationRepository storageConfigurationRepository
     )
     {
-        this.dslContext = dslContext;
-        this.namingStrategy = namingStrategy;
         this.converters = converters;
+        this.storageConfigurationRepository = storageConfigurationRepository;
 
         parser = new JSONParser();
         parser.addObjectFactory(new DomainFactory(this));
@@ -95,9 +96,8 @@ public class DomainServiceImpl
     /**
      * Converts the given model JSON to a model instance.
      *
-     *
-     * @param cls       class to parse into
-     * @param json      JSON string. Must have a root "type" property that contains a valid model name,
+     * @param cls  class to parse into
+     * @param json JSON string. Must have a root "type" property that contains a valid model name,
      * @return Model instance of type embedded in JSON
      */
     @Override
@@ -148,7 +148,7 @@ public class DomainServiceImpl
         @Override
         public boolean supports(Class<GenericDomainObject> cls)
         {
-            return GenericDomainObject.class.isAssignableFrom(cls);
+            return DomainObjectBase.class.isAssignableFrom(cls);
         }
 
 
@@ -161,8 +161,7 @@ public class DomainServiceImpl
                 {
                     log.debug("Create {}", cls.getName());
                 }
-                GenericDomainObject domainObject = cls.newInstance();
-
+                GenericDomainObject domainObject = new GenericDomainObject();
                 domainObject.setDomainService(domainService);
                 return domainObject;
             }
@@ -173,8 +172,9 @@ public class DomainServiceImpl
         }
     }
 
+
     @Override
-    public Map<String,EnumType> getEnums()
+    public Map<String, EnumType> getEnums()
     {
         return runtimeApplication.getApplicationModel().getEnums();
     }
@@ -183,151 +183,77 @@ public class DomainServiceImpl
     @Override
     public DomainObject create(String type, String id)
     {
-        GenericDomainObject genericDomainObject = new GenericDomainObject();
-        genericDomainObject.setDomainType(type);
-        genericDomainObject.setId(id);
-        genericDomainObject.setDomainService(this);
-
-        return genericDomainObject;
+        return dbOps(type).create(this, type, id);
     }
+
 
     @Override
     public DomainObject read(String type, String id)
     {
-        DomainType domainType = getDomainType(type);
-
-        Table<Record> table = DBUtil.jooqTableFor(domainType, domainType.getName());
-        Field<Object> idField = DSL.field(DSL.name(namingStrategy.getFieldName(domainType.getName(), "id")));
-
-        DomainObject genericDomainObject = dslContext.select()
-            .from(table)
-            .where(idField.eq(id))
-            .fetchOne(new DomainTypeRecordMapper(domainType));
-        return genericDomainObject;
-    }
-
-    @Override
-    public void delete(DomainObject domainObject)
-    {
-        DomainType domainType = getDomainType(domainObject.getDomainType());
-
-        DeleteQuery<Record> query = dslContext.deleteQuery(DBUtil.jooqTableFor(domainType, domainType.getName()));
-
-        for (String name : domainType.getPkFields())
-        {
-            Field<Object> pkField = DSL.field(DSL.name(namingStrategy.getFieldName(domainType.getName(), name)));
-            Object pkValue = domainObject.getProperty(name);
-            query.addConditions(pkField.eq(pkValue));
-        }
-
-        int count = query.execute();
-        if (count != 1)
-        {
-            log.warn("Update returned " + count + " results instead of one");
-        }
+        return dbOps(type).read(this, type, id);
     }
 
 
     @Override
-    public void insert(DomainObject domainObject)
+    public void delete(DomainObject genericDomainObject)
     {
-        DomainType domainType = getDomainType(domainObject.getDomainType());
-
-        InsertQuery<Record> query = dslContext.insertQuery(DBUtil.jooqTableFor(domainType, domainType.getName()));
-
-
-        for (String name : domainObject.propertyNames())
-        {
-            Field<Object> field = DSL.field(DSL.name(namingStrategy.getFieldName(domainType.getName(), name)));
-            query.addValue(field,  domainObject.getProperty(name));
-        }
-
-        int count = query.execute();
-        if (count != 1)
-        {
-            log.warn("Insert returned " + count + " results instead of one");
-        }
+        dbOps(genericDomainObject.getDomainType()).delete(this, genericDomainObject);
     }
 
 
     @Override
-    public void update(DomainObject domainObject)
+    public void insert(DomainObject genericDomainObject)
     {
-
-        DomainType domainType = getDomainType(domainObject.getDomainType());
-
-        UpdateQuery<Record> query = dslContext.updateQuery(DBUtil.jooqTableFor(domainType, domainType.getName()));
-
-        Set<String> nonPkFields = new HashSet<>(domainObject.propertyNames());
-        nonPkFields.removeAll(domainType.getPkFields());
-
-        for (String name : nonPkFields)
-        {
-            Field<Object> field = DSL.field(DSL.name(namingStrategy.getFieldName(domainType.getName(), name)));
-            query.addValue(field, domainObject.getProperty(name));
-        }
-
-        for (String name : domainType.getPkFields())
-        {
-            Field<Object> pkField = DSL.field(DSL.name(namingStrategy.getFieldName(domainType.getName(), name)));
-            Object pkValue = domainObject.getProperty(name);
-            query.addConditions(pkField.eq(pkValue));
-        }
-
-        int count = query.execute();
-        if (count != 1)
-        {
-            log.warn("Update returned " + count + " results instead of one");
-        }
+        dbOps(genericDomainObject.getDomainType()).insert(this, genericDomainObject);
     }
 
 
     @Override
-    public PropertyConverter getPropertyConverter(String name)
+    public void insertOrUpdate(DomainObject genericDomainObject)
     {
-        String converterName = name + "Converter";
+        dbOps(genericDomainObject.getDomainType()).insertOrUpdate(this, genericDomainObject);
+    }
+
+
+    @Override
+    public void update(DomainObject genericDomainObject)
+    {
+        dbOps(genericDomainObject.getDomainType()).update(this, genericDomainObject);
+    }
+
+
+    private DomainOperations dbOps(String domainType)
+    {
+        final StorageConfiguration ops = getStorageConfiguration(domainType);
+
+        if (ops == null)
+        {
+            throw new IllegalArgumentException("Domain operations not supported for type '" + domainType + "'");
+        }
+
+        return ops.getDomainOperations();
+    }
+
+
+    @Override
+    public PropertyConverter getPropertyConverter(String propertyType)
+    {
+        String converterName = propertyType + "Converter";
         PropertyConverter propertyConverter = converters.get(converterName);
 
         if (propertyConverter == null)
         {
-            throw new IllegalStateException("No converter '" + converterName + "' for type '" + name + "'");
+            throw new IllegalStateException("No converter '" + converterName + "' for type '" + propertyType + "'");
         }
         return propertyConverter;
     }
 
 
     @Override
-    public NamingStrategy getNamingStrategy()
+    public StorageConfiguration getStorageConfiguration(String domainType)
     {
-        return namingStrategy;
-    }
-
-
-    private class DomainTypeRecordMapper
-        implements RecordMapper
-        <Record,DomainObject>
-    {
-        private final DomainType domainType;
-
-
-        private DomainTypeRecordMapper(DomainType domainType)
-        {
-            this.domainType = domainType;
-        }
-
-
-        @Override
-        public DomainObject map(Record record)
-        {
-            DomainService domainService = domainType.getDomainService();
-            DomainObject domainObject = domainService.create(domainType.getName(), null);
-            for (DomainProperty property : domainType.getProperties())
-            {
-                String name = property.getName();
-                Object value = record.getValue(DSL.field(DSL.name(namingStrategy.getFieldName(domainType.getName(), name))));
-                domainObject.setProperty(name, value);
-            }
-            return domainObject;
-        }
+        final DomainType type = runtimeApplication.getApplicationModel().getDomainType(domainType);
+        final String config = type.getStorageConfiguration();
+        return storageConfigurationRepository.getConfiguration(config);
     }
 }

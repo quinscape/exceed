@@ -40,23 +40,15 @@ public class JOOQQueryExecutor
 
     private final DSLContext dslContext;
 
-    private final NamingStrategy namingStrategy;
 
 
-    public JOOQQueryExecutor(DSLContext dslContext, NamingStrategy namingStrategy)
+    public JOOQQueryExecutor(DSLContext dslContext)
     {
         if (dslContext == null)
         {
             throw new IllegalArgumentException("dslContext can't be null");
         }
-
-        if (namingStrategy == null)
-        {
-            throw new IllegalArgumentException("namingStrategy can't be null");
-        }
-
         this.dslContext = dslContext;
-        this.namingStrategy = namingStrategy;
     }
 
 
@@ -72,7 +64,7 @@ public class JOOQQueryExecutor
         query.addFrom(mainTable);
         query.addSelect(
             queryDomainType.getFieldsInOrder().stream()
-                .map(this::jooqField)
+                .map(dataField -> jooqField(runtimeContext, dataField))
                 .collect(Collectors.toList())
         );
 
@@ -175,11 +167,14 @@ public class JOOQQueryExecutor
     }
 
 
-
-    private Field<Object> jooqField(DataField dataField)
+    private Field<Object> jooqField(RuntimeContext runtimeContext, DataField dataField)
     {
+        final String domainTypeName = dataField.getQueryDomainType().getType().getName();
+        final NamingStrategy namingStrategy = runtimeContext.getDomainService().getStorageConfiguration
+            (domainTypeName).getNamingStrategy();
         return DSL.field(DSL.name(dataField.getNameFromStrategy(namingStrategy)));
     }
+
 
     private class QueryMapper
         implements RecordMapper<Record, DomainObject>
@@ -205,8 +200,9 @@ public class JOOQQueryExecutor
             GenericDomainObject domainObject = new GenericDomainObject();
             for (DataField field : fields)
             {
+                final String domainTypeName = field.getQueryDomainType().getType().getName();
+                final NamingStrategy namingStrategy = domainService.getStorageConfiguration(domainTypeName).getNamingStrategy();
                 Object value = record.getValue(DSL.field(DSL.name(field.getNameFromStrategy(namingStrategy))));
-
                 domainObject.setProperty(field.getLocalName(), value);
             }
             return domainObject;

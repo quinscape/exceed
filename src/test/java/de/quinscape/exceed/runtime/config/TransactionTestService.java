@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.util.UUID;
 
+import static de.quinscape.exceed.domain.Tables.*;
+
 @Transactional
 public class TransactionTestService
 {

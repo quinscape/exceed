@@ -10,6 +10,7 @@ import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
 import de.quinscape.exceed.runtime.expression.annotation.Operation;
+import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -118,10 +119,15 @@ public class QueryFilterOperations
         }
 
 
-        NamingStrategy namingStrategy = env.getTransformerEnvironment().getNamingStrategy();
+        final StorageConfigurationRepository storageConfigurationRepository = env.getTransformerEnvironment()
+            .getStorageConfigurationRepository();
+
+
 
         QueryDomainType queryDomainType = ctx.getEnv().getQueryDomainType();
         DataField dataField = queryDomainType.resolveField(name);
+        final String domainTypeName = dataField.getQueryDomainType().getType().getName();
+        NamingStrategy namingStrategy = storageConfigurationRepository.getConfiguration(domainTypeName).getNamingStrategy();
 
         return DSL.field(DSL.name(namingStrategy.getFieldName(dataField.getQueryDomainType().getAlias(), dataField.getDomainProperty().getName())));
     }

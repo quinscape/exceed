@@ -13,8 +13,8 @@ public class DBUtil
     {
         DomainService domainService = type.getDomainService();
         String schema = domainService.getSchema();
-        NamingStrategy namingStrategy = type.getDomainService().getNamingStrategy();
-        Table<Record> table = DSL.table(DSL.name(schema, namingStrategy.getTableName(type)));
+        NamingStrategy namingStrategy = type.getDomainService().getStorageConfiguration(type.getName()).getNamingStrategy();
+        Table<Record> table = DSL.table(DSL.name(schema, namingStrategy.getTableName(type.getName())));
 
         if (alias == null)
         {

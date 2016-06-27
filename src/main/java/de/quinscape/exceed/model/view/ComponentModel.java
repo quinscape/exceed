@@ -169,7 +169,7 @@ public class ComponentModel
 
 
     /**
-     * Returns <code>true</code> if the element represented by this model is full component or just a HTML tag.
+     * Returns <code>true</code> if the element represented by this model is full component and <code>false</code> if it is just a HTML tag.
      * <p>
      * Exceed follows the ReactJs convention that component names start with an upper case letter and HTML tags
      * with a lower case letter.

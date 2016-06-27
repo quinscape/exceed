@@ -1,28 +1,33 @@
 {
     "root": {
-        "name": "DataGrid",
-        "attrs": {
-            "id": "myDG",
-            "type": "{ Foo }"
-        },
+        "name": "View",
         "kids": [
             {
-                "name": "DataGrid.Column",
+                "name": "DataGrid",
                 "attrs": {
-                    "name": "value"
-                }
-            },
-            {
-                "name": "DataGrid.Column",
-                "attrs": {
-                    "name": "foo"
-                }
-            },
-            {
-                "name": "DataGrid.Column",
-                "attrs": {
-                    "name": "xxx"
-                }
+                    "id": "myDG",
+                    "type": "{ Foo }"
+                },
+                "kids": [
+                    {
+                        "name": "DataGrid.Column",
+                        "attrs": {
+                            "name": "value"
+                        }
+                    },
+                    {
+                        "name": "DataGrid.Column",
+                        "attrs": {
+                            "name": "foo"
+                        }
+                    },
+                    {
+                        "name": "DataGrid.Column",
+                        "attrs": {
+                            "name": "xxx"
+                        }
+                    }
+                ]
             }
         ]
     }

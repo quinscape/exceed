@@ -445,7 +445,7 @@ public class QueryTransformerOperations
     @Operation
     public QueryDefinition query(ExpressionContext<QueryTransformerEnvironment> ctx)
     {
-        Object result = ExpressionUtil.visitOneChildOf(ctx.getEnv(), ctx.getASTFunction(), ASTFunction.class, ASTPropertyChain.class);
+        Object result = ExpressionUtil.visitOneChildOf(ctx.getEnv(), ctx.getASTFunction(), ASTFunction.class, ASTPropertyChain.class, ASTIdentifier.class);
 
         if (result == null)
         {
