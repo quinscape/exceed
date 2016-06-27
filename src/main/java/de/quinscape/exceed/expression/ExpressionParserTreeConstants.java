@@ -17,8 +17,8 @@ public interface ExpressionParserTreeConstants
   public int JJTDIV = 11;
   public int JJTNOT = 12;
   public int JJTNEGATE = 13;
-  public int JJTPROPERTYCHAIN = 14;
-  public int JJTCOMPUTEDPROPERTYCHAIN = 15;
+  public int JJTCOMPUTEDPROPERTYCHAIN = 14;
+  public int JJTPROPERTYCHAIN = 15;
   public int JJTIDENTIFIER = 16;
   public int JJTFUNCTION = 17;
   public int JJTINTEGER = 18;
@@ -46,8 +46,8 @@ public interface ExpressionParserTreeConstants
     "Div",
     "Not",
     "Negate",
-    "PropertyChain",
     "ComputedPropertyChain",
+    "PropertyChain",
     "Identifier",
     "Function",
     "Integer",
@@ -60,4 +60,4 @@ public interface ExpressionParserTreeConstants
     "Null",
   };
 }
-/* JavaCC - OriginalChecksum=0a9ea1c93c339effe547fc22a43dbf3d (do not edit this line) */
+/* JavaCC - OriginalChecksum=035edee79113453938caa740c7d228ca (do not edit this line) */

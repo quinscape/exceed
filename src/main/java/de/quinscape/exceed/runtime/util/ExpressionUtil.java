@@ -3,6 +3,10 @@ package de.quinscape.exceed.runtime.util;
 import de.quinscape.exceed.expression.ASTAssignment;
 import de.quinscape.exceed.expression.ASTExpressionSequence;
 import de.quinscape.exceed.expression.ASTFunction;
+import de.quinscape.exceed.expression.ASTIdentifier;
+import de.quinscape.exceed.expression.ASTMap;
+import de.quinscape.exceed.expression.ASTMapEntry;
+import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.ExpressionParserVisitor;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.SimpleNode;
@@ -17,7 +21,8 @@ public class ExpressionUtil
 {
 
     @SafeVarargs
-    public static Object visitOneChildOf(ExpressionParserVisitor visitor, ASTFunction n, Class<? extends Node>... classes)
+    public static Object visitOneChildOf(ExpressionParserVisitor visitor, ASTFunction n, Class<? extends Node>...
+        classes)
     {
         if (n.jjtGetNumChildren() != 1)
         {
@@ -61,13 +66,14 @@ public class ExpressionUtil
             firstArg);
     }
 
+
     public static <T> T visit(Node node, ExpressionParserVisitor visitor, Class<T> cls)
     {
         Object value = node.jjtAccept(visitor, null);
 
         if (cls.isInstance(value))
         {
-            return (T)value;
+            return (T) value;
         }
 
         throw new IllegalArgumentException(value + " is no " + cls.getName());
@@ -77,8 +83,8 @@ public class ExpressionUtil
     /**
      * Makes sure that the given expression sequence either consists only of actions or of no action generators
      *
-     * @param seq                          property chain
-     * @param actionExpressionRenderer      action expression renderer
+     * @param seq                      property chain
+     * @param actionExpressionRenderer action expression renderer
      * @return
      */
     public static boolean isChainOfActions(ASTExpressionSequence seq, ActionExpressionRenderer actionExpressionRenderer)
@@ -93,7 +99,8 @@ public class ExpressionUtil
 
             if (isChainOfActions != isActionExpression(actionExpressionRenderer, kid))
             {
-                throw new InvalidClientExpressionException("Expression sequence must be only action operations or have no action operations: " + ExpressionRenderer.render(seq));
+                throw new InvalidClientExpressionException("Expression sequence must be only action operations or " +
+                    "have no action operations: " + ExpressionRenderer.render(seq));
             }
         }
 
@@ -127,7 +134,7 @@ public class ExpressionUtil
     /**
      * Converts assignments to scoped functions into the appropriate set action.
      *
-     * @param ast       expression AST
+     * @param ast expression AST
      * @return transformed expression AST
      */
     public static <T extends Node> T handleAssignmentAction(T ast)
@@ -140,7 +147,7 @@ public class ExpressionUtil
     /**
      * Returns the index the given node has among its siblings within the parent children.
      *
-     * @param node  non-root node
+     * @param node non-root node
      * @return index
      */
     public static int findSiblingIndex(Node node)
@@ -163,4 +170,29 @@ public class ExpressionUtil
     }
 
 
+    public static Node getFromMap(ASTMap astMap, String name)
+    {
+        for (int i = 0; i < astMap.jjtGetNumChildren(); i++)
+        {
+            ASTMapEntry e = (ASTMapEntry) astMap.jjtGetChild(i);
+            Node nameNode = e.jjtGetChild(0);
+
+            String key;
+
+            if (nameNode instanceof ASTIdentifier)
+            {
+                key = ((ASTIdentifier) nameNode).getName();
+            }
+            else
+            {
+                key = ((ASTString) nameNode).getValue();
+            }
+
+            if (name.equals(key))
+            {
+                return e.jjtGetChild(1);
+            }
+        }
+        return null;
+    }
 }

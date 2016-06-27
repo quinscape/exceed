@@ -17,8 +17,8 @@ public interface ExpressionParserVisitor
   public Object visit(ASTDiv node, Object data);
   public Object visit(ASTNot node, Object data);
   public Object visit(ASTNegate node, Object data);
-  public Object visit(ASTPropertyChain node, Object data);
   public Object visit(ASTComputedPropertyChain node, Object data);
+  public Object visit(ASTPropertyChain node, Object data);
   public Object visit(ASTIdentifier node, Object data);
   public Object visit(ASTFunction node, Object data);
   public Object visit(ASTInteger node, Object data);
@@ -30,4 +30,4 @@ public interface ExpressionParserVisitor
   public Object visit(ASTBool node, Object data);
   public Object visit(ASTNull node, Object data);
 }
-/* JavaCC - OriginalChecksum=4e241396cb59706118696debfce6ed81 (do not edit this line) */
+/* JavaCC - OriginalChecksum=954d73453f9afcb80857c48f35f2e05c (do not edit this line) */

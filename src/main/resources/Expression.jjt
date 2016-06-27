@@ -292,22 +292,7 @@ void NegateExpression() :
     Token op = null;
 }
 {
-    (( op = "-" )? PropertyChainExpression() ) #Negate(op != null)
-}
-
-/** A Property Access. */
-void PropertyChainExpression() : {}
-{
-    (
-        // property access and methods
-        ComputedPropertyChainExpression() ("." PropertyAccessor() )*
-    ) #PropertyChain(>1)
-}
-
-void PropertyAccessor() : {}
-{
-    LOOKAHEAD(2) Function() |
-    Identifier()
+    (( op = "-" )? ComputedPropertyChainExpression() ) #Negate(op != null)
 }
 
 /** A Property Access. */
@@ -315,8 +300,24 @@ void ComputedPropertyChainExpression() : {}
 {
     (
         // property access and methods
-        ValueExpression() ( "[" Expr() "]" )*
+        PropertyChainExpression() ( "[" Expr() "]" )*
     ) #ComputedPropertyChain(>1)
+}
+
+
+/** A Property Access. */
+void PropertyChainExpression() : {}
+{
+    (
+        // property access and methods
+        ValueExpression() ("." PropertyAccessor() )*
+    ) #PropertyChain(>1)
+}
+
+void PropertyAccessor() : {}
+{
+    LOOKAHEAD(2) Function() |
+    Identifier()
 }
 
 
