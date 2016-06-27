@@ -92,6 +92,7 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
         componentDescriptor = components[name];
         component = name;
 
+
         // record usage of component module export
         ctx.usedComponents[name.split(".")[0]] = true;
     }
@@ -133,7 +134,7 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
 
     ctx.out.push("_React.createElement(", component, ", ");
 
-    var hasInjection = !!queries || componentDescriptor.dataProvider;
+    var hasInjection = !!queries || !!componentDescriptor && componentDescriptor.dataProvider;
 
     if (hasInjection)
     {

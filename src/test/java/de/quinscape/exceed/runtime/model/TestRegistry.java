@@ -49,7 +49,7 @@ public class TestRegistry
 
         for (String componentName : names)
         {
-            ComponentPackageDescriptor pkg = JSONParser.defaultJSONParser().parse(ComponentPackageDescriptor.class, new InputStreamSource(new FileInputStream(new File("./src/main/js/components/" + componentName + "/component.json")), true));
+            ComponentPackageDescriptor pkg = JSONParser.defaultJSONParser().parse(ComponentPackageDescriptor.class, new InputStreamSource(new FileInputStream(new File("./src/main/js/components/" + componentName + "/components.json")), true));
             map.putAll(pkg.getComponents());
         }
 

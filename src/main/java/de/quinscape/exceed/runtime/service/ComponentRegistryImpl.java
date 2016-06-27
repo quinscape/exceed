@@ -98,7 +98,7 @@ public class ComponentRegistryImpl
     private synchronized void processResource(ResourceRoot root, AppResource appResource, boolean reload) throws
         IOException
     {
-        if (!appResource.getRelativePath().endsWith(FileExtension.JSON))
+        if (!appResource.getRelativePath().endsWith("/components.json"))
         {
             return;
         }
@@ -244,7 +244,7 @@ public class ComponentRegistryImpl
                 }
                 else
                 {
-                    AppResource resource = root.getResource(Util.parentDir(resourcePath) + "/component.json");
+                    AppResource resource = root.getResource(Util.parentDir(resourcePath) + "/components.json");
                     processResource(root, resource, true);
                 }
                 applicationService.signalStyleChanges();

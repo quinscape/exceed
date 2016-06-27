@@ -15,8 +15,8 @@ public class EnumConverterTest
         final EnumConverter converter = new EnumConverter();
         final TestApplication application = new TestApplicationBuilder().build();
 
-        assertThat(converter.convertToJava(application.createRuntimeContext(), 1L), is(1L));
-        assertThat(converter.convertToJava(application.createRuntimeContext(), 2L), is(2L));
+        assertThat(converter.convertToJava(application.createRuntimeContext(), 1L), is(1));
+        assertThat(converter.convertToJava(application.createRuntimeContext(), 2L), is(2));
 
     }
     @Test

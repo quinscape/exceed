@@ -7,7 +7,7 @@ var React = require("react");
 
 function registerMapRecursively(map)
 {
-    //console.debug("registerMapRecursively", componentsMap, path);
+    console.debug("registerMapRecursively", map);
     for (var name in map)
     {
         if (map.hasOwnProperty(name))
@@ -15,7 +15,7 @@ function registerMapRecursively(map)
             var value = map[name];
             if (typeof value === "object")
             {
-                if (name === "component")
+                if (name === "components")
                 {
                     if (value.components && typeof value.components === "object")
                     {

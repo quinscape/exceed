@@ -17,7 +17,7 @@ var svgLayout = require("./util/svg-layout");
 var hotReload = require("./service/hotreload");
 
 var componentsMap = bulk(__dirname, ["components/**/*.json", "components/**/*.js"]);
-componentService.registerBulk(componentsMap);
+componentService.registerBulk(componentsMap.components);
 
 var clientActionMap = bulk(__dirname, ["action/**/*.js"]);
 actionService.registerBulk(clientActionMap.action);
