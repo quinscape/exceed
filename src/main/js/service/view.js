@@ -46,7 +46,7 @@ var scopeDirty = {};
 
 function updateViewData(newViewData)
 {
-    console.log("UPDATE VIEW-DATA", newViewData);
+    //console.log("UPDATE VIEW-DATA", newViewData);
 
     currentViewData = newViewData;
 

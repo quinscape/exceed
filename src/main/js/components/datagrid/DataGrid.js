@@ -26,7 +26,7 @@ var Column = React.createClass({
     },
     render: function ()
     {
-        var renderKids = this.props.renderChildrenWithContext;
+        var renderKids = this.props.renderChildren;
         if (!renderKids)
         {
             var cursor = this.props.context;
@@ -252,7 +252,7 @@ var DataGrid = React.createClass({
             {
                 rows[i] = (
                     <tr key = { i }>
-                        { this.props.renderChildrenWithContext( resultList.getCursor([i])) }
+                        { this.props.renderChildren( resultList.getCursor([i])) }
                     </tr>
                 )
             }

@@ -30,7 +30,7 @@ var Bar = React.createClass({
 var Provider = React.createClass({
     render: function ()
     {
-        return <div className="provider">{ this.props.renderChildrenWithContext(this.props.context) }</div>;
+        return <div className="provider">{ this.props.renderChildren(this.props.context) }</div>;
     }
 });
 

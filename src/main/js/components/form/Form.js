@@ -147,7 +147,7 @@ var Form = React.createClass({
     {
         var cursor = this.state.cursor;
         return ( <form className={ cx("form", this.props.horizontal && "form-horizontal") } onSubmit={ this.onSubmit }>
-            { this.props.renderChildrenWithContext(cursor) }
+            { this.props.renderChildren(cursor) }
         </form> );
     }
 });

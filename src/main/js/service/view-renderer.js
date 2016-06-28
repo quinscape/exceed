@@ -230,7 +230,7 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
 
             commaIfNotFirst();
             indent(ctx, depth + 2);
-            ctx.out.push("renderChildrenWithContext", " : function(" + newContextName + "){\n");
+            ctx.out.push("renderChildren", " : function(" + newContextName + "){\n");
             indent(ctx, depth + 3);
             ctx.out.push("return ([\n");
             for (i = 0; i < kids.length; i++)
