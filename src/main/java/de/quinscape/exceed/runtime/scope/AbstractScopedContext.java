@@ -6,7 +6,7 @@ import de.quinscape.exceed.model.context.ScopedElementModel;
 import de.quinscape.exceed.model.context.ScopedObjectModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.component.DataList;
+import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
@@ -68,13 +68,13 @@ public abstract class AbstractScopedContext
     }
 
     @Override
-    public DataList getList(String name)
+    public DataGraph getList(String name)
     {
         if (!hasList(name))
         {
             throw new ScopeResolutionException("Context has not list '" + name + "'");
         }
-        return (DataList) context.get(name);
+        return (DataGraph) context.get(name);
     }
 
     @Override
@@ -99,7 +99,7 @@ public abstract class AbstractScopedContext
 
 
     @Override
-    public void setList(String name, DataList list)
+    public void setList(String name, DataGraph list)
     {
         if (!hasList(name))
         {

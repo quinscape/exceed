@@ -1,6 +1,6 @@
 const actionService = require("../service/action");
 
-const DataListCursor = require("../util/data-list-cursor");
+const DataCursor = require("../util/data-cursor");
 
 module.exports = function (model)
 {
@@ -18,7 +18,7 @@ module.exports = function (model)
 
     var data = model.object;
 
-    if (data instanceof DataListCursor)
+    if (data instanceof DataCursor)
     {
         model.object = data.getDomainObject(model.type);
     }

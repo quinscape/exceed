@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.scope;
 
-import de.quinscape.exceed.runtime.component.DataList;
+import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 
 public interface ScopedResolver
@@ -9,13 +9,13 @@ public interface ScopedResolver
 
     DomainObject getObject(String name);
 
-    DataList getList(String name);
+    DataGraph getList(String name);
 
     void setProperty(String name, Object value);
 
     void setObject(String name, DomainObject value);
 
-    void setList(String name, DataList list);
+    void setList(String name, DataGraph list);
 
     boolean hasProperty(String name);
 

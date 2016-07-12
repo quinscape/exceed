@@ -7,7 +7,7 @@ import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.component.DataList;
+import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.scope.ProcessContext;
 import de.quinscape.exceed.runtime.scope.ScopedContext;
@@ -112,7 +112,7 @@ public class ScopedProvider
 
                 map.put(name, value);
             }
-            return new DataList(columns, Collections.singletonList(map), 1);
+            return new DataGraph(columns, map, 1);
 
         }
         return null;

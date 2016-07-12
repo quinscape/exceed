@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.scope;
 
-import de.quinscape.exceed.runtime.component.DataList;
+import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 
 /**
@@ -61,7 +61,7 @@ public enum ScopedValueType
              * @return domain object list
              */
             @Override
-            public DataList get(ScopedResolver scopedContext, String name)
+            public DataGraph get(ScopedResolver scopedContext, String name)
             {
                 return scopedContext.getList(name);
             }
@@ -84,7 +84,7 @@ public enum ScopedValueType
             @Override
             public void set(ScopedResolver scopedContext, String name, Object value)
             {
-                scopedContext.setList(name, (DataList) value);
+                scopedContext.setList(name, (DataGraph) value);
             }
 
 

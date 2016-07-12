@@ -3,7 +3,7 @@ package de.quinscape.exceed.runtime.domain;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
-import de.quinscape.exceed.runtime.datalist.DataListService;
+import de.quinscape.exceed.runtime.datalist.DataGraphService;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.schema.StorageConfiguration;
 import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
@@ -34,7 +34,7 @@ public class DomainServiceImpl
 
     private RuntimeApplication runtimeApplication;
 
-    private DataListService dataListService;
+    private DataGraphService dataGraphService;
 
 
     public DomainServiceImpl(
@@ -64,7 +64,7 @@ public class DomainServiceImpl
         this.runtimeApplication = runtimeApplication;
         this.schema = schema;
 
-        this.dataListService = new DataListService(runtimeApplication.getApplicationModel().getDomainTypes(),
+        this.dataGraphService = new DataGraphService(runtimeApplication.getApplicationModel().getDomainTypes(),
             converters);
     }
 
@@ -72,7 +72,7 @@ public class DomainServiceImpl
     @Override
     public String toJSON(Object domainObject)
     {
-        return dataListService.toJSON(domainObject);
+        return dataGraphService.toJSON(domainObject);
     }
 
 

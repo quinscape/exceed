@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.scope;
 
 import com.google.common.collect.ImmutableMap;
-import de.quinscape.exceed.runtime.component.DataList;
+import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 
 import java.util.ArrayList;
@@ -76,7 +76,7 @@ public final class ScopedContextChain
 
 
     @Override
-    public DataList getList(String name)
+    public DataGraph getList(String name)
     {
         ScopedContext scopedContext = findScopeWithList(name);
         if (scopedContext == null)
@@ -115,7 +115,7 @@ public final class ScopedContextChain
 
 
     @Override
-    public void setList(String name, DataList list)
+    public void setList(String name, DataGraph list)
     {
         ScopedContext scopedContext = findScopeWithProperty(name);
         if (scopedContext == null)

@@ -5,7 +5,7 @@ const security = require("./security");
 const uri = require("../util/uri");
 const ajax = require("./ajax");
 
-const DataList = require("../util/data-list");
+const DataGraph = require("../util/data-graph");
 
 const modelUtil = require("../util/model");
 

@@ -9,7 +9,8 @@ var ValueLink = require("../../util/value-link");
 var DebounceMixin = require("../../mixin/debounce-mixin");
 var ComponentUpdateMixin = require("../../mixin/component-update-mixin");
 
-var DataList = require("../../util/data-list");
+var DataGraph = require("../../util/data-graph");
+var DataCursor = require("../../util/data-cursor");
 
 var PagingComponent = require("../../ui/PagingComponent");
 
@@ -123,7 +124,7 @@ var DataGrid = React.createClass({
     propTypes: {
         orderBy: React.PropTypes.string,
         limit: React.PropTypes.number,
-        rows: React.PropTypes.object
+        result: React.PropTypes.object
     },
 
     mixins: [ ComponentUpdateMixin ],
@@ -224,21 +225,45 @@ var DataGrid = React.createClass({
     },
 
 
-    onChange: function (rows, path)
+    onChange: function (newList, path)
     {
-        console.log("ONCHANGE", rows, path);
+        console.log("ONCHANGE", newList, path);
     },
+
+    cursorFromData: function(data)
+    {
+        if (!data)
+        {
+            throw new Error("No data");
+        }
+
+        var types = domainService.getDomainTypes();
+
+        if (DataGraph.isRawDataGraph(data))
+        {
+            return new DataGraph(
+                domainService.getDomainTypes(),
+                data,
+                this.onChange
+            );
+        }
+        else if (data instanceof DataCursor)
+        {
+            return data;
+        }
+        else
+        {
+            console.error("Cannot handle data", data);
+        }
+    },
+
     render: function ()
     {
         //console.log("DATAGRID");
         //console.dir(this.props);
-        var resultList = new DataList(
-            domainService.getDomainTypes(),
-            this.props.result,
-            this.onChange
-        );
+        var resultList = this.cursorFromData(this.props.result);
 
-        var count = resultList.rows.length;
+        var count = resultList.rootObject.length;
         var rows;
         if (!count)
         {
@@ -252,7 +277,7 @@ var DataGrid = React.createClass({
             {
                 rows[i] = (
                     <tr key = { i }>
-                        { this.props.renderChildren( resultList.getCursor([i])) }
+                        { this.props.renderChildren ? this.props.renderChildren( resultList.getCursor([i])) : this.props.children }
                     </tr>
                 )
             }
@@ -272,7 +297,7 @@ var DataGrid = React.createClass({
                 <PagingComponent
                     offsetLink={ new ValueLink(this.props.vars.offset, this.setPagingOffset ) }
                     limit={ this.props.vars.limit }
-                    rowCount={ this.props.result.rowCount }
+                    rowCount={ this.props.result.count }
                     />
             </div>
         );

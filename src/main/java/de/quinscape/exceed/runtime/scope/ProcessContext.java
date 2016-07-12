@@ -3,7 +3,7 @@ package de.quinscape.exceed.runtime.scope;
 import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.component.DataList;
+import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.util.DomainUtil;
 
@@ -51,7 +51,7 @@ public final class ProcessContext
 
         for (String listName : contextModel.getLists().keySet())
         {
-            contextCopy.put(listName, ((DataList)context.get(listName)).copy(runtimeContext));
+            contextCopy.put(listName, ((DataGraph)context.get(listName)).copy(runtimeContext));
         }
 
         contextCopy.put(DOMAIN_OBJECT_CONTEXT, context.get(DOMAIN_OBJECT_CONTEXT));

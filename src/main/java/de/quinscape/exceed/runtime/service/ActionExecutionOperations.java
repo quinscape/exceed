@@ -2,7 +2,7 @@ package de.quinscape.exceed.runtime.service;
 
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTString;
-import de.quinscape.exceed.runtime.component.DataList;
+import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
@@ -22,7 +22,7 @@ public class ActionExecutionOperations
     }
 
     @Operation
-    public DataList list(ExpressionContext<ActionExecutionEnvironment> ctx, String name)
+    public DataGraph list(ExpressionContext<ActionExecutionEnvironment> ctx, String name)
     {
         return ctx.getEnv().getScopedContext().getList(name);
     }

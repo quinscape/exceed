@@ -1,4 +1,5 @@
 {
+    "type" : "ARRAY",
     "columns": {
         "name": {
             "name": "name",
@@ -19,7 +20,7 @@
             "data": 8
         }
     },
-    "rows": [
+    "rootObject": [
         {
             "name": "TestFoo",
             "num": 123,

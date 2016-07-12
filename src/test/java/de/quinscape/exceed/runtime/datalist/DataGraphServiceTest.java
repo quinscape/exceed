@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.runtime.component.DataList;
+import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.property.DateConverter;
 import de.quinscape.exceed.runtime.domain.property.PlainTextConverter;
 import de.quinscape.exceed.runtime.domain.property.TimestampConverter;
@@ -22,14 +22,14 @@ import java.util.concurrent.TimeUnit;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
-public class DataListServiceTest
+public class DataGraphServiceTest
 {
-    private final static Logger log = LoggerFactory.getLogger(DataListServiceTest.class);
+    private final static Logger log = LoggerFactory.getLogger(DataGraphServiceTest.class);
 
     // we mostly test conversion of different types  in "row" here because "types" and "columns" are just
     // straightforward JSON generation without any transformation or conversion
 
-    private DataListService dataListService = new DataListService(
+    private DataGraphService dataGraphService = new DataGraphService(
         domainTypeMap(
             createDomainType("Foo", ImmutableList.of(
                 new DomainProperty("name", "PlainText", null, false),
@@ -72,7 +72,7 @@ public class DataListServiceTest
     @Test
     public void testSimpleToJSON() throws Exception
     {
-        DataList dataList = new DataList(
+        DataGraph dataGraph = new DataGraph(
             ImmutableMap.of(
                 "name", new DomainProperty("name", "PlainText", null, false, null, -1, "Foo"),
                 "created", new DomainProperty("created", "Date", null, false, null, -1, "Foo")
@@ -85,7 +85,7 @@ public class DataListServiceTest
             1);
 
 
-        String json = dataListService.toJSON(dataList);
+        String json = dataGraphService.toJSON(dataGraph);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
         assertThat(json, containsString("\"created\":\"1970-01-01\""));
@@ -96,7 +96,7 @@ public class DataListServiceTest
     @Test
     public void testJoinedToJSON() throws Exception
     {
-        DataList dataList = new DataList(
+        DataGraph dataGraph = new DataGraph(
             ImmutableMap.of(
                 "name", new DomainProperty("name", "PlainText", null, false, null, -1, "Foo"),
                 "created", new DomainProperty("created", "Date", null, false, null, -1, "Foo"),
@@ -111,7 +111,7 @@ public class DataListServiceTest
             ), 1);
 
 
-        String json = dataListService.toJSON(dataList);
+        String json = dataGraphService.toJSON(dataGraph);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
         assertThat(json, containsString("\"created\":\"1970-01-02\""));
@@ -124,7 +124,7 @@ public class DataListServiceTest
     @Test
     public void testComplexListToJSON() throws Exception
     {
-        DataList dataList = new DataList(
+        DataGraph dataGraph = new DataGraph(
             ImmutableMap.of(
                 "name", new DomainProperty("name", "PlainText", null, false, null, -1, "CContainer"),
                 "created", new DomainProperty("created", "Date", null, false, null, -1, "CContainer"),
@@ -146,7 +146,7 @@ public class DataListServiceTest
             ), 1);
 
 
-        String json = dataListService.toJSON(dataList);
+        String json = dataGraphService.toJSON(dataGraph);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
         assertThat(json, containsString("\"created\":\"1970-01-02\""));
@@ -161,7 +161,7 @@ public class DataListServiceTest
     @Test
     public void testPropertyListToJSON() throws Exception
     {
-        DataList dataList = new DataList(
+        DataGraph dataGraph = new DataGraph(
             ImmutableMap.of(
                 "name", new DomainProperty("name", "PlainText", null, false, null, -1, "PLContainer"),
                 "created", new DomainProperty("created", "Date", null, false, null, -1, "PLContainer"),
@@ -179,7 +179,7 @@ public class DataListServiceTest
             ), 1);
 
 
-        String json = dataListService.toJSON(dataList);
+        String json = dataGraphService.toJSON(dataGraph);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
         assertThat(json, containsString("\"created\":\"1970-01-02\""));
@@ -193,7 +193,7 @@ public class DataListServiceTest
     @Test
     public void testComplexMapToJSON() throws Exception
     {
-        DataList dataList = new DataList(
+        DataGraph dataGraph = new DataGraph(
             ImmutableMap.of(
                 "name", new DomainProperty("name", "PlainText", null, false, null, -1, "MapContainer"),
                 "created", new DomainProperty("created", "Date", null, false, null, -1, "MapContainer"),
@@ -215,7 +215,7 @@ public class DataListServiceTest
             ), 1);
 
 
-        String json = dataListService.toJSON(dataList);
+        String json = dataGraphService.toJSON(dataGraph);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
         assertThat(json, containsString("\"created\":\"1970-01-02\""));
@@ -230,7 +230,7 @@ public class DataListServiceTest
     @Test
     public void testPropertyMapToJSON() throws Exception
     {
-        DataList dataList = new DataList(
+        DataGraph dataGraph = new DataGraph(
             ImmutableMap.of(
                 "name", new DomainProperty("name", "PlainText", null, false, null, -1, "PropMapContainer"),
                 "created", new DomainProperty("created", "Date", null, false, null, -1, "PropMapContainer"),
@@ -248,7 +248,7 @@ public class DataListServiceTest
             ), 1);
 
 
-        String json = dataListService.toJSON(dataList);
+        String json = dataGraphService.toJSON(dataGraph);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
         assertThat(json, containsString("\"created\":\"1970-01-02\""));
@@ -258,6 +258,55 @@ public class DataListServiceTest
 
         //log.info(JSON.formatJSON(json));
     }
+
+
+    @Test
+    public void testStructuredObjectGraph() throws Exception
+    {
+        DataGraph dataGraph = new DataGraph(
+            ImmutableMap.of(
+                "name", new DomainProperty("name", "PlainText", null, false, null, -1, "PropMapContainer"),
+                "created", new DomainProperty("created", "Date", null, false, null, -1, "PropMapContainer")
+            ),
+            ImmutableMap.of(
+                "name", "MyFoo",
+                "created", new Date(TimeUnit.DAYS.toMillis(1))
+            ), -1);
+
+
+        String json = dataGraphService.toJSON(dataGraph);
+
+        assertThat(json, containsString("\"type\":\"OBJECT\""));
+        assertThat(json, containsString("\"name\":\"MyFoo\""));
+        assertThat(json, containsString("\"created\":\"1970-01-02\""));
+        assertThat(json, containsString("\"count\":2"));
+
+
+    }
+
+    @Test
+    public void testMapLikeGraph() throws Exception
+    {
+        DataGraph dataGraph = new DataGraph(
+            ImmutableMap.of(
+                "*", new DomainProperty("created", "Date", null, false, null, -1, null)
+            ),
+            ImmutableMap.of(
+                "A", new Date(TimeUnit.DAYS.toMillis(1)),
+                "B", new Date(TimeUnit.DAYS.toMillis(2))
+            ), -1);
+
+
+        String json = dataGraphService.toJSON(dataGraph);
+
+        assertThat(json, containsString("\"type\":\"OBJECT\""));
+        assertThat(json, containsString("\"A\":\"1970-01-02\""));
+        assertThat(json, containsString("\"B\":\"1970-01-03\""));
+        assertThat(json, containsString("\"count\":2"));
+
+
+    }
+
 
     private Map<String, DomainType> domainTypeMap(DomainType... types)
     {

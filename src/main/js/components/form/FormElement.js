@@ -7,8 +7,8 @@ const cx = require("classnames");
 
 const i18n = require("../../service/i18n");
 
-const DataList = require("../../util/data-list");
-const DataListCursor = require("../../util/data-list-cursor");
+const DataGraph = require("../../util/data-graph");
+const DataCursor = require("../../util/data-cursor");
 
 const FormContext = require("../../util/form-context");
 
@@ -37,18 +37,27 @@ module.exports = function(FieldComponent)
 
         cursorFromValue: function (value)
         {
+            //console.log("CURSOR-FROM-VALUE", value);
 
-            if (value instanceof DataListCursor)
+            if (value instanceof DataCursor)
             {
-                console.log("cursorFromValue: CURSOR ", value);
+                //console.log("cursorFromValue: CURSOR ", value);
                 return value;
             }
             else if (typeof value === "string")
             {
                 var context = this.props.context;
-                console.log("cursorFromValue:  context['" + value + "']", context);
+                //console.log("cursorFromValue:  context['" + value + "']", context);
                 value = context.getCursor([value]);
-                console.log("NEW CURSOR", value);
+                //console.log("NEW CURSOR", value);
+                return value;
+            }
+            else if (value && typeof value === "object" && value.length && value[0])
+            {
+                var context = this.props.context;
+                //console.log("cursorFromValue:  context['" + value + "']", context);
+                value = context.getCursor( value );
+                //console.log("NEW CURSOR", value);
                 return value;
             }
             else

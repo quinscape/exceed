@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.scope;
 
 import de.quinscape.exceed.model.context.ContextModel;
-import de.quinscape.exceed.runtime.component.DataList;
+import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 
 import java.util.Map;
@@ -61,7 +61,7 @@ public abstract class AbstractChangeTrackingScopedContext
 
 
     @Override
-    public void setList(String name, DataList list)
+    public void setList(String name, DataGraph list)
     {
         markDirty();
         super.setList(name, list);

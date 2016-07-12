@@ -4,7 +4,7 @@ import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
-import de.quinscape.exceed.runtime.component.DataList;
+import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.service.websocket.EditorMessageHandler;
 import de.quinscape.exceed.runtime.service.websocket.MessageContext;
 
@@ -31,10 +31,10 @@ public class EditorDomainService
         context.reply(msg, data);
     }
 
-    private DataList createModelDataList(DomainType enumTypeModel, Map<String, ?> map)
+    private DataGraph createModelDataList(DomainType enumTypeModel, Map<String, ?> map)
     {
         ArrayList<?> rows = new ArrayList<>(map.values());
-        return new DataList(mapProperties(enumTypeModel), rows, rows.size());
+        return new DataGraph(mapProperties(enumTypeModel), rows, rows.size());
     }
 
     private Map<String, DomainProperty> mapProperties(DomainType domainTypeModel)

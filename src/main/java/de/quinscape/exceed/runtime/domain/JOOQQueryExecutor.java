@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.domain;
 
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.component.DataList;
+import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.component.QueryExecutor;
 import de.quinscape.exceed.runtime.expression.query.DataField;
 import de.quinscape.exceed.runtime.expression.query.JoinDefinition;
@@ -49,7 +49,7 @@ public class JOOQQueryExecutor
 
 
     @Override
-    public DataList execute(RuntimeContext runtimeContext, QueryDefinition queryDefinition)
+    public DataGraph execute(RuntimeContext runtimeContext, QueryDefinition queryDefinition)
     {
         QueryDomainType queryDomainType = queryDefinition.getQueryDomainType();
 
@@ -152,10 +152,10 @@ public class JOOQQueryExecutor
     }
 
 
-    private DataList createDataList(RuntimeContext runtimeContext, QueryDefinition queryDefinition,
-                                    List<DomainObject> rows, int rowCount)
+    private DataGraph createDataList(RuntimeContext runtimeContext, QueryDefinition queryDefinition,
+                                     List<DomainObject> rows, int rowCount)
     {
-        return new DataList(
+        return new DataGraph(
             queryDefinition.createColumnDescriptorMap(),
             rows,
             rowCount

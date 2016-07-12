@@ -6,7 +6,7 @@ import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
-import de.quinscape.exceed.runtime.component.DataList;
+import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import org.svenson.JSON;
 import org.svenson.JSONCharacterSink;
@@ -16,13 +16,15 @@ import org.svenson.SinkAwareJSONifier;
 import org.svenson.util.JSONBeanUtil;
 import org.svenson.util.JSONBuilder;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class DataListService
+public class DataGraphService
 {
+    private static final String WILDCARD_SYMBOL = "*";
+
     private final Map<String, PropertyConverter> propertyConverters;
 
     private final DataListJSONifier jsonifier;
@@ -36,14 +38,14 @@ public class DataListService
     private final static JSONBeanUtil util = JSONBeanUtil.defaultUtil();
 
 
-    public DataListService(Map<String, DomainType> domainTypes, Map<String, PropertyConverter> propertyConverters)
+    public DataGraphService(Map<String, DomainType> domainTypes, Map<String, PropertyConverter> propertyConverters)
     {
         this.domainTypes = domainTypes;
         this.propertyConverters = ImmutableMap.copyOf(propertyConverters);
 
         generator = new JSON();
         jsonifier = new DataListJSONifier();
-        generator.registerJSONifier(DataList.class, jsonifier);
+        generator.registerJSONifier(DataGraph.class, jsonifier);
     }
 
 
@@ -85,40 +87,68 @@ public class DataListService
         {
             RuntimeContext runtimeContext = RuntimeContextHolder.get();
 
-            DataList dataList = (DataList) o;
+            DataGraph<?> dataGraph = (DataGraph) o;
 
+            final Map<String, DomainProperty> columns = dataGraph.getColumns();
 
             JSONBuilder b = JSONBuilder.buildObject(generator, sink);
 
-            b.property("columns", dataList.getColumns());
-            b.arrayProperty("rows");
+            b.property("type", dataGraph.getType());
+            b.property("columns", columns);
 
-            Map<String, PropertyLookup> lookups = lookupConverters(dataList);
+            Map<String, PropertyLookup> lookups = lookupConverters(dataGraph);
 
-            for (Iterator<?> iterator = dataList.getRows().iterator(); iterator.hasNext(); )
+            final Object rootObject = dataGraph.getRootObject();
+
+            if (rootObject instanceof Collection)
             {
-                Object row = iterator.next();
-                convertRow(b, runtimeContext, dataList, row, lookups);
+                b.arrayProperty("rootObject");
+                for (Object row : ((Collection) rootObject))
+                {
+                    b.objectElement();
+                    convertRow(b, runtimeContext, dataGraph, row, lookups);
+                    b.close();
+                }
+                b.close();
+            }
+            else if (rootObject instanceof Map)
+            {
+                b.objectProperty("rootObject");
+                PropertyLookup wildCardLookup;
+                if (lookups.size() == 1 &&  (wildCardLookup = lookups.get(WILDCARD_SYMBOL)) != null)
+                {
+                    Map<String,Object> map = (Map<String, Object>) rootObject;
+
+                    for (Map.Entry<String, Object> entry : map.entrySet())
+                    {
+                        convertValue(b, runtimeContext, dataGraph, entry.getKey(), wildCardLookup, entry.getValue());
+                    }
+                }
+                else
+                {
+                    convertRow(b, runtimeContext, dataGraph, rootObject , lookups);
+                }
+                b.close();
+
+
             }
 
-            b.close();
-
-            b.property("rowCount", dataList.getRowCount());
+            b.property("count", dataGraph.getCount());
 
             b.closeAll();
         }
 
 
-        private Map<String, PropertyLookup> lookupConverters(DataList dataList)
+        private Map<String, PropertyLookup> lookupConverters(DataGraph<?> dataGraph)
         {
 
             Map<String, PropertyLookup> converters = new HashMap<>();
-            for (Map.Entry<String, DomainProperty> entry : dataList.getColumns().entrySet())
+            for (Map.Entry<String, DomainProperty> entry : dataGraph.getColumns().entrySet())
             {
                 DomainProperty propertyModel = entry.getValue();
                 String columnName = propertyModel.getName();
 
-                PropertyLookup lookup = null;
+                PropertyLookup lookup;
 
                 final String domainType = propertyModel.getDomainType();
                 if (domainType != null)
@@ -137,12 +167,12 @@ public class DataListService
                     }
                     else
                     {
-                        lookup = createLookup(dataList, propertyModel);
+                        lookup = createLookup(dataGraph, propertyModel);
                     }
                 }
                 else
                 {
-                    lookup = createLookup(dataList, propertyModel);
+                    lookup = createLookup(dataGraph, propertyModel);
                 }
 
                 if (lookup == null)
@@ -157,7 +187,7 @@ public class DataListService
         }
 
 
-        private PropertyLookup createLookup(DataList dataList, DomainProperty property)
+        private PropertyLookup createLookup(DataGraph dataGraph, DomainProperty property)
         {
             PropertyLookup lookup;
             String type = property.getType();
@@ -169,7 +199,7 @@ public class DataListService
                 DomainType domainType = domainTypes.get(name);
                 if (domainType != null)
                 {
-                    lookup = new PropertyLookup(property, null, createSubLookup(dataList, domainType), false);
+                    lookup = new PropertyLookup(property, null, createSubLookup(dataGraph, domainType), false);
                 }
                 else
                 {
@@ -183,7 +213,7 @@ public class DataListService
                     else
                     { // list of simple properties
                         throw new IllegalStateException("Cannot find domain type or property type for complex " +
-                            "property " + property + " in  " + dataList);
+                            "property " + property + " in  " + dataGraph);
                     }
                 }
             }
@@ -203,21 +233,20 @@ public class DataListService
         }
 
 
-        private Map<String, PropertyLookup> createSubLookup(DataList dataList, DomainType property)
+        private Map<String, PropertyLookup> createSubLookup(DataGraph dataGraph, DomainType property)
         {
             HashMap<String, PropertyLookup> map = new HashMap<>();
             for (DomainProperty domainProperty : property.getProperties())
             {
-                map.put(domainProperty.getName(), createLookup(dataList, domainProperty));
+                map.put(domainProperty.getName(), createLookup(dataGraph, domainProperty));
             }
             return map;
         }
 
 
-        private void convertRow(JSONBuilder b, RuntimeContext runtimeContext, DataList dataList,
+        private void convertRow(JSONBuilder b, RuntimeContext runtimeContext, DataGraph dataGraph,
                                 Object row, Map<String, PropertyLookup> lookups)
         {
-            b.objectElement();
 
             for (Map.Entry<String, PropertyLookup> entry : lookups.entrySet())
             {
@@ -231,16 +260,13 @@ public class DataListService
                 }
                 else
                 {
-                    convertValue(b, runtimeContext, dataList, localName, lookup, value);
+                    convertValue(b, runtimeContext, dataGraph, localName, lookup, value);
                 }
-
             }
-
-            b.close();
         }
 
 
-        private void convertValue(JSONBuilder b, RuntimeContext runtimeContext, DataList dataList, String localName,
+        private void convertValue(JSONBuilder b, RuntimeContext runtimeContext, DataGraph dataGraph, String localName,
                                   PropertyLookup
             lookup, Object value)
         {
@@ -271,13 +297,13 @@ public class DataListService
 
                             if (lookup.isPropertyComplexValue())
                             {
-                                convertValue(b, runtimeContext, dataList, null, subLookup.get(PROPERTY_COMPLEX_NAME),
+                                convertValue(b, runtimeContext, dataGraph, null, subLookup.get(PROPERTY_COMPLEX_NAME),
                                     o);
                             }
                             else
                             {
                                 b.objectElement();
-                                convertInnerObject(b, runtimeContext, dataList, o, subLookup);
+                                convertInnerObject(b, runtimeContext, dataGraph, o, subLookup);
                                 b.close();
                             }
                         }
@@ -320,13 +346,13 @@ public class DataListService
 
                                 if (lookup.isPropertyComplexValue())
                                 {
-                                    convertValue(b, runtimeContext, dataList, mapKey, subLookup.get
+                                    convertValue(b, runtimeContext, dataGraph, mapKey, subLookup.get
                                         (PROPERTY_COMPLEX_NAME), mapValue);
                                 }
                                 else
                                 {
                                     b.objectProperty(mapKey);
-                                    convertInnerObject(b, runtimeContext, dataList, mapValue, subLookup);
+                                    convertInnerObject(b, runtimeContext, dataGraph, mapValue, subLookup);
                                     b.close();
                                 }
 
@@ -355,7 +381,7 @@ public class DataListService
         }
 
 
-        private void convertInnerObject(JSONBuilder b, RuntimeContext runtimeContext, DataList dataList, Object o,
+        private void convertInnerObject(JSONBuilder b, RuntimeContext runtimeContext, DataGraph dataGraph, Object o,
                                         Map<String, PropertyLookup> subLookup)
         {
             for (Map.Entry<String, PropertyLookup> e : subLookup.entrySet())
@@ -363,7 +389,7 @@ public class DataListService
                 String name = e.getKey();
                 PropertyLookup propertyLookup = e.getValue();
                 Object propertyValue = util.getProperty(o, name);
-                convertValue(b, runtimeContext, dataList, name, propertyLookup, propertyValue);
+                convertValue(b, runtimeContext, dataGraph, name, propertyLookup, propertyValue);
             }
         }
     }

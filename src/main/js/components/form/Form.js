@@ -1,8 +1,8 @@
 var React = require("react");
 var cx = require("classnames");
 
-var DataList = require("../../util/data-list");
-var DataListCursor = require("../../util/data-list-cursor");
+var DataGraph = require("../../util/data-graph");
+var DataCursor = require("../../util/data-cursor");
 var Scope = require("../../service/scope");
 var domainService = require("../../service/domain");
 
@@ -11,12 +11,8 @@ var FormContext = require("../../util/form-context");
 var LinkedStateMixin = require("react-addons-linked-state-mixin");
 
 
-function isRawDataList(input)
-{
-    return input && input.rows && input.columns;
-}
 
-function objectToDataList(input)
+function objectToDataGraph(input)
 {
     var typeName = input._type;
     var domainType = Scope.objectType(typeName);
@@ -44,12 +40,13 @@ function objectToDataList(input)
     }
 
     return {
+        type : "ARRAY",
         types: {
             [typeName] : domainType
         },
         columns: cols,
-        rows: [ obj ],
-        rowCount: 1
+        rootObject: [ obj ],
+        count: 1
     };
 }
 
@@ -88,25 +85,17 @@ var Form = React.createClass({
 
         var types = domainService.getDomainTypes();
 
-        if (isRawDataList(data))
+        if (DataGraph.isRawDataGraph(data))
         {
-            return new DataList(types, data, this.onChange).getCursor([this.props.index]);
+            return new DataGraph(types, data, this.onChange).getCursor([this.props.index]);
         }
-        else if (data instanceof DataListCursor)
+        else if (data instanceof DataCursor)
         {
-            console.log("CURSOR", data);
-
-            var value = data.get();
-            if (!value || typeof value !== "object")
-            {
-                throw new Error("Invalid form cursor: points to " + value);
-            }
             return data;
-
         }
         else if (data._type)
         {
-            return new DataList(types, objectToDataList(data), this.onChange).getCursor([this.props.index]);
+            return new DataGraph(types, objectToDataGraph(data), this.onChange).getCursor([this.props.index]);
         }
         else
         {
@@ -121,33 +110,20 @@ var Form = React.createClass({
     },
 
 
-    onChange: function (newRows, path)
+    onChange: function (newGraph, path)
     {
-        console.log("onChange", JSON.stringify(newRows), path);
+        //console.log("onChange", JSON.stringify(newGraph), path);
 
-        var dataList = this.state.cursor.dataList;
-        dataList.rows = newRows;
-        this.forceUpdate();
+        this.setState({
+            dataGraph: newGraph
+        });
     },
-
-    //componentWillReceiveProps: function (nextProps)
-    //{
-    //
-    //    if (nextProps.data !== this.props.data)
-    //    {
-    //        // XXX: merge changed props in current state with new state?
-    //        console.log("Update state", nextProps);
-    //        this.setState({
-    //            cursor: this.cursorFromData(nextProps.data)
-    //        });
-    //    }
-    //},
 
     render: function ()
     {
         var cursor = this.state.cursor;
         return ( <form className={ cx("form", this.props.horizontal && "form-horizontal") } onSubmit={ this.onSubmit }>
-            { this.props.renderChildren(cursor) }
+            { this.props.renderChildren ? this.props.renderChildren(cursor) : this.props.children }
         </form> );
     }
 });
