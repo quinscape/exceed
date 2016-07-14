@@ -51,7 +51,7 @@ if (process.env.NODE_ENV !== "production")
             }
             else if (model._type === "change.CodeChange")
             {
-                console.log("CodeChange");
+//                console.log("CodeChange");
 
                 var elem = document.createElement("script");
                 elem.setAttribute("src", timestampURL(sys.contextPath + "/res/" + sys.appName + "/js/main.js"));
@@ -65,7 +65,7 @@ if (process.env.NODE_ENV !== "production")
                 var link = document.getElementById("application-styles");
                 link.href = timestampURL(link.href);
 
-                console.log("StyleChange")
+//                console.log("StyleChange")
             }
 
             var now = Date.now();

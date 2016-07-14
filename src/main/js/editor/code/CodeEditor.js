@@ -39,7 +39,7 @@ var hub = require("../../service/hub");
 
 function walk(model, indexPath)
 {
-    console.log("walk", model, indexPath);
+//    console.log("walk", model, indexPath);
 
     for (var i = 0; i < indexPath.length; i++)
     {
@@ -72,7 +72,7 @@ ExceedCompleter.prototype.cleanupAfter = function(editor, completion)
 
 ExceedCompleter.prototype.insertMatch = function(editor, completion)
 {
-    console.log("INSERT MATCH", completion);
+//    console.log("INSERT MATCH", completion);
 
     var completer = this;
 
@@ -193,7 +193,7 @@ ExceedCompleter.prototype.prepareCompletions = function (editor, session, compon
     {
         var completion = completions[i];
 
-        console.log("COMPLETION", completion);
+//        console.log("COMPLETION", completion);
 
         var type = completion.type;
 
@@ -301,7 +301,7 @@ ExceedCompleter.prototype.getCompletions = function (editor, session, pos, prefi
     var componentModel = walk(model.root, indexPath);
 
     var componentName = componentModel.name;
-    console.log("loc", loc, loc.parentPath[0].model.name, componentName);
+//    console.log("loc", loc, loc.parentPath[0].model.name, componentName);
     var propName = loc.attr;
 
     if (loc.attrValue)
@@ -335,7 +335,7 @@ var XMLEditor = React.createClass({
         var session = editor.getSession();
         var model = Tokens.toModel(session);
         var loc = Tokens.currentLocation(session, pos.row, pos.column , model);
-        console.log("intention", loc);
+//        console.log("intention", loc);
     },
 
     componentDidMount: function ()
@@ -393,7 +393,7 @@ var XMLEditor = React.createClass({
 
     componentWillUnmount: function()
     {
-        console.log("unmount editor");
+//        console.log("unmount editor");
         this.editor.destroy();
         window.removeEventListener("beforeunload", this.checkSaved, true);
 
@@ -528,7 +528,7 @@ var CodeEditor = React.createClass({
 
         var viewName = currentState.viewName;
         var json = JSON.stringify(model, null, "    ");
-        console.log(json);
+//        console.log(json);
 
         return hub.request({
             type: "message.SaveViewRequest",
@@ -536,7 +536,7 @@ var CodeEditor = React.createClass({
             document: json
         }).then(function (data)
         {
-            console.log("SAVED", data);
+//            console.log("SAVED", data);
             currentState.editSession.getUndoManager().markClean();
         })
         .catch(function (err)

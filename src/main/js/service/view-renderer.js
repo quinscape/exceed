@@ -192,6 +192,7 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
         }
     }
 
+    //console.log ("DESCRIPTOR", componentDescriptor, ComponentClasses.MODEL_AWARE);
     if (hasClass(componentDescriptor, ComponentClasses.MODEL_AWARE))
     {
         commaIfNotFirst();

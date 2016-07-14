@@ -127,7 +127,7 @@ var CalendarField = React.createClass({
 
         var currentDay = -(firstDay-1);
 
-        console.log("correctMonth", correctMonth);
+//        console.log("correctMonth", correctMonth);
 
         var rows = [];
         do
@@ -202,7 +202,7 @@ var CalendarField = React.createClass({
 
         if (isNaN(date.valueOf()))
         {
-            console.log("DEFAULT DATE");
+//            console.log("DEFAULT DATE");
             date = new Date();
         }
 

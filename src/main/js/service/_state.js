@@ -31,7 +31,7 @@ function replaceState(url)
         processData: currentProcessData
     });
 
-    console.log(util.inspect(state, {showHidden: true, depth: null}));
+//    console.log(util.inspect(state, {showHidden: true, depth: null}));
 
     window.history.replaceState(state, "exceed title", url);
 }
@@ -176,7 +176,7 @@ window.onpopstate = function (ev)
 {
     var state = ev.state;
 
-    console.log("POP STATE", state);
+//    console.log("POP STATE", state);
 
     currentViewModel = state.viewModel;
     currentViewData = state.viewData;

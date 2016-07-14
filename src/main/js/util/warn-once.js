@@ -14,7 +14,7 @@ module.exports = function(name, message)
 {
     if (cando.sessionStorage)
     {
-        console.log("can do sessionStorage");
+//        console.log("can do sessionStorage");
 
         message = message || name;
 
@@ -23,23 +23,23 @@ module.exports = function(name, message)
         var warnings = JSON.parse(sessionStorage.getItem(MAP_KEY));
         if (warnings)
         {
-            console.log("map present");
+//            console.log("map present");
             if (warnings[key])
             {
-                console.log("warning registered");
+//                console.log("warning registered");
                 return true;
             }
         }
         else
         {
-            console.log("no warnings");
+//            console.log("no warnings");
             // no warnings map -> create one with our entry
             warnings = {  };
         }
 
         warnings[key] = true;
 
-        console.log("store %o", warnings);
+//        console.log("store %o", warnings);
         sessionStorage.setItem(MAP_KEY, JSON.stringify(warnings));
     }
     alert(message)

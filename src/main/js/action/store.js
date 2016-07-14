@@ -4,7 +4,7 @@ const DataCursor = require("../util/data-cursor");
 
 module.exports = function (model)
 {
-    console.log("STORE", model);
+//    console.log("STORE", model);
 
     if (!model)
     {

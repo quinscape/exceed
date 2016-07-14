@@ -1,6 +1,6 @@
 var exports = function (model, data)
 {
-    console.log("ping", model, data);
+//    console.log("ping", model, data);
     return data;
 };
 

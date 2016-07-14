@@ -64,7 +64,7 @@ module.exports = {
      */
     observe: function (promise)
     {
-        console.log("enter observe");
+//        console.log("enter observe");
 
         var enableThrobber = require("../cando").ajax;
         enableThrobber && Throbber.enable();

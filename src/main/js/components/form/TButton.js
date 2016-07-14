@@ -37,6 +37,8 @@ var TButton = React.createClass({
 
     render: function ()
     {
+//        console.log("RENDER TBUTTON", this.props.context && this.props.context.graph.id);
+
         var isDisabled = this.isDisabled();
         return (
 
@@ -50,6 +52,9 @@ var TButton = React.createClass({
                     {
                         var domainObject = null;
                         var cursor = this.props.context;
+
+//                        console.log("TBUTTON CURSOR", cursor.graph.id);
+
                         if (!this.props.discard && cursor)
                         {
                             if (cursor.isProperty())

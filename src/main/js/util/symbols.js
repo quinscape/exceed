@@ -13,7 +13,7 @@ function findSymbols(symbols, elem)
             var group = symbols[name];
             var inner = elem.innerHTML;
 
-            console.log("BBOX:", elem.getBBox());
+//            console.log("BBOX:", elem.getBBox());
 
             if (group)
             {

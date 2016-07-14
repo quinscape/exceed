@@ -15,7 +15,7 @@ function createScopeFn(type)
     return function(name)
     {
         var scope = getViewService().getScope();
-        console.log("SCOPE", scope);
+        //console.log("SCOPE", scope);
 
         var value = scope.get([name]);
         if (value === undefined)
@@ -31,9 +31,9 @@ function createScopeCursorFn(type)
     return function(name)
     {
         var scope = getViewService().getScope();
-        console.log("SCOPE", scope);
 
         return scope.getCursor([name]);
+//        console.log("SCOPE CURSOR", scope.id, name, cursor.value);
     };
 }
 

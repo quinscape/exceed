@@ -152,7 +152,7 @@ for (var type in domainJSON)
     }
 }
 
-console.log("DOMAIN-RULES", domainRules);
+//console.log("DOMAIN-RULES", domainRules);
 
 module.exports = {
     registerTypeValidator: function(type, fn)

@@ -194,7 +194,7 @@ var ModelDocs = React.createClass({
                         <label>
                             <input type="checkbox" checkedLink={ { value: this.state.showIgnored, requestChange: (newVal) =>
                             {
-                                console.log("NEWVAL", newVal);
+//                                console.log("NEWVAL", newVal);
 
                                 this.setState({
                                     showIgnored: newVal

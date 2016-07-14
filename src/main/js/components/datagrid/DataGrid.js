@@ -227,7 +227,7 @@ var DataGrid = React.createClass({
 
     onChange: function (newList, path)
     {
-        console.log("ONCHANGE", newList, path);
+//        console.log("ONCHANGE", newList, path);
     },
 
     cursorFromData: function(data)

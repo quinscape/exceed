@@ -34,7 +34,7 @@ module.exports = {
                 },
                 function (data)
                 {
-                    console.log(data);
+//                    console.log(data);
                     var locInfo = data.viewData._exceed.location;
                     return renderURI(locInfo);
                 }
