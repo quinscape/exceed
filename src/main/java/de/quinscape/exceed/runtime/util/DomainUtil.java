@@ -90,7 +90,7 @@ public class DomainUtil
     }
 
 
-    public static Object convertToJSON(RuntimeContext runtimeContext, DomainObject domainObject)
+    public static DomainObject convertToJSON(RuntimeContext runtimeContext, DomainObject domainObject)
     {
         final DomainService domainService = domainObject.getDomainService();
 

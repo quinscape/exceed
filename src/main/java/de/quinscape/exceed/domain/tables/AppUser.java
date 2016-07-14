@@ -7,16 +7,18 @@ package de.quinscape.exceed.domain.tables;
 import de.quinscape.exceed.domain.Keys;
 import de.quinscape.exceed.domain.Public;
 import de.quinscape.exceed.domain.tables.records.AppUserRecord;
+
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.annotation.Generated;
+
 import org.jooq.Field;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.UniqueKey;
 import org.jooq.impl.TableImpl;
-
-import javax.annotation.Generated;
-import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.List;
 
 
 /**
@@ -32,7 +34,7 @@ import java.util.List;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppUser extends TableImpl<AppUserRecord> {
 
-	private static final long serialVersionUID = -420297521;
+	private static final long serialVersionUID = -409654129;
 
 	/**
 	 * The reference instance of <code>public.app_user</code>
@@ -104,7 +106,7 @@ public class AppUser extends TableImpl<AppUserRecord> {
 	 */
 	@Override
 	public UniqueKey<AppUserRecord> getPrimaryKey() {
-		return Keys.APP_USER_PKEY;
+		return Keys.PK_APP_USER;
 	}
 
 	/**
@@ -112,7 +114,7 @@ public class AppUser extends TableImpl<AppUserRecord> {
 	 */
 	@Override
 	public List<UniqueKey<AppUserRecord>> getKeys() {
-		return Arrays.<UniqueKey<AppUserRecord>>asList(Keys.APP_USER_PKEY);
+		return Arrays.<UniqueKey<AppUserRecord>>asList(Keys.PK_APP_USER);
 	}
 
 	/**

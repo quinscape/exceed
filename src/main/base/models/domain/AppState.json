@@ -1,0 +1,41 @@
+{
+    "name": "AppState",
+    "properties": [
+        {
+            "name": "id",
+            "type": "UUID",
+            "maxLength": 36
+        },
+        {
+            "name": "name",
+            "type": "PlainText",
+            "required": true,
+            "maxLength": 64
+        },
+        {
+            "name": "path",
+            "type": "PlainText",
+            "required": true,
+            "maxLength": 255
+        },
+        {
+            "name": "status",
+            "type": "Integer",
+            "required": true
+        },
+        {
+            "name": "extensions",
+            "type": "PlainText",
+            "maxLength": 255
+        },
+        {
+            "name": "context",
+            "type": "PlainText"
+        },
+        {
+            "name": "domainVersion",
+            "type": "PlainText",
+            "maxLength": 36
+        }
+    ]
+}

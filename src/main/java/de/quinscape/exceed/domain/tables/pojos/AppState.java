@@ -6,10 +6,11 @@ package de.quinscape.exceed.domain.tables.pojos;
 
 import de.quinscape.exceed.runtime.domain.GeneratedDomainObject;
 
+import java.io.Serializable;
+
 import javax.annotation.Generated;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.io.Serializable;
 
 
 /**
@@ -25,7 +26,7 @@ import java.io.Serializable;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppState extends GeneratedDomainObject implements Serializable {
 
-	private static final long serialVersionUID = -1020074992;
+	private static final long serialVersionUID = -736223962;
 
 	private String  id;
 	private String  name;
@@ -33,6 +34,7 @@ public class AppState extends GeneratedDomainObject implements Serializable {
 	private Integer status;
 	private String  extensions;
 	private String  context;
+	private String  domainVersion;
 
 	public AppState() {}
 
@@ -43,6 +45,7 @@ public class AppState extends GeneratedDomainObject implements Serializable {
 		this.status = value.status;
 		this.extensions = value.extensions;
 		this.context = value.context;
+		this.domainVersion = value.domainVersion;
 	}
 
 	public AppState(
@@ -51,7 +54,8 @@ public class AppState extends GeneratedDomainObject implements Serializable {
 		String  path,
 		Integer status,
 		String  extensions,
-		String  context
+		String  context,
+		String  domainVersion
 	) {
 		this.id = id;
 		this.name = name;
@@ -59,6 +63,7 @@ public class AppState extends GeneratedDomainObject implements Serializable {
 		this.status = status;
 		this.extensions = extensions;
 		this.context = context;
+		this.domainVersion = domainVersion;
 	}
 
 	@NotNull
@@ -115,5 +120,14 @@ public class AppState extends GeneratedDomainObject implements Serializable {
 
 	public void setContext(String context) {
 		this.context = context;
+	}
+
+	@Size(max = 36)
+	public String getDomainVersion() {
+		return this.domainVersion;
+	}
+
+	public void setDomainVersion(String domainVersion) {
+		this.domainVersion = domainVersion;
 	}
 }

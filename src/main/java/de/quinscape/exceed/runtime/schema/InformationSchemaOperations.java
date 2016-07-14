@@ -36,6 +36,7 @@ public class InformationSchemaOperations
 
     private final NamingStrategy namingStrategy;
 
+
     public InformationSchemaOperations(DataSource dataSource, NamingStrategy namingStrategy)
     {
         this.dataSource = dataSource;
@@ -43,11 +44,13 @@ public class InformationSchemaOperations
         this.template = new JdbcTemplate(dataSource);
     }
 
+
     @Override
     public List<String> listSchemata()
     {
         return template.query("select schema_name\n" +
-            "from information_schema.schemata", (rs, rowNum) -> {
+            "from information_schema.schemata", (rs, rowNum) ->
+        {
             return rs.getString(1);
         });
     }
@@ -70,7 +73,9 @@ public class InformationSchemaOperations
     @Override
     public List<String> listTables(String schema)
     {
-        return template.query("SELECT table_name from information_schema.tables where table_schema = ?", new Object[]{schema}, (rs, rowNum) -> {
+        return template.query("SELECT table_name from information_schema.tables where table_schema = ?", new
+            Object[]{schema}, (rs, rowNum) ->
+        {
             return rs.getString(1);
         });
     }
@@ -184,16 +189,16 @@ public class InformationSchemaOperations
 
         Set<String> updatedColumns = new HashSet<>();
 
-        final String alterTableRoot =  "ALTER TABLE " + schemaName + "." + tableName + " ";
+        final String alterTableRoot = "ALTER TABLE " + schemaName + "." + tableName + " ";
 
         for (DomainProperty domainProperty : type.getProperties())
         {
             final FieldType fieldType = getSQLType(runtimeContext, domainProperty);
-            final String name = domainProperty.getName();
-            final boolean  nullable = !domainProperty.isRequired();
+            final String name = namingStrategy.getFieldName(type.getName(), domainProperty.getName())[1];
+            final boolean nullable = !domainProperty.isRequired();
             final int length = domainProperty.getMaxLength();
 
-            final String sqlType  = fieldType.getSqlWithMax(length);
+            final String sqlType = fieldType.getSqlWithMax(length);
 
             updatedColumns.add(name);
 
@@ -209,7 +214,8 @@ public class InformationSchemaOperations
                 boolean dbIsNullable = info.isNullable();
                 if (nullable != dbIsNullable)
                 {
-                    template.execute(alterTableRoot + "ALTER COLUMN " + name + (nullable ? " DROP NOT NULL" : " SET NOT NULL"));
+                    template.execute(alterTableRoot + "ALTER COLUMN " + name + (nullable ? " DROP NOT NULL" : " SET " +
+                        "NOT NULL"));
                 }
                 Integer dbLength = info.getCharacterMaximumLength();
 
@@ -252,7 +258,8 @@ public class InformationSchemaOperations
 
         for (DatabaseKey key : keys)
         {
-            template.execute("ALTER TABLE " + schemaName + "." + tableName + " DROP CONSTRAINT " + key.name + " CASCADE");
+            template.execute("ALTER TABLE " + schemaName + "." + tableName + " DROP CONSTRAINT " + key.name + " " +
+                "CASCADE");
         }
 
     }
@@ -282,25 +289,38 @@ public class InformationSchemaOperations
         final String schemaName = runtimeContext.getRuntimeApplication().getApplicationModel().getSchema();
         final String tableName = namingStrategy.getTableName(type.getName());
 
-        final String alterTableRoot =  "ALTER TABLE " + schemaName + "." + tableName + " ";
+        final String alterTableRoot = "ALTER TABLE " + schemaName + "." + tableName + " ";
 
-        template.execute(alterTableRoot + "ADD " + fkConstraint(runtimeContext, schemaName, type, domainProperty, domainProperty.getForeignKeyDefinition()));
+        template.execute(alterTableRoot + "ADD " + fkConstraint(runtimeContext, schemaName, type, domainProperty,
+            domainProperty.getForeignKey()));
 
     }
 
 
-    private String fkConstraint(RuntimeContext runtimeContext, String schemaName, DomainType type, DomainProperty domainProperty, ForeignKeyDefinition
+    @Override
+    public void renameTable(String schema, String from, String to)
+    {
+        final String tableFrom = namingStrategy.getTableName(from);
+        final String tableTo = namingStrategy.getTableName(to);
+
+        template.execute("ALTER TABLE " + schema + "." + tableFrom + " RENAME TO " + tableTo);
+    }
+
+
+    private String fkConstraint(RuntimeContext runtimeContext, String schemaName, DomainType type, DomainProperty
+        domainProperty, ForeignKeyDefinition
         foreignKeyDefinition)
     {
         DomainType targetType = runtimeContext.getDomainService().getDomainType(foreignKeyDefinition.getType());
 
 
-        String keyName = namingStrategy.getForeignKeyName(type.getName(), domainProperty.getName(), foreignKeyDefinition.getType(), foreignKeyDefinition.getProperty());
+        String keyName = namingStrategy.getForeignKeyName(type.getName(), domainProperty.getName(),
+            foreignKeyDefinition.getType(), foreignKeyDefinition.getProperty());
         String targetName = namingStrategy.getTableName(targetType.getName());
 
         final String[] fieldName = namingStrategy.getFieldName(type.getName(), domainProperty.getName());
         return "CONSTRAINT " + keyName +
-            " FOREIGN KEY ("+ fieldName[0] + "." + fieldName[1] + ") REFERENCES "+ schemaName + "." + targetName +
+            " FOREIGN KEY (" + fieldName[1] + ") REFERENCES " + schemaName + "." + targetName +
             " (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION";
     }
 
@@ -309,8 +329,24 @@ public class InformationSchemaOperations
     {
 
         ColumnMapper columnMapper = new ColumnMapper();
-        template.query("SELECT * FROM information_schema.columns where table_schema = ? and table_name = ?", new Object[] { schemaName, tableName}, columnMapper);
+        template.query("SELECT * FROM information_schema.columns where table_schema = ? and table_name = ?", new
+            Object[]{schemaName, tableName}, columnMapper);
         return columnMapper.getColumnMap();
+    }
+
+
+    @Override
+    public void renameField(String schema, String type, String from, String to)
+    {
+        final String tableFrom = namingStrategy.getTableName(type);
+
+        final String[] qualifiedSource = namingStrategy.getFieldName(type, from);
+        final String[] qualifiedTarget = namingStrategy.getFieldName(type, to);
+
+        template.execute(
+            "ALTER TABLE " + schema + "." + tableFrom +
+                " RENAME COLUMN " + qualifiedSource[1] + " TO " + qualifiedTarget[1]);
+
     }
 
     private List<DatabaseKey> keysMap(String schemaName, String tableName)
@@ -329,16 +365,18 @@ public class InformationSchemaOperations
 
     /**
      * Maps information_schema.columns rows
-     *
      */
-    private class ColumnMapper implements RowCallbackHandler
+    private class ColumnMapper
+        implements RowCallbackHandler
     {
-        private final Map<String,DatabaseColumn> columnMap;
+        private final Map<String, DatabaseColumn> columnMap;
+
 
         private ColumnMapper()
         {
             columnMap = new HashMap<>();
         }
+
 
         @Override
         public void processRow(ResultSet rs) throws SQLException
@@ -350,6 +388,7 @@ public class InformationSchemaOperations
 
             columnMap.put(columnName, new DatabaseColumn(dataType, characterMaximumLength, nullable));
         }
+
 
         public Map<String, DatabaseColumn> getColumnMap()
         {

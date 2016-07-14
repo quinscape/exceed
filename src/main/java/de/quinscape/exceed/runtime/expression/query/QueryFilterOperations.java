@@ -127,9 +127,9 @@ public class QueryFilterOperations
         QueryDomainType queryDomainType = ctx.getEnv().getQueryDomainType();
         DataField dataField = queryDomainType.resolveField(name);
         final String domainTypeName = dataField.getQueryDomainType().getType().getName();
-        NamingStrategy namingStrategy = storageConfigurationRepository.getConfiguration(domainTypeName).getNamingStrategy();
+        NamingStrategy namingStrategy =  storageConfigurationRepository.getConfiguration(queryDomainType.getType().getStorageConfiguration()).getNamingStrategy();
 
-        return DSL.field(DSL.name(namingStrategy.getFieldName(dataField.getQueryDomainType().getAlias(), dataField.getDomainProperty().getName())));
+        return DSL.field(DSL.name(namingStrategy.getFieldName(dataField.getQueryDomainType().getNameOrAlias(), dataField.getDomainProperty().getName())));
     }
 
     @Operation

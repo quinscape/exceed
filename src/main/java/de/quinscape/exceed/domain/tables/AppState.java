@@ -7,15 +7,17 @@ package de.quinscape.exceed.domain.tables;
 import de.quinscape.exceed.domain.Keys;
 import de.quinscape.exceed.domain.Public;
 import de.quinscape.exceed.domain.tables.records.AppStateRecord;
+
+import java.util.Arrays;
+import java.util.List;
+
+import javax.annotation.Generated;
+
 import org.jooq.Field;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.UniqueKey;
 import org.jooq.impl.TableImpl;
-
-import javax.annotation.Generated;
-import java.util.Arrays;
-import java.util.List;
 
 
 /**
@@ -31,7 +33,7 @@ import java.util.List;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppState extends TableImpl<AppStateRecord> {
 
-	private static final long serialVersionUID = 1044752296;
+	private static final long serialVersionUID = -1395970225;
 
 	/**
 	 * The reference instance of <code>public.app_state</code>
@@ -77,6 +79,11 @@ public class AppState extends TableImpl<AppStateRecord> {
 	public final TableField<AppStateRecord, String> CONTEXT = createField("context", org.jooq.impl.SQLDataType.CLOB, this, "");
 
 	/**
+	 * The column <code>public.app_state.domain_version</code>.
+	 */
+	public final TableField<AppStateRecord, String> DOMAIN_VERSION = createField("domain_version", org.jooq.impl.SQLDataType.VARCHAR.length(36), this, "");
+
+	/**
 	 * Create a <code>public.app_state</code> table reference
 	 */
 	public AppState() {
@@ -103,7 +110,7 @@ public class AppState extends TableImpl<AppStateRecord> {
 	 */
 	@Override
 	public UniqueKey<AppStateRecord> getPrimaryKey() {
-		return Keys.APP_STATE_PKEY;
+		return Keys.PK_APP_STATE;
 	}
 
 	/**
@@ -111,7 +118,7 @@ public class AppState extends TableImpl<AppStateRecord> {
 	 */
 	@Override
 	public List<UniqueKey<AppStateRecord>> getKeys() {
-		return Arrays.<UniqueKey<AppStateRecord>>asList(Keys.APP_STATE_PKEY);
+		return Arrays.<UniqueKey<AppStateRecord>>asList(Keys.PK_APP_STATE);
 	}
 
 	/**

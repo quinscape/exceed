@@ -7,16 +7,19 @@ package de.quinscape.exceed.domain.tables;
 import de.quinscape.exceed.domain.Keys;
 import de.quinscape.exceed.domain.Public;
 import de.quinscape.exceed.domain.tables.records.FooRecord;
+
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.annotation.Generated;
+
 import org.jooq.Field;
+import org.jooq.ForeignKey;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.UniqueKey;
 import org.jooq.impl.TableImpl;
-
-import javax.annotation.Generated;
-import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.List;
 
 
 /**
@@ -32,7 +35,7 @@ import java.util.List;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Foo extends TableImpl<FooRecord> {
 
-	private static final long serialVersionUID = -244441630;
+	private static final long serialVersionUID = 1135487901;
 
 	/**
 	 * The reference instance of <code>public.foo</code>
@@ -78,6 +81,11 @@ public class Foo extends TableImpl<FooRecord> {
 	public final TableField<FooRecord, String> DESCRIPTION = createField("description", org.jooq.impl.SQLDataType.CLOB, this, "");
 
 	/**
+	 * The column <code>public.foo.owner</code>.
+	 */
+	public final TableField<FooRecord, String> OWNER = createField("owner", org.jooq.impl.SQLDataType.VARCHAR.length(36), this, "");
+
+	/**
 	 * Create a <code>public.foo</code> table reference
 	 */
 	public Foo() {
@@ -104,7 +112,7 @@ public class Foo extends TableImpl<FooRecord> {
 	 */
 	@Override
 	public UniqueKey<FooRecord> getPrimaryKey() {
-		return Keys.FOO_PKEY;
+		return Keys.PK_FOO;
 	}
 
 	/**
@@ -112,7 +120,15 @@ public class Foo extends TableImpl<FooRecord> {
 	 */
 	@Override
 	public List<UniqueKey<FooRecord>> getKeys() {
-		return Arrays.<UniqueKey<FooRecord>>asList(Keys.FOO_PKEY);
+		return Arrays.<UniqueKey<FooRecord>>asList(Keys.PK_FOO);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public List<ForeignKey<FooRecord, ?>> getReferences() {
+		return Arrays.<ForeignKey<FooRecord, ?>>asList(Keys.FOO__FK_FOO_OWNER);
 	}
 
 	/**

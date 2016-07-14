@@ -28,7 +28,19 @@ public class DomainType
 
     public final static String ID_PROPERTY = "id";
 
+    /**
+     * Storage used for internal data types.
+     */
+    public final static String SYSTEM_STORAGE = "systemStorage";
+
+    /**
+     * Default storage for non-system types
+     */
+    public final static String DEFAULT_STORAGE = "jooqDatabaseStorage";
+
     private List<String> pkFields = Collections.singletonList(ID_PROPERTY);
+
+    private boolean system;
 
     private Set<String> pkFieldSet = new HashSet<>(pkFields);
 
@@ -39,8 +51,7 @@ public class DomainType
 
     private DomainService domainService;
 
-    private String storageConfiguration = "jooqDatabaseStorage";
-
+    private String storageConfiguration;
 
     @Override
     public void setName(String name)
@@ -135,13 +146,14 @@ public class DomainType
         {
             property.setDomainType(domainTypeName);
 
-            if (property.getType().equals("UUID"))
+            if (property.getName().equals(ID_PROPERTY))
             {
                 property.setRequired(true);
-                if (property.getMaxLength() <= 0)
-                {
-                    property.setMaxLength(36);
-                }
+            }
+
+            if (property.getType().equals("UUID") && property.getMaxLength() <= 0)
+            {
+                property.setMaxLength(36);
             }
         }
     }
@@ -157,5 +169,17 @@ public class DomainType
     public void setStorageConfiguration(String storageConfiguration)
     {
         this.storageConfiguration = storageConfiguration;
+    }
+
+
+    public boolean isSystem()
+    {
+        return system;
+    }
+
+
+    public void setSystem(boolean system)
+    {
+        this.system = system;
     }
 }

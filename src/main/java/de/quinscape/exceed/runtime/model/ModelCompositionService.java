@@ -27,6 +27,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -46,6 +50,8 @@ public class ModelCompositionService
     public static final String DOMAIN_PROPERTY_MODEL_PREFIX = "/models/domain/property";
 
     public static final String ENUM_MODEL_PREFIX = "/models/domain/enum/";
+
+    public static final String SYSTEM_MODEL_PREFIX = "/models/domain/system/";
 
     public static final String VIEW_MODEL_PREFIX = "/models/view/";
 
@@ -139,7 +145,7 @@ public class ModelCompositionService
                     applicationModel.addPropertyType(propertyType.getName(), propertyType);
                     return propertyType;
                 }
-                if (path.startsWith(ENUM_MODEL_PREFIX))
+                else if (path.startsWith(ENUM_MODEL_PREFIX))
                 {
                     EnumType enumType = create(EnumType.class, json, resource);
                     applicationModel.addEnum(enumType.getName(), enumType);
@@ -151,6 +157,17 @@ public class ModelCompositionService
 
                     DomainType domainType = create(DomainType.class, json, resource);
                     domainType.setDomainService(domainService);
+
+                    if (path.startsWith(SYSTEM_MODEL_PREFIX))
+                    {
+                        domainType.setSystem(true);
+
+                        if (domainType.getStorageConfiguration() == null)
+                        {
+                            domainType.setStorageConfiguration(DomainType.SYSTEM_STORAGE);
+                        }
+                    }
+
                     applicationModel.addDomainType(domainType.getName(), domainType);
                     return domainType;
                 }

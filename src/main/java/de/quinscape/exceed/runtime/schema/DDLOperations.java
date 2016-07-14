@@ -5,6 +5,7 @@ import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.runtime.RuntimeContext;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implemented by classes that provide data definition operations as used by the {@link DefaultSchemaService}.
@@ -82,4 +83,9 @@ public interface DDLOperations
      */
     void createForeignKeys(RuntimeContext runtimeContext, DomainType type, DomainProperty domainProperty);
 
+    void renameTable(String schema, String from, String to);
+
+    Map<String, DatabaseColumn> listColumns(String schemaName, String tableName);
+
+    void renameField(String schema, String type, String from, String to);
 }

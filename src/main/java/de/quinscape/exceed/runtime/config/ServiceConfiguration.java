@@ -3,7 +3,7 @@ package de.quinscape.exceed.runtime.config;
 import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.editor.completion.CompletionService;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
-import de.quinscape.exceed.runtime.i18n.DefaultTranslator;
+import de.quinscape.exceed.runtime.i18n.TranslationProvider;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.resource.DefaultResourceCacheFactory;
 import de.quinscape.exceed.runtime.resource.ResourceCacheFactory;
@@ -14,9 +14,13 @@ import de.quinscape.exceed.runtime.service.DomainServiceFactory;
 import de.quinscape.exceed.runtime.service.ProcessService;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
 import de.quinscape.exceed.runtime.view.ViewDataService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.Map;
 
 @Configuration
 @ComponentScan(value = {
@@ -24,6 +28,9 @@ import org.springframework.context.annotation.Configuration;
 })
 public class ServiceConfiguration
 {
+    @Autowired
+    private ApplicationContext applicationContext;
+
     @Bean
     public ViewDataService viewDataService()
     {
@@ -42,13 +49,6 @@ public class ServiceConfiguration
     public ModelDocsProvider modelDocsProvider()
     {
         return new ModelDocsProvider();
-    }
-
-
-    @Bean
-    public Translator translator()
-    {
-        return new DefaultTranslator();
     }
 
     @Bean

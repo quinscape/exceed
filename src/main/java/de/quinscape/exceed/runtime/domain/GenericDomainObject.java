@@ -15,8 +15,6 @@ public class GenericDomainObject
 
     private DomainService domainService;
 
-    private String type;
-
     private Map<String,Object> content;
 
     public GenericDomainObject()
@@ -55,7 +53,7 @@ public class GenericDomainObject
 
     public void setDomainType(String type)
     {
-        this.type = type;
+        setProperty("_type", type);
     }
 
 
@@ -98,7 +96,7 @@ public class GenericDomainObject
     @JSONProperty(value = "_type", priority = 100)
     public String getDomainType()
     {
-        return type;
+        return (String) getProperty("_type");
     }
 
 
@@ -114,6 +112,6 @@ public class GenericDomainObject
             sb.append("  ").append(name).append(" = ").append(value).append(value != null ? " ( " + value.getClass() + " )" : "" ).append(SEP);
         }
 
-        return super.toString() + ": type = " + type + ":\n" + sb;
+        return getClass().getName() + "@" + Integer.toHexString(hashCode()) + ":\n" + sb;
     }
 }

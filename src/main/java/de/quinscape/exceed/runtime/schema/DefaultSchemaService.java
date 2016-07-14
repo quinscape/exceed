@@ -74,7 +74,7 @@ public class DefaultSchemaService
         {
             for (DomainProperty domainProperty : type.getProperties())
             {
-                final ForeignKeyDefinition foreignKeyDefinition = domainProperty.getForeignKeyDefinition();
+                final ForeignKeyDefinition foreignKeyDefinition = domainProperty.getForeignKey();
                 if (foreignKeyDefinition != null)
                 {
                     op.createForeignKeys(runtimeContext, type, domainProperty);

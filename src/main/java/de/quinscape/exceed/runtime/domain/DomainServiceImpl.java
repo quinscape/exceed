@@ -239,4 +239,9 @@ public class DomainServiceImpl
         final String config = type.getStorageConfiguration();
         return storageConfigurationRepository.getConfiguration(config);
     }
+
+    public String getAppName()
+    {
+        return this.runtimeApplication.getName();
+    }
 }

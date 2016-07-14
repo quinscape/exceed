@@ -1,0 +1,16 @@
+{
+    "name": "ForeignKeyDefinition",
+    "properties": [
+        {
+            "name": "type",
+            "type": "PlainText",
+            "required": true
+        },
+        {
+            "name": "property",
+            "type": "PlainText",
+            "defaultValue" : "'id'",
+            "required": true
+        }
+    ]
+}

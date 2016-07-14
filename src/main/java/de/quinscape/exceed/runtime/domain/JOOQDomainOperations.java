@@ -93,9 +93,9 @@ public class JOOQDomainOperations
         DomainType domainType = domainService.getDomainType(type);
         final NamingStrategy namingStrategy = domainService.getStorageConfiguration(type).getNamingStrategy();
 
-        Table<Record> table = DBUtil.jooqTableFor(domainType, domainType.getName());
+        Table<Record> table = DBUtil.jooqTableFor(domainType, null);
 
-        Field<Object> idField = DSL.field(DSL.name(namingStrategy.getFieldName(domainType.getName(), DomainType.ID_PROPERTY)));
+        Field<Object> idField = DBUtil.jooqField(domainType, DomainType.ID_PROPERTY);
 
         return dslContext.select()
             .from(table)
@@ -112,13 +112,12 @@ public class JOOQDomainOperations
         {
             final String type = domainObject.getDomainType();
             DomainType domainType = domainService.getDomainType(type);
-            final NamingStrategy namingStrategy = domainService.getStorageConfiguration(type).getNamingStrategy();
 
-            DeleteQuery<Record> query = dslContext.deleteQuery(DBUtil.jooqTableFor(domainType, domainType.getName()));
+            DeleteQuery<Record> query = dslContext.deleteQuery(DBUtil.jooqTableFor(domainType, null));
 
             for (String name : domainType.getPkFields())
             {
-                Field<Object> pkField = DSL.field(DSL.name(namingStrategy.getFieldName(domainType.getName(), name)));
+                Field<Object> pkField = DBUtil.jooqField(domainType, name);
                 Object pkValue = domainObject.getProperty(name);
                 query.addConditions(pkField.eq(pkValue));
             }
@@ -265,7 +264,7 @@ public class JOOQDomainOperations
         final NamingStrategy namingStrategy = domainService.getStorageConfiguration(type).getNamingStrategy();
 
 
-        UpdateQuery<Record> query = dslContext.updateQuery(DBUtil.jooqTableFor(domainType, domainType.getName()));
+        UpdateQuery<Record> query = dslContext.updateQuery(DBUtil.jooqTableFor(domainType, null));
 
         final List<String> pkFields = domainType.getPkFields();
 

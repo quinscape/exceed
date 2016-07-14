@@ -5,16 +5,20 @@ package de.quinscape.exceed.domain;
 
 
 import de.quinscape.exceed.domain.tables.AppState;
+import de.quinscape.exceed.domain.tables.AppTranslation;
 import de.quinscape.exceed.domain.tables.AppUser;
+import de.quinscape.exceed.domain.tables.Bar;
 import de.quinscape.exceed.domain.tables.Foo;
 import de.quinscape.exceed.domain.tables.PersistentLogins;
-import org.jooq.Table;
-import org.jooq.impl.SchemaImpl;
 
-import javax.annotation.Generated;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.annotation.Generated;
+
+import org.jooq.Table;
+import org.jooq.impl.SchemaImpl;
 
 
 /**
@@ -30,7 +34,7 @@ import java.util.List;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Public extends SchemaImpl {
 
-	private static final long serialVersionUID = 565736305;
+	private static final long serialVersionUID = 1796976495;
 
 	/**
 	 * The reference instance of <code>public</code>
@@ -54,7 +58,9 @@ public class Public extends SchemaImpl {
 	private final List<Table<?>> getTables0() {
 		return Arrays.<Table<?>>asList(
 			AppState.APP_STATE,
+			AppTranslation.APP_TRANSLATION,
 			AppUser.APP_USER,
+			Bar.BAR,
 			Foo.FOO,
 			PersistentLogins.PERSISTENT_LOGINS);
 	}

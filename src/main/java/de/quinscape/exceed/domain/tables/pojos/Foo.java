@@ -6,11 +6,12 @@ package de.quinscape.exceed.domain.tables.pojos;
 
 import de.quinscape.exceed.runtime.domain.GeneratedDomainObject;
 
+import java.io.Serializable;
+import java.sql.Timestamp;
+
 import javax.annotation.Generated;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.io.Serializable;
-import java.sql.Timestamp;
 
 
 /**
@@ -26,7 +27,7 @@ import java.sql.Timestamp;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Foo extends GeneratedDomainObject implements Serializable {
 
-	private static final long serialVersionUID = -571975027;
+	private static final long serialVersionUID = -1243732371;
 
 	private String    id;
 	private String    name;
@@ -34,6 +35,7 @@ public class Foo extends GeneratedDomainObject implements Serializable {
 	private Integer   type;
 	private Timestamp created;
 	private String    description;
+	private String    owner;
 
 	public Foo() {}
 
@@ -44,6 +46,7 @@ public class Foo extends GeneratedDomainObject implements Serializable {
 		this.type = value.type;
 		this.created = value.created;
 		this.description = value.description;
+		this.owner = value.owner;
 	}
 
 	public Foo(
@@ -52,7 +55,8 @@ public class Foo extends GeneratedDomainObject implements Serializable {
 		Integer   num,
 		Integer   type,
 		Timestamp created,
-		String    description
+		String    description,
+		String    owner
 	) {
 		this.id = id;
 		this.name = name;
@@ -60,6 +64,7 @@ public class Foo extends GeneratedDomainObject implements Serializable {
 		this.type = type;
 		this.created = created;
 		this.description = description;
+		this.owner = owner;
 	}
 
 	@NotNull
@@ -115,5 +120,14 @@ public class Foo extends GeneratedDomainObject implements Serializable {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	@Size(max = 36)
+	public String getOwner() {
+		return this.owner;
+	}
+
+	public void setOwner(String owner) {
+		this.owner = owner;
 	}
 }

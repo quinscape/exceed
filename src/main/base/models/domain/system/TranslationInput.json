@@ -1,0 +1,45 @@
+{
+    "name": "TranslationInput",
+    "properties": [
+        {
+            "name": "id",
+            "type": "UUID",
+            "maxLength": 36
+        },
+        {
+            "name": "processName",
+            "type": "PlainText",
+            "maxLength": 64
+        },
+        {
+            "name": "viewName",
+            "type": "PlainText",
+            "maxLength": 64
+        },
+        {
+            "name": "locale",
+            "type": "PlainText",
+            "required": true,
+            "maxLength": 64
+        },
+        {
+            "name": "tag",
+            "type": "PlainText",
+            "required": true,
+            "maxLength": 255
+        },
+        {
+            "name": "translation",
+            "type": "PlainText"
+        },
+        {
+            "name": "created",
+            "required": true,
+            "type": "Timestamp"
+        },
+        {
+            "name": "stored",
+            "type": "Boolean"
+        }
+    ]
+}

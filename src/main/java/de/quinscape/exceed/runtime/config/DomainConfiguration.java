@@ -1,14 +1,18 @@
 package de.quinscape.exceed.runtime.config;
 
 import com.jolbox.bonecp.BoneCPDataSource;
+import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.runtime.component.QueryDataProvider;
+import de.quinscape.exceed.runtime.component.domain.DomainEditorProvider;
+import de.quinscape.exceed.runtime.component.translation.TranslationEditorProvider;
 import de.quinscape.exceed.runtime.db.JOOQConfigFactory;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.JOOQDomainOperations;
 import de.quinscape.exceed.runtime.domain.JOOQQueryExecutor;
-import de.quinscape.exceed.runtime.domain.ModelQueryExecutor;
+import de.quinscape.exceed.runtime.domain.SystemStorageExecutor;
 import de.quinscape.exceed.runtime.domain.NeutralNamingStrategy;
 import de.quinscape.exceed.runtime.domain.PropertyDefaultOperations;
+import de.quinscape.exceed.runtime.domain.SystemStorageOperations;
 import de.quinscape.exceed.runtime.domain.property.BooleanConverter;
 import de.quinscape.exceed.runtime.domain.property.DateConverter;
 import de.quinscape.exceed.runtime.domain.property.EnumConverter;
@@ -21,12 +25,17 @@ import de.quinscape.exceed.runtime.domain.property.TimestampConverter;
 import de.quinscape.exceed.runtime.domain.property.UUIDConverter;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
+import de.quinscape.exceed.runtime.i18n.DefaultTranslator;
+import de.quinscape.exceed.runtime.i18n.JOOQTranslationProvider;
+import de.quinscape.exceed.runtime.i18n.TranslationProvider;
+import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.schema.DefaultSchemaService;
 import de.quinscape.exceed.runtime.schema.DefaultStorageConfiguration;
 import de.quinscape.exceed.runtime.schema.DefaultStorageConfigurationRepository;
 import de.quinscape.exceed.runtime.schema.InformationSchemaOperations;
 import de.quinscape.exceed.runtime.schema.StorageConfiguration;
 import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
+import de.quinscape.exceed.runtime.service.ApplicationService;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DataSourceConnectionProvider;
@@ -145,9 +154,9 @@ public class DomainConfiguration
     }
 
     @Bean
-    public ModelQueryExecutor modelQueryExecutor()
+    public SystemStorageExecutor systemStorageExecutor()
     {
-        return new ModelQueryExecutor();
+        return new SystemStorageExecutor();
     }
 
     @Bean
@@ -157,15 +166,16 @@ public class DomainConfiguration
 
         log.info("STORAGE CONFIGURATIONS: {}", configurations);
 
-        return new DefaultStorageConfigurationRepository(configurations);
+        return new DefaultStorageConfigurationRepository(configurations, DomainType.DEFAULT_STORAGE);
     }
 
-    @Bean
-    public StorageConfiguration modelStorage(ModelQueryExecutor modelQueryExecutor)
+    @Bean(name = DomainType.SYSTEM_STORAGE)
+    public StorageConfiguration systemStorage(SystemStorageExecutor systemStorageExecutor)
     {
-        return new DefaultStorageConfiguration(null, new NeutralNamingStrategy(), modelQueryExecutor, null);
+        return new DefaultStorageConfiguration(new SystemStorageOperations(), new NeutralNamingStrategy(), systemStorageExecutor, null);
     }
-    @Bean
+
+    @Bean(name = DomainType.DEFAULT_STORAGE)
     public StorageConfiguration jooqDatabaseStorage(
         DSLContext dslContext,
         JOOQDomainOperations jooqDomainOperations,
@@ -198,6 +208,20 @@ public class DomainConfiguration
         final DefaultNamingStrategy namingStrategy = new DefaultNamingStrategy();
         return new DefaultSchemaService(namingStrategy, new InformationSchemaOperations(dataSource, namingStrategy));
     }
+
+    @Bean
+    public TranslationProvider jooQTranslationProvider(DSLContext dslContext)
+    {
+        return new JOOQTranslationProvider(dslContext);
+    }
+
+
+    @Bean
+    public Translator translator(TranslationProvider provider)
+    {
+        return new DefaultTranslator(provider);
+    }
+
 
     @Bean
     public BooleanConverter BooleanConverter()
@@ -267,4 +291,5 @@ public class DomainConfiguration
     {
         return new ObjectConverter();
     }
+
 }

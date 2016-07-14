@@ -1,0 +1,24 @@
+{
+    "name": "Bar",
+    "properties": [
+        {
+            "name": "id",
+            "type": "UUID",
+            "maxLength": 36
+        },
+        {
+            "name": "name",
+            "type": "PlainText",
+            "maxLength": 64,
+            "required": true
+        },
+        {
+            "name": "foo_id",
+            "type": "UUID",
+
+            "foreignKey" : {
+                "type" : "Foo"
+            }
+        }
+    ]
+}

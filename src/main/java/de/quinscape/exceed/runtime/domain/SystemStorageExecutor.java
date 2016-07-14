@@ -6,10 +6,10 @@ import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ModelQueryExecutor
+public class SystemStorageExecutor
     implements QueryExecutor
 {
-    private final static Logger log = LoggerFactory.getLogger(ModelQueryExecutor.class);
+    private final static Logger log = LoggerFactory.getLogger(SystemStorageExecutor.class);
 
 
     @Override

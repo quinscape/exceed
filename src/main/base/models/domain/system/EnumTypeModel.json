@@ -1,0 +1,20 @@
+{
+    "name": "EnumTypeModel",
+    "properties": [
+        {
+            "name": "name",
+            "type": "PlainText",
+            "required": true
+        },
+        {
+            "name": "description",
+            "type": "PlainText"
+        },
+        {
+            "name": "values",
+            "type": "List",
+            "typeParam": "PlainText",
+            "required": true
+        }
+    ]
+}

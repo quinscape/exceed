@@ -27,7 +27,7 @@ public class DataField
         this.queryDomainType = queryDomainType;
         this.domainProperty = domainProperty;
 
-        qualifiedName = queryDomainType.getAlias() + "." + domainProperty.getName();
+        qualifiedName = queryDomainType.getNameOrAlias() + "." + domainProperty.getName();
         localName = qualifiedName;
     }
 
@@ -56,7 +56,7 @@ public class DataField
     {
         if (nameFromStrategy == null)
         {
-            nameFromStrategy = namingStrategy.getFieldName(queryDomainType.getAlias(), domainProperty.getName());
+            nameFromStrategy = namingStrategy.getFieldName(queryDomainType.getNameOrAlias(), domainProperty.getName());
         }
         return nameFromStrategy;
     }

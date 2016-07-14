@@ -79,7 +79,7 @@ public class JOOQQueryExecutor
             Condition joinCondition = joinedType.getCondition();
             Table<Record> joinedTable = DBUtil.jooqTableFor(
                 joinedType.getRight().getType(),
-                joinedType.getRight().getAlias()
+                joinedType.getRight().getNameOrAlias()
             );
             query.addJoin(joinedTable, joinCondition);
 

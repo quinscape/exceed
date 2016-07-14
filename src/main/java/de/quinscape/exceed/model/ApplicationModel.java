@@ -44,6 +44,8 @@ public class ApplicationModel
     private Map<String, Process> processes = new HashMap<>();
     private Map<String, Process> processesRO = Collections.unmodifiableMap(processes);
 
+    private List<String> supportedLocales = Collections.singletonList("en_US");
+
     private List<String> styleSheets;
 
     private String schema;
@@ -160,7 +162,7 @@ public class ApplicationModel
 
 
     /**
-     * Merges the app.json located parts of this application model with the given application model.
+     * Merges the app.json located parts of the given application model with this application model.
      *
      * This is used internally to ensure location order independent parsing of application models. The system might
      * encounter the actual app.json file later than other parts it needs to merge into this. So the system creates
@@ -175,6 +177,7 @@ public class ApplicationModel
         this.schema = applicationModel.schema;
         this.applicationContextModel = applicationModel.applicationContextModel;
         this.sessionContextModel = applicationModel.sessionContextModel;
+        this.supportedLocales = applicationModel.supportedLocales;
     }
 
 
@@ -338,4 +341,19 @@ public class ApplicationModel
         return staticFunctionReferences;
     }
 
+
+    public List<String> getSupportedLocales()
+    {
+        if (supportedLocales == null)
+        {
+            return Collections.emptyList();
+        }
+        return supportedLocales;
+    }
+
+
+    public void setSupportedLocales(List<String> supportedLocales)
+    {
+        this.supportedLocales = supportedLocales;
+    }
 }

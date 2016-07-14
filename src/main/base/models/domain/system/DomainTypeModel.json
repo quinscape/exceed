@@ -1,0 +1,24 @@
+{
+    "name": "DomainTypeModel",
+    "properties": [
+        {
+            "name": "name",
+            "type": "PlainText",
+            "required": true
+        },
+        {
+            "name": "description",
+            "type": "PlainText"
+        },
+        {
+            "name": "storage",
+            "type": "PlainText"
+        },
+        {
+            "name": "properties",
+            "type": "List",
+            "typeParam": "DomainPropertyModel",
+            "required": true
+        }
+    ]
+}

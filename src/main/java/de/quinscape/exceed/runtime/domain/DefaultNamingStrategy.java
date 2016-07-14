@@ -34,9 +34,9 @@ public class DefaultNamingStrategy
 
 
     @Override
-    public String[] getFieldName(String tableName, String propertyName)
+    public String[] getFieldName(String typeName, String propertyName)
     {
-        return new String[] { tableName, camelCaseToUnderline(propertyName) };
+        return new String[] { getTableName(typeName), camelCaseToUnderline(propertyName) };
     }
 
 

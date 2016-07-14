@@ -205,72 +205,15 @@ public class DomainProperty
 
 
     @JSONProperty(ignoreIfNull = true, priority = 30)
-    public Object getForeignKey()
-    {
-        if (foreignKey == null)
-        {
-            return null;
-        }
-
-        if (foreignKey.getProperty().equals(DomainType.ID_PROPERTY))
-        {
-            return foreignKey.getType();
-        }
-        else
-        {
-            return foreignKey;
-        }
-    }
-
-
-    @JSONProperty(ignore = true)
-    public ForeignKeyDefinition getForeignKeyDefinition()
+    public ForeignKeyDefinition getForeignKey()
     {
         return foreignKey;
     }
 
 
-    public void setForeignKey(Object foreignKey)
+    public void setForeignKey(ForeignKeyDefinition foreignKey)
     {
-        if (foreignKey == null)
-        {
-            this.foreignKey = null;
-        }
-        else if (foreignKey instanceof String)
-        {
-            final ForeignKeyDefinition def = new ForeignKeyDefinition();
-            def.setType((String) foreignKey);
-            this.foreignKey = def;
-        }
-        else if (foreignKey instanceof Map)
-        {
-            final ForeignKeyDefinition def = new ForeignKeyDefinition();
-            final Object typeValue = ((Map) foreignKey).get("type");
-
-            final Object property = ((Map) foreignKey).get("property");
-
-            if (typeValue == null)
-            {
-                throw new IllegalStateException(this + ": Invalid foreign key: 'type' can't be null");
-            }
-
-            if (!(typeValue instanceof String))
-            {
-                throw new IllegalStateException(this + ": Invalid foreign key: 'type' must be string");
-            }
-            if (property != null && !(property instanceof String))
-            {
-                throw new IllegalStateException(this + ": Invalid foreign key: 'property' must be string");
-            }
-            def.setType((String) typeValue);
-            def.setProperty((String) property);
-            this.foreignKey = def;
-        }
-        else
-        {
-            throw new IllegalStateException(this + ": 'foreignKey' property must be map ({ type: <type>, property: " +
-                "<property>} or string (type)");
-        }
+        this.foreignKey = foreignKey;
     }
 
 

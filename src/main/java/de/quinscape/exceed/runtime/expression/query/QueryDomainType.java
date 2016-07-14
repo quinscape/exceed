@@ -54,7 +54,9 @@ public class QueryDomainType
         domainTypeFields = ImmutableList.copyOf(joinedFields);
     }
 
-    public String getAlias()
+
+
+    public String getNameOrAlias()
     {
         if (alias == null)
         {
@@ -68,6 +70,12 @@ public class QueryDomainType
     public void setAlias(String alias)
     {
         this.alias = alias;
+    }
+
+
+    public String getAlias()
+    {
+        return alias;
     }
 
 

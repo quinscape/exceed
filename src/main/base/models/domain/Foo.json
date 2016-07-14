@@ -35,6 +35,14 @@
             "name": "description",
             "type": "PlainText",
             "maxLength": 4096
+        },
+        {
+            "name": "owner",
+            "type": "UUID",
+
+            "foreignKey" : {
+                "type": "AppUser"
+            }
         }
     ]
 }
