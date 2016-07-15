@@ -19,7 +19,8 @@
                 "defaultValue": "10"
             }
         }
-    }
+    },
+    "supportedLocales" : ["en_US", "de_DE"]
 }
 
 

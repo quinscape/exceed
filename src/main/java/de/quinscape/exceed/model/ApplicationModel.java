@@ -1,5 +1,6 @@
 package de.quinscape.exceed.model;
 
+import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumType;
@@ -9,12 +10,14 @@ import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.model.ModelNotFoundException;
+import org.apache.commons.collections.map.HashedMap;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -45,6 +48,7 @@ public class ApplicationModel
     private Map<String, Process> processesRO = Collections.unmodifiableMap(processes);
 
     private List<String> supportedLocales = Collections.singletonList("en_US");
+    private Map<String,String> supportedLocalesMap = createLookup(supportedLocales);
 
     private List<String> styleSheets;
 
@@ -177,7 +181,7 @@ public class ApplicationModel
         this.schema = applicationModel.schema;
         this.applicationContextModel = applicationModel.applicationContextModel;
         this.sessionContextModel = applicationModel.sessionContextModel;
-        this.supportedLocales = applicationModel.supportedLocales;
+        setSupportedLocales(applicationModel.supportedLocales);
     }
 
 
@@ -352,8 +356,73 @@ public class ApplicationModel
     }
 
 
+    /**
+     * Returns the language plus underline part of the given locale code
+     *
+     * @param code
+     * @return
+     */
+    private String langUnderline(String code)
+    {
+        final int pos = code.indexOf('_');
+        if (pos >= 0)
+        {
+            return code.substring(0, pos + 1);
+        }
+        return code;
+    }
+
+
     public void setSupportedLocales(List<String> supportedLocales)
     {
+        if (supportedLocales == null || supportedLocales.size() == 0)
+        {
+            throw new IllegalStateException("Supported locale list can't be empty or null");
+        }
+
+        this.supportedLocalesMap = createLookup(supportedLocales);
         this.supportedLocales = supportedLocales;
+    }
+
+
+    private ImmutableMap<String, String> createLookup(List<String> supportedLocales)
+    {
+        Map<String, String> map = new HashedMap();
+
+        for (String supportedLocale : supportedLocales)
+        {
+            map.put(supportedLocale, supportedLocale);
+
+            // locales with a language but no country produce a code like "en_" we map those codes to the first occurance
+            // of that language in supported locales.
+            String lang = langUnderline(supportedLocale);
+            map.putIfAbsent(lang, supportedLocale);
+        }
+
+        return ImmutableMap.copyOf(map);
+    }
+
+
+    /**
+     * Matches the given locale with the existing application locales and returns the most favorable.
+     * <p>
+     * If there is no full match, the matching falls back on language only matching, if that produces no result, the
+     * first supported locale defined in the application is returned.
+     * </p>
+     *
+     * @param locale        locale
+     *
+     * @return  supported application locale code
+     */
+    public String matchLocale(Locale locale)
+    {
+        String code = locale.getLanguage() + "_" + locale.getCountry();
+
+        final String result = supportedLocalesMap.get(code);
+        if (result != null)
+        {
+            return result;
+        }
+        return supportedLocales.get(0);
     }
 }

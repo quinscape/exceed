@@ -45,6 +45,12 @@
                         "processName": "scoped"
                     }
                 }]
+            },
+            {
+                "name": "translation-editor",
+                "mapping": {
+                    "viewName": "TranslationEditor"
+                }
             }
         ],
         "mapping": {

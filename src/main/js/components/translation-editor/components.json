@@ -1,0 +1,8 @@
+{
+    "components": {
+        "TranslationEditor": {
+            "classes" : [ "element", "internal"],
+            "dataProvider" : "translationReferenceProvider"
+        }
+    }
+}

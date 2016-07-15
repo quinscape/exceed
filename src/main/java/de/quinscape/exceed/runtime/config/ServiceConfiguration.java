@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.config;
 
+import de.quinscape.exceed.runtime.component.translation.TranslationEditorProvider;
 import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.editor.completion.CompletionService;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
@@ -92,6 +93,12 @@ public class ServiceConfiguration
         scopedContextFactory)
     {
         return new ProcessService(actionService, expressionService, scopedContextFactory);
+    }
+
+    @Bean
+    public TranslationEditorProvider translationReferenceProvider(TranslationProvider translationProvider)
+    {
+        return new TranslationEditorProvider(translationProvider);
     }
 
 }

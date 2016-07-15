@@ -7,6 +7,7 @@ import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.ModuleFunctionReferences;
 import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
+import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;
 import org.springframework.stereotype.Service;
 
@@ -29,8 +30,6 @@ import java.util.concurrent.ConcurrentMap;
 public class TranslationProvider
     implements RuntimeInfoProvider
 {
-
-    public static final String I18N_CALL_NAME = "i18n";
 
     private ConcurrentMap<String,Holder> translationReferences = new ConcurrentHashMap<>();
 
@@ -124,7 +123,7 @@ public class TranslationProvider
                     ASTExpression astExpression = attrs.getAttribute(name).getAstExpression();
                     if (astExpression != null)
                     {
-                        collectTranlationsFromExpressions(set, astExpression);
+                        collectTranslationsFromExpressions(set, astExpression);
                     }
                 }
             }
@@ -136,7 +135,7 @@ public class TranslationProvider
         }
 
 
-        private void collectTranlationsFromExpressions(Set<String> set, ASTExpression astExpression)
+        private void collectTranslationsFromExpressions(Set<String> set, ASTExpression astExpression)
         {
             TranslationReferenceVisitor visitor = new TranslationReferenceVisitor();
             astExpression.jjtAccept(visitor, null);
@@ -154,7 +153,7 @@ public class TranslationProvider
                 ModuleFunctionReferences refs = staticFunctionReferences.getModuleFunctionReferences(moduleName);
                 if (refs != null)
                 {
-                    List<String> calls = refs.getCalls(I18N_CALL_NAME);
+                    List<String> calls = refs.getCalls(Translator.I18N_CALL_NAME);
                     if (calls != null && calls.size() != 0)
                     {
                         set.addAll(calls);

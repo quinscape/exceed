@@ -1,0 +1,15 @@
+{
+    "root": {
+        "name": "View",
+        "kids": [
+            {
+                "name": "ViewContext",
+                "kids": [
+                ]
+            },
+            {
+                "name": "TranslationEditor"
+            }
+        ]
+    }
+}

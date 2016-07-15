@@ -39,10 +39,15 @@ public class StaticFunctionReferences
         return usages.get(module);
     }
 
-
     public String getVersion()
     {
         return version;
+    }
+
+
+    public Map<String, ModuleFunctionReferences> getModuleFunctionReferences()
+    {
+        return usages;
     }
 
 
