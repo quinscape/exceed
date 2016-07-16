@@ -22,8 +22,6 @@ public class TestActionService
     @Override
     public Action getAction(String name)
     {
-        return (runtimeContext, Model) -> {
-
-        };
+        return (runtimeContext, Model) -> true;
     }
 }

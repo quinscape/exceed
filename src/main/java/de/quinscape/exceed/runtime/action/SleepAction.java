@@ -6,9 +6,10 @@ public class SleepAction
     implements Action<SleepActionModel>
 {
     @Override
-    public void execute(RuntimeContext runtimeContext, SleepActionModel model) throws Exception
+    public Object execute(RuntimeContext runtimeContext, SleepActionModel model) throws Exception
     {
         Thread.sleep(model.getTime());
+        return true;
     }
 
 

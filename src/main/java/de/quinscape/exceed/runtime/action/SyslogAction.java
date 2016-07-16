@@ -18,12 +18,14 @@ public class SyslogAction
 
 
     @Override
-    public void execute(RuntimeContext runtimeContext, SyslogActionModel model)
+    public Object execute(RuntimeContext runtimeContext, SyslogActionModel model)
     {
         if (log.isInfoEnabled())
         {
             log.info(JSON.defaultJSON().forValue(model.getArgs()));
         }
+
+        return true;
     }
 
 

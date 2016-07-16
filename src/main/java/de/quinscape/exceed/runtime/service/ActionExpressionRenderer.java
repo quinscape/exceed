@@ -62,7 +62,7 @@ public class ActionExpressionRenderer
 
             if (i > 0)
             {
-                buffer.append(".then(function(){ return (");
+                buffer.append(".then(function(result){ return (");
             }
 
             actionCallGenerators.get(opName).renderJsCode(view, baseRenderer, kid);

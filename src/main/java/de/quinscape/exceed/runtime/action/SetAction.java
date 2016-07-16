@@ -24,7 +24,7 @@ public class SetAction
     }
 
     @Override
-    public void execute(RuntimeContext runtimeContext, SetActionModel model)
+    public Object execute(RuntimeContext runtimeContext, SetActionModel model)
     {
         final ScopedValueType type = model.getType();
         final ScopedContextChain chain = runtimeContext.getScopedContextChain();
@@ -42,6 +42,8 @@ public class SetAction
         {
             util.setPropertyPath(type.get(scope,name), path, value);
         }
+
+        return true;
     }
 
     @Override

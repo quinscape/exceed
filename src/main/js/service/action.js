@@ -85,7 +85,7 @@ var ActionService = {
      *
      * @param action        {object|function} Action model, must contain an identifying "action" property containing the name of either a
      *                      client or a server action. Can also be just a function that will be executed and that can return a promise.
-     * @param forceServer   {?boolean} if set to true the action will not be executed as client execution even if such a client action
+     * @param [forceServer] {boolean} if set to true the action will not be executed as client execution even if such a client action
      *                      should exist. This is useful for server actions with a client side decoration. The client side decoration needs
      *                      to set forceServer to true to prevent an endless loop.
      * @returns {*}

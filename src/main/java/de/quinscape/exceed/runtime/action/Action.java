@@ -11,7 +11,7 @@ import de.quinscape.exceed.runtime.RuntimeContext;
  */
 public interface Action<M extends ActionModel>
 {
-    void execute(RuntimeContext runtimeContext, M model) throws Exception;
+    Object execute(RuntimeContext runtimeContext, M model) throws Exception;
 
     default Class<M> getActionModelClass()
     {

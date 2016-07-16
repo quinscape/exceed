@@ -12,8 +12,9 @@ public class PongAction
 
 
     @Override
-    public void execute(RuntimeContext runtimeContext, PongActionModel model)
+    public Object execute(RuntimeContext runtimeContext, PongActionModel model)
     {
+        return true;
     }
 
 

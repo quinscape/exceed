@@ -16,7 +16,7 @@ public class ClientSideOnlyAction
     implements Action<ClientSideOnlyActionModel>, ClientActionRenderer
 {
     @Override
-    public void execute(RuntimeContext runtimeContext, ClientSideOnlyActionModel model) throws Exception
+    public Object execute(RuntimeContext runtimeContext, ClientSideOnlyActionModel model) throws Exception
     {
         throw new IllegalStateException("Action '" + model.getAction() + "' is a client-side only action and thus invalid in this context");
     }

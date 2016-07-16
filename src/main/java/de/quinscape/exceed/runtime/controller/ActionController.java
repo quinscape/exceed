@@ -140,8 +140,17 @@ public class ActionController
         Action action = actionService.getAction(model.getAction());
         try
         {
-            action.execute(runtimeContext, model);
-            return new ResponseEntity<String>(RESULT_OK, HttpStatus.OK);
+            Object result = action.execute(runtimeContext, model);
+
+            if (Boolean.TRUE.equals(result))
+            {
+                return new ResponseEntity<String>(RESULT_OK, HttpStatus.OK);
+            }
+            else
+            {
+                return new ResponseEntity<String>(runtimeContext.getDomainService().toJSON(result), HttpStatus.OK);
+            }
+
         }
         catch (Exception e)
         {
@@ -229,14 +238,23 @@ public class ActionController
                     conversions.add(new CollectionConversion(propertyInfo.getType(), propertyInfo.getJsonName()));
                 }
             }
+            else if (Map.class.isAssignableFrom(propertyInfo.getType()))
+            {
+                Class<Object> typeHint = propertyInfo.getTypeHint();
+                if (typeHint != null && DomainObject.class.isAssignableFrom(typeHint))
+                {
+                    conversions.add(new MapConversion(propertyInfo.getType(), propertyInfo.getJsonName()));
+                }
+            }
         }
 
         return conversions;
     }
 
 
-    private abstract class Conversion
+    private static abstract class Conversion
     {
+
         abstract String getName();
 
         @Override
@@ -250,9 +268,12 @@ public class ActionController
     }
 
 
-    private class PropertyConversion
+    private static class PropertyConversion
         extends Conversion
     {
+        private final static Logger log = LoggerFactory.getLogger(PropertyConversion.class);
+
+
         private final String name;
 
 
@@ -271,18 +292,24 @@ public class ActionController
         @Override
         public void convert(RuntimeContext runtimeContext, ActionModel model) throws ParseException
         {
+            if (log.isDebugEnabled())
+            {
+                log.debug("Convert {}.{}", model.getAction(), name);
+            }
+
             DomainObject value = (DomainObject) JSONBeanUtil.defaultUtil().getProperty(model, name);
             if (value == null)
             {
                 return;
             }
-            value = DomainUtil.convertToJava(runtimeContext, value);
+            DomainUtil.convertToJava(runtimeContext, value);
         }
     }
 
-    private class CollectionConversion
+    private static class CollectionConversion
         extends Conversion
     {
+        private final static Logger log = LoggerFactory.getLogger(CollectionConversion.class);
 
         private final String name;
 
@@ -308,36 +335,64 @@ public class ActionController
         @Override
         public void convert(RuntimeContext runtimeContext, ActionModel model) throws ParseException
         {
+            if (log.isDebugEnabled())
+            {
+                log.debug("Convert {}.{}", model.getAction(), name);
+            }
+
             Object value = JSONBeanUtil.defaultUtil().getProperty(model, name);
             if (value == null)
             {
                 return;
             }
 
-            if (isList)
+            for (DomainObject domainObject : (Collection<DomainObject>) value)
             {
-                List<DomainObject> domainObjects = new ArrayList<>();
-
-                for (DomainObject domainObject : (List<DomainObject>) value)
-                {
-                    domainObject = DomainUtil.convertToJava(runtimeContext, domainObject);
-                }
+                DomainUtil.convertToJava(runtimeContext, domainObject);
             }
         }
     }
 
-
-
-
-    private PropertyConverter getConverter(String type)
+    private static class MapConversion
+        extends Conversion
     {
-        Map<String, PropertyConverter> converters = defaultPropertyConverters.getConverters();
-        String converterName = type + "Converter";
-        PropertyConverter converter = converters.get(converterName);
-        if (converter == null)
+        private final static Logger log = LoggerFactory.getLogger(MapConversion.class);
+
+        private final String name;
+
+        public MapConversion(Class<Object> collectionType, String name)
         {
-            throw new IllegalStateException("No property converter '" + converterName + "' found for type '" + type +"'" );
+            if (Map.class.isAssignableFrom(collectionType))
+            {
+                throw new IllegalStateException("Collection type must be list or set");
+            }
+            this.name = name;
         }
-        return converter;
+
+        public String getName()
+        {
+            return name;
+        }
+
+
+        @Override
+        public void convert(RuntimeContext runtimeContext, ActionModel model) throws ParseException
+        {
+            if (log.isDebugEnabled())
+            {
+                log.debug("Convert {}.{}", model.getAction(), name);
+            }
+
+            Object value = JSONBeanUtil.defaultUtil().getProperty(model, name);
+            if (value == null)
+            {
+                return;
+            }
+
+            for (DomainObject domainObject : ((Map<String,DomainObject>) value).values())
+            {
+                DomainUtil.convertToJava(runtimeContext, domainObject);
+            }
+        }
     }
 }

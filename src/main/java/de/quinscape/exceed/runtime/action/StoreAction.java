@@ -27,7 +27,7 @@ public class StoreAction
     }
 
     @Override
-    public void execute(RuntimeContext runtimeContext, StoreActionModel model)
+    public Object execute(RuntimeContext runtimeContext, StoreActionModel model)
     {
         DomainObject domainObject = model.getObject();
         if (domainObject == null)
@@ -35,6 +35,7 @@ public class StoreAction
             throw new IllegalStateException("No domain object in store action model");
         }
         domainObject.insertOrUpdate();
+        return true;
     }
 
     @Override
