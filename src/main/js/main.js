@@ -1,25 +1,38 @@
-var Promise = require("es6-promise-polyfill").Promise;
+//
+// load our global-undo to patch MouseTrap
+//
+//noinspection JSUnusedLocalSymbols
+const MouseTrap = require("./util/global-undo");
 
-var bulk = require("bulk-require");
-var domready = require("domready");
+const Promise = require("es6-promise-polyfill").Promise;
 
-var sys = require("./sys");
+const bulk = require("bulk-require");
+const domready = require("domready");
 
-var componentService = require("./service/component");
-var actionService = require("./service/action");
-var security = require("./service/security");
-var viewService = require("./service/view");
-var domainService = require("./service/domain");
-var hub = require("./service/hub");
+var model = evaluateEmbedded("root-model", "x-ceed/view-model");
+var data = evaluateEmbedded("root-data", "x-ceed/view-data");
 
-var svgLayout = require("./util/svg-layout");
+const viewService = require("./service/view");
 
-var hotReload = require("./service/hotreload");
+viewService._init(data);
 
-var componentsMap = bulk(__dirname, ["components/**/*.json", "components/**/*.js"]);
+const sys = require("./sys");
+
+const componentService = require("./service/component");
+const actionService = require("./service/action");
+const security = require("./service/security");
+
+const domainService = require("./service/domain");
+const hub = require("./service/hub");
+
+const svgLayout = require("./gfx/svg-layout");
+
+const hotReload = require("./service/hotreload");
+
+const componentsMap = bulk(__dirname, ["components/**/*.json", "components/**/*.js"]);
 componentService.registerBulk(componentsMap.components);
 
-var clientActionMap = bulk(__dirname, ["action/**/*.js"]);
+const clientActionMap = bulk(__dirname, ["action/**/*.js"]);
 actionService.registerBulk(clientActionMap.action);
 
 function evaluateEmbedded(elemId, mediaType)
@@ -40,8 +53,7 @@ domready(function ()
     var bodyData = document.body.dataset;
     security.init(bodyData.roles);
 
-    var model = evaluateEmbedded("root-model", "x-ceed/view-model");
-    var data = evaluateEmbedded("root-data", "x-ceed/view-data");
+
     var systemInfo  = evaluateEmbedded("system-info", "x-ceed/system-info");
 
     sys.init( systemInfo.contextPath, bodyData.appName);
@@ -52,11 +64,10 @@ domready(function ()
 
     // async setup
     Promise.all([
-        svgLayout.init(),
-        hub.init(bodyData.connectionId)
+        hub.init(bodyData.connectionId),
+        svgLayout.init()
     ]).then(function ()
     {
-
         return viewService.render(model, data);
     })
     .catch(function (e)
