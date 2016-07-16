@@ -1,5 +1,5 @@
 
-var assign = require("object.assign").getPolyfill();
+const assign = require("object-assign");
 
 var components = {};
 

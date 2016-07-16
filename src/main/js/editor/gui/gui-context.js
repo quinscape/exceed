@@ -1,4 +1,4 @@
-var assign = require("object.assign").getPolyfill();
+const assign = require("object-assign");
 var React = require("react");
 var ReactDOM = require("react-dom");
 

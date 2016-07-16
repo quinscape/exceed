@@ -1,5 +1,5 @@
 var Promise = require("es6-promise-polyfill").Promise;
-var assign = require("object.assign").getPolyfill();
+const assign = require("object-assign");
 var cando = require("../cando");
 
 var Enum = require("./../util/enum");

@@ -1,7 +1,7 @@
 var React = require("react");
 
 var classes = require("classnames");
-var assign = require("object.assign").getPolyfill();
+const assign = require("object-assign");
 var ValueLink = require("../util/value-link");
 
 var SVGLayout = require("../util/svg-layout");

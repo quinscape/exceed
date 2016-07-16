@@ -3,7 +3,7 @@ var viewService = require("./view");
 var Scope = require("./scope");
 var sys = require("../sys");
 
-var assign = require("object.assign").getPolyfill();
+const assign = require("object-assign");
 
 var RTView = require("./runtime-view-api");
 

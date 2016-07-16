@@ -1,5 +1,5 @@
 const React = require("react");
-const assign = require("object.assign").getPolyfill();
+const assign = require("object-assign");
 const Promise = require("es6-promise-polyfill").Promise;
 const security = require("./security");
 const uri = require("../util/uri");

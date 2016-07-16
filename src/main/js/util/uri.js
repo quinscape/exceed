@@ -1,7 +1,7 @@
 "use strict";
 
 var sys = require("../sys");
-var assign = require("object.assign").getPolyfill();
+const assign = require("object-assign");
 
 var url = require("url");
 

@@ -4,7 +4,7 @@ var ReactDOM = require("react-dom");
 var GUIContext = require("./gui-context");
 var UIState = require("./ui-state");
 
-var Enum = require("../../util/enum");
+const assign = require("object-assign");
 
 var immutableUpdate = require("react-addons-update");
 

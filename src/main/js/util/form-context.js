@@ -1,4 +1,5 @@
 var immutableUpdate = require("react-addons-update");
+const assign = require("object-assign");
 
 var count = 0;
 

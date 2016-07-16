@@ -1,3 +1,4 @@
+const assign = require("object-assign");
 
 const immutableUpdate = require("react-addons-update");
 
