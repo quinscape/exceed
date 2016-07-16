@@ -6,6 +6,10 @@ const keys = require("./keys");
 const DataGraphType = util.DataGraphType;
 const WILDCARD_SYMBOL = util.WILDCARD_SYMBOL;
 
+
+
+var count = 0;
+
 /**
  * Encapsulates a data-graph structure and provides immutable update function on it.
  *
@@ -21,6 +25,8 @@ const WILDCARD_SYMBOL = util.WILDCARD_SYMBOL;
  */
 function DataGraph(types, dataGraph, onChange)
 {
+    //this.id = ++count;
+
     this.type = dataGraph.type;
     this.columns = dataGraph.columns;
     this.rootObject = dataGraph.rootObject;
@@ -240,26 +246,33 @@ DataGraph.prototype.copy = function (newRoot)
     return copy;
 };
 
-DataGraph.isRawDataGraph  = function (input)
+DataGraph.prototype.isRawDataGraph  = function (input)
 {
     return input && DataGraphType.isValid(input.type) >= 0 && input.rootObject && input.columns;
 };
 
 function validateWildcard(columns)
 {
+    var currentIsStar;
     var isStar;
+
+    if (!columns || typeof columns != "object")
+    {
+        throw new Error("Invalid colums map:", columns);
+    }
 
     for (var name in columns)
     {
         if (columns.hasOwnProperty(name))
         {
+            currentIsStar = (name === WILDCARD_SYMBOL);
             if (isStar === undefined)
             {
-                isStar = (name === WILDCARD_SYMBOL);
+                isStar = currentIsStar;
             }
             else
             {
-                if (isStar)
+                if (isStar || currentIsStar)
                 {
                     throw new TypeError("'*' must be the only column definition for maps");
                 }
@@ -290,6 +303,13 @@ function validateLocalChangeHandler(onChange)
     }
 
     return onChange;
+}
+
+if (process.env.NODE_ENV !== "production")
+{
+    const EXPOSE_TO_TESTS = require("./interceptor")();
+    EXPOSE_TO_TESTS.validateLocalChangeHandler = validateLocalChangeHandler;
+    EXPOSE_TO_TESTS.validateWildcard = validateWildcard;
 }
 
 module.exports = DataGraph;

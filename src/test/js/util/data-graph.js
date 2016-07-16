@@ -1,10 +1,19 @@
 var assert = require("power-assert");
 var sinon = require("sinon");
+var proxyquire = require("proxyquire");
 
 var changeSpy = sinon.spy();
 
+const EXPOSED_INTERNALS = {};
+
 var util = require("../../../../src/main/js/util/data-graph-util");
-var DataGraph = require("../../../../src/main/js/util/data-graph");
+var DataGraph = proxyquire("../../../../src/main/js/util/data-graph",{
+
+    "./interceptor" : function()
+    {
+        return EXPOSED_INTERNALS;
+    }
+});
 
 const TYPES = {
     "Foo": {
@@ -467,6 +476,57 @@ describe("DataGraph", function ()
 
     });
 
+    it("validates wildcard columns", function ()
+    {
+        assert(EXPOSED_INTERNALS);
+
+        assert(EXPOSED_INTERNALS.validateWildcard({'*': true}));
+        assert(!EXPOSED_INTERNALS.validateWildcard({'a': false}));
+        assert(!EXPOSED_INTERNALS.validateWildcard({'a': false, "b" : false}));
+
+        assert.throws(function ()
+        {
+            EXPOSED_INTERNALS.validateWildcard({"*": false, "b" : false})
+        });
+        assert.throws(function ()
+        {
+            EXPOSED_INTERNALS.validateWildcard({"a": false, "*" : false})
+        });
+        assert.throws(function ()
+        {
+            EXPOSED_INTERNALS.validateWildcard({})
+        });
+    });
+
+    it("validates change handlers", function ()
+    {
+        assert(EXPOSED_INTERNALS);
+
+        var fn = function ()
+        {
+
+        };
+
+        assert(EXPOSED_INTERNALS.validateLocalChangeHandler() === true);
+        assert(EXPOSED_INTERNALS.validateLocalChangeHandler(false) === false);
+        assert(EXPOSED_INTERNALS.validateLocalChangeHandler(true) === true);
+        assert(EXPOSED_INTERNALS.validateLocalChangeHandler(fn) === fn);
+
+        assert.throws(function ()
+        {
+            EXPOSED_INTERNALS.validateLocalChangeHandler(null);
+        });
+        assert.throws(function ()
+        {
+            EXPOSED_INTERNALS.validateLocalChangeHandler("");
+        });
+        assert.throws(function ()
+        {
+            EXPOSED_INTERNALS.validateLocalChangeHandler({});
+        });
+
+    });
+
     describe("Cursor", function ()
     {
         it("provides property type information", function ()
@@ -709,91 +769,89 @@ describe("DataGraph", function ()
 
             });
         });
+
+        describe('change handlers', function ()
+        {
+            it("can force local changes", function ()
+            {
+                var spy = sinon.spy();
+                var raw = require("./test-lists/simple-map.json");
+                var simpleMap = new DataGraph({}, raw, (newGraph, path) =>
+                {
+                    simpleMap = newGraph;
+
+                    //console.log("LOCAL CHANGE", path, newGraph.rootObject.A);
+                    spy(newGraph, path);
+                });
+
+                // giving the local change handler as null forces skipping of both the local onChange and the list onChange, just
+                // returning the newGraph after modification
+
+                var c2 = simpleMap.getCursor(["B"], false);
+                var newGraph = c2.set(null, "local change");
+
+                assert(spy.notCalled);
+                assert(c2.get() === "local change");
+                assert(simpleMap.rootObject.B === "TestFoo #4");
+                assert(newGraph.rootObject.B === "local change");
+            });
+
+            it("can prevent changes", function ()
+            {
+                var spy = sinon.spy();
+                var raw = require("./test-lists/simple-map.json");
+                var simpleMap = new DataGraph({}, raw, (newGraph, path) =>
+                {
+                    simpleMap = newGraph;
+
+                    //console.log("LOCAL CHANGE", path, newGraph.rootObject.A);
+                    spy(newGraph, path);
+                });
+
+                // local change handler can prevent the change by returning the value false
+                var cursor = simpleMap.getCursor(["A"], function (newGraph, path)
+                {
+                    assert(this === cursor);
+                    var currentValue = util.walk(newGraph.rootObject, path);
+                    return currentValue !== "Ignored";
+                });
+                cursor.set(null, "Ignored");
+                assert(cursor.get() === "Ignored");
+                assert(simpleMap.getCursor(['A']).get() === "TestFoo #3");
+
+                cursor.set(null, "Not Ignored");
+                assert(cursor.get() === "Not Ignored");
+                assert(simpleMap.getCursor(['A']).get() === "Not Ignored");
+                assert(spy.calledOnce);
+
+            });
+
+            it("can modify changes", function ()
+            {
+                var spy = sinon.spy();
+                var raw = require("./test-lists/simple-map.json");
+                var simpleMap = new DataGraph({}, raw, (newGraph, path) =>
+                {
+                    simpleMap = newGraph;
+
+                    //console.log("LOCAL CHANGE", path, newGraph.rootObject.A);
+                    spy(newGraph, path);
+                });
+
+                // returning a DataGraph from the local change handler replaces that DataGraph list with the initial one which is
+                // then propagated in one update.
+
+                var cursor = simpleMap.getCursor(["A"], (newGraph, path) =>
+                {
+                    var value = util.walk(newGraph.rootObject, path);
+
+                    return newGraph.getCursor(['A'], false).set(null, "(" + value + ")")
+                });
+
+                cursor.set(null, "aaa");
+                assert(cursor.get() === "(aaa)");
+
+            });
+        })
     });
-
-
-    describe('Cursor change handlers', function ()
-    {
-        it("can force local changes", function ()
-        {
-            var spy = sinon.spy();
-            var raw = require("./test-lists/simple-map.json");
-            var simpleMap = new DataGraph({}, raw, (newGraph, path) =>
-            {
-                simpleMap = newGraph;
-
-                //console.log("LOCAL CHANGE", path, newGraph.rootObject.A);
-                spy(newGraph, path);
-            });
-
-            // giving the local change handler as null forces skipping of both the local onChange and the list onChange, just
-            // returning the newGraph after modification
-
-            var c2 = simpleMap.getCursor(["B"], false);
-            var newGraph = c2.set(null, "local change");
-
-            assert(spy.notCalled);
-            assert(c2.get() === "local change");
-            assert(simpleMap.rootObject.B === "TestFoo #4");
-            assert(newGraph.rootObject.B === "local change");
-        });
-
-        it("can prevent changes", function ()
-        {
-            var spy = sinon.spy();
-            var raw = require("./test-lists/simple-map.json");
-            var simpleMap = new DataGraph({}, raw, (newGraph, path) =>
-            {
-                simpleMap = newGraph;
-
-                //console.log("LOCAL CHANGE", path, newGraph.rootObject.A);
-                spy(newGraph, path);
-            });
-
-            // local change handler can prevent the change by return the value false
-            var cursor = simpleMap.getCursor(["A"], function (newGraph, path)
-            {
-
-                assert(this === cursor);
-
-                return util.walk(newGraph.rootObject, path) !== "Ignored";
-            });
-            cursor.set(null, "Ignored");
-            assert(cursor.get() === "Ignored");
-            assert(simpleMap.getCursor(['A']).get() === "TestFoo #3");
-
-            cursor.set(null, "Not Ignored");
-            assert(cursor.get() === "Not Ignored");
-            assert(simpleMap.getCursor(['A']).get() === "Not Ignored");
-            assert(spy.calledOnce);
-
-        });
-
-        it("can modify changes", function ()
-        {
-            var spy = sinon.spy();
-            var raw = require("./test-lists/simple-map.json");
-            var simpleMap = new DataGraph({}, raw, (newGraph, path) =>
-            {
-                simpleMap = newGraph;
-
-                //console.log("LOCAL CHANGE", path, newGraph.rootObject.A);
-                spy(newGraph, path);
-            });
-
-            // returning a DataGraph from the local change handler replaces that DataGraph list with the initial one which is
-            // then propagated in one update.
-
-            var cursor = simpleMap.getCursor(["A"], (newGraph, path) =>
-            {
-                var value = util.walk(newGraph.rootObject, path);
-
-                return newGraph.getCursor(['A'], false).set(null, "(" + value + ")")
-            });
-
-            cursor.set(null, "aaa");
-            assert(cursor.get() === "(aaa)");
-
-        });
-    })
 });

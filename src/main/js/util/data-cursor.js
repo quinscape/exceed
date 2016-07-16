@@ -31,6 +31,8 @@ function DataCursor(dataGraph, path, type, typeParam, isProperty, onChange)
     this.property = isProperty;
     this.onChange = onChange;
 
+    this.value = this.get();
+
     // user data
     this.data = null;
 }
@@ -147,9 +149,6 @@ DataCursor.prototype.merge = createModificationMethod("merge");
  */
 DataCursor.prototype.apply = createModificationMethod("apply");
 
-// lazy initialized
-var DataGraph;
-
 /**
  * General purporse immutable update using the normal "react-addons-update" spec format.
  *
@@ -168,33 +167,30 @@ DataCursor.prototype.update = function (spec, path)
 
     let localChange = this.onChange;
 
+    var propagate = localChange !== false;
+
     if (localChange && localChange !== true)
     {
         let result = localChange.call(this, newGraph, path);
 
-        if (!DataGraph)
-        {
-            // prevent cyclic dependency issues
-            DataGraph = require("./data-graph");
-        }
-
-        if (result instanceof DataGraph)
+        if (result && typeof result == "object" && typeof result.isRawDataGraph == "function")
         {
             newGraph = result;
         }
 
         if (result === false)
         {
-            localChange = false;
+            propagate = false;
         }
     }
 
-    if (localChange !== false)
+    if (propagate)
     {
         this.graph.onChange.call(this.graph, newGraph, path);
     }
 
     this.graph = newGraph;
+    this.value = this.get();
 
     return newGraph;
 };
@@ -214,7 +210,7 @@ DataCursor.prototype.pop = function (howMany)
 /**
  * Returns a new cursor relative to the current one
  *
- * @param path          {array} path added to the current cursor path or null
+ * @param path          {Array} path added to the current cursor path or null
  * @param [onChange]    {boolean|function} cursor change handler
  */
 DataCursor.prototype.getCursor = function (path, onChange)
@@ -321,14 +317,14 @@ DataCursor.prototype.getDomainObject = function (type)
             object = assign({
                     _type: propType.typeParam
                 },
-                this.get()
+                this.value
             );
         }
         else
         {
             object = assign({
                 _type: propType.type
-            }, this.get());
+            }, this.value);
         }
 
         if (type && type !== object._type)
@@ -396,7 +392,7 @@ DataCursor.prototype.getPropertyType = function (path)
  */
 DataCursor.prototype.valueOf = function ()
 {
-    return this.get();
+    return this.value;
 };
 
 /**
@@ -420,7 +416,17 @@ DataCursor.prototype.withNewGraph = function (dataGraph)
  */
 DataCursor.prototype.toString = function ()
 {
-    return String(this.get());
+    return String(this.value);
+};
+
+/**
+ * React link compatibility.
+ *
+ * @returns {string}
+ */
+DataCursor.prototype.requestChange = function (v)
+{
+    return this.set(null, v);
 };
 
 module.exports = DataCursor;
