@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.component;
 
+import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.view.DataProviderContext;
 
@@ -8,6 +9,8 @@ import java.util.Map;
 /**
  * Implemented by classes that provide data for component instances at runtime.
  *
+ *
+ * @see ComponentDescriptor#getDataProviderName()
  */
 public interface DataProvider
 {
