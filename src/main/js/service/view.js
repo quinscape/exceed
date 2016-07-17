@@ -1,9 +1,39 @@
+var currentViewData = typeof window !== "undefined" && window._exceed_initial_data ? window._exceed_initial_data : {
+    _exceed : {
+        translations: {
+
+        }
+    }
+};
+
+var viewService = {
+
+    _init: function (data)
+    {
+        currentViewData = data;
+    },
+
+    /**
+     * The runtime info data map contains the information the registered
+     * de.quinscape.exceed.runtime.service.RuntimeInfoProvider implementations provided.
+     * @returns {Object} map mapping declared info names to the current result.
+     */
+    getRuntimeInfo: function()
+    {
+        return currentViewData['_exceed'];
+    }
+};
+
+module.exports = viewService;
+
 const React = require("react");
+const ReactDOM = require("react-dom");
 const assign = require("object-assign");
 const Promise = require("es6-promise-polyfill").Promise;
 const security = require("./security");
 const uri = require("../util/uri");
 const ajax = require("./ajax");
+const componentService = require("./component");
 
 const DataGraph = require("../util/data-graph");
 
@@ -18,10 +48,10 @@ const LinkedStateMixin = require("react-addons-linked-state-mixin");
 const keys = require("../util/keys");
 
 var InPageEditor = false;
-if (process.env.NODE_ENV !== "production")
-{
-    InPageEditor = require("../editor/InPageEditor");
-}
+//if (process.env.NODE_ENV !== "production")
+//{
+//    InPageEditor = require("../editor/InPageEditor");
+//}
 
 const ThrobberComponent = require("../ui/throbber").ThrobberComponent;
 
@@ -38,61 +68,60 @@ var currentViewModel = {
     }
 };
 
-var currentViewData = {};
 
-var scopeDataList;
-var scopeCursor;
+var scopeDataGraph;
 var scopeDirty = {};
+
+function onChangeScope(newGraph, path)
+{
+    if (path == null)
+    {
+        // assume global update with fresh context data
+        scopeDirty = {};
+    }
+    else
+    {
+        var name = path[0];
+        if (!viewService.getRuntimeInfo().scopeInfo.viewContext[name])
+        {
+//            console.log("MARK DIRTY ", name);
+            scopeDirty[name] = true;
+        }
+    }
+
+    //console.log("NEW SCOPE GRAPH", newGraph);
+
+    scopeDataGraph = newGraph;
+
+    //console.log("VD", currentViewData);
+
+    currentViewData = update(currentViewData, {
+        _exceed: { scope : {$set : newGraph.rootObject}}
+    });
+    //console.log("VD NEW", currentViewData);
+
+    render(
+        <ViewComponent
+            model={ currentViewModel }
+            componentData={ currentViewData }
+            components={ componentService.getComponents() }
+        />
+    ).catch(function (err)
+    {
+        console.error(err);
+    });
+}
 
 function updateViewData(newViewData)
 {
-    //console.log("UPDATE VIEW-DATA", newViewData);
+//    console.log("UPDATE VIEW-DATA", newViewData);
 
     currentViewData = newViewData;
 
     var scopeData = viewService.getRuntimeInfo().scope;
     if (scopeData)
     {
-        if (scopeDataList)
-        {
-            scopeDataList.update(scopeData);
-        }
-        else
-        {
-            scopeDataList = new DataList(require("./domain").getDomainTypes(), scopeData, function (newRows, path)
-            {
-                if (path == null)
-                {
-                    // assume global update with fresh context data
-                    scopeDirty = {};
-                }
-                else
-                {
-                    if (path[0] !== 0)
-                    {
-                        throw new Error("Invalid scope path" + JSON.stringify(path));
-                    }
-
-                    var name = path[1];
-                    if (!viewService.getRuntimeInfo().scopeInfo.viewContext[name])
-                    {
-                        console.log("MARK DIRTY ", name);
-                        scopeDirty[name] = true;
-                    }
-                }
-
-                scopeDataList.rows = newRows;
-
-                //render(
-                //    <ViewComponent model={ currentViewModel } componentData={ currentViewData } />
-                //).catch(function (err)
-                //{
-                //    console.error(err);
-                //});
-            });
-        }
-
-        scopeCursor = scopeDataList.getCursor([0])
+        scopeDataGraph = new DataGraph(require("./domain").getDomainTypes(), scopeData, onChangeScope);
     }
 }
 
@@ -100,7 +129,7 @@ function updateViewData(newViewData)
 // we encounter.
 var renderFnCache = {};
 
-function lookupRenderFn(viewModel)
+function lookupRenderFn(viewModel, components)
 {
     var viewName = viewModel.name;
 
@@ -110,7 +139,7 @@ function lookupRenderFn(viewModel)
     if (!entry || entry.version !== viewModel.version)
     {
         // we (re)create the view component
-        entry = viewRenderer.createRenderFunction(viewModel);
+        entry = viewRenderer.createRenderFunction(viewModel, components);
         entry.version = viewModel.version;
         renderFnCache[viewName] = entry;
     }
@@ -182,16 +211,15 @@ var ViewComponent = React.createClass({
         return {
             formContext: new FormContext(
                 false,
-                "col-md-2",
-                "col-md-4",
-                this.linkState("errors")
+                null,
+                null
             )
         };
     },
 
     render: function ()
     {
-        return lookupRenderFn(this.props.model)(this);
+        return lookupRenderFn(this.props.model, this.props.components)(this);
     }
 });
 
@@ -207,14 +235,8 @@ function stripExprs(k,v)
     }
 }
 
-window.onpopstate = function (ev)
-{
-    var state = ev.state;
-    console.log("POP-STATE", state);
-    viewService.render(state.viewModel, state.viewData);
-};
 
-var viewService = {
+assign(viewService, {
 
     updateComponent: function(id, vars, url)
     {
@@ -384,7 +406,11 @@ var viewService = {
         !noReplaceState && viewService.updateState();
 
         return render(
-            <ViewComponent model={ currentViewModel } componentData={ currentViewData } />
+            <ViewComponent
+                model={ currentViewModel }
+                componentData={ currentViewData }
+                components={ componentService.getComponents() }
+            />
         );
     },
 
@@ -419,20 +445,12 @@ var viewService = {
     },
     /**
      * Returns the current scope data list
+     *
+     * @returns {DataGraph} scope data graph
      */
     getScope: function ()
     {
-        return scopeCursor;
-    },
-
-    /**
-     * The runtime info data map contains the information the registered
-     * de.quinscape.exceed.runtime.service.RuntimeInfoProvider implementations provided.
-     * @returns {Object} map mapping declared info names to the current result.
-     */
-    getRuntimeInfo: function()
-    {
-        return currentViewData['_exceed'];
+        return scopeDataGraph;
     },
 
 
@@ -453,8 +471,17 @@ var viewService = {
 
     ViewComponent: ViewComponent,
     scopeDirty : scopeDirty
-};
+});
 
-window.ViewService = viewService;
+if (typeof window !== "undefined")
+{
+    window.onpopstate = function (ev)
+    {
+        var state = ev.state;
+//        console.log("POP-STATE", state);
+        viewService.render(state.viewModel, state.viewData);
+    };
 
-module.exports = viewService;
+    window.ViewService = viewService;
+}
+

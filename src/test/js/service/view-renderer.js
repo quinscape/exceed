@@ -55,54 +55,46 @@ var Injected = React.createClass({
     }
 });
 
+var ViewComponent = require("../../../../src/main/js/service/view").ViewComponent;
 
-var ViewComponentRenderer = proxyquire("../../../../src/main/js/service/view-renderer", {
-    "./component" : {
-        getComponents: function()
-        {
-            return {
-                Foo: {
-                    component: Foo,
-                    classes: ["model-aware"]
-                },
-                Bar: {
-                    component: Bar
-                },
-                Provider: {
-                    component: Provider,
-                    providesContext: "Test"
-                },
-                Consumer: {
-                    component: Consumer,
-                    "context" : {
-                        "context": "context[props.name]"
-                    }
-                },
-                Injected: {
-                    component: Injected,
-                    propTypes: {
-                        id: {
-                            client: false
-                        }
-
-                    },
-                    queries: {
-                        value : {}
-                    }
-                },
-                KeyedConsumer: {
-                    component: KeyedConsumer,
-                    providesContext: "Test.Deriv",
-                    propTypes: {
-                        "customContextProp": "context[props.name]"
-                    }
-                }
+var components = {
+    Foo: {
+        component: Foo,
+        classes: ["model-aware"]
+    },
+    Bar: {
+        component: Bar
+    },
+    Provider: {
+        component: Provider,
+        providesContext: "Test"
+    },
+    Consumer: {
+        component: Consumer,
+        "context" : {
+            "context": "context[props.name]"
+        }
+    },
+    Injected: {
+        component: Injected,
+        propTypes: {
+            id: {
+                client: false
             }
+
+        },
+        queries: {
+            value : {}
+        }
+    },
+    KeyedConsumer: {
+        component: KeyedConsumer,
+        providesContext: "Test.Deriv",
+        propTypes: {
+            "customContextProp": "context[props.name]"
         }
     }
-});
-
-var ViewComponent = require("../../../../src/main/js/service/view").ViewComponent;
+};
 
 // View Model client format with "exprs" and transformed expressions
 var simpleView = {
@@ -139,6 +131,7 @@ describe("View Components", function ()
         renderer.render(<ViewComponent
             model={ simpleView }
             componentData={{}}
+            components={ components }
         />);
 
         expect(renderer.getRenderOutput()).toEqualJSX(
@@ -175,6 +168,7 @@ describe("View Components", function ()
                         data: { value : payload }
                     }
                 }}
+                components={ components }
             />
         );
 
@@ -211,7 +205,8 @@ describe("View Components", function ()
         testDom.render(<ViewComponent
             model={ view }
             componentData={{}}
-        />,
+            components ={ components }
+            />,
         function ()
         {
             //console.log("HTML", document.body.innerHTML);
@@ -254,6 +249,7 @@ describe("View Components", function ()
         testDom.render(<ViewComponent
             model={ view }
             componentData={{}}
+            components ={ components }
         />, function ()
         {
             //console.log("HTML", document.body.innerHTML);

@@ -12,6 +12,7 @@ const domready = require("domready");
 var model = evaluateEmbedded("root-model", "x-ceed/view-model");
 var data = evaluateEmbedded("root-data", "x-ceed/view-data");
 
+window._exceed_initial_data = data;
 const viewService = require("./service/view");
 
 viewService._init(data);

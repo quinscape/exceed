@@ -22,20 +22,21 @@ if (process.env.NODE_ENV !== "production" && process.env.NO_CATCH_ERRORS !== "tr
 var componentService = require("./component");
 
 var React = require("react");
-var components = componentService.getComponents();
 
 var rtViewAPI = require("./runtime-view-api");
 var rtActionAPI = require("./runtime-action-api");
+var i18n = require("./i18n");
 
 var ComponentClasses = require("../components/component-classes");
 
 const RENDERED_IF_PROP = "renderedIf";
 
-function RenderContext(out)
+function RenderContext(out, components)
 {
     this.usedComponents = {};
     this.out = out;
     this.contexts = [];
+    this.components = components;
 }
 
 function indent(ctx, depth)
@@ -80,16 +81,18 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
     var attrName;
 
     var componentDescriptor;
-    var isComponent = components.hasOwnProperty(name);
+    var isComponent = ctx.components.hasOwnProperty(name);
     if (isComponent)
     {
-        if (name === "ViewContext")
+
+        componentDescriptor = ctx.components[name];
+
+        if (hasClass(componentDescriptor, ComponentClasses.CONFIGURATION))
         {
             ctx.out.push("false");
             return;
         }
 
-        componentDescriptor = components[name];
         component = name;
 
 
@@ -106,7 +109,7 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
         }
 
         component = JSON.stringify(name);
-        //console.log("builtin", component, components);
+        //console.log("builtin", component, ctx.components);
     }
 
     var attrs = componentModel.attrs;
@@ -286,7 +289,7 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
     ctx.out.push(")");
 }
 
-function renderViewComponentSource(viewModel)
+function renderViewComponentSource(viewModel, components)
 {
     var buf = [];
 
@@ -295,7 +298,7 @@ function renderViewComponentSource(viewModel)
         "return (\n\n"
     );
 
-    var ctx = new RenderContext(buf);
+    var ctx = new RenderContext(buf, components);
 
     renderRecursively(ctx, viewModel.root, 1);
 
@@ -316,18 +319,18 @@ function renderViewComponentSource(viewModel)
 }
 
 module.exports = {
-    createRenderFunction : function(viewModel)
+    createRenderFunction : function(viewModel, components)
     {
         //console.log("\nVIEWMODEL:\n", JSON.stringify(viewModel, null, "  "));
-        var code = renderViewComponentSource(viewModel);
+        var code = renderViewComponentSource(viewModel, components);
         //console.log("\nRENDER-FN:\n", code);
 
-        var renderFn = new Function("_React", "_components", "_RTView", "_catchErrors", "_ErrorReport", "_sys", "_a", code);
+        var renderFn = new Function("_React", "_components", "_RTView", "_catchErrors", "_ErrorReport", "_sys", "_a", "i18n", code);
         return {
             src: code,
             fn: function (component)
             {
-                return renderFn.call(component, React, components, rtViewAPI, catchErrors, ErrorReport, sys, rtActionAPI);
+                return renderFn.call(component, React, components, rtViewAPI, catchErrors, ErrorReport, sys, rtActionAPI, i18n);
             }
         };
     }

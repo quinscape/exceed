@@ -1,4 +1,4 @@
-<%@page pageEncoding="UTF-8"
+<%@page pageEncoding="UTF-8" buffer="512kb"
 %><%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"
 %><%@taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"
 %><%@taglib prefix="sec" uri="http://www.springframework.org/security/tags"
@@ -23,6 +23,16 @@
     <meta name="token" content="${_csrf.token}"/>
     <meta name="token-type" content="${_csrf.headerName}"/>
 
+    <script id="root-model" type="x-ceed/view-model">
+${viewModel}
+</script>
+    <script id="root-data" type="x-ceed/view-data">
+${viewData}
+</script>
+    <script id="system-info" type="x-ceed/system-info">
+${systemInfo}
+</script>
+
     <script src="${contextPath}/res/${appName}/js/${applicationScope.reactVersion}"></script>
     <script src="${contextPath}/res/${appName}/js/${applicationScope.reactDOMVersion}"></script>
     <script src="${contextPath}/res/${appName}/js/main.js"></script>
@@ -30,15 +40,6 @@
 <body data-app-name="${appName}" data-roles="${userRoles}" data-connection-id="${connectionId}">
 <div id="root">
 </div>
-<script id="root-model" type="x-ceed/view-model">
-    ${viewModel}
-</script>
-<script id="root-data" type="x-ceed/view-data">
-    ${viewData}
-</script>
-<script id="system-info" type="x-ceed/system-info">
-    ${systemInfo}
-</script>
 <footer>
     <c:choose>
         <c:when test="${userName == 'Anonymous'}">
