@@ -54,13 +54,14 @@ public class Java7NIOResourceWatcher
     @Override
     protected void onWatchEvent(WatchEvent<?> event, File child)
     {
-        String resourcePath = child.getPath();
+        String path = child.getPath();
         ModuleResourceEvent resourceEvent = ModuleResourceEvent.forWatchEvent(event);
+        final String resourcePath = path.substring(basePathLength);
         for (ResourceChangeListener listener : listeners)
         {
-            log.debug("Signaling {} for {} ({})", listener, resourcePath, resourceEvent);
+            log.debug("Signaling {} for {} ({})", listener, path, resourceEvent);
 
-            listener.onResourceChange(resourceEvent, root, resourcePath.substring(basePathLength));
+            listener.onResourceChange(resourceEvent, root, resourcePath);
         }
     }
 
