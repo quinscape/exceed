@@ -1,8 +1,9 @@
-var Promise = require("es6-promise-polyfill").Promise;
+const Promise = require("es6-promise-polyfill").Promise;
 const assign = require("object-assign");
-var cando = require("../cando");
+const cando = require("../cando");
 
-var Enum = require("./../util/enum");
+const Enum = require("./../util/enum");
+const CSFR = require("./csfr");
 
 var createXMLHTTPObject = require("./../util/xhr-factory");
 
@@ -29,8 +30,6 @@ contentType[DataType.JSON] = "application/json";
 contentType[DataType.TEXT] = "text/plain";
 
 
-var csrfToken;
-var csrfTokenHeader;
 
 function logError(opts, err)
 {
@@ -76,11 +75,6 @@ module.exports = function(opts)
 {
     opts = assign({}, defaultOpts, opts);
 
-    if (!csrfToken)
-    {
-        csrfToken = document.querySelector("meta[name='token']").getAttribute("content");
-        csrfTokenHeader = document.querySelector("meta[name='token-type']").getAttribute("content");
-    }
 
     var promise = new Promise(function (resolve, reject)
     {
@@ -163,7 +157,7 @@ module.exports = function(opts)
         var data = null;
         if (method === "POST")
         {
-            xhr.setRequestHeader(csrfTokenHeader, csrfToken);
+            xhr.setRequestHeader(CSFR.tokenHeader(), CSFR.token());
             xhr.setRequestHeader("Content-type", opts.contentType || "application/x-www-form-urlencoded");
 
             data = opts.data;

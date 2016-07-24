@@ -1,6 +1,6 @@
 const React = require("react");
 const uri = require("../../util/uri");
-const CSFR = require("../../util/csfr");
+const CSFR = require("../../service/csfr");
 
 /**
  * Special form to be used in login views.
