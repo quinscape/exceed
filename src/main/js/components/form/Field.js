@@ -1,11 +1,27 @@
-var React = require("react");
+const React = require("react");
 
-var FormElement =  require("./FormElement");
+const FormElement =  require("./FormElement");
+const Checkbox =  require("./Checkbox");
 
-var CalendarField = require("./CalendarField");
-var EnumSelect = require("./EnumSelect");
+const CalendarField = require("./CalendarField");
+const EnumSelect = require("./EnumSelect");
 
 var Field = FormElement(React.createClass({
+
+    propTypes: {
+        validate: React.PropTypes.func
+    },
+
+    getInputField: function ()
+    {
+        var input = this._input;
+        if (typeof input.appendChild == "function")
+        {
+            return input
+        }
+
+        return input.getInputField();
+    },
 
     render: function ()
     {
@@ -13,25 +29,41 @@ var Field = FormElement(React.createClass({
         if (typeName === "Date" || typeName === "Timestamp")
         {
             return (
-                <CalendarField {...this.props}/>
+                <CalendarField
+                    ref={ component => this._input = component}
+                    {...this.props}/>
             )
         }
 
         if (typeName === "Enum")
         {
             return (
-                <EnumSelect {...this.props}/>
+                <EnumSelect
+                    ref={ component => this._input = component}
+                    {...this.props}/>
+            )
+        }
+
+        if (typeName === "Boolean")
+        {
+            return (
+                <Checkbox
+                    ref={ component => this._input = component}
+                    {...this.props}/>
             )
         }
 
         return (
             <input
                 id={ this.props.id }
+                ref={ elem => this._input = elem}
                 className="form-control"
                 valueLink={ this.props.valueLink }
+                disabled={ this.props.disabled }
                 onBlur={ (ev) => {
                     this.props.onChange( ev.target.value)
-                } }
+                }}
+                autoFocus={ this.props.autoFocus }
             />
         )
     }

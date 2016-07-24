@@ -2,6 +2,7 @@ const React = require("react");
 
 const FormContext = require("../../util/form-context");
 const keys = require("../../util/keys");
+const i18n = require("../../service/i18n");
 
 var ErrorMessages = React.createClass({
     contextTypes: {
@@ -35,7 +36,9 @@ var ErrorMessages = React.createClass({
         var names = keys(errors).sort();
 
         return (
-            <div className="form-group has-error error-messages bg-danger">
+            names.length &&
+            <div className="form-group has-error error-messages">
+                <h4>{ i18n("Errors") }</h4>
                 <ul className="errors">
                 {
                     names.map(id =>

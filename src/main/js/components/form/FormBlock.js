@@ -19,13 +19,16 @@ var FormBlock = React.createClass({
     {
         var ctx = this.context.formContext;
 
+        var newContext = new FormContext(
+            this.props.horizontal || ctx.horizontal,
+            this.props.labelClass || ctx.wrapperClass(),
+            this.props.wrapperClass || ctx.labelClass()
+        );
+
+        newContext.errors = ctx.errors;
+
         return {
-            formContext: new FormContext(
-                this.props.horizontal || ctx.horizontal,
-                this.props.labelClass || ctx.wrapperClass(),
-                this.props.wrapperClass || ctx.labelClass(),
-                ctx.errorsLink
-            )
+            formContext: newContext
         };
     },
 

@@ -12,7 +12,7 @@ var count = 0;
  * @param errorsLink        ValueLink for the errors map.
  * @constructor
  */
-function FormContext(horizontal, labelClass, wrapperClass, errorsLink)
+function FormContext(horizontal, labelClass, wrapperClass)
 {
     this.id = ++count;
     this.fieldIdCount = 0;
@@ -20,7 +20,8 @@ function FormContext(horizontal, labelClass, wrapperClass, errorsLink)
     this.horizontal = horizontal;
     this._labelClass = labelClass;
     this._wrapperClass = wrapperClass;
-    this.errorsLink = errorsLink;
+    this.errors = {};
+    this._errorMessages = null;
 }
 
 FormContext.prototype.nextId = function ()
@@ -32,7 +33,14 @@ FormContext.prototype.nextId = function ()
 
 FormContext.prototype.labelClass = function (component)
 {
-    return component.props.labelClass || this._labelClass;
+    var classes = component.props.labelClass || this._labelClass;
+
+    if (this.horizontal)
+    {
+        return classes.replace(/col-.*?\b/g, " ");
+    }
+
+    return classes;
 };
 
 FormContext.prototype.wrapperClass = function (component)
@@ -42,16 +50,19 @@ FormContext.prototype.wrapperClass = function (component)
 
 FormContext.prototype.signalError = function (id, error)
 {
-    var newErrors = immutableUpdate(this.errorsLink.value, {
-        [id] : { $set: error }
-    });
+    var newErrors = assign({}, this.errors);
+    newErrors[id] = error;
+    this.errors = newErrors;
 
-    this.errorsLink.requestChange(newErrors);
+    if (this._errorMessages)
+    {
+        this._errorMessages.forceUpdate();
+    }
 };
 
 FormContext.prototype.hasError = function (id)
 {
-    var errors = this.errorsLink.value;
+    var errors = this.errors;
     if (id)
     {
         return errors.hasOwnProperty(id) && !!errors[id];
@@ -71,8 +82,14 @@ FormContext.prototype.hasError = function (id)
 
 FormContext.prototype.getErrorMessage = function (id)
 {
-    var errors = this.errorsLink.value;
+    var errors = this.errors;
     return errors.hasOwnProperty(id) && errors[id];
+};
+
+FormContext.prototype.deregister = function (id)
+{
+    var errors = this.errors;
+    delete errors[id];
 };
 
 module.exports = FormContext;

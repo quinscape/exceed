@@ -90,6 +90,11 @@ function internalDate(day, month,year)
  */
 var CalendarField = React.createClass({
 
+    getInputField: function ()
+    {
+        return this._input;
+    },
+
     getInitialState: function ()
     {
         return {
@@ -307,6 +312,7 @@ var CalendarField = React.createClass({
             <div className="input-group">
                 <input
                     id={ this.props.id }
+                    ref={ elem => this._input = elem}
                     className="form-control"
                     valueLink={ this.props.valueLink }
                     onBlur={ (ev) => {

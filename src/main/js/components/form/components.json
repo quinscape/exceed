@@ -101,6 +101,54 @@
                 }
             }
         },
+        "SelectField": {
+            "classes": ["element", "field"],
+            "queries": {
+                "data": "query( prop('type') )"
+            },
+            "propTypes": {
+                "context" : {
+                    "context": true,
+                    "contextType" : "DataListCursor"
+                },
+                "data": {
+                    "type": "CURSOR_EXPRESSION"
+                },
+
+                "value": {
+                    "rule": "fieldOf(parent.prop('type'))",
+                    "type": "CURSOR_EXPRESSION",
+                    "required" : true
+                },
+
+                "wrapperClass" : {
+                    "type" : "CLASSES"
+                },
+                "labelClass" : {
+                    "type" : "CLASSES"
+                },
+                "type": {
+                    "client": false,
+                    "type": "QUERY_EXPRESSION",
+                    "rule": "domainType()",
+                    "required" : true
+                },
+
+                "optionDisplay": {
+                    "rule": "fieldOf(prop('type'))",
+                    "type": "CURSOR_EXPRESSION",
+                    "description" : "Cursor expression to resolve the display value for an option. If not given only optionValue is used."
+
+                },
+                "optionValue": {
+                    "rule": "fieldOf(prop('type'))",
+                    "type": "CURSOR_EXPRESSION",
+                    "required" : true,
+                    "description" : "Cursor expression to resolve the value for an option"
+                }
+            }
+        },
+
         "Button": {
             "classes": ["element", "field", "toolbar-child"],
             "parentRule" : "!viewInProcess()",
@@ -143,6 +191,10 @@
                 "discard" : {
                     "type" : "BOOLEAN",
                     "defaultValue" : "transition(props.transition).discard"
+                },
+                "text" : {
+                    "required" : true,
+                    "type" : "PLAINTEXT"
                 }
             }
         },

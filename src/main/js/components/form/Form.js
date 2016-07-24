@@ -54,9 +54,13 @@ var Form = React.createClass({
 
     mixins: [ LinkedStateMixin ],
 
-    childContextTypes: {
+    contextTypes: {
         formContext: React.PropTypes.instanceOf(FormContext)
     },
+
+    // childContextTypes: {
+    //     formContext: React.PropTypes.instanceOf(FormContext)
+    // },
 
     propTypes: {
         data: React.PropTypes.object.isRequired,
@@ -85,7 +89,7 @@ var Form = React.createClass({
 
         var types = domainService.getDomainTypes();
 
-        if (DataGraph.isRawDataGraph(data))
+        if (DataGraph.prototype.isRawDataGraph(data))
         {
             return new DataGraph(types, data, this.onChange).getCursor([this.props.index]);
         }
@@ -102,13 +106,6 @@ var Form = React.createClass({
             console.error("Cannot handle data", data);
         }
     },
-    getInitialState: function ()
-    {
-        return {
-            cursor: this.cursorFromData(this.props.data)
-        };
-    },
-
 
     onChange: function (newGraph, path)
     {
@@ -121,8 +118,10 @@ var Form = React.createClass({
 
     render: function ()
     {
-        var cursor = this.state.cursor;
-        return ( <form className={ cx("form", this.props.horizontal && "form-horizontal") } onSubmit={ this.onSubmit }>
+        var ctx = this.context.formContext;
+
+        var cursor = this.cursorFromData(this.props.data);
+        return ( <form className={ cx("form", ctx.horizontal && "form-horizontal") } onSubmit={ this.onSubmit }>
             { this.props.renderChildren ? this.props.renderChildren(cursor) : this.props.children }
         </form> );
     }

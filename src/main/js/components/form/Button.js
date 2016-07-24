@@ -31,6 +31,13 @@ var Button = React.createClass({
         };
     },
 
+    componentWillUnmount: function ()
+    {
+        var ctx = this.context.formContext;
+        ctx.deregister(this.state.id);
+    },
+
+
     isDisabled: function ()
     {
         return !this.props.discard && this.context.formContext.hasError()

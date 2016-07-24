@@ -17,14 +17,19 @@ const ValueLink = require("../../util/value-link");
 
 const converter = require("../../service/property-converter");
 
+function isValueLink(value)
+{
+    return value && typeof value.requestChange == "function";
+}
 /**
  * FormElement is a high order component for bootstrap form fields. It handles all the cursor logic and type analysis and
  * error checking.
  *
  * @param FieldComponent
+ * @param [opts]        options
  * @returns {*}
  */
-module.exports = function(FieldComponent)
+module.exports = function(FieldComponent, opts)
 {
     //console.log("Create FormElement: ", InputComponent.displayName);
 
@@ -36,53 +41,74 @@ module.exports = function(FieldComponent)
             formContext: React.PropTypes.instanceOf(FormContext)
         },
 
-        cursorFromValue: function (value)
+        cursorFromProps: function (props)
         {
+            var value = props.value;
+
             //console.log("CURSOR-FROM-VALUE", value);
 
             if (value instanceof DataCursor)
             {
-                //console.log("cursorFromValue: CURSOR ", value);
+                //console.log("cursorFromProps: CURSOR ", value);
                 return value;
+            }
+            else if (this.props.propertyType && isValueLink(value))
+            {
+                // return pseudo cursor
+                return {
+                    getPropertyType: () => this.props.propertyType,
+                    value: value.value,
+                    requestChange : value.requestChange
+                };
             }
             else if (typeof value === "string")
             {
-                var context = this.props.context;
-                //console.log("cursorFromValue:  context['" + value + "']", context);
-                value = context.getCursor([value]);
+                //console.log("cursorFromProps:  context['" + value + "']", context);
+                value = props.context.getCursor([value]);
                 //console.log("NEW CURSOR", value);
                 return value;
             }
-            else if (value && typeof value === "object" && value.length && value[0])
+            else if (value && typeof value === "object" && value.length && value[0] !== undefined)
             {
-                var context = this.props.context;
-                //console.log("cursorFromValue:  context['" + value + "']", context);
-                value = context.getCursor( value );
+                //console.log("cursorFromProps:  context['" + value + "']", context);
+                value = props.context.getCursor( value );
                 //console.log("NEW CURSOR", value);
                 return value;
             }
             else
             {
+                if (isValueLink(value))
+                {
+                    throw new Error("Invalid cursor value: Link provided, but no propertyType prop set.");
+                }
+
                 throw new Error("Invalid cursor value: " + value);
             }
         },
 
         getInitialState: function ()
         {
+            //console.log("getInitialState", FieldComponent.displayName);
+
             var ctx = this.context.formContext;
 
-            var cursor = this.cursorFromValue(this.props.value);
-            var propertyType = cursor.getPropertyType();
-            var value = converter.toUser(cursor.get(), propertyType);
+            var cursor = this.cursorFromProps(this.props);
 
+            var propertyType = cursor.getPropertyType();
+            var value = converter.toUser(cursor.value, propertyType);
 
             return {
-                cursor: cursor,
                 propertyType: propertyType,
                 value : value.value,
                 id: ctx.nextId(),
                 errorLock: false
             };
+        },
+
+        componentWillUnmount: function ()
+        {
+            var ctx = this.context.formContext;
+            ctx.deregister(this.state.id);
         },
 
         validate: function (value)
@@ -96,25 +122,33 @@ module.exports = function(FieldComponent)
 
             var ctx = this.context.formContext;
 
+            var localValidate = this.props.validate;
+            if (isOk && localValidate)
+            {
+                isOk = localValidate(ctx, id, value);
+            }
+
             var haveError = ctx.hasError(id);
 
             if (!isOk)
             {
+                if (!haveError)
+                {
+                    ctx.signalError(id, result.error);
+                }
+
                 this.setState({
                     value: value,
                     errorLock: true
-                }, function ()
-                {
-                    //console.log("setState end");
-                    if (!haveError)
-                    {
-                        //console.log("signal Error");
-                        ctx.signalError(id, result.error);
-                    }
                 });
             }
             else
             {
+                if (haveError)
+                {
+                    ctx.signalError(id, null);
+                }
+
                 this.setState({
                     value: result.value,
                     errorLock: false
@@ -124,7 +158,6 @@ module.exports = function(FieldComponent)
                     if (haveError)
                     {
                         //console.log("signal no Error");
-                        ctx.signalError(id, null);
                     }
                 });
             }
@@ -138,38 +171,49 @@ module.exports = function(FieldComponent)
 
             if (result.ok)
             {
-                this.state.cursor.set(null, result.value);
+                var cursor = this.cursorFromProps(this.props);
+                if (cursor.value !== result.value)
+                {
+                    // we use the value link compat here to be able to use pseudo cursors providing only
+                    // a limited set of functionality
+                    cursor.requestChange(result.value);
+                    //cursor.set(null, result.value);
+                }
             }
+        },
+
+        getInputField: function ()
+        {
+            return this._input.getInputField();
         },
 
         componentWillReceiveProps: function (nextProps)
         {
-            console.log("FormElem", nextProps);
-
+            //console.log("componentWillReceiveProps", JSON.stringify(nextProps));
             var id = this.state.id;
             var ctx = this.context.formContext;
 
-            // if the field is in an error state, we cannot propagate the current erroneous value to the underlying datalist but instead keep it in local state only
+            // if the field is in an error state, we cannot propagate the current erroneous value to the underlying DataGraph but instead keep it in local state only
             // in this state, we don't want props to overwrite our current state.
             if (!this.state.errorLock)
             {
-                var cursor = this.state.cursor;
+                var cursor = this.cursorFromProps(nextProps);
+
                 var propertyType = cursor.getPropertyType();
 
-                var value = cursor.get();
-                console.log("VALUE", cursor, value);
+                var value = cursor.value;
                 var result = converter.toUser(value, propertyType);
 
-                if (!result.ok)
-                {
-                    ctx.signalError(id, result.error);
-                }
+                //if (!result.ok)
+                //{
+                //    ctx.signalError(id, result.error);
+                //}
+
+                //console.log("SET NEW STATE", propertyType, result.value);
 
                 this.setState({
-                    cursor: cursor,
                     propertyType: propertyType,
-                    value: result.value,
-                    errorLock: !result.ok
+                    value: result.value
                 });
             }
         },
@@ -177,7 +221,7 @@ module.exports = function(FieldComponent)
         render: function ()
         {
 
-            var cursor = this.state.cursor;
+            var cursor = this.cursorFromProps(this.props);
 
             var ctx = this.context.formContext;
             var id = this.state.id;
@@ -189,10 +233,11 @@ module.exports = function(FieldComponent)
 
             var fieldComponent = (
                 <FieldComponent
+                    {... this.props}
                     id={ id }
+                    ref={ component => this._input = component }
                     valueLink={ new ValueLink(this.state.value, this.validate) }
                     className={ this.props.className }
-                    validate={ this.props.validate }
                     propertyType={ pt }
                     onChange={ this.onChange }
                 />

@@ -15,6 +15,11 @@ var EnumSelect = React.createClass({
         formContext: React.PropTypes.instanceOf(FormContext)
     },
 
+    getInputField: function ()
+    {
+        return this._input;
+    },
+
     render: function ()
     {
         var enumModel = domainService.getEnum(this.props.propertyType.typeParam);
@@ -22,8 +27,9 @@ var EnumSelect = React.createClass({
         return (
             <select
                 id={ this.props.id }
+                ref={ elem => this._input = elem}
                 className={ cx("form-control", this.props.className) }
-                defaultValue={ this.props.valueLink.value }
+                value={ this.props.valueLink.value }
                 onChange={ (ev) => this.props.onChange(ev.target.value) }
             >
                 {
