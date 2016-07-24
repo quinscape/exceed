@@ -33,7 +33,7 @@ public class AssignmentReplacementVisitor
             ExpressionUtil.validAssignmentTarget(((ASTFunction) node).getName()) &&
             // has exactly one child...
             node.jjtGetNumChildren() == 1 &&
-            // which is a return
+            // which is a string literal
             node.jjtGetChild(0) instanceof ASTString);
     }
 
