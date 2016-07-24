@@ -21,7 +21,7 @@
                                         "name": "Heading",
                                         "attrs": {
                                             "id": "myHeading",
-                                            "value": "Tests"
+                                            "value": "{ i18n('Home') }"
                                         }
                                     },
                                     {

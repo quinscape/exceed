@@ -1,6 +1,9 @@
 {
     "root": {
         "name": "View",
+        "attrs": {
+            "title": "{ i18n('Test Process Detail') }"
+        },
         "kids": [
             {
                 "name": "Grid",
@@ -61,14 +64,14 @@
                                                     {
                                                         "name": "TButton",
                                                         "attrs": {
-                                                            "text": "Cancel",
+                                                            "text": "{ i18n('Cancel') }",
                                                             "transition": "cancel"
                                                         }
                                                     },
                                                     {
                                                         "name": "TButton",
                                                         "attrs": {
-                                                            "text": "Save",
+                                                            "text": "{ i18n('Save') }",
                                                             "transition": "save"
                                                         }
                                                     }

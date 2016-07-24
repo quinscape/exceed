@@ -71,15 +71,15 @@
                                                         "attrs": {
                                                             "discard": "{ true }",
                                                             "action": "{ navigateTo('/') }",
-                                                            "text": "Cancel"
+                                                            "text": "{ i18n('Cancel') }"
                                                         }
                                                     },
                                                     {
                                                         "name": "Button",
                                                         "attrs": {
-                                                            "action": "{ store(context) ; navigateTo('/') }",
+                                                            "action": "{ store(context) ; syslog(result); navigateTo('/') }",
                                                             "className": "btn-primary",
-                                                            "text": "Save"
+                                                            "text": "{ i18n('Save') }"
                                                         }
                                                     }
                                                 ]

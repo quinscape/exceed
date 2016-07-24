@@ -1,6 +1,9 @@
 {
     "root": {
         "name": "View",
+        "attrs": {
+            "title": "{ i18n('Test Process End') }"
+        },
         "kids": [
             {
                 "name": "Grid",
