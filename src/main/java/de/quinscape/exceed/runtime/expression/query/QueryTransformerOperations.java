@@ -106,6 +106,12 @@ public class QueryTransformerOperations
 
     }
 
+    @Operation
+    public String appName(ExpressionContext<QueryTransformerEnvironment> ctx)
+    {
+        return ctx.getEnv().getRuntimeContext().getApplicationModel().getName();
+    }
+
 
     private void attributeValueForClass(List<String> values, ComponentModel componentModel, String cls, String attr)
     {
