@@ -52,7 +52,7 @@ domready(function ()
     //console.log("DOMREADY");
 
     var bodyData = document.body.dataset;
-    security.init(bodyData.roles);
+    security.init(bodyData.login,bodyData.roles);
 
 
     var systemInfo  = evaluateEmbedded("system-info", "x-ceed/system-info");
