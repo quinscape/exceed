@@ -4,7 +4,7 @@ var classes = require("classnames");
 const assign = require("object-assign");
 var ValueLink = require("../util/value-link");
 
-var SVGLayout = require("../util/svg-layout");
+var SVGLayout = require("../gfx/svg-layout");
 
 var CodeEditor = require("./code/CodeEditor");
 

@@ -2,7 +2,7 @@
 
 var ajax = require("./../service/ajax");
 var cando = require("../cando");
-var parseXML = require("./parseXML");
+var parseXML = require("./../util/parseXML");
 
 var Promise = require("es6-promise-polyfill").Promise;
 
@@ -34,7 +34,7 @@ function getNSRegExp(elem)
     }
 
     var pattern = "^(" + nsName.join("|") + "):";
-    console.log("pattern = ", pattern);
+//    console.log("pattern = ", pattern);
     return new RegExp(pattern);
 }
 function removePrefixedAttributes(elem, re)

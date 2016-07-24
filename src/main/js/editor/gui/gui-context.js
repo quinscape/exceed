@@ -1,10 +1,15 @@
 const assign = require("object-assign");
-var React = require("react");
-var ReactDOM = require("react-dom");
+const React = require("react");
+const ReactDOM = require("react-dom");
 
-var UIState = require("./ui-state");
+const UIState = require("./ui-state");
 
-var elements = {};
+const elements = {};
+
+const CONTAINER_ID = "focus-proxy-container";
+const ZOOM_FACTOR = 8;
+
+var zoom = ZOOM_FACTOR;
 
 function GUIElementContext(id, uiState)
 {
@@ -14,7 +19,6 @@ function GUIElementContext(id, uiState)
     this.onInteraction = null;
 }
 
-const CONTAINER_ID = "focus-proxy-container";
 
 var updateTimerId;
 
@@ -45,8 +49,8 @@ var FocusProxies = React.createClass({
             if (elements.hasOwnProperty(id))
             {
                 var elem = elements[id];
-                //console.log("render proxy", elem);
                 var isDisabled = elem.uiState === UIState.DISABLED;
+                //console.log("render proxy", elem, isDisabled);
                 proxies.push(
                     React.createElement(
                         isDisabled ? "span" : "a", {
@@ -110,16 +114,15 @@ var GUIContext = {
         //console.log("_register", id);
 
         var elem = elements[id];
-        if (elem != null)
-        {
-            elem.onUpdate = guiElem.props.onUpdate;
-            elem.onInteraction = guiElem.props.onInteraction;
-        }
-        else
+        if (!elem)
         {
             elem = new GUIElementContext(id, UIState.NORMAL);
             elements[id] = elem;
         }
+
+        elem.onUpdate = guiElem.props.onUpdate;
+        elem.onInteraction = guiElem.props.onInteraction;
+        elem.uiState = guiElem.props.uiState;
 
         GUIContext.update();
 
@@ -149,9 +152,6 @@ var GUIContext = {
         var elem = elements[id];
         if (!elem)
         {
-            elem = new GUIElementContext(id, defaultUiState);
-            elements[id] = elem;
-
             return defaultUiState;
         }
 
@@ -183,8 +183,24 @@ var GUIContext = {
 
         elem.uiState = uiState;
 
-        !noUpdate && elem.onUpdate && elem.onUpdate.call(null);
+        if (!noUpdate)
+        {
+            elem.onUpdate.call(null);
+        }
+    },
+    setZoom: function (newZoom)
+    {
+        zoom = newZoom;
+    },
+    getZoom: function ()
+    {
+        return zoom;
+    },
+    applyZoom: function (v)
+    {
+        return v * zoom / ZOOM_FACTOR;
     }
+
 };
 
 module.exports = GUIContext;
