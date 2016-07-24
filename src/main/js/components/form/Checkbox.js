@@ -36,7 +36,7 @@ var Checkbox = React.createClass({
                            checked={ this.props.valueLink.value }
                            onChange={ (ev) => this.props.onChange(!this.props.valueLink.value) }
                     />
-                    { this.props.label || i18n(pt.parent + "." + pt.name) }
+                    { this.props.label || i18n(pt.parent + ":" + pt.name) }
                 </label>
             </div>
         );

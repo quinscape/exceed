@@ -232,4 +232,11 @@ public class DomainProperty
             + ", data = " + data
             ;
     }
+
+
+    @JSONProperty(ignore = true)
+    public String getTranslationTag()
+    {
+        return domainType + ":" + name;
+    }
 }

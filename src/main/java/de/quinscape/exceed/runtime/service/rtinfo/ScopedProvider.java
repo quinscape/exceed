@@ -14,11 +14,11 @@ import de.quinscape.exceed.runtime.scope.ScopedContext;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 import de.quinscape.exceed.runtime.scope.ScopedValueType;
 import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;
+import de.quinscape.exceed.runtime.view.ViewData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -44,7 +44,7 @@ public class ScopedProvider
 
 
     @Override
-    public Object provide(HttpServletRequest request, RuntimeContext runtimeContext) throws ParseException
+    public Object provide(HttpServletRequest request, RuntimeContext runtimeContext, ViewData viewData) throws ParseException
     {
         View view = runtimeContext.getView();
         if (view != null)

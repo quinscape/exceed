@@ -20,7 +20,8 @@
             }
         }
     },
-    "supportedLocales" : ["en_US", "de_DE"]
+
+    "supportedLocales" : ["en-US", "de-DE"]
 }
 
 

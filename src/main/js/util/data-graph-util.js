@@ -50,7 +50,7 @@ function followTypeDefinitionPath(dataGraph, path, startIndex, type, typeParam, 
             property = dataGraph.getPropertyModel(type, key);
             if (!property)
             {
-                throw new Error("Cannot find property for '" + type + "." + key + "'");
+                throw new Error("Cannot find property for '" + type + ":" + key + "'");
             }
 
             parent = type;

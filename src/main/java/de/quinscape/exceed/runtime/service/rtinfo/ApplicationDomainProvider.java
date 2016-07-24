@@ -5,6 +5,7 @@ import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;
 import de.quinscape.exceed.runtime.util.RequestUtil;
+import de.quinscape.exceed.runtime.view.ViewData;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,7 +29,7 @@ public class ApplicationDomainProvider
 
 
     @Override
-    public Object provide(HttpServletRequest request, RuntimeContext runtimeContext)
+    public Object provide(HttpServletRequest request, RuntimeContext runtimeContext, ViewData viewData)
     {
         if (RequestUtil.isAjaxRequest(request))
         {
@@ -38,7 +39,7 @@ public class ApplicationDomainProvider
         final DomainService domainService = runtimeContext.getDomainService();
 
         final HashMap<Object, Object> map = new HashMap<>();
-        map.put("enums", domainService.getEnums());
+        map.put("enumTypes", domainService.getEnums());
         map.put("domainTypes", domainService.getDomainTypes());
         return map;
     }

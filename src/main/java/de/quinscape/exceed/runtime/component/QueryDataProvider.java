@@ -2,8 +2,10 @@ package de.quinscape.exceed.runtime.component;
 
 import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.expression.TokenMgrError;
+import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
+import de.quinscape.exceed.runtime.expression.query.QueryDomainType;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformationException;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
 import de.quinscape.exceed.runtime.schema.StorageConfiguration;
@@ -41,6 +43,8 @@ public class QueryDataProvider
     public Map<String, Object> provide(DataProviderContext dataProviderContext, ComponentModel componentModel, Map
         <String, Object> vars)
     {
+
+
         ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
         if (componentRegistration == null)
         {
@@ -54,12 +58,13 @@ public class QueryDataProvider
             return null;
         }
 
+        registerQueryTranslations(dataProviderContext, runtimeQueries);
+
         Map<String, Object> map = new HashMap<>();
         for (Map.Entry<String, QueryDefinition> entry : runtimeQueries.entrySet())
         {
             String name = entry.getKey();
             QueryDefinition queryDefinition = entry.getValue();
-
 
             final String config = queryDefinition.getQueryDomainType().getType().getStorageConfiguration();
             final StorageConfiguration configuration = storageConfigurationRepository.getConfiguration(config);
@@ -78,9 +83,40 @@ public class QueryDataProvider
         }
 
         return map;
-
     }
 
+
+    /**
+     * Registers the translations used in the map of runtime queries. Calls {@link #registerTranslations()} which can
+     * be overridden for custom translation keys.
+     *
+     * @param dataProviderContext
+     * @param runtimeQueries
+     */
+    private void registerQueryTranslations(DataProviderContext dataProviderContext, Map<String, QueryDefinition> runtimeQueries)
+    {
+        for (QueryDefinition definition : runtimeQueries.values())
+        {
+            QueryDomainType current = definition.getQueryDomainType();
+
+            while(current != null)
+            {
+                dataProviderContext.registerTranslations(current.getType());
+                current = current.getJoinedWith();
+            }
+        }
+
+        this.registerTranslations();
+    }
+
+
+    /**
+     * Can be overridden to provide custom translations for a query driven component.
+     */
+    protected void registerTranslations()
+    {
+        // intentionally empty
+    }
 
     private Map<String, QueryDefinition> prepare(DataProviderContext dataProviderContext, ComponentModel elem,
                                                  Map<String,

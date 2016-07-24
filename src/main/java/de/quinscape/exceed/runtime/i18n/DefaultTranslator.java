@@ -35,7 +35,6 @@ public class DefaultTranslator
         final ApplicationModel applicationModel = runtimeContext.getApplicationModel();
 
         final Map<String, List<AppTranslation>> translations = getTranslationsForApp(runtimeContext);
-        final List<AppTranslation> appTranslations = translations.get(code);
         final String currentViewName;
         final String currentProcessName;
 
@@ -64,6 +63,39 @@ public class DefaultTranslator
         log.debug("locale = {}, currentProcessName = {}, currentViewName = {}", locale, currentProcessName, currentViewName);
 
 
+        final String translation = findTranslation(translations,code, locale, currentProcessName, currentViewName);
+        if (translation != null)
+        {
+            log.debug("Found full-code translation {}", translation);
+            return translation;
+        }
+
+        final int colonPos = code.lastIndexOf(':');
+        if (colonPos >= 0)
+        {
+            code = code.substring(colonPos + 1);
+            final String withoutQualifier = findTranslation(translations,code, locale, currentProcessName, currentViewName);
+            if (withoutQualifier != null)
+            {
+                log.debug("Found non-qualified translation {}", withoutQualifier);
+                return withoutQualifier;
+            }
+        }
+        log.debug("No translation for {}", code);
+
+        return "[" + code + "]";
+    }
+
+
+    private String findTranslation(
+        Map<String, List<AppTranslation>> translations,
+        String code,
+        String locale,
+        String currentProcessName,
+        String currentViewName
+    )
+    {
+        final List<AppTranslation> appTranslations = translations.get(code);
         if (appTranslations != null)
         {
             AppTranslation t = findTranslation(appTranslations, locale, currentViewName, currentProcessName);
@@ -72,20 +104,11 @@ public class DefaultTranslator
                 final String translation = t.getTranslation();
                 if (StringUtils.hasText(translation))
                 {
-                    log.debug("Found translation {}", translation);
-
                     return translation;
                 }
             }
         }
-
-        final int colonPos = code.indexOf(':');
-        if (colonPos >= 0)
-        {
-            code = code.substring(colonPos + 1);
-        }
-
-        return "[" + code + "]";
+        return null;
     }
 
 

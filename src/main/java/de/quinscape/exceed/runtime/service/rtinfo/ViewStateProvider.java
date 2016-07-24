@@ -6,6 +6,7 @@ import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;
+import de.quinscape.exceed.runtime.view.ViewData;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,7 +22,7 @@ public class ViewStateProvider
     }
 
     @Override
-    public Object provide(HttpServletRequest request, RuntimeContext runtimeContext)
+    public Object provide(HttpServletRequest request, RuntimeContext runtimeContext, ViewData viewData)
     {
         View view = runtimeContext.getView();
         if (view != null)

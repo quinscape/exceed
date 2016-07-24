@@ -72,6 +72,8 @@ public class TranslationEditorProvider
         addLanguageReferences(runtimeContext, state);
         addComponentReferences(runtimeContext, state);
 
+        addUnqualifiedReferences(state);
+
         final List<String> supportedLocales = runtimeContext.getApplicationModel().getSupportedLocales();
 
         Set<String> markedNew = state.initializeDefaults(runtimeContext, supportedLocales);
@@ -82,6 +84,26 @@ public class TranslationEditorProvider
             "ruleLocations", locations(runtimeContext.getApplicationModel()),
             "markedNew", markedNew
         );
+    }
+
+
+    /**
+     * If we define a translation key "Qualifier:name", we say that there's a "Qualfier:name" key and a
+     * unqualified "name" key. This adds the unqualified variants for qualified tags
+     * @param state
+     */
+    private void addUnqualifiedReferences(TranslationEditorState state)
+    {
+        final Set<String> names = new HashSet<>(state.getTagNames());
+        for (String qualified : names)
+        {
+            int pos = qualified.lastIndexOf(':');
+            if (pos >= 0)
+            {
+                String name = qualified.substring(pos + 1);
+                state.addReference(name, ReferenceType.QUALIFIER, qualified);
+            }
+        }
     }
 
 
@@ -121,7 +143,7 @@ public class TranslationEditorProvider
 
             for (DomainProperty domainProperty : type.getProperties())
             {
-                final String key = domainTypeName + ":" + domainProperty.getName();
+                final String key = domainProperty.getTranslationTag();
                 state.addReference(key, ReferenceType.DOMAIN, key);
             }
         }

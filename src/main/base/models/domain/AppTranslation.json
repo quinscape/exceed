@@ -7,16 +7,6 @@
             "maxLength": 36
         },
         {
-            "name": "processName",
-            "type": "PlainText",
-            "maxLength": 64
-        },
-        {
-            "name": "viewName",
-            "type": "PlainText",
-            "maxLength": 64
-        },
-        {
             "name": "locale",
             "type": "PlainText",
             "required": true,
@@ -37,6 +27,16 @@
             "name": "created",
             "required": true,
             "type": "Timestamp"
+        },
+        {
+            "name": "processName",
+            "type": "PlainText",
+            "maxLength": 64
+        },
+        {
+            "name": "viewName",
+            "type": "PlainText",
+            "maxLength": 64
         }
     ]
 }

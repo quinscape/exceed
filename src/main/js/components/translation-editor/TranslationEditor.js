@@ -9,6 +9,7 @@ const values = require("../../util/values");
 const DataGraph = require("../../util/data-graph");
 const ValueLink = require("../../util/value-link");
 const Link = require("../../ui/Link");
+const Button = require("../../ui/Button");
 const FilterField = require("../../ui/FilterField");
 const PagingComponent = require("../../ui/PagingComponent");
 const i18n = require("../../service/i18n");
@@ -700,6 +701,26 @@ var TranslationEditor = React.createClass({
         });
     },
 
+    getReferenceFilterHelpText: function (refFilter)
+    {
+        switch(refFilter)
+        {
+            case "MODULE":
+                return i18n("RefFilter Help MODULE");
+            case "DOMAIN":
+                return i18n("RefFilter Help DOMAIN");
+            case "LOCALE":
+                return i18n("RefFilter Help LOCALE");
+            case "VIEW":
+                return i18n("RefFilter Help VIEW");
+            case "QUALIFIER":
+                return i18n("RefFilter Help QUALIFIER");
+            default:
+                return "";
+        }
+
+    },
+
     render: function ()
     {
 //        console.log("STATE", this.state);
@@ -714,6 +735,8 @@ var TranslationEditor = React.createClass({
 
         const tagSortIcon = this.state.sort !== DEFAULT_SORT ? null : this.state.reverse ? "sort-by-attributes-alt" : "sort-by-attributes";
 
+        var refFilterHelpText = this.getReferenceFilterHelpText(this.state.refFilter);
+
         var detailCursor = this.state.detail !== null && dataGraph.getCursor([this.state.detail]);
         return (
             <div className="translation-editor">
@@ -722,30 +745,30 @@ var TranslationEditor = React.createClass({
                         <div className="col-md-12">
                             <h4>{ i18n('TranslationEditor') }</h4>
                             <div className="btn-toolbar" role="toolbar">
-                                <Link
+                                <Button
                                     icon="repeat"
                                     text={ i18n('Revert') }
                                     onClick={ this.undo.revert }
                                     disabled={ this.undo.isSaved() }
                                 />
-                                <Link
+                                <Button
                                     icon="save"
                                     text={ i18n('Save') }
                                     onClick={ this.save }
                                     disabled={ this.undo.isSaved() }
                                 />
-                                <Link
+                                <Button
                                     text={ i18n('Undo') }
                                     onClick={ this.undo.undo }
                                     disabled={ !this.undo.canUndo() }
                                 />
-                                <Link
+                                <Button
                                     text={ i18n('Redo') }
                                     onClick={ this.undo.redo }
                                     disabled={ !this.undo.canRedo() }
                                 />
 
-                                <Link
+                                <Button
                                     text={ i18n('New Tag') }
                                     onClick={ this.newEntry }
                                 />
@@ -757,18 +780,27 @@ var TranslationEditor = React.createClass({
 
                             <FilterField
                                 valueLink={ new ValueLink(this.state.filter, this.setFilter) }
-                                placeholder={ i18n("Filter by translation, tag or location rule") }
+                                placeholder={ i18n("Filter by translation, tag or local translation") }
                             />
                         </div>
                         <div className="col-md-6">
                             <SelectField
                                 label={ i18n("Reference Type Filter") }
-                                data={ [ "-", "MODULE", "DOMAIN", "LOCALE", "VIEW"] }
+                                data={ [ "-", "MODULE", "DOMAIN", "LOCALE", "VIEW", "QUALIFIER"] }
                                 value={ new ValueLink(this.state.refFilter, this.setReferenceFilter ) }
                                 propertyType={ { type: "PlainText" } }
                             />
                         </div>
                     </div>
+                    {
+                        refFilterHelpText &&
+                            <div className="row">
+                                <div className="col-md-10 col-md-push-1">
+                                    <h4><span className="glyphicon glyphicon-info-sign text-info"/> Filtered by Type: { this.state.refFilter } </h4>
+                                    <p> { refFilterHelpText } </p>
+                                </div>
+                            </div>
+                    }
                     <div className="row">
                         <div className="col-md-12">
                             <Form data={ cursor } horizontal={ false }>
@@ -816,10 +848,10 @@ var TranslationEditor = React.createClass({
                                                     )
                                                 }
                                                 <td>
-                                                    <Link className={ dataView.marked[name] && "bg-info"  } icon="edit"
+                                                    <Button className={ dataView.marked[name] && "bg-info"  } icon="edit"
                                                           text={ "Detail (" + dataGraph.rootObject[name].localTranslations.length + ")" }
                                                           onClick={ e => this.editDetail(name) }/>
-                                                    <Link icon="remove" text={ "Remove" }
+                                                    <Button icon="erase" text={ "Remove" }
                                                           onClick={ e => this.removeEntry(name, dataView.hasRefs[name]) }/>
                                                 </td>
                                             </tr>

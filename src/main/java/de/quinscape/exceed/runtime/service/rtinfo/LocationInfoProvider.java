@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.service.rtinfo;
 
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;
+import de.quinscape.exceed.runtime.view.ViewData;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -18,7 +19,7 @@ public class LocationInfoProvider
     }
 
     @Override
-    public Object provide(HttpServletRequest request, RuntimeContext runtimeContext)
+    public Object provide(HttpServletRequest request, RuntimeContext runtimeContext, ViewData viewData)
     {
         return  new Info(runtimeContext.getRoutingTemplate(),  runtimeContext.getLocationParams());
     }

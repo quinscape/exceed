@@ -5,5 +5,5 @@ package de.quinscape.exceed.runtime.component.translation;
  */
 public enum ReferenceType
 {
-    MODULE, DOMAIN, LOCALE, VIEW
+    MODULE, DOMAIN, LOCALE, VIEW, QUALIFIER
 }

@@ -35,7 +35,7 @@ public class ViewDataService
      */
     public ViewData prepareView(RuntimeContext runtimeContext, View view, ProcessExecutionState state)
     {
-        ViewData viewData = new ViewData(runtimeContext, view.getName(), runtimeContext.getTranslator());
+        ViewData viewData = new ViewData(runtimeContext, view.getName());
         DataProviderContext context = new DataProviderContext(this, runtimeContext, expressionService, view.getName(), state, viewData, null, null);
         prepareRecursive(context, view.getRoot());
         return viewData;
@@ -60,7 +60,7 @@ public class ViewDataService
     public ComponentData prepareComponent(RuntimeContext runtimeContext, View view, ComponentModel componentModel,
                                           Map<String, Object> vars, ProcessExecutionState state)
     {
-        ViewData viewData = new ViewData(runtimeContext, view.getName(), runtimeContext.getTranslator());
+        ViewData viewData = new ViewData(runtimeContext, view.getName());
         DataProviderContext context = new DataProviderContext(this, runtimeContext, expressionService, view.getName(), state, viewData, componentModel, vars);
         prepareRecursive(context, componentModel);
         return (ComponentData) viewData.getData().get(componentModel.getComponentId());

@@ -185,11 +185,7 @@ module.exports = function(FieldComponent)
             var errorMessage = ctx.getErrorMessage(id);
 
             var pt = cursor.getPropertyType();
-            var labelElement = (
-                <label className={ cx("control-label", ctx.horizontal && ctx.labelClass(this)) } htmlFor={ id }>
-                    { this.props.label || i18n(pt.parent + "." + pt.name) }
-                </label>
-            );
+
 
             var fieldComponent = (
                 <FieldComponent
@@ -202,6 +198,17 @@ module.exports = function(FieldComponent)
                 />
             );
 
+            if (pt.type === "Boolean")
+            {
+                return fieldComponent;
+            }
+
+
+            var labelElement = (
+                <label className={ cx("control-label", ctx.labelClass(this)) } htmlFor={ id }>
+                    { this.props.label || i18n(pt.parent + ":" + pt.name) }
+                </label>
+            );
 
             var helpBlock = false;
 

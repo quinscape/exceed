@@ -45,6 +45,10 @@ public class TranslationEditorState
         }
     }
 
+    public Set<String> getTagNames()
+    {
+        return translations.keySet();
+    }
 
     public TranslationEntry entry(String tag)
     {

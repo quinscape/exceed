@@ -18,6 +18,7 @@ import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.scope.ScopedContext;
 import de.quinscape.exceed.runtime.scope.ScopedValueType;
 import de.quinscape.exceed.runtime.scope.ViewContext;
+import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -275,13 +276,19 @@ public class ScopeReferenceService
         private void collectClientReferences(RuntimeContext runtimeContext, Set<ScopeReference> set, HashSet<String> visitedModules, ComponentModel componentModel, StaticFunctionReferences
             staticFunctionReferences)
         {
-            String moduleName = componentModel.getComponentRegistration().getModuleName();
-            if (moduleName == null)
-            {
-                throw new IllegalStateException("No module name set in " + componentModel.getComponentRegistration());
-            }
+            final ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
 
-            collectFromModulesRecursive(runtimeContext, set, visitedModules, moduleName, staticFunctionReferences);
+
+            if (componentRegistration != null)
+            {
+                String moduleName = componentRegistration.getModuleName();
+                if (moduleName == null)
+                {
+                    throw new IllegalStateException("No module name set in " + componentRegistration);
+                }
+
+                collectFromModulesRecursive(runtimeContext, set, visitedModules, moduleName, staticFunctionReferences);
+            }
 
             Attributes attrs = componentModel.getAttrs();
             if (attrs != null)

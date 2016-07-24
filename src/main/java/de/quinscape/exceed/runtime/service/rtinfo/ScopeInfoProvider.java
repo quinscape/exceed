@@ -5,6 +5,7 @@ import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.scope.ViewContext;
 import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;
+import de.quinscape.exceed.runtime.view.ViewData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +37,7 @@ public class ScopeInfoProvider
 
 
     @Override
-    public Object provide(HttpServletRequest request, RuntimeContext runtimeContext)
+    public Object provide(HttpServletRequest request, RuntimeContext runtimeContext, ViewData viewData)
     {
         View view = runtimeContext.getView();
         if (view != null)

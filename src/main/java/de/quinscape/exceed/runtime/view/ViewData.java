@@ -1,31 +1,22 @@
 package de.quinscape.exceed.runtime.view;
 
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.i18n.Translator;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class ViewData
 {
     private final String viewName;
 
-    private final Map<String, ComponentData> componentData;
-
-    private final Map<String, String> translations;
-
-    private final Translator translator;
-
-    private final RuntimeContext runtimeContext;
+    private final Map<String, Object> componentData;
 
 
-    public ViewData(RuntimeContext runtimeContext, String viewName, Translator translator)
+    public ViewData(RuntimeContext runtimeContext, String viewName)
     {
-        this.runtimeContext = runtimeContext;
         this.viewName = viewName;
         this.componentData = new HashMap<>();
-        this.translator = translator;
-        translations = new HashMap<>();
     }
 
 
@@ -41,14 +32,8 @@ public class ViewData
     }
 
 
-    public Map<String, ComponentData> getData()
+    public Map<String, Object> getData()
     {
         return componentData;
-    }
-
-
-    public void provideTranslation(String code)
-    {
-        translations.put(code, translator.translate(runtimeContext, code));
     }
 }
