@@ -3,6 +3,7 @@ package de.quinscape.exceed.model;
 import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.DomainVersion;
 import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.PropertyType;
 import de.quinscape.exceed.model.process.Process;
@@ -11,7 +12,7 @@ import de.quinscape.exceed.model.view.Layout;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.model.ModelNotFoundException;
-import org.apache.commons.collections.map.HashedMap;
+import org.springframework.util.StringUtils;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 
@@ -38,7 +39,7 @@ public class ApplicationModel
     private Map<String, DomainType> domainTypesRO = Collections.unmodifiableMap(domainTypes);
 
     private Map<String, DomainVersion> domainVersions = new HashMap<>();
-
+    
     private Map<String, DomainVersion> domainVersionsRO = Collections.unmodifiableMap(domainVersions);
 
     private Map<String, PropertyType> propertyTypes = new HashMap<>();
@@ -342,12 +343,10 @@ public class ApplicationModel
         domainTypes.put(name, domainType);
     }
 
-
     public void addDomainVersion(String name, DomainVersion domainVersion)
     {
         domainVersions.put(name, domainVersion);
     }
-
 
     public void addEnum(String name, EnumType enumType)
     {
@@ -439,12 +438,12 @@ public class ApplicationModel
      * @param code
      * @return
      */
-    private String langUnderline(String code)
+    private String languagePart(String code)
     {
-        final int pos = code.indexOf('_');
+        final int pos = code.indexOf('-');
         if (pos >= 0)
         {
-            return code.substring(0, pos + 1);
+            return code.substring(0, pos);
         }
         return code;
     }
@@ -464,15 +463,13 @@ public class ApplicationModel
 
     private ImmutableMap<String, String> createLookup(List<String> supportedLocales)
     {
-        Map<String, String> map = new HashedMap();
+        Map<String, String> map = new HashMap<>();
 
         for (String supportedLocale : supportedLocales)
         {
             map.put(supportedLocale, supportedLocale);
 
-            // locales with a language but no country produce a code like "en_" we map those codes to the first occurance
-            // of that language in supported locales.
-            String lang = langUnderline(supportedLocale);
+            String lang = languagePart(supportedLocale);
             map.putIfAbsent(lang, supportedLocale);
         }
 
@@ -492,8 +489,16 @@ public class ApplicationModel
      */
     public String matchLocale(Locale locale)
     {
-        String code = locale.getLanguage() + "_" + locale.getCountry();
-
+        final String country = locale.getCountry();
+        String code;
+        if (StringUtils.hasText(country))
+        {
+            code = locale.getLanguage() + "-" + country;
+        }
+        else
+        {
+            code = locale.getLanguage();
+        }
         final String result = supportedLocalesMap.get(code);
         if (result != null)
         {

@@ -1,0 +1,8 @@
+{
+    "components": {
+        "DomainEditor": {
+            "classes" : [ "element", "internal"],
+            "dataProvider" : "domainEditorProvider"
+        }
+    }
+}

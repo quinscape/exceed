@@ -173,7 +173,7 @@ DataCursor.prototype.update = function (spec, path)
     {
         let result = localChange.call(this, newGraph, path);
 
-        if (result && typeof result == "object" && typeof result.isRawDataGraph == "function")
+        if (result && typeof result == "object" && typeof result.prototype.isRawDataGraph == "function")
         {
             newGraph = result;
         }

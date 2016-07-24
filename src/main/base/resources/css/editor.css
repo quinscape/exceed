@@ -93,6 +93,7 @@
 
 #focus-proxy-container {
     position: absolute;
+    top: 0;
     left: -2000px;
 }
 
@@ -219,3 +220,68 @@ identifiers within the expression. Also for a harmonic overall look */
     list-style: none;
     padding-left: 2em;
 }
+
+.control
+{
+    fill: rgba(160,160,160,0.1);
+}
+
+.control:hover
+{
+    stroke: #000;
+    fill: rgba(255, 229, 136, 0.6);
+    stroke-width: 1;
+    cursor: move;
+}
+
+.entity
+{
+    cursor: pointer;
+}
+
+
+.domain-editor .selected
+{
+    background: #ffe588;
+}
+
+.domain-editor .table-striped tr.selected
+{
+    background-color: #ffe588;
+}
+
+.domain-editor .table-striped tr.selected:hover
+{
+    background-color: #f6eabf;
+}
+
+body
+{
+    overflow: scroll;
+}
+
+
+.domain-type-form
+{
+    padding-bottom: 6px;
+    border-bottom: 2px solid #aaa
+}
+
+.glyphicon-space:before {
+    content: "\00a0";
+}
+
+
+
+.app-link.case-sensitive.prop-required
+{
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.app-link.case-sensitive
+{
+    font-weight: normal;
+    text-transform: none;
+}
+

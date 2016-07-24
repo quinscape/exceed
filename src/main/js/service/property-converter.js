@@ -1,8 +1,10 @@
 const assign = require("object-assign");
 
-var domainService = require("./domain");
+const domainService = require("./domain");
 
-var i18n = require("./i18n");
+const i18n = require("./i18n");
+
+const keys = require("../util/keys");
 
 const INVALID_NUMBER = {
     ok: false,
@@ -58,6 +60,8 @@ function checkMaxLength(value, propertyType)
 var ToUserConverters;
 var FromUserConverters;
 
+var propertyTypeNames;
+
 function resetConverters()
 {
     ToUserConverters = {
@@ -81,7 +85,10 @@ function resetConverters()
         "PlainText": Result,
         "RichText": Result,
         "Timestamp": Result,
-        "UUID": Result
+        "UUID": Result,
+        "Map": Result,
+        "List": Result,
+        "Object": Result
     };
     FromUserConverters = {
         "Boolean": function (value, propertyType)
@@ -94,7 +101,7 @@ function resetConverters()
             var date = Date.parse(value);
             if (isNaN(date))
             {
-                return INVALID_DATE;
+                return assign(Result(value), INVALID_DATE);
             }
             var dateObj = new Date(date);
             dateObj.setUTCHours(0);
@@ -124,13 +131,13 @@ function resetConverters()
             var num = +value;
             if (isNaN(num))
             {
-                return INVALID_NUMBER;
+                return assign(Result(value), INVALID_NUMBER);
             }
             else
             {
                 if (num < INTEGER_MIN || num > INTEGER_MAX)
                 {
-                    return OUT_OF_RANGE;
+                    return assign(Result(value), OUT_OF_RANGE);
                 }
                 return Result(num);
             }
@@ -141,7 +148,7 @@ function resetConverters()
 
             if (isNaN(num))
             {
-                return INVALID_NUMBER;
+                return assign(Result(value), INVALID_NUMBER);
             }
             else
             {
@@ -155,15 +162,22 @@ function resetConverters()
             var date = Date.parse(value);
             if (isNaN(date))
             {
-                return INVALID_DATE;
+                return assign(Result(value), INVALID_DATE);
             }
             return Result(new Date(date).toISOString());
         },
-        "UUID": Result
+        "UUID": Result,
+        "Map": Result,
+        "List": Result,
+        "Object": Result
     };
+
+    propertyTypeNames = null;
 }
 
 resetConverters();
+
+
 
 module.exports = {
     fromUser: function(value, propertyType)
@@ -173,7 +187,7 @@ module.exports = {
             throw new Error("Need property type object")
         }
 
-        if (propertyType.required && !value && typeof value !== "number")
+        if (propertyType.required && (value == null || value === ""))
         {
             return MISSING_VALUE;
         }
@@ -218,6 +232,15 @@ module.exports = {
     {
         FromUserConverters[name] = fn;
     },
+    propertyTypes : function ()
+    {
+        if (!propertyTypeNames)
+        {
+            propertyTypeNames = keys(FromUserConverters);
+        }
+        return propertyTypeNames;
+    },
+
     reset: resetConverters,
     Result: Result
 };

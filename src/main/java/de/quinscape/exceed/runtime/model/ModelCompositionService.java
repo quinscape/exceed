@@ -6,6 +6,7 @@ import de.quinscape.exceed.model.LayoutMetaData;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.DomainVersion;
 import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.PropertyType;
 import de.quinscape.exceed.model.process.Process;
@@ -52,6 +53,8 @@ public class ModelCompositionService
     public static final String DOMAIN_PROPERTY_MODEL_PREFIX = "/models/domain/property";
 
     public static final String ENUM_MODEL_PREFIX = "/models/domain/enum/";
+
+    public static final String DOMAIN_VERSION_PREFIX = "/models/domain/version/";
 
     public static final String SYSTEM_MODEL_PREFIX = "/models/domain/system/";
 
@@ -140,7 +143,15 @@ public class ModelCompositionService
             }
             else if (path.startsWith(DOMAIN_MODEL_PREFIX))
             {
-                if (path.startsWith(DOMAIN_PROPERTY_MODEL_PREFIX))
+                if (path.startsWith(DOMAIN_VERSION_PREFIX))
+                {
+                    log.debug("Reading {} as DomainVersion", path);
+
+                    DomainVersion domainVersion = create(DomainVersion.class, json, resource);
+                    applicationModel.addDomainVersion(domainVersion.getName(), domainVersion);
+                    return domainVersion;
+                }
+                else if (path.startsWith(DOMAIN_PROPERTY_MODEL_PREFIX))
                 {
                     log.debug("Reading {} as PropertyType", path);
 

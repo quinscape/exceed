@@ -37,7 +37,7 @@ var Column = React.createClass({
             return (
                 <td>
                     <p className="form-control-static">
-                        { converter.toUser(this.props.context.get(), propertyType).value }
+                        { converter.toUser(this.props.context.value, propertyType).value }
                     </p>
                 </td>
             );
@@ -132,21 +132,21 @@ var DataGrid = React.createClass({
     changeSort: function (newValue)
     {
         this.updateComponent({
-            orderBy: [ newValue ]
+            orderBy: [ newValue ],
+            // restart paging on sort change
+            offset: 0
         });
     },
 
     setFilter: function(v)
     {
-        this.updateComponent(
-            immutableUpdate(this.props.vars, {
-                filter: {
-                    [v.name]: { $set: v.value }
-                },
+        this.updateComponent({
+                filter: immutableUpdate( this.props.vars.filter, {
+                    [v.name]: { $set: v.value}
+                }),
                 // restart paging on filter change
-                offset: {$set: 0}
-            })
-        );
+                offset: 0
+        });
     },
 
     setPagingOffset: function(offset)
@@ -239,7 +239,7 @@ var DataGrid = React.createClass({
 
         var types = domainService.getDomainTypes();
 
-        if (DataGraph.isRawDataGraph(data))
+        if (DataGraph.prototype.isRawDataGraph(data))
         {
             return new DataGraph(
                 domainService.getDomainTypes(),

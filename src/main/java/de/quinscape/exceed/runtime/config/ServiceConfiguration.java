@@ -1,7 +1,10 @@
 package de.quinscape.exceed.runtime.config;
 
+import de.quinscape.exceed.runtime.component.domain.DomainEditorProvider;
 import de.quinscape.exceed.runtime.component.translation.TranslationEditorProvider;
 import de.quinscape.exceed.runtime.controller.ActionService;
+import de.quinscape.exceed.runtime.domain.migration.MigrationStep;
+import de.quinscape.exceed.runtime.domain.migration.MigrationStepRepository;
 import de.quinscape.exceed.runtime.editor.completion.CompletionService;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.i18n.TranslationProvider;
@@ -99,6 +102,19 @@ public class ServiceConfiguration
     public TranslationEditorProvider translationReferenceProvider(TranslationProvider translationProvider)
     {
         return new TranslationEditorProvider(translationProvider);
+    }
+
+    @Bean
+    public DomainEditorProvider domainEditorProvider(StorageConfigurationRepository storageConfigurationRepository, ApplicationService applicationService)
+    {
+        return new DomainEditorProvider(storageConfigurationRepository, applicationService);
+    }
+
+    @Bean
+    public MigrationStepRepository migrationStepRepository()
+    {
+        final Map<String, MigrationStep> beansOfType = applicationContext.getBeansOfType(MigrationStep.class);
+        return new MigrationStepRepository(beansOfType);
     }
 
 }

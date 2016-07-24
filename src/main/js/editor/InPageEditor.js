@@ -36,8 +36,7 @@ var editorTabs = {
                 </div>
             );
         }
-    }),
-    "domain" : require("./DomainEditor")
+    })
 };
 
 function TabLink(props)

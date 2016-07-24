@@ -17,7 +17,7 @@ function createScopeFn(type)
         var scope = getViewService().getScope();
         //console.log("SCOPE", scope);
 
-        var value = scope.get([name]);
+        var value = scope.getCursor([name]).value;
         if (value === undefined)
         {
             console.error("Scoped " + type + " '" + name + "' is undefined")
@@ -31,9 +31,11 @@ function createScopeCursorFn(type)
     return function(name)
     {
         var scope = getViewService().getScope();
+        var cursor = scope.getCursor([name]);
 
-        return scope.getCursor([name]);
 //        console.log("SCOPE CURSOR", scope.id, name, cursor.value);
+
+        return cursor;
     };
 }
 
@@ -81,7 +83,7 @@ var Scope = {
 
         var values = {};
 
-        var scope = viewService.getScope().get();
+        var scope = viewService.getScope().rootObject;
 
         for (var i = 0; i < names.length; i++)
         {

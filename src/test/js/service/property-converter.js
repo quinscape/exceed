@@ -3,7 +3,7 @@ var assert = require("power-assert");
 var domainService = require("../../../../src/main/js/service/domain");
 
 domainService.init({
-    enums: {
+    enumTypes: {
         MyEnum: {
             name: "MyEnum",
             values: ["A", "B", "C"]

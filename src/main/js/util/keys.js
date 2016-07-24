@@ -1,4 +1,4 @@
-if (Object.keys)
+if (typeof Object.keys === "function")
 {
     module.exports = Object.keys;
 }

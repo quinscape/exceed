@@ -32,7 +32,6 @@ public class DomainProperty
 
     private Object data;
 
-
     public DomainProperty()
     {
         this(null, null, null, false);

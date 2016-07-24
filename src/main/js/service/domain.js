@@ -1,7 +1,5 @@
 "use strict";
 
-var Promise = require("es6-promise-polyfill").Promise;
-
 var applicationDomain;
 
 var uuid = require("node-uuid");
@@ -10,10 +8,10 @@ module.exports =
 {
     create: function (type)
     {
-        return Promise.resolve({
+        return {
             "id" : uuid.v4(),
             "_type" : type
-        });
+        };
     },
     init: function (domainData)
     {
@@ -22,11 +20,15 @@ module.exports =
     },
     getEnum: function (name)
     {
-        return applicationDomain.enums[name];
+        return applicationDomain.enumTypes[name];
     },
     getDomainType: function (name)
     {
         return applicationDomain.domainTypes[name];
+    },
+    getEnumTypes: function ()
+    {
+        return applicationDomain.enumTypes;
     },
     getDomainTypes: function ()
     {

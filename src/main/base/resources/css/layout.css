@@ -45,6 +45,8 @@ div.notification
     -webkit-animation-duration: 10s;
     -moz-animation-name: slidein;
     -webkit-animation-name: slidein;
+
+    z-index: 100;
 }
 
 @-moz-keyframes slidein {
@@ -129,4 +131,15 @@ div.notification
 
 .error-report a {
     color: #008;
+}
+
+.error-messages
+{
+    padding: 1em 0;
+}
+
+.error-messages h4
+{
+    color: $mix(#ff4136, #000, 0.5);
+    border-bottom: 1px solid #ff4136;
 }

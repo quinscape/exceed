@@ -41,7 +41,7 @@ Enum.prototype.values = function()
 
 Enum.prototype.isValid = function(value)
 {
-    return this.hasOwnProperty(value) && this[value] === value;
+    return value && this.hasOwnProperty(value) && this[value] === value;
 };
 
 module.exports = Enum;
