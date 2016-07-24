@@ -1,8 +1,9 @@
 package de.quinscape.exceed.runtime.util;
 
+import de.quinscape.exceed.model.view.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
-import de.quinscape.exceed.runtime.model.ModelCompositionException;
+import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 
@@ -35,17 +36,24 @@ public class ComponentUtil
         if (elem.isComponent() && (componentNames == null || componentNames.contains(elem.getName())))
         {
             ComponentRegistration registration = componentRegistry.getComponentRegistration(elem.getName());
-
             if (registration != null)
             {
-                //throw new IllegalStateException("No component registered for name '" + elem.getName() + "'");
+                final String componentId = elem.getComponentId();
 
-                if (registration.getDataProvider() != null && elem.getComponentId() == null)
+                if (RuntimeApplication.RUNTIME_INFO_NAME.equals(componentId))
                 {
-                    throw new ModelCompositionException(elem + " must have a id attribute");
+                    throw new IllegalStateException("'" + RuntimeApplication.RUNTIME_INFO_NAME + "' is a reserved component name.");
                 }
+
+                if (registration.getDataProvider() != null && componentId == null)
+                {
+                    final String id = COUNTER.nextId();
+                    setIdAttribute(elem, id);
+                }
+
+                elem.setComponentRegistration(registration);
             }
-            elem.setComponentRegistration(registration);
+
             elem.setParent(parent);
         }
 
@@ -55,6 +63,24 @@ public class ComponentUtil
         }
     }
 
+
+    private static void setIdAttribute(ComponentModel elem, String id)
+    {
+        final Attributes attrs = elem.getAttrs();
+        if (attrs == null)
+        {
+            final Attributes newAttrs = new Attributes();
+            newAttrs.setAttribute("id", id);
+            elem.setAttrs(newAttrs);
+        }
+        else
+        {
+            attrs.setAttribute("id", id);
+        }
+    }
+
+
+    private final static IdCounter COUNTER = new IdCounter("id-");
 
     public static int findFlatIndex(View view, String componentId)
     {
