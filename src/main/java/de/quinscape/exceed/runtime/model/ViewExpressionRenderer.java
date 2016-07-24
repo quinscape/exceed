@@ -257,7 +257,7 @@ public class ViewExpressionRenderer
         }
         else
         {
-            final PropDeclaration propDeclaration = componentDescriptor.getPropTypes().get(attrName);
+            final PropDeclaration propDeclaration = componentDescriptor != null ? componentDescriptor.getPropTypes().get(attrName) : null;
             if (operationName.equals("list"))
             {
                 if (propDeclaration != null && propDeclaration.getType() == PropType.CURSOR_EXPRESSION)

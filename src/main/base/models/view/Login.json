@@ -1,0 +1,142 @@
+{
+    "root": {
+        "name": "View",
+        "kids": [
+            {
+                "name": "Grid",
+                "attrs": {
+                    "fluid": "{ true }"
+                },
+                "kids": [
+                    {
+                        "name": "LoginForm",
+                        "kids": [
+                            {
+                                "name": "Row",
+                                "kids": [
+                                    {
+                                        "name": "Col",
+                                        "attrs": {
+                                            "mdPush": "{ 2 }",
+                                            "md": "{ 6 }"
+                                        },
+                                        "kids": [
+                                            {
+                                                "name": "Heading",
+                                                "attrs": {
+                                                    "icon": "user",
+                                                    "value": "Login"
+                                                }
+                                            },
+                                            {
+                                                "name": "div",
+                                                "attrs": {
+                                                    "className": "form-group"
+                                                },
+                                                "kids": [
+                                                    {
+                                                        "name": "label",
+                                                        "attrs": {
+                                                            "className": "control-label",
+                                                            "htmlFor": "loginField"
+                                                        },
+                                                        "kids": [
+                                                            {
+                                                                "name": "[String]",
+                                                                "attrs": {
+                                                                    "value": "{ i18n('Username') }"
+                                                                }
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "name": "input",
+                                                        "attrs": {
+                                                            "id": "loginField",
+                                                            "type": "text",
+                                                            "className": "form-control",
+                                                            "name": "username"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "name": "div",
+                                                "attrs": {
+                                                    "className": "form-group"
+                                                },
+                                                "kids": [
+                                                    {
+                                                        "name": "label",
+                                                        "attrs": {
+                                                            "className": "control-label",
+                                                            "htmlFor": "pwField"
+                                                        },
+                                                        "kids": [
+                                                            {
+                                                                "name": "[String]",
+                                                                "attrs": {
+                                                                    "value": "{ i18n('Password') }"
+                                                                }
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "name": "input",
+                                                        "attrs": {
+                                                            "id": "pwField",
+                                                            "type": "password",
+                                                            "className": "form-control",
+                                                            "name": "password"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "name": "div",
+                                                "attrs": {
+                                                    "className": "checkbox"
+                                                },
+                                                "kids": [
+                                                    {
+                                                        "name": "label",
+                                                        "attrs": {
+                                                            "className": "control-label"
+                                                        },
+                                                        "kids": [
+                                                            {
+                                                                "name": "input",
+                                                                "attrs": {
+                                                                    "type": "checkbox",
+                                                                    "name": "remember-me"
+                                                                }
+                                                            },
+                                                            {
+                                                                "name": "[String]",
+                                                                "attrs": {
+                                                                    "value": "{ i18n('Remember me') }"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "name": "input",
+                                                "attrs": {
+                                                    "type": "submit",
+                                                    "className": "btn btn-primary",
+                                                    "value": "{ i18n('Login') }"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

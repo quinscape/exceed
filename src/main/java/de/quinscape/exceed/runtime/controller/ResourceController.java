@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.controller;
 
 import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.service.CachedResource;
@@ -41,7 +42,7 @@ public class ResourceController
     @RequestMapping("/res/{appName}/**")
     public ResponseEntity serveResource(
         @PathVariable("appName") String appName,
-        ModelMap model, HttpServletRequest request, HttpServletResponse response) throws IOException
+        ModelMap model, HttpServletRequest request, HttpServletResponse response) throws IOException, ExecutionException
     {
 
         DefaultRuntimeApplication runtimeApplication = (DefaultRuntimeApplication) applicationService.getRuntimeApplication(servletContext, appName);
@@ -84,40 +85,40 @@ public class ResourceController
             throw new IllegalStateException("Need resource cache");
         }
 
-        try
+        CachedResource cachedResource = resourceCache.get(resourcePath);
+
+        String previousETag = request.getHeader("If-None-Match");
+        String eTag = cachedResource.getId();
+
+        response.setHeader("Etag", eTag);
+        response.setHeader("Expires", "");
+        response.setHeader("Pragma", "");
+        response.setHeader("Cache-Control", "public, max-age=31536000");
+
+        if (previousETag != null && previousETag.equals(eTag))
         {
-            CachedResource cachedResource = resourceCache.get(resourcePath);
-
-            String previousETag = request.getHeader("If-None-Match");
-            String eTag = cachedResource.getId();
-
-            response.setHeader("Etag", eTag);
-            response.setHeader("Expires", "");
-            response.setHeader("Pragma", "");
-            response.setHeader("Cache-Control", "public, max-age=31536000");
-            if (previousETag != null && previousETag.equals(eTag))
-            {
-                return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
-            }
-
-            byte[] data = cachedResource.getData();
-
-            String mediaType = mediaTypeService.getContentType(resourcePath);
-
-            response.setCharacterEncoding("UTF-8");
-            response.setContentType(mediaType);
-            response.setContentLength(data.length);
-
-            ServletOutputStream os = response.getOutputStream();
-            os.write(data);
-            os.flush();
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
         }
-        catch (ExecutionException e)
+
+        final String gzipETag = eTag + "-gzip";
+        if (previousETag != null && previousETag.equals(gzipETag))
         {
-            log.warn("Error loading resource", e);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            response.setHeader("Etag", gzipETag);
+            return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
         }
+
+        byte[] data = cachedResource.getData();
+
+        String mediaType = mediaTypeService.getContentType(resourcePath);
+
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType(mediaType);
+        response.setContentLength(data.length);
+
+        ServletOutputStream os = response.getOutputStream();
+        os.write(data);
+        os.flush();
+        return new ResponseEntity<>(HttpStatus.OK);
 
     }
 }

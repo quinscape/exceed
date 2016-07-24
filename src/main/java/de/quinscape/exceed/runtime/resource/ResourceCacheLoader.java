@@ -25,7 +25,7 @@ public class ResourceCacheLoader
 
         if (resourceLocation == null)
         {
-            throw new IllegalStateException("Resource " + key + " does not exist.");
+            throw new ResourceNotFoundException("Resource " + key + " does not exist.");
         }
 
         AppResource resource = resourceLocation.getHighestPriorityResource();

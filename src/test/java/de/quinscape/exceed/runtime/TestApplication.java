@@ -4,6 +4,8 @@ import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.i18n.DefaultTranslator;
+import de.quinscape.exceed.runtime.i18n.JOOQTranslationProvider;
+import de.quinscape.exceed.runtime.resource.ResourceLoader;
 import de.quinscape.exceed.runtime.scope.ScopedContext;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 
@@ -42,8 +44,16 @@ public class TestApplication
         return null;
     }
 
+
+    @Override
+    public ResourceLoader getResourceLoader()
+    {
+        return null;
+    }
+
+
     public RuntimeContext createRuntimeContext()
     {
-        return new RuntimeContext(this, "/test", new DefaultTranslator(), Locale.getDefault(), new ScopedContextChain(Collections.emptyList()), domainService);
+        return new RuntimeContext(this, "/test", new DefaultTranslator(null), Locale.getDefault(), new ScopedContextChain(Collections.emptyList()), domainService);
     }
 }

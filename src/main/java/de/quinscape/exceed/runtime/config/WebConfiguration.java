@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.config;
 
 import de.quinscape.exceed.message.IncomingMessage;
 import de.quinscape.exceed.message.Message;
+import de.quinscape.exceed.runtime.controller.ExceedExceptionResolver;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.runtime.service.websocket.EditorMessageHandler;
 import de.quinscape.exceed.runtime.service.websocket.EditorWebSocketHandler;
@@ -18,8 +19,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.context.support.ServletContextResource;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -79,25 +82,24 @@ public class WebConfiguration
     @Override
     public void configureViewResolvers(ViewResolverRegistry registry)
     {
-        InternalResourceViewResolver resolver = new InternalResourceViewResolver();
-        resolver.setPrefix("/exceed/views/");
-        resolver.setSuffix(".jsp");
-        resolver.setAlwaysInclude(false);
-
         // TODO: change this based on prod/dev
         servletContext.setAttribute("reactVersion", "react-0.14.7.js");
         servletContext.setAttribute("reactDOMVersion", "react-dom-0.14.7.js");
 
-        registry.viewResolver(resolver);
+        registry.viewResolver(new ExceedViewResolver(applicationContext, servletContext));
     }
 
 
     @Override
     public void addInterceptors(InterceptorRegistry registry)
     {
-        // unfortunately trying to inject the action registry here creates some kind of cyclic dependency messing
-        // up dslContext creation :\ we delay that until first use
-        registry.addInterceptor(new CommonVariablesInterceptor(applicationContext, servletContext));
+        //registry.addInterceptor(new CommonVariablesInterceptor(applicationContext, servletContext));
+    }
+
+    @Bean(name="simpleMappingExceptionResolver")
+    public HandlerExceptionResolver exceedExceptionResolver()
+    {
+        return new ExceedExceptionResolver();
     }
 
     @Bean

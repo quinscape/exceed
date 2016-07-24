@@ -2,7 +2,13 @@
     "components": {
         "View": {
             "classes": ["toplevel"],
-            "childRule" : "hasClass('view-child')"
+            "childRule" : "hasClass('view-child')",
+            "propTypes": {
+                "title": {
+                    "type": "PLAINTEXT",
+                    "defaultValue" : "i18n('Untitled')"
+                }
+            }
         },
         "Heading": {
             "classes": ["element"],

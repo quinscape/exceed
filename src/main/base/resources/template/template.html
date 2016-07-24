@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="$LOCALE">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>$TITLE</title>
+
+    <!-- Bootstrap -->
+    <link id="application-styles" href="$CONTEXT_PATH/res/$APP_NAME/style/$APP_NAME.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="$CONTEXT_PATH/res/$APP_NAME/js/html5shiv.min.js"></script>
+    <script src="$CONTEXT_PATH/res/$APP_NAME/js/respond.min.js"></script>
+    <![endif]-->
+    <meta name="token" content="$CSRF_TOKEN"/>
+    <meta name="token-header" content="$CSRF_HEADER_NAME"/>
+    <meta name="token-param" content="$CSRF_PARAMETER_NAME"/>
+
+<script id="root-model" type="x-ceed/view-model">
+$VIEW_MODEL
+</script>
+<script id="root-data" type="x-ceed/view-data">
+$VIEW_DATA
+</script>
+<script id="system-info" type="x-ceed/system-info">
+$SYSTEM_INFO
+</script>
+$SCRIPTS
+</head>
+<body data-app-name="$APP_NAME" data-roles="$USER_ROLES" data-connection-id="$CONNECTION_ID">
+<div id="root">
+    $CONTENT
+</div>
+</body>
+</html>

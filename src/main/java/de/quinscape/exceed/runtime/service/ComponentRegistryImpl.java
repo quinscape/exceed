@@ -56,8 +56,6 @@ public class ComponentRegistryImpl
     @Autowired
     private ApplicationService applicationService;
 
-    private ApplicationContext applicationContext;
-
     private ConcurrentMap<String, ComponentRegistration> components = new ConcurrentHashMap<>();
 
     private ConcurrentMap<String, Set<String>> packages = new ConcurrentHashMap<>();
@@ -260,9 +258,7 @@ public class ComponentRegistryImpl
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
-        this.applicationContext = applicationContext;
-
-        this.dataProviders = ImmutableMap.copyOf(this.applicationContext.getBeansOfType(DataProvider.class));
+        this.dataProviders = ImmutableMap.copyOf(applicationContext.getBeansOfType(DataProvider.class));
 
         log.info("DATA-PROVIDERS: {}", dataProviders);
     }

@@ -10,6 +10,7 @@ import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -29,7 +30,12 @@ import static de.quinscape.exceed.domain.Tables.*;
 public class ApplicationServiceImpl
     implements ApplicationService
 {
+    public final static String DEFAULT_APP_PROPERTY = "exceed.default-app";
+
     private final static Logger log = LoggerFactory.getLogger(ApplicationServiceImpl.class);
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Autowired
     private DSLContext dslContext;
@@ -159,7 +165,9 @@ public class ApplicationServiceImpl
                     ApplicationStatus.PREVIEW.ordinal(),
                     ApplicationStatus.PRODUCTION.ordinal()
                 )
-            ).fetchInto(AppState.class);
+            )
+            .orderBy(APP_STATE.NAME)
+            .fetchInto(AppState.class);
     }
 
     @Override
@@ -283,4 +291,40 @@ public class ApplicationServiceImpl
             this.status = status;
         }
     }
+
+    private volatile String defaultApp;
+
+    public String getDefaultApplication()
+    {
+        if (defaultApp == null)
+        {
+            synchronized (this)
+            {
+                if (defaultApp == null)
+                {
+                    final String defaultAppFromProperty = applicationContext.getEnvironment().getProperty
+                        (DEFAULT_APP_PROPERTY);
+
+                    if (defaultAppFromProperty != null)
+                    {
+                        defaultApp = defaultAppFromProperty;
+                        log.info("Using default application '{}' from enviroment property {}'", defaultApp,
+                            DEFAULT_APP_PROPERTY);
+                    }
+                    else
+                    {
+                        final List<AppState> activeApplications = getActiveApplications();
+                        if (activeApplications.size() == 0)
+                        {
+                            throw new IllegalStateException("No active applications");
+                        }
+                        defaultApp = activeApplications.get(0).getName();
+                        log.info("Using first active application '{}' as default application", defaultApp);
+                    }
+                }
+            }
+        }
+        return defaultApp;
+    }
+
 }

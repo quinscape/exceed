@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.application;
 
+import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
@@ -22,6 +23,7 @@ import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.component.DataProviderPreparationException;
 import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
+import de.quinscape.exceed.runtime.controller.TemplateVariables;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.process.ProcessExecutionState;
@@ -56,7 +58,6 @@ import de.quinscape.exceed.runtime.view.ViewData;
 import de.quinscape.exceed.runtime.view.ViewDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ui.ModelMap;
 import org.svenson.JSON;
 import org.svenson.JSONParseException;
 import org.svenson.JSONParser;
@@ -196,7 +197,12 @@ public class DefaultRuntimeApplication
             ResourceWatcher resourceWatcher = root.getResourceWatcher();
             if (resourceWatcher != null)
             {
+                log.debug("Register lister for watcher of resource root {}", root);
                 resourceWatcher.register(this);
+            }
+            else
+            {
+                log.debug("Non-reloadable resource root {}", root);
             }
         }
 
@@ -253,7 +259,21 @@ public class DefaultRuntimeApplication
     }
 
 
-    public void route(HttpServletRequest request, HttpServletResponse response, ModelMap model, String inAppURI) throws Exception
+    public boolean route(HttpServletRequest request, HttpServletResponse response, Map<String, Object> model, String inAppURI) throws Exception
+    {
+        RoutingResult result = applicationModel.getRoutingTable().resolve(inAppURI);
+        Mapping mapping = result.getMapping();
+        final Map<String, String> variables = result.getVariables();
+        final String template = result.getTemplate();
+        String viewName = mapping.getViewName();
+        String processName = mapping.getProcessName();
+
+        return processView(request, response, model, inAppURI, variables, template, viewName, processName);
+    }
+
+
+    public boolean processView(HttpServletRequest request, HttpServletResponse response, Map<String, Object> model,
+                               String inAppURI, Map<String, String> variables, String template, String viewName, String processName) throws IOException, ParseException
     {
         SessionContext sessionContext = null;
         try
@@ -277,15 +297,9 @@ public class DefaultRuntimeApplication
             RuntimeContextHolder.register(runtimeContext);
             scopedContextFactory.initializeContext(runtimeContext, sessionContext);
 
-            RoutingResult result = applicationModel.getRoutingTable().resolve(inAppURI);
 
-            Mapping mapping = result.getMapping();
-
-            runtimeContext.setVariables(addRequestParameters(request, new HashMap<>(result.getVariables())));
-            runtimeContext.setRoutingTemplate(result.getTemplate());
-
-            String viewName = mapping.getViewName();
-            String processName = mapping.getProcessName();
+            runtimeContext.setVariables(addRequestParameters(request, new HashMap<>(variables)));
+            runtimeContext.setRoutingTemplate(template);
 
             View view;
             boolean isAjaxRequest = RequestUtil.isAjaxRequest(request);
@@ -343,9 +357,8 @@ public class DefaultRuntimeApplication
                     params.put("stateId", state.getId());
                     params.remove(TRANSITION_PARAM);
 
-                    response.sendRedirect(request.getContextPath() + "/app/" + applicationModel.getName() + LocationUtil.evaluateURI(result.getTemplate(), params));
-
-                    return;
+                    response.sendRedirect(request.getContextPath() + "/app/" + applicationModel.getName() + LocationUtil.evaluateURI(template, params));
+                    return true;
                 }
 
                 ProcessState processState = process.getStates().get(state.getCurrentState());
@@ -367,20 +380,20 @@ public class DefaultRuntimeApplication
             else
             {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Not found.");
-                return;
+                return true;
             }
 
             if (view == null)
             {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "View " + viewName + " not found" +
                     ".");
-                return;
+                return true;
             }
 
             if (isAjaxRequest && isVarsUpdate(request))
             {
                 updateComponentVars(runtimeContext, request, response, state, view);
-                return;
+                return true;
             }
 
             // process service will have already initialized a view context unless a start state is redirect-after-posted to.
@@ -418,7 +431,7 @@ public class DefaultRuntimeApplication
                     {
                         model.put("previewErrors", errors);
                         RequestUtil.sendJSON(response, JSON.defaultJSON().forValue(model));
-                        return;
+                        return true;
                     }
                 }
             }
@@ -426,7 +439,7 @@ public class DefaultRuntimeApplication
 
             try
             {
-                data = processView(request, response, runtimeContext, model, view, state);
+                data = processView(request, runtimeContext, view, state);
             }
             catch (DataProviderPreparationException e)
             {
@@ -436,7 +449,7 @@ public class DefaultRuntimeApplication
                     model.put("previewErrors", Collections.singletonList(new ProviderError(e.getCause().getMessage(),
                         index)));
                     RequestUtil.sendJSON(response, JSON.defaultJSON().forValue(model));
-                    return;
+                    return true;
                 }
                 else
                 {
@@ -446,8 +459,9 @@ public class DefaultRuntimeApplication
 
             if (!isAjaxRequest)
             {
-                model.put("viewModel", data.rootModelJSON);
-                model.put("viewData", data.viewDataJSON);
+                model.put(TemplateVariables.VIEW_MODEL, data.rootModelJSON);
+                model.put(TemplateVariables.VIEW_DATA, data.viewDataJSON);
+                return false;
             }
             else
             {
@@ -460,6 +474,7 @@ public class DefaultRuntimeApplication
                         .output();
 
                 RequestUtil.sendJSON(response, json);
+                return true;
             }
         }
         finally
@@ -470,16 +485,16 @@ public class DefaultRuntimeApplication
     }
 
 
-    private ViewResult processView(HttpServletRequest request, HttpServletResponse response, RuntimeContext runtimeContext, ModelMap model, View view, ProcessExecutionState state) throws IOException
+    public ViewResult processView(HttpServletRequest request, RuntimeContext runtimeContext, View view, ProcessExecutionState state) throws IOException
     {
         runtimeContext.setView(view);
 
         ViewData viewData = viewDataService.prepareView(runtimeContext, view, state);
 
-        Map<String, Object> viewDataMap = new HashMap<>(viewData.getData());
-        viewDataMap.put(RUNTIME_INFO_NAME, getRuntimeInfo(request, runtimeContext));
+        final Map<String, Object> data = viewData.getData();
+        data.put(RUNTIME_INFO_NAME, getRuntimeInfo(request, runtimeContext, viewData));
 
-        String viewDataJSON = domainService.toJSON(viewDataMap);
+        String viewDataJSON = domainService.toJSON(data);
         String viewModelJSON = view.getCachedJSON();
 
         if (viewModelJSON == null)
@@ -512,7 +527,7 @@ public class DefaultRuntimeApplication
     }
 
 
-    private Map<String, Object> getRuntimeInfo(HttpServletRequest request, RuntimeContext runtimeContext)
+    private Map<String, Object> getRuntimeInfo(HttpServletRequest request, RuntimeContext runtimeContext, ViewData viewData)
     {
         try
         {
@@ -520,7 +535,7 @@ public class DefaultRuntimeApplication
 
             for (RuntimeInfoProvider provider : runtimeInfoProviders)
             {
-                map.put(provider.getName(), provider.provide(request, runtimeContext));
+                map.put(provider.getName(), provider.provide(request, runtimeContext, viewData));
             }
 
             return map;

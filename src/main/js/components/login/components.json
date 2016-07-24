@@ -1,0 +1,7 @@
+{
+    "components": {
+        "LoginForm": {
+            "classes": ["element", "internal"]
+        }
+    }
+}

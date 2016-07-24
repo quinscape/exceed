@@ -8,4 +8,6 @@ public interface ContentType
     String JSON = "application/json";
     String JAVASCRIPT = "text/javascript";
     String PLAINTEXT = "text/plain";
+    String HTML = "text/html";
+
 }

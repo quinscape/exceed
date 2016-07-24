@@ -1,7 +1,7 @@
 {
     "components": {
         "ViewContext": {
-            "classes": ["view-child"],
+            "classes": ["view-child", "configuration"],
             "childRule" : "hasClass('scope-element')",
             "templates": [
                 {

@@ -28,6 +28,7 @@ public class SecurityConfiguration
     private final static String[] PUBLIC_URIS = new String[]
         {
             "/index.jsp",
+            "/error",
             "/res/*/style/**",
             "/res/*/fonts/**",
             "/res/*/js/**",

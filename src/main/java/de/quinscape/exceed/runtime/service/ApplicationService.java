@@ -42,4 +42,6 @@ public interface ApplicationService
 
     @Transactional(propagation = Propagation.NESTED)
     void updateApplicationContext(String appName, String json);
+
+    String getDefaultApplication();
 }

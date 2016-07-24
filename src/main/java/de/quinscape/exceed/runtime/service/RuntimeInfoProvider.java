@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.service;
 
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.view.ViewData;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -22,7 +23,8 @@ public interface RuntimeInfoProvider
      *
      * @param request           current HTTP request
      * @param runtimeContext    current runtime context
+     * @param viewData
      * @return
      */
-    Object provide(HttpServletRequest request, RuntimeContext runtimeContext) throws Exception;
+    Object provide(HttpServletRequest request, RuntimeContext runtimeContext, ViewData viewData) throws Exception;
 }
