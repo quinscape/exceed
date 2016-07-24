@@ -1,11 +1,14 @@
 package de.quinscape.exceed.runtime.service;
 
 import de.quinscape.dss.DSSConfig;
+import de.quinscape.dss.FunctionExecutor;
 import de.quinscape.dss.ValueFactory;
 import de.quinscape.dss.runtime.DynamicStylesheetsChassis;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 
 /**
@@ -14,21 +17,11 @@ import java.io.IOException;
 @Service
 public class StyleService
 {
-    private final ExceedDSSResourceManager resourceManager;
-    private final DynamicStylesheetsChassis chassis;
+    private ExceedDSSResourceManager resourceManager;
+    private DynamicStylesheetsChassis chassis;
 
-    public StyleService()
-    {
-        DSSConfig dssConfig = new DSSConfig();
-        dssConfig.setDevelopment(true);
-        dssConfig.setFunctionExecutor(new SpringContextFunctionExecutor());
-        dssConfig.setValueFactory(new ValueFactory());
-
-        resourceManager = new ExceedDSSResourceManager();
-
-        dssConfig.setResourceManager(resourceManager);
-        this.chassis = new DynamicStylesheetsChassis(dssConfig);
-    }
+    @Autowired
+    private SpringContextFunctionExecutor springFunctionExecutor;
 
     /**
      * Processes the given stylesheet from the give resource root
@@ -50,5 +43,18 @@ public class StyleService
         resourceManager.setResourceRoot(root);
         chassis.lastModified(path);
         return chassis.process(path);
+    }
+
+    @PostConstruct
+    public void init()
+    {
+        DSSConfig dssConfig = new DSSConfig();
+        dssConfig.setDevelopment(true);
+        dssConfig.setFunctionExecutor(springFunctionExecutor);
+        dssConfig.setValueFactory(new ValueFactory());
+
+        resourceManager = new ExceedDSSResourceManager();
+        dssConfig.setResourceManager(resourceManager);
+        this.chassis = new DynamicStylesheetsChassis(dssConfig);
     }
 }

@@ -1,5 +1,16 @@
 package de.quinscape.exceed.runtime.config;
 
+import de.quinscape.dss.functions.AlphaHexColorFunction;
+import de.quinscape.dss.functions.AverageColorOfImageFunction;
+import de.quinscape.dss.functions.BestContrastFunction;
+import de.quinscape.dss.functions.FloorFunction;
+import de.quinscape.dss.functions.HSBAddFunction;
+import de.quinscape.dss.functions.IfFunction;
+import de.quinscape.dss.functions.LiteralFunction;
+import de.quinscape.dss.functions.LogFunction;
+import de.quinscape.dss.functions.MaxFunction;
+import de.quinscape.dss.functions.MinFunction;
+import de.quinscape.dss.functions.MixColorFunction;
 import de.quinscape.exceed.message.IncomingMessage;
 import de.quinscape.exceed.message.Message;
 import de.quinscape.exceed.runtime.controller.ExceedExceptionResolver;
@@ -138,5 +149,89 @@ public class WebConfiguration
     public WebSocketServerFactory webSocketServerFactory(EditorWebSocketHandler editorWebSocketHandler)
     {
         return new WebSocketServerFactory(editorWebSocketHandler);
+    }
+
+
+    @Bean
+    public MixColorFunction dss_mix()
+    {
+        return new MixColorFunction();
+    }
+
+
+    @Bean
+    public BestContrastFunction dss_bestContrast()
+    {
+        return new BestContrastFunction();
+    }
+
+
+    @Bean
+    public IfFunction dss_if()
+    {
+        return new IfFunction();
+    }
+
+
+    @Bean
+    public LiteralFunction literal()
+    {
+        return new LiteralFunction();
+    }
+
+
+    @Bean
+    public LogFunction dss_log()
+    {
+        return new LogFunction();
+    }
+
+
+    @Bean
+    public LogFunction dss_error()
+    {
+        return new LogFunction();
+    }
+
+
+    @Bean
+    public FloorFunction dss_floor()
+    {
+        return new FloorFunction();
+    }
+
+
+    @Bean
+    public MinFunction dss_min()
+    {
+        return new MinFunction();
+    }
+
+
+    @Bean
+    public MaxFunction dss_max()
+    {
+        return new MaxFunction();
+    }
+
+
+    @Bean
+    public AverageColorOfImageFunction dss_avgColor()
+    {
+        return new AverageColorOfImageFunction();
+    }
+
+
+    @Bean
+    public HSBAddFunction dss_hsbAdd()
+    {
+        return new HSBAddFunction();
+    }
+
+
+    @Bean
+    public AlphaHexColorFunction dss_alphaHex()
+    {
+        return new AlphaHexColorFunction();
     }
 }

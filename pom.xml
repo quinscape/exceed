@@ -198,7 +198,7 @@
         <dependency>
             <groupId>org.opensaga</groupId>
             <artifactId>opensaga-dynamic-stylesheets</artifactId>
-            <version>3.0.7</version>
+            <version>3.0.8</version>
         </dependency>
 
         <dependency>
