@@ -7,8 +7,15 @@
                 "title": {
                     "type": "PLAINTEXT",
                     "defaultValue" : "i18n('Untitled')"
+                },
+                "layout": {
+                    "rule": "layout()",
+                    "type": "PLAINTEXT"
                 }
             }
+        },
+        "Content": {
+            "classes": ["element"]
         },
         "Heading": {
             "classes": ["element"],
@@ -46,6 +53,9 @@
                     "required" : true
                 }
             }
+        },
+        "Footer": {
+            "classes": ["top-level", "element"]
         }
     }
 }

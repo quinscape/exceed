@@ -1,6 +1,6 @@
 package de.quinscape.exceed.model;
 
-public class Layout
+public class LayoutMetaData
     extends AbstractDynamicTopLevelModel
 {
 

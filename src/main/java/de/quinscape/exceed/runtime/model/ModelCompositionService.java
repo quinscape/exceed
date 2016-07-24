@@ -2,7 +2,7 @@ package de.quinscape.exceed.runtime.model;
 
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.AutoVersionedModel;
-import de.quinscape.exceed.model.Layout;
+import de.quinscape.exceed.model.LayoutMetaData;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.domain.DomainType;
@@ -13,6 +13,10 @@ import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.process.Transition;
 import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.model.routing.RoutingTable;
+import de.quinscape.exceed.model.view.AttributeValue;
+import de.quinscape.exceed.model.view.Attributes;
+import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.model.view.Layout;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DomainService;
@@ -27,10 +31,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -53,6 +55,7 @@ public class ModelCompositionService
 
     public static final String SYSTEM_MODEL_PREFIX = "/models/domain/system/";
 
+    public static final String LAYOUT_MODEL_PREFIX = "/models/layout/";
     public static final String VIEW_MODEL_PREFIX = "/models/view/";
 
     public static final String PROCESS_MODEL_PREFIX = "/models/process/";
@@ -181,7 +184,14 @@ public class ModelCompositionService
                 applicationModel.addView(view.getName(), view);
                 return view;
             }
+            else if (path.startsWith(LAYOUT_MODEL_PREFIX))
+            {
 
+                log.debug("Reading {} as Layout", path);
+                Layout layout = create(Layout.class, json , resource);
+                applicationModel.addLayout(layout.getName(), layout);
+                return layout;
+            }
             else if (path.startsWith(PROCESS_MODEL_PREFIX))
             {
                 int nameStart = PROCESS_MODEL_PREFIX.length();
@@ -207,7 +217,7 @@ public class ModelCompositionService
             else if (path.equals(DOMAIN_LAYOUT_NAME))
             {
                 log.debug("Reading {} as Domain Layout", path);
-                Layout layout = create(Layout.class, json, resource);
+                LayoutMetaData layout = create(LayoutMetaData.class, json, resource);
 
                 applicationModel.setDomainLayout(layout);
                 return layout;
@@ -229,7 +239,6 @@ public class ModelCompositionService
     public View createViewModel(RuntimeApplication runtimeApplication, AppResource resource, String json, boolean preview)
     {
         View view = create(View.class, json, resource);
-        ComponentUtil.updateComponentRegsAndParents(componentRegistry, view, null);
         view.setPreview(preview);
 
         return view;
@@ -345,8 +354,35 @@ public class ModelCompositionService
 
     public void postProcessView(RuntimeApplication application, View view)
     {
+        applyLayout(view, application.getApplicationModel());
+        ComponentUtil.updateComponentRegsAndParents(componentRegistry, view, null);
         view.initContext();
         view.setCachedJSON(modelJSONService.toJSON(application, view, JSONFormat.CLIENT));
+    }
+
+
+    private void applyLayout(View view, ApplicationModel applicationModel)
+    {
+        final ComponentModel viewComponent = view.getRoot();
+        final AttributeValue attr = viewComponent.getAttribute("layout");
+        final String layoutName = attr != null ? attr.getValue() : applicationModel.getDefaultLayout();
+        final Layout layout = applicationModel.getLayout(layoutName);
+
+        // each view gets its own independent copy of the layout components
+        final ComponentModel layoutRoot = layout.getRoot().copy();
+        final ComponentModel content = layoutRoot.find(c -> c.getName().equals(Layout.CONTENT));
+
+        if (content == null)
+        {
+            throw new InconsistentModelException("Layout model '" + layoutName+ "' has no <Content/> component.");
+        }
+
+        content.setKids(viewComponent.getKids());
+        viewComponent.setKids(
+            Collections.singletonList(
+                layoutRoot
+            )
+        );
     }
 
 

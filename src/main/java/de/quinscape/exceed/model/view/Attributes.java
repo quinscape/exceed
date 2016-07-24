@@ -103,4 +103,22 @@ public class Attributes
 
         return b.output();
     }
+
+
+    public Attributes copy()
+    {
+        final Attributes copy = new Attributes(null);
+        if (attrs == null || attrs.size() == 0)
+        {
+            return copy;
+        }
+        Map<String, AttributeValue> values = new HashMap<>(attrs.size());
+
+        for (Map.Entry<String, AttributeValue> entry : attrs.entrySet())
+        {
+            values.put(entry.getKey(), AttributeValue.forValue(entry.getValue().getValue(), false));
+        }
+        copy.attrs = values;
+        return copy;
+    }
 }

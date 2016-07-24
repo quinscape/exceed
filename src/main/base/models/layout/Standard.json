@@ -1,0 +1,24 @@
+{
+    "root": {
+        "name" : "div",
+        "kids": [
+            {
+                "name": "div",
+                "kids": [
+                    {
+                        "name": "[String]",
+                        "attrs": {
+                            "value": "NAVIGATION"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Content"
+            },
+            {
+                "name": "Footer"
+            }
+        ]
+    }
+}

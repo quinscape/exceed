@@ -9,6 +9,8 @@ import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 import org.svenson.StringBuilderSink;
 
+import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -288,6 +290,38 @@ public class ComponentModel
             {
                 kid.walk(c);
             }
+        }
+    }
+
+    public ComponentModel copy()
+    {
+        ComponentModel copy = new ComponentModel();
+        copy.setName(name);
+
+        if (attrs != null)
+        {
+            copy.setAttrs(attrs.copy());
+        }
+
+        if (kids != null && kids.size() > 0)
+        {
+            List<ComponentModel> list = new ArrayList<>(kids.size());
+            for (ComponentModel kid : kids)
+            {
+                list.add(kid.copy());
+            }
+
+            copy.setKids(list);
+        }
+        return copy;
+    }
+
+    @PostConstruct
+    public void init()
+    {
+        if (name == null)
+        {
+            throw new IllegalStateException("Component model must have a name");
         }
     }
 }

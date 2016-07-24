@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.controller;
 
 import de.quinscape.exceed.model.ApplicationModel;
-import de.quinscape.exceed.model.Layout;
+import de.quinscape.exceed.model.LayoutMetaData;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.util.ContentType;
@@ -54,10 +54,10 @@ public class EditorController
         ApplicationModel applicationModel = runtimeApplication.getApplicationModel();
         synchronized (applicationModel)
         {
-            Layout domainLayout = applicationModel.getDomainLayout();
+            LayoutMetaData domainLayout = applicationModel.getDomainLayout();
             if (domainLayout == null)
             {
-                domainLayout = new Layout();
+                domainLayout = new LayoutMetaData();
                 applicationModel.setDomainLayout(domainLayout);
             }
             domainLayout.setProperty((String) data.get("name"), data.get("layout"));

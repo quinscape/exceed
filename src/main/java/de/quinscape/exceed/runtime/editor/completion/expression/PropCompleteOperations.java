@@ -4,6 +4,7 @@ package de.quinscape.exceed.runtime.editor.completion.expression;
 import de.quinscape.exceed.component.PropDeclaration;
 import de.quinscape.exceed.component.PropType;
 import de.quinscape.exceed.expression.ASTExpression;
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.process.ViewState;
@@ -55,6 +56,22 @@ public class PropCompleteOperations
 
     @Operation
     public List<AceCompletion> location(ExpressionContext<PropCompleteEnvironment> ctx)
+    {
+        final RuntimeContext runtimeContext = ctx.getEnv().getRuntimeContext();
+        final ApplicationModel applicationModel = runtimeContext.getRuntimeApplication().getApplicationModel();
+        final Set<String> layoutNames = applicationModel.getLayouts().keySet();
+
+        List<AceCompletion> suggestions = new ArrayList<>();
+
+        for (String name : layoutNames)
+        {
+            suggestions.add(new AceCompletion(CompletionType.PROP, name, "Layout", null));
+        }
+        return suggestions;
+    }
+
+    @Operation
+    public List<AceCompletion> layout(ExpressionContext<PropCompleteEnvironment> ctx)
     {
         RuntimeApplication application = ctx.getEnv().getRuntimeContext().getRuntimeApplication();
 
