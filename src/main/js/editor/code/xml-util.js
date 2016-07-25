@@ -1,4 +1,4 @@
-var l=[];
+const INDENT_PER_LEVEL = "    ";
 
 function htmlEscape(str) {
     return String(str)
@@ -27,62 +27,71 @@ function attr(attrs, name)
 
 }
 
-function dump(lines, model, indent)
+function renderTagStart(model, indent)
 {
     if (model.name === "[String]")
     {
-        lines.push(htmlEscape(reindent(model.attrs.value, indent)));
-        return;
+        return htmlEscape(reindent(model.attrs.value, indent));
     }
-
-    var line = indent +  "<" + model.name;
-    var attrs = model.attrs;
-    if (attrs)
+    else
     {
-        var ats = [];
-
-        if (attrs.id !== undefined)
+        var line = indent + "<" + model.name;
+        var attrs = model.attrs;
+        if (attrs)
         {
-            ats.push(attr(attrs, "id"));
-            lineLength += ats[ats.length-1].length;
-        }
+            var ats = [];
+            var lineLength = line.length;
 
-        if (attrs.var !== undefined)
-        {
-            ats.push(attr(attrs, "var"));
-            lineLength += ats[ats.length-1].length;
-        }
-
-        if (attrs.name !== undefined)
-        {
-            ats.push(attr(attrs, "name"));
-            lineLength += ats[ats.length-1].length;
-        }
-
-
-        var lineLength = line.length;
-
-        for (var name in attrs)
-        {
-            if (attrs.hasOwnProperty(name) && primaryAttributes[name] !== true)
+            if (attrs.id !== undefined)
             {
-                var xmlAttr = attr(attrs, name);
-                ats.push(xmlAttr);
-
-                lineLength += xmlAttr.length;
+                ats.push(attr(attrs, "id"));
+                lineLength += ats[ats.length - 1].length;
             }
-        }
 
-        if (lineLength < 73)
-        {
-            line += " " + ats.join(" ");
-        }
-        else
-        {
-            line += " " + ats.join("\n    " + indent);
-        }
+            if (attrs.var !== undefined)
+            {
+                ats.push(attr(attrs, "var"));
+                lineLength += ats[ats.length - 1].length;
+            }
 
+            if (attrs.name !== undefined)
+            {
+                ats.push(attr(attrs, "name"));
+                lineLength += ats[ats.length - 1].length;
+            }
+
+
+            for (var name in attrs)
+            {
+                if (attrs.hasOwnProperty(name) && primaryAttributes[name] !== true)
+                {
+                    var xmlAttr = attr(attrs, name);
+                    ats.push(xmlAttr);
+
+                    lineLength += xmlAttr.length;
+                }
+            }
+
+            if (ats.length)
+            {
+                if (lineLength < 73)
+                {
+                    line += " " + ats.join(" ");
+                }
+                else
+                {
+                    line += " " + ats.join("\n    " + indent);
+                }
+            }
+
+        }
+        return line;
     }
+}
+function dump(lines, model, indent)
+{
+    var line = renderTagStart(model, indent);
+
     var kids = model.kids;
     if (kids)
     {
@@ -90,7 +99,7 @@ function dump(lines, model, indent)
 
         lines.push(line);
 
-        var newIndent = indent + "    ";
+        var newIndent = indent + INDENT_PER_LEVEL;
         for (var i = 0; i < kids.length; i++)
         {
             dump(lines, kids[i], newIndent);
@@ -106,15 +115,67 @@ function dump(lines, model, indent)
     }
 }
 
+function findContent(model)
+{
+    if (model.name === "Content")
+    {
+        return model;
+    }
+
+    var kids = model.kids;
+    if (kids)
+    {
+        for (var i = 0; i < kids.length; i++)
+        {
+            var result = findContent(kids[i]);
+            if (result)
+            {
+                return result;
+            }
+        }
+    }
+    return null;
+}
+
+function dumpView(l, root, includeLayout)
+{
+    if (!includeLayout && root.kids.length)
+    {
+        l.push(renderTagStart(root, "") + ">");
+
+        var content = findContent(root);
+        if (content)
+        {
+            var kids = content.kids;
+            if (kids)
+            {
+                for (var i = 0; i < kids.length; i++)
+                {
+                    dump(l, kids[i], INDENT_PER_LEVEL);
+                }
+            }
+        }
+
+        // first tag must be view
+        l.push("</View>");
+    }
+    else
+    {
+        dump(l, root, "");
+    }
+}
 
 module.exports = {
 
-    toXml: function (model)
+    toXml: function (model, includeLayout)
     {
+
+
         var l = [];
         if (model.type !== "view.View")
         {
             dump(l, model, "");
+
         }
         else
         {
@@ -126,7 +187,7 @@ module.exports = {
                     var s = comments[pos];
                     if (s === null)
                     {
-                        dump(l, model.root, "");
+                        dumpView(l, model.root, includeLayout);
                     }
                     else if (typeof s == "string")
                     {
@@ -136,7 +197,7 @@ module.exports = {
             }
             else
             {
-                dump(l, model.root, "");
+                dumpView(l, model.root, includeLayout);
             }
         }
 
