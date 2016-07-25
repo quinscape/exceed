@@ -68,7 +68,7 @@ public class Reply
      *
      * @return error reply
      */
-    public static Reply createErrorReply(int responseId, String message)
+    public static Reply createErrorReply(int responseId, Object message)
     {
         return new Reply(responseId, message, false);
     }

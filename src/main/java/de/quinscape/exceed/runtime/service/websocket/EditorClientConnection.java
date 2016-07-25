@@ -54,7 +54,15 @@ class EditorClientConnection
         {
             throw new IllegalStateException("Cannot respond to message without meta / message count");
         }
-        editorWebSocketHandler.send(connectionId, new Reply(meta.getMessageId(), response));
+
+        if (response instanceof Error)
+        {
+            editorWebSocketHandler.send(connectionId, Reply.createErrorReply(meta.getMessageId(), response));
+        }
+        else
+        {
+            editorWebSocketHandler.send(connectionId, new Reply(meta.getMessageId(), response));
+        }
     }
 
 

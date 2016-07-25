@@ -129,7 +129,7 @@ public class EditorWebSocketHandler
     }
 
 
-    private void handleMessage(MessageContext connection, IncomingMessage msg) throws Exception
+    private void handleMessage(MessageContext connection, IncomingMessage msg)
     {
         try
         {
@@ -144,7 +144,7 @@ public class EditorWebSocketHandler
         }
         catch (Exception e)
         {
-            log.error("Error handling " + msg + ": ", e);
+            log.error("Error handling {}: {}", msg, e);
 
             if (msg instanceof Query)
             {
