@@ -267,7 +267,6 @@ else
 
     Hub.register("message.Reply", function(reply)
     {
-        //console.debug("REPLY: %o", reply);
 
         var deferred = lookupDeferred(reply.responseId);
         var message = reply.message;
@@ -275,6 +274,7 @@ else
         {
             if (reply.ok)
             {
+                //console.debug("REPLY: %o", JSON.stringify(message, null, 2));
                 deferred.resolve(message);
             }
             else
