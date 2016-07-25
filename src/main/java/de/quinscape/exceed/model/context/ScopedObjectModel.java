@@ -2,6 +2,7 @@ package de.quinscape.exceed.model.context;
 
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.view.AttributeValue;
+import org.svenson.JSONProperty;
 
 public class ScopedObjectModel
     extends ScopedElementModel
@@ -26,7 +27,7 @@ public class ScopedObjectModel
         return defaultValue != null ? defaultValue.getValue() : null;
     }
 
-
+    @JSONProperty(ignore = true)
     public ASTExpression getDefaultValueExpression()
     {
         return defaultValue != null ? defaultValue.getAstExpression() : null;
