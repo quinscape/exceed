@@ -313,11 +313,6 @@ public class View
 
     public ContextModel getContextModel()
     {
-        if (contextModel == null)
-        {
-            throw new IllegalStateException("Context model not initialized");
-        }
-
         return contextModel;
     }
 
