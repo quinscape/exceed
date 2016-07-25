@@ -48,10 +48,10 @@ const LinkedStateMixin = require("react-addons-linked-state-mixin");
 const keys = require("../util/keys");
 
 var InPageEditor = false;
-//if (process.env.NODE_ENV !== "production")
-//{
-//    InPageEditor = require("../editor/InPageEditor");
-//}
+if (process.env.NODE_ENV !== "production")
+{
+   InPageEditor = require("../editor/InPageEditor");
+}
 
 const ThrobberComponent = require("../ui/throbber").ThrobberComponent;
 
