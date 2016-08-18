@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.expression.query;
 
-import de.quinscape.exceed.component.PropDeclaration;
+import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.Node;

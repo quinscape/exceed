@@ -1,14 +1,14 @@
 package de.quinscape.exceed.runtime.service.rtinfo;
 
-import de.quinscape.exceed.component.ComponentDescriptor;
-import de.quinscape.exceed.component.PropDeclaration;
+import de.quinscape.exceed.model.component.ComponentDescriptor;
+import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.component.ModuleFunctionReferences;
-import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
+import de.quinscape.exceed.model.component.ModuleFunctionReferences;
+import de.quinscape.exceed.model.component.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;

@@ -1,7 +1,7 @@
 package de.quinscape.exceed.model.view;
 
-import de.quinscape.exceed.component.ComponentDescriptor;
-import de.quinscape.exceed.component.ComponentViewContext;
+import de.quinscape.exceed.model.component.ComponentDescriptor;
+import de.quinscape.exceed.model.component.ComponentViewContext;
 import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.context.ContextModel;

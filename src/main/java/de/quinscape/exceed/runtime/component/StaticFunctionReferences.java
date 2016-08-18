@@ -1,10 +1,9 @@
-package de.quinscape.exceed.runtime.component;
+package de.quinscape.exceed.model.component;
 
 import org.svenson.JSONParameter;
 import org.svenson.JSONTypeHint;
 
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Encapsulates the information contained within a <code>track-usage.json</code> file on the java side.

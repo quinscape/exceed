@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.model;
 
-import de.quinscape.exceed.component.ComponentDescriptor;
+import de.quinscape.exceed.model.component.ComponentDescriptor;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;

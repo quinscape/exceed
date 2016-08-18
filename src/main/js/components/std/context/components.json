@@ -1,0 +1,71 @@
+{
+
+    "_" : "Contains components for declaring view context elements.",
+
+    "components": {
+        "ViewContext": {
+            "classes": ["view-child", "configuration"],
+            "childRule" : "hasClass('scope-element')",
+            "templates": [
+                {
+                    "desc": "ViewContext",
+                    "model": {
+                        "name": "ViewContext",
+                        "kids": []
+                    }
+                }
+            ]
+        },
+        "List": {
+            "classes": ["scope-element"],
+            "propTypes": {
+                "name": {
+                    "type": "PLAINTEXT",
+                    "required": true
+                },
+                "queryExpression": {
+                    "client": false,
+                    "type": "QUERY_EXPRESSION",
+                    "rule": "domainType()",
+                    "required": false
+                }
+            }
+        },
+        "Object": {
+            "classes": ["scope-element"],
+            "propTypes": {
+                "name": {
+                    "type": "PLAINTEXT",
+                    "required": true
+                },
+                "type": {
+                    "type": "PLAINTEXT",
+                    "rule": "domainType()",
+                    "required": true
+                },
+                "defaultValue": {
+                    "type": "VALUE_EXPRESSION",
+                    "required": false
+                }
+            }
+        },
+        "Property": {
+            "classes": ["scope-element"],
+            "propTypes": {
+                "name": {
+                    "type": "PLAINTEXT",
+                    "required": true
+                },
+                "type": {
+                    "type": "PLAINTEXT",
+                    "rule": "propertyType()",
+                    "required": true
+                },
+                "defaultValue": {
+                    "type": "VALUE_EXPRESSION",
+                    "required": false
+                }
+            }
+        }
+    }
+}

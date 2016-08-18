@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.service.rtinfo;
 
-import de.quinscape.exceed.component.ComponentDescriptor;
-import de.quinscape.exceed.component.PropDeclaration;
+import de.quinscape.exceed.model.component.ComponentDescriptor;
+import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
@@ -13,8 +13,8 @@ import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.component.ModuleFunctionReferences;
-import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
+import de.quinscape.exceed.model.component.ModuleFunctionReferences;
+import de.quinscape.exceed.model.component.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.scope.ScopedContext;
 import de.quinscape.exceed.runtime.scope.ScopedValueType;
 import de.quinscape.exceed.runtime.scope.ViewContext;

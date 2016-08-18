@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.model;
 
-import de.quinscape.exceed.component.ComponentDescriptor;
-import de.quinscape.exceed.component.ComponentPackageDescriptor;
+import de.quinscape.exceed.model.component.ComponentDescriptor;
+import de.quinscape.exceed.model.component.ComponentPackageDescriptor;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import org.svenson.JSONParser;

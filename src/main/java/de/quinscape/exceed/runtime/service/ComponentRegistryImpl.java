@@ -1,8 +1,8 @@
 package de.quinscape.exceed.runtime.service;
 
 import com.google.common.collect.ImmutableMap;
-import de.quinscape.exceed.component.ComponentDescriptor;
-import de.quinscape.exceed.component.ComponentPackageDescriptor;
+import de.quinscape.exceed.model.component.ComponentDescriptor;
+import de.quinscape.exceed.model.component.ComponentPackageDescriptor;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.component.DataProvider;
 import de.quinscape.exceed.runtime.component.QueryDataProvider;

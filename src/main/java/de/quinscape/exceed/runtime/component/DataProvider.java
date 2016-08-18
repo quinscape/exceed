@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.component;
 
-import de.quinscape.exceed.component.ComponentDescriptor;
+import de.quinscape.exceed.model.component.ComponentDescriptor;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.view.DataProviderContext;
 

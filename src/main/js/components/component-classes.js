@@ -2,7 +2,7 @@
  * These are special component descriptor signal classes that are used for purposes other than completion checking.
  * 
  * MODULE IS AUTO-GENERATED. DO NOT EDIT. 
- * ( Edit de.quinscape.exceed.component.ComponentClasses instead )
+ * ( Edit de.quinscape.exceed.model.component.ComponentClasses instead )
  */
 module.exports = {
     /**

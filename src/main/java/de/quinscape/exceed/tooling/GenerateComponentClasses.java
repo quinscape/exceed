@@ -26,7 +26,7 @@ public class GenerateComponentClasses
     public void main() throws IOException, ParseException
     {
 
-        CompilationUnit cu = JavaParser.parse(new File("./src/main/java/de/quinscape/exceed/component/ComponentClasses.java"));
+        CompilationUnit cu = JavaParser.parse(new File("./src/main/java/de/quinscape/exceed/model/component/ComponentClasses.java"));
 
         final Visitor v = new Visitor();
         cu.accept(v, null);
@@ -37,7 +37,7 @@ public class GenerateComponentClasses
             "completion checking.\n" +
             " * \n" +
             " * MODULE IS AUTO-GENERATED. DO NOT EDIT. \n" +
-            " * ( Edit de.quinscape.exceed.component.ComponentClasses instead )\n" +
+            " * ( Edit de.quinscape.exceed.model.component.ComponentClasses instead )\n" +
             " */\n" +
             "module.exports = {\n");
 
