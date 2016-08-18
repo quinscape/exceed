@@ -16,7 +16,8 @@ var FilterField = function (props)
                             id="filter"
                             type="text"
                             className="form-control"
-                            valueLink={ props.valueLink }
+                            value={ props.valueLink.value }
+                            onChange={ ev => props.valueLink.requestChange(ev.target.value) }
                             placeholder={ props.placeholder }
                         />
                         <span className="input-group-btn">

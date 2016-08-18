@@ -6,7 +6,6 @@ const MouseTrap = require("./util/global-undo");
 
 const Promise = require("es6-promise-polyfill").Promise;
 
-const bulk = require("bulk-require");
 const domready = require("domready");
 
 var model = evaluateEmbedded("root-model", "x-ceed/view-model");
@@ -14,7 +13,6 @@ var data = evaluateEmbedded("root-data", "x-ceed/view-data");
 
 window._exceed_initial_data = data;
 const viewService = require("./service/view");
-
 viewService._init(data);
 
 const sys = require("./sys");
@@ -30,11 +28,28 @@ const svgLayout = require("./gfx/svg-layout");
 
 const hotReload = require("./service/hotreload");
 
-const componentsMap = bulk(__dirname, ["components/**/*.json", "components/**/*.js"]);
-componentService.registerBulk(componentsMap.components);
+componentService.registerFromRequireContext(
+    require.context("./components/std/", true, /\.js(on)?$/)
+);
 
-const clientActionMap = bulk(__dirname, ["action/**/*.js"]);
-actionService.registerBulk(clientActionMap.action);
+var prodCtx = false;
+
+if (process.env.NODE_ENV !== "production")
+{
+    prodCtx = require.context("./components/editor/", true, /\.js(on)?$/)
+}
+
+if (prodCtx)
+{
+    componentService.registerFromRequireContext(
+        prodCtx
+    );
+}
+
+
+actionService.registerFromRequireContext(
+    require.context("./action/", true, /\.js$/)
+);
 
 function evaluateEmbedded(elemId, mediaType)
 {
@@ -77,3 +92,4 @@ domready(function ()
     });
 });
 
+module.exports = require("./services");

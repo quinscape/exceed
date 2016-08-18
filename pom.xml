@@ -438,17 +438,24 @@
                     </execution>
 
                     <execution>
-                        <id>gulp build</id>
+                        <id>NPM build</id>
                         <goals>
-                            <goal>gulp</goal>
+                            <goal>npm</goal>
                         </goals>
                         <phase>generate-resources</phase>
+                        <configuration>
+                            <!-- optional: The default argument is actually
+                            "install", so unless you need to run some other npm command,
+                            you can remove this whole <configuration> section.
+                            -->
+                            <arguments>run dist</arguments>
+                        </configuration>
                     </execution>
 
                     <execution>
-                        <id>gulp test</id>
+                        <id>NPM test</id>
                         <goals>
-                            <goal>gulp</goal>
+                            <goal>npm</goal>
                         </goals>
                         <phase>test</phase>
                         <configuration>

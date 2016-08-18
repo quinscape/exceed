@@ -315,23 +315,23 @@ describe("DataGraph", function ()
 
         assert.throws(function ()
         {
-            dl.getCursor([0, "fake"]);
-        }, /No column 'fake' in DataGraph columns/);
+            dl.getCursor([0, "wrong"]);
+        }, /No column 'wrong' in DataGraph columns/);
 
         assert.throws(function ()
         {
-            dl.getCursor([0, "embedded", "fake"]);
-        }, /Cannot find property for 'Embedded.fake'/);
+            dl.getCursor([0, "embedded", "wrong"]);
+        }, /Cannot find property for 'Embedded.wrong'/);
 
         assert.throws(function ()
         {
-            dl.getCursor([0, "bars", 0, "fake"]);
-        }, /Cannot find property for 'Bar.fake'/);
+            dl.getCursor([0, "bars", 0, "wrong"]);
+        }, /Cannot find property for 'Bar.wrong'/);
 
         assert.throws(function ()
         {
-            dl.getCursor([0, "bazes", "one", "fake"]);
-        }, /Cannot find property for 'Baz.fake'/);
+            dl.getCursor([0, "bazes", "one", "wrong"]);
+        }, /Cannot find property for 'Baz.wrong'/);
 
     });
 
@@ -844,7 +844,6 @@ describe("DataGraph", function ()
                 var cursor = simpleMap.getCursor(["A"], (newGraph, path) =>
                 {
                     var value = util.walk(newGraph.rootObject, path);
-
                     return newGraph.getCursor(['A'], false).set(null, "(" + value + ")")
                 });
 

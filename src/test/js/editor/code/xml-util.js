@@ -16,7 +16,7 @@ describe("XML Util", function ()
         assert(xmlUtil.reindent("  a\n  b\n", "    ") == "    a\n    b\n");
     });
 
-    it("converts JSON view models to XML notation", function ()
+    it.skip("converts JSON view models to XML notation", function ()
     {
         var xmlDoc = xmlUtil.toXml({
             type: "view.View",

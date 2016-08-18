@@ -141,11 +141,11 @@ describe("PropertyConverter", function ()
         assert.throws(function ()
         {
             propertyConverter.toUser("abc", { type : "Foo"});
-        }, /No toUser converter for property type 'Foo'/)
+        }, /No toUser converter for property type 'Foo'/);
         assert.throws(function ()
         {
             propertyConverter.fromUser("abc", {type: "Foo"});
-        }, /No fromUser converter for property type 'Foo'/)
+        }, /No fromUser converter for property type 'Foo'/);
 
         propertyConverter.registerFromUser("Foo", function (value, propertyType)
         {

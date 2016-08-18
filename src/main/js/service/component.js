@@ -1,68 +1,43 @@
+const endsWith = require("../util/endsWith");
 
-const assign = require("object-assign");
+const COMPONENTS_JSON_SUFFIX = "/components.json";
+const JS_EXTENSION = ".js";
 
 var components = {};
 
-var React = require("react");
-
-function registerMapRecursively(map)
+function resolveWizardComponents(componentDef, ctx, dir, componentName)
 {
-    //console.debug("registerMapRecursively", map);
-    for (var name in map)
-    {
-        if (map.hasOwnProperty(name))
-        {
-            var value = map[name];
-            if (typeof value === "object")
-            {
-                if (name === "components")
-                {
-                    if (value.components && typeof value.components === "object")
-                    {
-                        ComponentService.register(map, value);
-                    }
-                }
-                else
-                {
-                    registerMapRecursively(map[name], value);
-                }
-            }
-        }
-    }
-}
-
-function resolveWizardComponents(componentDef, bulkDir, componentName)
-{
-    var componentClass;
-    var templates = componentDef.templates;
+    const templates = componentDef.templates;
     if (templates)
     {
-        for (var i = 0; i < templates.length; i++)
+        for (let i = 0; i < templates.length; i++)
         {
-            var template = templates[i];
-            if (template.wizard)
+            let template = templates[i];
+            let wizardComponentName = template.wizard;
+            if (wizardComponentName)
             {
-                componentClass = bulkDir[template.wizard];
-
+                let moduleName = dir + wizardComponentName + JS_EXTENSION;
+                let componentClass = ctx(moduleName);
                 if (!componentClass)
                 {
-                    throw new Error("Wizard component '" + template.wizard + "' not found for component '" + componentName + "'")
+                    throw new Error("Wizard component '" + wizardComponentName + "' not found for component '" + componentName + "'")
                 }
                 template.wizardComponent = componentClass;
             }
         }
     }
 
-    var propWizards = componentDef.propWizards;
+    const propWizards = componentDef.propWizards;
     if (propWizards)
     {
-        for (var propName in propWizards)
+        for (let propName in propWizards)
         {
             if (propWizards.hasOwnProperty(propName))
             {
-                var entry = propWizards[propName];
+                let entry = propWizards[propName];
+                let moduleName = dir + entry.wizard + JS_EXTENSION;
+                let componentClass = ctx(moduleName);
 
-                componentClass = bulkDir[entry.wizard];
                 if (!componentClass)
                 {
                     throw new Error("Wizard prop component '" + entry.wizard + "' not found for component '" + componentName + "'")
@@ -73,44 +48,62 @@ function resolveWizardComponents(componentDef, bulkDir, componentName)
         }
     }
 }
+
+function register(ctx, name)
+{
+    let dir = name.substr(0, name.length - COMPONENTS_JSON_SUFFIX.length + 1);
+
+    //console.log("register", name, dir);
+
+    let def = ctx(name);
+
+    let subComponents = def.components;
+    for (let componentName in subComponents)
+    {
+        if (subComponents.hasOwnProperty(componentName))
+        {
+            let componentDef = subComponents[componentName];
+
+            let parts = componentName.split(".");
+            let component = ctx(dir + parts[0] + JS_EXTENSION);
+
+            for (let i = 1; i < parts.length; i++)
+            {
+                let part = parts[i];
+                if (part === "")
+                {
+                    throw new Error("Invalid component name '" + componentName + "': contains empty property");
+                }
+                component = component[part];
+            }
+            componentDef.component  = component;
+            resolveWizardComponents(componentDef, ctx, dir, componentName);
+
+            components[componentName] = componentDef;
+        }
+    }
+}
+
+
 var ComponentService = {
     getComponents: function ()
     {
         return components;
     },
 
-    registerBulk: function (bulkMap)
+    registerFromRequireContext: function (ctx)
     {
-        registerMapRecursively(bulkMap);
-    },
-    register: function(bulkDir, def)
-    {
-        //console.log("register def", bulkDir.DataGrid, def);
+        let files = ctx.keys();
 
-        var i, subComponents = def.components;
-        for (var componentName in subComponents)
+        //console.log("KEYS", files);
+
+        for (let i = 0; i < files.length; i++)
         {
-            if (subComponents.hasOwnProperty(componentName))
+            let name = files[i];
+
+            if (endsWith(name, COMPONENTS_JSON_SUFFIX))
             {
-                var componentDef = subComponents[componentName];
-
-                var parts = componentName.split(".");
-
-                var component = bulkDir;
-                for (i = 0; i < parts.length; i++)
-                {
-                    component = component[parts[i]];
-                    if (!component)
-                    {
-                        throw new Error("Cannot find module for declared component '" + componentName + "'");
-                    }
-                }
-
-                componentDef.component  = component;
-
-                resolveWizardComponents(componentDef, bulkDir, componentName);
-
-                components[componentName] = componentDef;
+                register(ctx, name);
             }
         }
     }

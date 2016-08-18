@@ -228,18 +228,13 @@ public class ExceedViewResolver
             }
             else
             {
-
                 final CsrfToken token = (CsrfToken) request.getAttribute("_csrf");
                 model.put(TemplateVariables.CSRF_TOKEN, token.getToken());
                 model.put(TemplateVariables.CSRF_HEADER_NAME, token.getHeaderName());
                 model.put(TemplateVariables.CSRF_PARAMETER_NAME, token.getParameterName());
 
                 model.put(TemplateVariables.SYSTEM_INFO, systemInfo);
-                model.put(TemplateVariables.SCRIPTS,
-                    "<script src=\"" + contextPath + "/res/" + appName + "/js/" + servletContext.getAttribute("reactVersion") + "\"></script>\n" +
-                        "<script src=\"" + contextPath + "/res/" + appName + "/js/" + servletContext.getAttribute("reactDOMVersion") + "\"></script>\n" +
-                        "<script src=\"" + contextPath + "/res/" + appName + "/js/main.js\"></script>\n")
-                ;
+                model.put(TemplateVariables.SCRIPTS, "<script src=\"" + contextPath + "/res/" + appName + "/js/main.js\"></script>\n");
             }
 
             //response.setContentLength(data.length);

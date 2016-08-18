@@ -474,8 +474,16 @@ var Toolbar = React.createClass({
         return (
             <form className="form-inline" action="#" onSubmit={ this.props.onSave }>
                 <div className="form-group-sm">
-                    <label className="sr-only" htmlFor="editor-state-select">View</label>
-                    <select id="editor-state-select" className="form-control input-sm" valueLink={ this.props.stateLink }>
+                    <label
+                        className="sr-only"
+                        htmlFor="editor-state-select">View
+                    </label>
+                    <select
+                        id="editor-state-select"
+                        className="form-control input-sm"
+                        value={ this.props.stateLink.value }
+                        onChange={ ev => this.props.stateLink.requestChange(ev.target.value) }
+                    >
                         {
                             this.props.editorStates.map( (state, index) =>
                                 <option key={ index} value={ index }>{ state.getLabel() }</option>

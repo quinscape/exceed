@@ -91,10 +91,8 @@ describe("Action Service", function(){
                 return Promise.reject(new Error("caught"));            });
         };
 
-        actionService.registerBulk({
-            test: testAction,
-            serverWrap: wrappingAction
-        });
+        actionService.register("test", testAction, testAction.catch);
+        actionService.register("serverWrap", wrappingAction);
 
         var actions = actionService.getActions();
         assert(actions.test.client === true);

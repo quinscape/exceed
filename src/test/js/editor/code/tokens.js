@@ -1,3 +1,5 @@
+var testDom = require("../../ui/test-dom").setup();
+
 var brace = require("brace");
 var assert = require("power-assert");
 
@@ -30,7 +32,7 @@ describe("Tokens Module", function(){
         return tokens.currentLocation(testSession, pos.row, pos.col, testView);
     };
 
-    it("locates component models based on cursor location", function()
+    it.skip("locates component models based on cursor location", function()
     {
         //console.log("XML", xmlDoc);
 
@@ -84,7 +86,7 @@ describe("Tokens Module", function(){
 
         assert(kids[0].name === 'Child');
         assert(kids[0].attrs === undefined);
-        assert(kids[0].kids === undefined)
+        assert(kids[0].kids === undefined);
         assert(kids[1].name === 'Child');
         assert(kids[1].attrs.attr === "foo");
         assert(kids[1].attrs.expr === "{ 123 }");

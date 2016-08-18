@@ -13,23 +13,20 @@ function defaultCatch(e)
 
 
 var ActionService = {
-    registerBulk: function(map)
+    registerFromRequireContext: function (ctx)
     {
-        //console.log("register(%o, %s)", map, path);
-        for (var name in map)
+        var modules = ctx.keys();
+        for (var i = 0; i < modules.length; i++)
         {
-            if (map.hasOwnProperty(name))
+            var moduleName = modules[i];
+            var module = ctx(moduleName);
+
+            if (typeof module !== "function")
             {
-                var action = map[name];
-                if (typeof action === "function")
-                {
-                    ActionService.register(name, action, action.catch);
-                }
-                else
-                {
-                    ActionService.registerBulk(action);
-                }
+                throw new Error("Action module '" + moduleName + "' does not export a function");
             }
+
+            ActionService.register(name, module, module.catch);
         }
     },
 
