@@ -36,8 +36,6 @@ public class TimestampConverter
             return df.format(value);
         }
 
-        ;
-
         return null;
     }
 

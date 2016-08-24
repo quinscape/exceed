@@ -2,12 +2,18 @@ package de.quinscape.exceed.runtime.domain.property;
 
 import de.quinscape.exceed.runtime.RuntimeContext;
 
-public abstract class NullConverter<T>
+/**
+ * Base class for neutral converters, converters that don't actually need to convert anything because the
+ * values as they're parsed from JSON are the same expected on the Server side and vice versa.
+ *
+ * @param <T> type for both JSON and Java
+ */
+public abstract class NeutralConverter<T>
     implements PropertyConverter<T,T>
 {
     private final Class<T> type;
 
-    protected NullConverter(Class<T> type)
+    public NeutralConverter(Class<T> type)
     {
         this.type = type;
     }

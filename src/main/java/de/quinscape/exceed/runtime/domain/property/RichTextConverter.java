@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.domain.property;
 
 public class RichTextConverter
-    extends NullConverter<String>
+    extends NeutralConverter<String>
 {
     public RichTextConverter()
     {

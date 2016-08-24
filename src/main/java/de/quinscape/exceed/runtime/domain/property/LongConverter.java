@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.domain.property;
 
 public class LongConverter
-    extends NullConverter<Long>
+    extends NeutralConverter<Long>
 {
     public LongConverter()
     {
