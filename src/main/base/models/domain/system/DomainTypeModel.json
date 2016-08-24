@@ -7,6 +7,21 @@
             "required": true
         },
         {
+            "name": "extension",
+            "type": "Integer",
+            "required": true
+        },
+        {
+            "name": "system",
+            "type": "Boolean"
+        },
+        {
+            "name": "pkFields",
+            "type": "List",
+            "typeParam": "PlainText",
+            "required": true
+        },
+        {
             "name": "description",
             "type": "PlainText"
         },
