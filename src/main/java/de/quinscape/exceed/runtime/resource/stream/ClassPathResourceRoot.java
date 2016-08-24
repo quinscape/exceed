@@ -35,4 +35,11 @@ public class ClassPathResourceRoot
     {
         return null;
     }
+
+    @Override
+    public String getName()
+    {
+        return "classpath:" + pathBase;
+    }
+
 }

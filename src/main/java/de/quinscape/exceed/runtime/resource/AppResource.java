@@ -29,4 +29,13 @@ public interface AppResource
     boolean exists();
 
     String getRelativePath();
+
+    default boolean isWritable()
+    {
+        return getResourceRoot().isWritable();
+    }
+
+    void delete();
+
+    void write(byte[] bytes);
 }

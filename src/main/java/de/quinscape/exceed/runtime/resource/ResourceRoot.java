@@ -14,4 +14,8 @@ public interface ResourceRoot
 
     ResourceWatcher getResourceWatcher();
 
+    String getName();
+
+    boolean isWritable();
+
 }

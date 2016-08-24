@@ -108,4 +108,17 @@ public class FileResourceRoot
     {
         return watcher;
     }
+
+
+    @Override
+    public String getName()
+    {
+        return baseDirectory.getName();
+    }
+
+    @Override
+    public boolean isWritable()
+    {
+        return true;
+    }
 }

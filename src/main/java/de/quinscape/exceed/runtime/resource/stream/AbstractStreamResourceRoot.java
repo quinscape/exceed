@@ -86,4 +86,19 @@ public abstract class AbstractStreamResourceRoot
 
 
     protected abstract InputStream openStream(String path);
+
+
+    @Override
+    public String getName()
+    {
+        int slashPos = pathBase.lastIndexOf('/');
+        return pathBase.substring(slashPos + 1);
+    }
+
+
+    @Override
+    public boolean isWritable()
+    {
+        return false;
+    }
 }

@@ -75,6 +75,28 @@ public class FileAppResource
         return relative;
     }
 
+
+    @Override
+    public void delete()
+    {
+        file.delete();
+    }
+
+
+    @Override
+    public void write(byte[] bytes)
+    {
+        try
+        {
+            FileUtils.writeByteArrayToFile(file, bytes);
+        }
+        catch (IOException e)
+        {
+            throw new ExceedRuntimeException(e);
+        }
+    }
+
+
     @Override
     public String toString()
     {

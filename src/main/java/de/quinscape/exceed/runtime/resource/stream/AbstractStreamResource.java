@@ -83,4 +83,18 @@ public abstract class AbstractStreamResource
     {
         return root;
     }
+
+
+    @Override
+    public void delete()
+    {
+        throw new UnsupportedOperationException("Stream resource cannot support delete");
+    }
+
+
+    @Override
+    public void write(byte[] bytes)
+    {
+        throw new UnsupportedOperationException("Stream resource cannot support write");
+    }
 }

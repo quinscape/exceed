@@ -137,7 +137,11 @@ public class ResourceLoader
         if (resourceLocation != null && resourceLocation.getHighestPriorityResource().getResourceRoot().equals(root))
         {
             log.debug("Refresh cache for {}:{}", root, resourcePath);
-            // we should only be registered if cache is not null
+            if (resourceCache == null)
+            {
+                throw new IllegalStateException("No resource cache configured");
+            }
+
             resourceCache.refresh(resourcePath);
         }
     }
