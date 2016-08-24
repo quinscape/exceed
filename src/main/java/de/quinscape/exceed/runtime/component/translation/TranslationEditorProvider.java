@@ -195,7 +195,7 @@ public class TranslationEditorProvider
     public void addModuleReferences(RuntimeContext runtimeContext, TranslationEditorState state)
     {
         final Map<String, ModuleFunctionReferences> refs =
-            runtimeContext.getApplicationModel().getStaticFunctionReferences().getModuleFunctionReferences();
+            runtimeContext.getApplicationModel().getMetaData().getStaticFunctionReferences().getModuleFunctionReferences();
 
         for (Map.Entry<String, ModuleFunctionReferences> e : refs.entrySet())
         {

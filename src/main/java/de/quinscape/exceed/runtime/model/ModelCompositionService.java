@@ -2,7 +2,7 @@ package de.quinscape.exceed.runtime.model;
 
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.AutoVersionedModel;
-import de.quinscape.exceed.model.LayoutMetaData;
+import de.quinscape.exceed.model.DomainEditorViews;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.domain.DomainType;
@@ -228,9 +228,9 @@ public class ModelCompositionService
             else if (path.equals(DOMAIN_LAYOUT_NAME))
             {
                 log.debug("Reading {} as Domain Layout", path);
-                LayoutMetaData layout = create(LayoutMetaData.class, json, resource);
+                DomainEditorViews layout = create(DomainEditorViews.class, json, resource);
 
-                applicationModel.setDomainLayout(layout);
+                applicationModel.getMetaData().setDomainEditorViews(layout);
                 return layout;
 
             }

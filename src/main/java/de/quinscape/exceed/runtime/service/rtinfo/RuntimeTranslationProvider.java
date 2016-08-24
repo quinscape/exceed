@@ -96,7 +96,7 @@ public class RuntimeTranslationProvider
 
         private Set<String> findReferences(RuntimeContext runtimeContext)
         {
-            StaticFunctionReferences staticFunctionReferences = runtimeContext.getApplicationModel().getStaticFunctionReferences();
+            StaticFunctionReferences staticFunctionReferences = runtimeContext.getApplicationModel().getMetaData().getStaticFunctionReferences();
             if (staticFunctionReferences == null)
             {
                 throw new IllegalStateException("No static function references provided");

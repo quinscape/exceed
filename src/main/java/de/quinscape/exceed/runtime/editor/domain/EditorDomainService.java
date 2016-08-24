@@ -26,7 +26,7 @@ public class EditorDomainService
         data.put("domainTypes",  createModelDataList(applicationModel.getDomainType("DomainTypeModel"), applicationModel.getDomainTypes()));
         data.put("enums", createModelDataList(applicationModel.getDomainType("EnumTypeModel"), applicationModel.getEnums()));
         data.put("propertyTypes", applicationModel.getPropertyTypes());
-        data.put("domainLayout", applicationModel.getDomainLayout());
+        data.put("domainLayout", applicationModel.getMetaData().getDomainEditorViews());
 
         context.reply(msg, data);
     }

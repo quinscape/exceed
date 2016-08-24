@@ -72,23 +72,13 @@ public class ApplicationModel
 
     private String defaultLayout = "Standard";
 
-    private LayoutMetaData domainLayout;
-
     private String name;
 
     private ContextModel applicationContextModel;
 
     private ContextModel sessionContextModel;
 
-    private StaticFunctionReferences staticFunctionReferences;
-
-
-    public ApplicationModel()
-    {
-        domainLayout = new LayoutMetaData();
-        domainLayout.setName("domain");
-    }
-
+    private final ApplicationMetaData metaData = new ApplicationMetaData();
 
     /**
      * Database schema for this application
@@ -199,9 +189,9 @@ public class ApplicationModel
      * Merges the app.json located parts of the given application model with this application model.
      * <p>
      * This is used internally to ensure location order independent parsing of application models. The system might
-     * encounter the actual app.json file later than other parts it needs to merge into this. So the system creates
-     * an empty application where it sets all the secondary (non-app.json) models, using this method to merge in the
-     * contents of the actual app.json file.
+     * encounter the actual app.json file later than other parts it needs to merge into it. So the system creates
+     * an empty application model where it sets all the secondary (non-app.json) models, using this method to merge in
+     * the contents of the actual app.json file.
      *
      * @param applicationModel application model
      */
@@ -213,19 +203,6 @@ public class ApplicationModel
         this.sessionContextModel = applicationModel.sessionContextModel;
         setSupportedLocales(applicationModel.supportedLocales);
     }
-
-
-    public void setDomainLayout(LayoutMetaData domainLayout)
-    {
-        this.domainLayout = domainLayout;
-    }
-
-
-    public LayoutMetaData getDomainLayout()
-    {
-        return domainLayout;
-    }
-
 
     /**
      * Map of enum types in the application. Actually defined in their own file.
@@ -409,19 +386,6 @@ public class ApplicationModel
         this.sessionContextModel = sessionContext;
     }
 
-
-    public void setStaticFunctionReferences(StaticFunctionReferences staticFunctionReferences)
-    {
-        this.staticFunctionReferences = staticFunctionReferences;
-    }
-
-
-    public StaticFunctionReferences getStaticFunctionReferences()
-    {
-        return staticFunctionReferences;
-    }
-
-
     public List<String> getSupportedLocales()
     {
         if (supportedLocales == null)
@@ -433,7 +397,7 @@ public class ApplicationModel
 
 
     /**
-     * Returns the language plus underline part of the given locale code
+     * Returns the language part of the given locale code
      *
      * @param code
      * @return
@@ -527,5 +491,11 @@ public class ApplicationModel
         }
 
         this.defaultLayout = defaultLayout;
+    }
+
+
+    public ApplicationMetaData getMetaData()
+    {
+        return metaData;
     }
 }

@@ -211,7 +211,7 @@ public class DefaultRuntimeApplication
         final StaticFunctionReferences staticFnRefs = loadUsageData(
             resourceLoader.getResourceLocation(TRACK_USAGE_DATA_RESOURCE).getHighestPriorityResource()
         );
-        this.applicationModel.setStaticFunctionReferences(staticFnRefs);
+        this.applicationModel.getMetaData().setStaticFunctionReferences(staticFnRefs);
     }
 
 
@@ -753,7 +753,7 @@ public class DefaultRuntimeApplication
             else if (modulePath.equals(TRACK_USAGE_DATA_RESOURCE))
             {
                 final StaticFunctionReferences staticFnRefs = loadUsageData(topResource);
-                this.applicationModel.setStaticFunctionReferences(staticFnRefs);
+                this.applicationModel.getMetaData().setStaticFunctionReferences(staticFnRefs);
             }
             else if (modulePath.endsWith(FileExtension.JSON))
             {
