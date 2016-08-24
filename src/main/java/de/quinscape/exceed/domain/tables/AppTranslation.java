@@ -34,7 +34,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppTranslation extends TableImpl<AppTranslationRecord> {
 
-	private static final long serialVersionUID = 2091272417;
+	private static final long serialVersionUID = 267875355;
 
 	/**
 	 * The reference instance of <code>public.app_translation</code>
@@ -60,16 +60,6 @@ public class AppTranslation extends TableImpl<AppTranslationRecord> {
 	public final TableField<AppTranslationRecord, String> LOCALE = createField("locale", org.jooq.impl.SQLDataType.VARCHAR.length(64).nullable(false), this, "");
 
 	/**
-	 * The column <code>public.app_translation.process_name</code>.
-	 */
-	public final TableField<AppTranslationRecord, String> PROCESS_NAME = createField("process_name", org.jooq.impl.SQLDataType.VARCHAR.length(64), this, "");
-
-	/**
-	 * The column <code>public.app_translation.view_name</code>.
-	 */
-	public final TableField<AppTranslationRecord, String> VIEW_NAME = createField("view_name", org.jooq.impl.SQLDataType.VARCHAR.length(64), this, "");
-
-	/**
 	 * The column <code>public.app_translation.tag</code>.
 	 */
 	public final TableField<AppTranslationRecord, String> TAG = createField("tag", org.jooq.impl.SQLDataType.VARCHAR.length(255).nullable(false), this, "");
@@ -83,6 +73,16 @@ public class AppTranslation extends TableImpl<AppTranslationRecord> {
 	 * The column <code>public.app_translation.created</code>.
 	 */
 	public final TableField<AppTranslationRecord, Timestamp> CREATED = createField("created", org.jooq.impl.SQLDataType.TIMESTAMP.nullable(false).defaulted(true), this, "");
+
+	/**
+	 * The column <code>public.app_translation.process_name</code>.
+	 */
+	public final TableField<AppTranslationRecord, String> PROCESS_NAME = createField("process_name", org.jooq.impl.SQLDataType.VARCHAR.length(64), this, "");
+
+	/**
+	 * The column <code>public.app_translation.view_name</code>.
+	 */
+	public final TableField<AppTranslationRecord, String> VIEW_NAME = createField("view_name", org.jooq.impl.SQLDataType.VARCHAR.length(64), this, "");
 
 	/**
 	 * Create a <code>public.app_translation</code> table reference

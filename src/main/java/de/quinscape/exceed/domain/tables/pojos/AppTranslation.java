@@ -27,44 +27,44 @@ import javax.validation.constraints.Size;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class AppTranslation extends GeneratedDomainObject implements Serializable {
 
-	private static final long serialVersionUID = 2120134174;
+	private static final long serialVersionUID = 1859318144;
 
 	private String    id;
 	private String    locale;
-	private String    processName;
-	private String    viewName;
 	private String    tag;
 	private String    translation;
 	private Timestamp created;
+	private String    processName;
+	private String    viewName;
 
 	public AppTranslation() {}
 
 	public AppTranslation(AppTranslation value) {
 		this.id = value.id;
 		this.locale = value.locale;
-		this.processName = value.processName;
-		this.viewName = value.viewName;
 		this.tag = value.tag;
 		this.translation = value.translation;
 		this.created = value.created;
+		this.processName = value.processName;
+		this.viewName = value.viewName;
 	}
 
 	public AppTranslation(
 		String    id,
 		String    locale,
-		String    processName,
-		String    viewName,
 		String    tag,
 		String    translation,
-		Timestamp created
+		Timestamp created,
+		String    processName,
+		String    viewName
 	) {
 		this.id = id;
 		this.locale = locale;
-		this.processName = processName;
-		this.viewName = viewName;
 		this.tag = tag;
 		this.translation = translation;
 		this.created = created;
+		this.processName = processName;
+		this.viewName = viewName;
 	}
 
 	@NotNull
@@ -85,24 +85,6 @@ public class AppTranslation extends GeneratedDomainObject implements Serializabl
 
 	public void setLocale(String locale) {
 		this.locale = locale;
-	}
-
-	@Size(max = 64)
-	public String getProcessName() {
-		return this.processName;
-	}
-
-	public void setProcessName(String processName) {
-		this.processName = processName;
-	}
-
-	@Size(max = 64)
-	public String getViewName() {
-		return this.viewName;
-	}
-
-	public void setViewName(String viewName) {
-		this.viewName = viewName;
 	}
 
 	@NotNull
@@ -131,5 +113,23 @@ public class AppTranslation extends GeneratedDomainObject implements Serializabl
 
 	public void setCreated(Timestamp created) {
 		this.created = created;
+	}
+
+	@Size(max = 64)
+	public String getProcessName() {
+		return this.processName;
+	}
+
+	public void setProcessName(String processName) {
+		this.processName = processName;
+	}
+
+	@Size(max = 64)
+	public String getViewName() {
+		return this.viewName;
+	}
+
+	public void setViewName(String viewName) {
+		this.viewName = viewName;
 	}
 }

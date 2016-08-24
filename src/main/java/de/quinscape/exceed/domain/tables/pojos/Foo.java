@@ -27,7 +27,7 @@ import javax.validation.constraints.Size;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Foo extends GeneratedDomainObject implements Serializable {
 
-	private static final long serialVersionUID = -1243732371;
+	private static final long serialVersionUID = -517187834;
 
 	private String    id;
 	private String    name;
@@ -36,6 +36,7 @@ public class Foo extends GeneratedDomainObject implements Serializable {
 	private Timestamp created;
 	private String    description;
 	private String    owner;
+	private String    another;
 
 	public Foo() {}
 
@@ -47,6 +48,7 @@ public class Foo extends GeneratedDomainObject implements Serializable {
 		this.created = value.created;
 		this.description = value.description;
 		this.owner = value.owner;
+		this.another = value.another;
 	}
 
 	public Foo(
@@ -56,7 +58,8 @@ public class Foo extends GeneratedDomainObject implements Serializable {
 		Integer   type,
 		Timestamp created,
 		String    description,
-		String    owner
+		String    owner,
+		String    another
 	) {
 		this.id = id;
 		this.name = name;
@@ -65,6 +68,7 @@ public class Foo extends GeneratedDomainObject implements Serializable {
 		this.created = created;
 		this.description = description;
 		this.owner = owner;
+		this.another = another;
 	}
 
 	@NotNull
@@ -129,5 +133,14 @@ public class Foo extends GeneratedDomainObject implements Serializable {
 
 	public void setOwner(String owner) {
 		this.owner = owner;
+	}
+
+	@Size(max = 80)
+	public String getAnother() {
+		return this.another;
+	}
+
+	public void setAnother(String another) {
+		this.another = another;
 	}
 }
