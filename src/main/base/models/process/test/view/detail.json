@@ -24,14 +24,14 @@
                                         "name": "Heading",
                                         "attrs": {
                                             "id": "myHeading",
-                                            "value": "{ 'Detail: ' + object('current').id }"
+                                            "value": "{ 'Detail: ' + current.id }"
                                         }
                                     },
                                     {
                                         "name": "Form",
                                         "attrs": {
                                             "id": "myForm",
-                                            "data": "{ object('current') }"
+                                            "data": "{ current }"
                                         },
                                         "kids": [
                                             {

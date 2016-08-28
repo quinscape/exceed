@@ -1,30 +1,42 @@
 package de.quinscape.exceed.runtime.util;
 
+import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.model.context.ContextModel;
+import de.quinscape.exceed.model.context.ScopedPropertyModel;
+import de.quinscape.exceed.model.domain.DomainProperty;
+import de.quinscape.exceed.model.process.Process;
+import de.quinscape.exceed.model.process.ViewState;
+import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.model.ExpressionRenderer;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
 
 public class AssignmentReplacementVisitorTest
 {
+    private final static Logger log = LoggerFactory.getLogger(AssignmentReplacementVisitorTest.class);
+
     @Test
     public void testReplacement() throws Exception
     {
-        assertThat(replace("property('name') = 1"), is("(set({type: 'PROPERTY', name: 'name', value: 1, path: null}))"));
-        assertThat(replace("object('name') = a"), is("(set({type: 'OBJECT', name: 'name', value: a, path: null}))"));
-        assertThat(replace("list('name') = b"), is("(set({type: 'LIST', name: 'name', value: b, path: null}))"));
+        assertThat(replace("propName = 1"), is("(set({name: 'propName', value: 1, path: null}))"));
+        assertThat(replace("objName = a"), is("(set({name: 'objName', value: a, path: null}))"));
+        assertThat(replace("listName = b"), is("(set({name: 'listName', value: b, path: null}))"));
 
     }
 
     @Test
     public void testPath() throws Exception
     {
-        assertThat(replace("property('name').val = 1"), is("(set({type: 'PROPERTY', name: 'name', value: 1, path: 'val'}))"));
-        assertThat(replace("property('name').val.sub = 2"), is("(set({type: 'PROPERTY', name: 'name', value: 2, path: 'val.sub'}))"));
+        assertThat(replace("objName.val = 1"), is("(set({name: 'objName', value: 1, path: 'val'}))"));
+        assertThat(replace("objName.val.sub = 2"), is("(set({name: 'objName', value: 2, path: 'val.sub'}))"));
 
     }
 
@@ -32,27 +44,69 @@ public class AssignmentReplacementVisitorTest
     public void testNested() throws Exception
     {
         // nested doesn't work, is not transformed => runs into Assignment errors
-        assertThat(replace("property('name') = (property('name') = 1)"), is("(set({type: 'PROPERTY', name: 'name', value: (property('name') = 1), path: null}))"));
+        assertThat(replace("propName = (propName = 1)"), is("(set({name: 'propName', value: (propName = 1), path: null}))"));
     }
 
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = AssignmentReplacementException.class)
     public void testError() throws Exception
     {
         replace("foo('name') = b");
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = AssignmentReplacementException.class)
     public void testError2() throws Exception
     {
-        replace("a = b");
+        log.info(replace("a = b"));
     }
 
 
     public String replace(String expr) throws ParseException
     {
         ASTExpression ast = ExpressionParser.parse(expr);
-        ast.jjtAccept(new AssignmentReplacementVisitor(), null);
+
+        final ApplicationModel applicationModel = new ApplicationModel();
+        final Process process = new Process();
+        final ContextModel processContext = new ContextModel();
+
+        final ContextModel viewContext = new ContextModel();
+
+
+        final ScopedPropertyModel scopedPropertyModel = new ScopedPropertyModel();
+        scopedPropertyModel.setName("propName");
+        scopedPropertyModel.setType("PlainText");
+
+        final ScopedPropertyModel scopedObjectModel = new ScopedPropertyModel();
+        scopedObjectModel.setName("objName");
+        scopedObjectModel.setType(DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE);
+        scopedObjectModel.setTypeParam("Foo");
+
+        final ScopedPropertyModel scopedListModel = new ScopedPropertyModel();
+        scopedListModel.setName("listName");
+        scopedListModel.setType(DomainProperty.DATA_LIST_PROPERTY_TYPE);
+
+        viewContext.setProperties(ImmutableMap.of(
+            "propName", scopedPropertyModel,
+            "objName", scopedObjectModel,
+            "listName", scopedListModel
+        ));
+
+        process.setContext(processContext);
+
+        process.setStates(ImmutableMap.of("testView", new ViewState()));
+
+        View view = new View();
+        view.setName("testProcess/testView");
+        view.setContextModel(viewContext);
+
+        applicationModel.addProcess("testProcess", process);
+        applicationModel.addView("testProcess/testView", view);
+
+        applicationModel.getMetaData().getScopeMetaModel().addDeclarations(view);
+        applicationModel.getMetaData().getScopeMetaModel().addDeclarations(view);
+
+
+        ast.jjtAccept(new AssignmentReplacementVisitor(applicationModel, "testProcess/testView"), null);
         return ExpressionRenderer.render(ast);
     }
 }

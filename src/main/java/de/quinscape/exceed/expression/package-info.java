@@ -8,7 +8,8 @@
  *      <li>identifier</li>
  *      <li>arithmetic, equality and relational operators</li>
  *      <li>functions and methods</li>
- *      <li>literals for strings, numbers, booleans and null</li>
+ *      <li>literals for arrays, maps, single-quoted strings, numbers, booleans and null (JSONish)</li>
+ *      <li>Assignment as syntactic sugar</li>
  *  </ul>
  *
  *  The parser itself converts expression strings into AST trees starting with an {@link de.quinscape.exceed.expression.ASTExpression} root.

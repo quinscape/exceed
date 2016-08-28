@@ -30,20 +30,9 @@ var babelConfig = {
                         "fn": "",
                         "varArgs": true
                     },
-                    "LIST": {
+                    "scope": {
                         "module": "./service/process",
-                        "fn": "list",
-                        "varArgs": true
-                    },
-                    "OBJECT": {
-                        "module": "./service/process",
-                        "fn": "object",
-                        "varArgs": true
-                    },
-                    "PROPERTY": {
-                        "module": "./service/process",
-                        "fn": "property",
-                        "varArgs": true
+                        "fn": "scope"
                     }
                 },
                 "debug": false

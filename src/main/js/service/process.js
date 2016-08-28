@@ -41,7 +41,5 @@ module.exports = {
             )
         );
     },
-    list: RTView.prototype.scopedList,
-    object: RTView.prototype.scopedObject,
-    property: RTView.prototype.scopedProperty
+    scope: RTView.prototype.scope
 };

@@ -5,8 +5,6 @@ import de.quinscape.exceed.model.component.ComponentViewContext;
 import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.context.ContextModel;
-import de.quinscape.exceed.model.context.ScopedListModel;
-import de.quinscape.exceed.model.context.ScopedObjectModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.runtime.RuntimeContext;

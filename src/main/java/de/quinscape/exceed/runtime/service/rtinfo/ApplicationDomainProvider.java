@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.service.rtinfo;
 
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
+import de.quinscape.exceed.model.component.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;
 import de.quinscape.exceed.runtime.util.RequestUtil;

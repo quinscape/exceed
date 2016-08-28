@@ -2,7 +2,7 @@ package de.quinscape.exceed.runtime.service.rtinfo;
 
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
+import de.quinscape.exceed.model.component.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.scope.ViewContext;
 import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;
 import de.quinscape.exceed.runtime.view.ViewData;

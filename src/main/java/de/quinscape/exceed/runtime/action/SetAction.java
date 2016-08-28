@@ -4,7 +4,6 @@ import de.quinscape.exceed.model.action.SetActionModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.scope.ScopedContext;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
-import de.quinscape.exceed.runtime.scope.ScopedValueType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,23 +25,20 @@ public class SetAction
     @Override
     public Object execute(RuntimeContext runtimeContext, SetActionModel model)
     {
-        final ScopedValueType type = model.getType();
         final ScopedContextChain chain = runtimeContext.getScopedContextChain();
 
         final String name = model.getName();
         final String path = model.getPath();
         final Object value = model.getValue();
 
-        final ScopedContext scope = type.findScope(chain, name);
         if (path == null)
         {
-            type.set(scope, name, value);
+            chain.setProperty(name, value);
         }
         else
         {
-            util.setPropertyPath(type.get(scope,name), path, value);
+            util.setPropertyPath(chain.getProperty(name), path, value);
         }
-
         return true;
     }
 

@@ -1,30 +1,13 @@
 package de.quinscape.exceed.model.action;
 
-import de.quinscape.exceed.runtime.scope.ScopedValueType;
-
 public class SetActionModel
     extends ActionModel
 {
-    private ScopedValueType type;
-
     private String name;
 
     private String path;
 
     private Object value;
-
-
-    public ScopedValueType getType()
-    {
-        return type;
-    }
-
-
-    public void setType(ScopedValueType type)
-    {
-        this.type = type;
-    }
-
 
     public String getName()
     {

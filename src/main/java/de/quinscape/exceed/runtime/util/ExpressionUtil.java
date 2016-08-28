@@ -10,6 +10,7 @@ import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.ExpressionParserVisitor;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.SimpleNode;
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironmentException;
 import de.quinscape.exceed.runtime.model.ExpressionRenderer;
 import de.quinscape.exceed.runtime.model.InvalidClientExpressionException;
@@ -128,19 +129,6 @@ public class ExpressionUtil
     public static boolean validAssignmentTarget(String name)
     {
         return name.equals("property") || name.equals("object") || name.equals("list");
-    }
-
-
-    /**
-     * Converts assignments to scoped functions into the appropriate set action.
-     *
-     * @param ast expression AST
-     * @return transformed expression AST
-     */
-    public static <T extends Node> T handleAssignmentAction(T ast)
-    {
-        ast.jjtAccept(new AssignmentReplacementVisitor(), null);
-        return ast;
     }
 
 

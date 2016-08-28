@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 
-import javax.annotation.PostConstruct;
 import java.util.Collections;
 import java.util.Map;
 
@@ -35,6 +34,8 @@ public class Process
 
     private ApplicationModel applicationModel;
 
+    private String identityGUID;
+
 
     /**
      * Auto-generated version identifier.
@@ -42,13 +43,13 @@ public class Process
      * @return
      */
     @Override
-    public String getVersion()
+    public String getVersionGUID()
     {
         return version;
     }
 
     @Override
-    public void setVersion(String version)
+    public void setVersionGUID(String version)
     {
         this.version = version;
     }
@@ -76,17 +77,6 @@ public class Process
     }
 
 
-    @PostConstruct
-    public void checkTransitions()
-    {
-        for (Map.Entry<String, ProcessState> entry : states.entrySet())
-        {
-            ProcessState state = entry.getValue();
-            state.setName(entry.getKey());
-            state.validate(this);
-        }
-    }
-
 
     public Transition getStartTransition()
     {
@@ -102,9 +92,16 @@ public class Process
     }
 
 
-    public void setApplicationModel(ApplicationModel applicationModel)
+    public void postProcess(ApplicationModel applicationModel)
     {
         this.applicationModel = applicationModel;
+
+        for (Map.Entry<String, ProcessState> entry : states.entrySet())
+        {
+            ProcessState state = entry.getValue();
+            state.setName(entry.getKey());
+            state.setProcess(this);
+        }
     }
 
     @JSONProperty(ignore = true)
@@ -138,5 +135,18 @@ public class Process
     public void setContext(ContextModel context)
     {
         this.context = context;
+    }
+
+    @Override
+    public String getIdentityGUID()
+    {
+        return identityGUID;
+    }
+
+
+    @Override
+    public void setIdentityGUID(String identity)
+    {
+        this.identityGUID = identity;
     }
 }

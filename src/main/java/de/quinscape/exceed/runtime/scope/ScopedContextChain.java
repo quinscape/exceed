@@ -1,10 +1,13 @@
 package de.quinscape.exceed.runtime.scope;
 
 import com.google.common.collect.ImmutableMap;
-import de.quinscape.exceed.runtime.component.DataGraph;
-import de.quinscape.exceed.runtime.domain.DomainObject;
+import de.quinscape.exceed.model.context.ScopeMetaModel;
+import de.quinscape.exceed.model.context.ScopeDeclaration;
+import de.quinscape.exceed.model.context.ScopeDeclarations;
+import de.quinscape.exceed.model.context.ScopedPropertyModel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -12,182 +15,125 @@ import java.util.Map;
 /**
  * Encapsulates all existing scopes for an execution context.
  *
- * This will usually be either [app,session] or [app,session,process] contexts.
  */
 public final class ScopedContextChain
     implements ScopedResolver
 {
     private final List<ScopedContext> chainedScopes;
 
-    private final static Map<Class<? extends ScopedContext>, Integer> scopeIndexMap = ImmutableMap.of(
-        ApplicationContext.class, 0,
-        SessionContext.class, 1,
-        ProcessContext.class, 2,
-        ViewContext.class, 3
+    private final static Map<Class<? extends ScopedContext>, ScopeType> scopeIndexMap = ImmutableMap.of(
+        ApplicationContext.class, ScopeType.APPLICATION,
+        SessionContext.class, ScopeType.SESSION,
+        ProcessContext.class, ScopeType.PROCESS,
+        ViewContext.class, ScopeType.VIEW
     );
 
-    public ScopedContextChain(List<ScopedContext> chainedScopes)
+    private final ScopeMetaModel scopeMetaModel;
+
+    private String scopeLocation;
+
+    private ScopeDeclarations scopeDeclarations;
+
+
+    public ScopedContextChain(List<ScopedContext> chainedScopes, ScopeMetaModel scopeMetaModel, String scopeLocation)
     {
         if (chainedScopes == null)
         {
             throw new IllegalArgumentException("chainedScopes can't be null");
         }
 
-        final ArrayList<ScopedContext> list = new ArrayList<>(chainedScopes);
+        this.chainedScopes = sortByTypeOrdinal(chainedScopes);
 
-        final int numScopes = scopeIndexMap.size();
-        list.ensureCapacity(numScopes);
-
-        final int missing = numScopes - list.size();
-        for (int i=0; i < missing; i++)
+        this.scopeMetaModel = scopeMetaModel;
+        this.scopeLocation = scopeLocation;
+        if (scopeLocation != null)
         {
-            list.add(null);
+            this.scopeDeclarations = scopeMetaModel.lookup(scopeLocation);
         }
+    }
 
-        this.chainedScopes = list;
+
+    private List<ScopedContext> sortByTypeOrdinal(List<ScopedContext> chainedScopes)
+    {
+        final int numScopes = ScopeType.values().length;
+        final List<ScopedContext> list = new ArrayList<>(Collections.nCopies(numScopes, null));
+
+        for (ScopedContext context : chainedScopes)
+        {
+            if (context != null)
+            {
+                final ScopeType scopeType = scopeIndexMap.get(context.getClass());
+                if (scopeType == null)
+                {
+                    throw new IllegalArgumentException("Unknown scope type " + context);
+                }
+
+                list.set(scopeType.ordinal(), context);
+            }
+        }
+        return list;
     }
 
 
     @Override
     public Object getProperty(String name)
     {
-        ScopedContext scopedContext = findScopeWithProperty(name);
-        if (scopedContext == null)
-        {
-            throw new ScopeResolutionException("No property '" + name + "' in either " + describe());
-        }
-
-        return scopedContext.getProperty(name);
+        final ScopeDeclaration definition = getDefinitionInternal(name);
+        return chainedScopes.get(definition.getScopeType().ordinal()).getProperty(name);
     }
 
-
-
     @Override
-    public DomainObject getObject(String name)
+    public ScopedPropertyModel getModel(String name)
     {
-        ScopedContext scopedContext = findScopeWithObject(name);
-        if (scopedContext == null)
+        final ScopeDeclaration definition = getDefinitionInternal(name);
+
+        final ScopedPropertyModel model = definition.getModel();
+
+        if (definition.getScopeType() == ScopeType.PROCESS && name.equals(ProcessContext.DOMAIN_OBJECT_CONTEXT))
         {
-            throw new ScopeResolutionException("No object '" + name + "' in either " + describe());
+            final ProcessContext processContext = (ProcessContext) chainedScopes.get(definition.getScopeType()
+                .ordinal());
+            return processContext.getCurrentDomainObjectModel();
         }
-
-        return scopedContext.getObject(name);
-    }
-
-
-    @Override
-    public DataGraph getList(String name)
-    {
-        ScopedContext scopedContext = findScopeWithList(name);
-        if (scopedContext == null)
-        {
-            throw new ScopeResolutionException("No list '" + name + "' in either " + describe());
-        }
-
-        return scopedContext.getList(name);
+        return model;
     }
 
 
     @Override
     public void setProperty(String name, Object value)
     {
-        ScopedContext scopedContext = findScopeWithProperty(name);
-        if (scopedContext == null)
-        {
-            throw new ScopeResolutionException("No property '" + name + "' in either " + describe());
-        }
-
-        scopedContext.setProperty(name, value);
+        final ScopeDeclaration declaration = getDefinitionInternal(name);
+        chainedScopes.get(declaration.getScopeType().ordinal()).setProperty(name, value);
     }
 
 
-    @Override
-    public void setObject(String name, DomainObject value)
+    private ScopeDeclaration getDefinitionInternal(String name)
     {
-        ScopedContext scopedContext = findScopeWithProperty(name);
-        if (scopedContext == null)
+        final ScopeDeclaration declaration = scopeDeclarations.get(name);
+        if (declaration == null)
         {
-            throw new ScopeResolutionException("No object '" + name + "' in either " + describe());
+            throw new ScopeResolutionException("No property '" + name + "' in either " + describe() + ". Definitions are " + scopeDeclarations);
         }
-
-        scopedContext.setObject(name, value);
-    }
-
-
-    @Override
-    public void setList(String name, DataGraph list)
-    {
-        ScopedContext scopedContext = findScopeWithProperty(name);
-        if (scopedContext == null)
-        {
-            throw new ScopeResolutionException("No list '" + name + "' in either " + describe());
-        }
-
-        scopedContext.setList(name, list);
+        return declaration;
     }
 
 
     @Override
     public boolean hasProperty(String name)
     {
-        return findScopeWithProperty(name) != null;
-    }
-
-
-    @Override
-    public boolean hasObject(String name)
-    {
-        return findScopeWithObject(name) != null;
-    }
-
-
-    @Override
-    public boolean hasList(String name)
-    {
-        return findScopeWithList(name) != null;
+        final ScopeDeclaration declaration = scopeDeclarations.get(name);
+        return declaration != null;
     }
 
     public ScopedContext findScopeWithProperty(String name)
     {
-        for (int i = chainedScopes.size() - 1; i >= 0; i--)
+        final ScopeDeclaration declaration = scopeDeclarations.get(name);
+        if (declaration != null)
         {
-            ScopedContext scopedContext = chainedScopes.get(i);
-            if (scopedContext != null && scopedContext.hasProperty(name))
-            {
-                return scopedContext;
-            }
+            return chainedScopes.get(declaration.getScopeType().ordinal());
         }
         return null;
     }
-
-
-    public ScopedContext findScopeWithObject(String name)
-    {
-        for (int i = chainedScopes.size() - 1; i >= 0; i--)
-        {
-            ScopedContext scopedContext = chainedScopes.get(i);
-            if (scopedContext != null && scopedContext.hasObject(name))
-            {
-                return scopedContext;
-            }
-        }
-        return null;
-    }
-
-
-    public ScopedContext findScopeWithList(String name)
-    {
-        for (int i = chainedScopes.size() - 1; i >= 0; i--)
-        {
-            ScopedContext scopedContext = chainedScopes.get(i);
-            if (scopedContext != null && scopedContext.hasList(name))
-            {
-                return scopedContext;
-            }
-        }
-        return null;
-    }
-
 
     private String describe()
     {
@@ -210,49 +156,57 @@ public final class ScopedContextChain
 
 
     /**
-     * Adds an additional scoped context to the top of the scoped context chain.
+     * Updates one scoped context in its scope type determined position
      *
-     * @param scopedContext scoped context
+     * @param scopedContext new scoped context
+     * @param scopeLocation new scope location identifier
+     *
      */
-    public void addContext(ScopedContext scopedContext)
+    public void update(ScopedContext scopedContext, String scopeLocation)
     {
-        final Integer index = scopeIndexMap.get(scopedContext.getClass());
-        if (index == null)
+        final ScopeType scopeType = scopeIndexMap.get(scopedContext.getClass());
+        if (scopeType == null)
         {
             throw new IllegalStateException("Unhandled scope type: " + scopedContext);
         }
 
-        chainedScopes.set(index, scopedContext);
+        chainedScopes.set(scopeType.ordinal(), scopedContext);
+
+        this.scopeLocation = scopeLocation;
+        this.scopeDeclarations = scopeLocation == null ? null :  scopeMetaModel.lookup(scopeLocation);
     }
+
+    public void clearContext(ScopeType scopeType)
+    {
+        chainedScopes.set(scopeType.ordinal(), null);
+    }
+
 
     public ApplicationContext getApplicationContext()
     {
-        return getContext(ApplicationContext.class);
+        return (ApplicationContext) chainedScopes.get(ScopeType.APPLICATION.ordinal());
     }
 
     public SessionContext getSessionContext()
     {
-        return getContext(SessionContext.class);
+        return (SessionContext) chainedScopes.get(ScopeType.SESSION.ordinal());
     }
 
     public ProcessContext getProcessContext()
     {
-        return getContext(ProcessContext.class);
+        return (ProcessContext) chainedScopes.get(ScopeType.PROCESS.ordinal());
     }
 
     public ViewContext getViewContext()
     {
-        return getContext(ViewContext.class);
+        return (ViewContext) chainedScopes.get(ScopeType.VIEW.ordinal());
     }
 
 
-    private <T extends ScopedContext> T getContext(Class<T> type)
+    public String getScopeLocation()
     {
-        final Integer index = scopeIndexMap.get(type);
-        if (index == null)
-        {
-            throw new IllegalStateException("Unhandled scope type: " + type);
-        }
-        return (T) chainedScopes.get(index);
+        return scopeLocation;
     }
+
+
 }

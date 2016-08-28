@@ -1,5 +1,11 @@
 package de.quinscape.exceed.model.process;
 
+import de.quinscape.exceed.expression.ASTExpression;
+import de.quinscape.exceed.expression.ExpressionParser;
+import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.util.AssignmentReplacementVisitor;
+import de.quinscape.exceed.runtime.util.ExpressionUtil;
 import org.svenson.JSONTypeHint;
 
 import java.util.Map;
@@ -20,20 +26,16 @@ public class ViewState
         this.transitions = transitions;
     }
 
-
     @Override
-    public void setName(String name)
+    public void postProcess()
     {
-        super.setName(name);
-    }
-
-
-    @Override
-    public void validate(Process process)
-    {
+        final Process process = getProcess();
         Map<String, Transition> transitions = getTransitions();
         if (transitions != null)
         {
+            final AssignmentReplacementVisitor visitor = new AssignmentReplacementVisitor(process
+                .getApplicationModel(), process.getView(this.getName()).getName());
+
             for (Map.Entry<String, Transition> entry : transitions.entrySet())
             {
                 Transition transition = entry.getValue();
@@ -48,6 +50,20 @@ public class ViewState
                 }
 
                 transition.setFrom(getName());
+
+                try
+                {
+                    final ASTExpression actionAST = ExpressionParser.parse(transition.getAction());
+                    if (actionAST != null)
+                    {
+                        actionAST.jjtAccept(visitor, null);
+                        transition.setActionAST(actionAST);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new ExceedRuntimeException("Error postprocessing " + transition + " in " + this, e);
+                }
             }
         }
     }

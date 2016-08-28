@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.model;
 
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.component.ComponentDescriptor;
 import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.model.component.PropType;
@@ -13,15 +14,21 @@ import de.quinscape.exceed.expression.ASTInteger;
 import de.quinscape.exceed.expression.ASTPropertyChain;
 import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.Node;
+import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.AttributeValueType;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.scope.ScopedValueType;
 import de.quinscape.exceed.runtime.service.ActionExpressionRenderer;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
+import de.quinscape.exceed.runtime.util.ContextUtil;
 import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
+import de.quinscape.exceed.runtime.util.StaticScopeReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.svenson.JSON;
 
 /**
@@ -30,6 +37,8 @@ import org.svenson.JSON;
 public class ViewExpressionRenderer
     extends ActionExpressionBaseRenderer
 {
+    private final static Logger log = LoggerFactory.getLogger(ViewExpressionRenderer.class);
+
     /**
      * Number of characters below which references to string props will be inlined into the expression instead of going
      * all the way over all the parents to the props.
@@ -83,7 +92,7 @@ public class ViewExpressionRenderer
     @Override
     public Object visit(ASTIdentifier node, Object data)
     {
-        String name = node.getName();
+        final String name = node.getName();
 
         boolean isModel = name.equals("model");
         boolean isProps = name.equals("props");
@@ -117,10 +126,65 @@ public class ViewExpressionRenderer
             buf.append("_v.data[");
             buf.append(generator.quote(componentId));
             buf.append("].vars");
-            return true;
+            return data;
         }
+        else
+        {
+            final PropDeclaration propDeclaration = componentDescriptor != null ? componentDescriptor.getPropTypes().get(attrName) : null;
+
+            StaticScopeReference ref = ContextUtil.findStaticScopeReference(application.getApplicationModel(), view.getProcessName(), view.getName(), name);
+
+            if (ref != null)
+            {
+                final boolean isCursorExpression = propDeclaration != null && propDeclaration.getType() == PropType.CURSOR_EXPRESSION;
+                ScopedValueType type = ref.getValueType();
+
+                if (type == ScopedValueType.LIST)
+                {
+                    if (isCursorExpression)
+                    {
+                        buf.append("_v.scopedListCursor(");
+                    }
+                    else
+                    {
+                        buf.append("_v.scopedList(");
+                    }
+
+                    buf.append(generator.quote(name)).append(")");
+                    return data;
+                }
+                if (type == ScopedValueType.OBJECT)
+                {
+                    if (isCursorExpression)
+                    {
+                        buf.append("_v.scopedObjectCursor(");
+                    }
+                    else
+                    {
+                        buf.append("_v.scopedObject(");
+                    }
+                    buf.append(generator.quote(name)).append(")");
+                    return data;
+                }
+                if (type == ScopedValueType.PROPERTY)
+                {
+                    if (isCursorExpression)
+                    {
+                        buf.append("_v.scopedPropertyCursor(");
+                    }
+                    else
+                    {
+                        buf.append("_v.scopedProperty(");
+                    }
+                    buf.append(generator.quote(name)).append(")");
+                    return data;
+                }
+            }
+
+        }
+
         super.visit(node, data);
-        return false;
+        return data;
     }
 
 
@@ -130,7 +194,7 @@ public class ViewExpressionRenderer
         AttributeValueType type = attribute.getType();
         if (type == AttributeValueType.STRING)
         {
-            String str = (String) attribute.getValue();
+            String str = attribute.getValue();
             // only inline shortish strings
             if (str.length() < STRING_INLINE_LIMIT)
             {
@@ -255,53 +319,6 @@ public class ViewExpressionRenderer
             buf.append(")");
             return true;
         }
-        else
-        {
-            final PropDeclaration propDeclaration = componentDescriptor != null ? componentDescriptor.getPropTypes().get(attrName) : null;
-            if (operationName.equals("list"))
-            {
-                if (propDeclaration != null && propDeclaration.getType() == PropType.CURSOR_EXPRESSION)
-                {
-                    buf.append("_v.scopedListCursor(");
-                }
-                else
-                {
-                    buf.append("_v.scopedList(");
-                }
-
-                renderMultiBinary(node, ", ", null);
-                buf.append(")");
-                return true;
-            }
-            else if (operationName.equals("object"))
-            {
-                if (propDeclaration != null && propDeclaration.getType() == PropType.CURSOR_EXPRESSION)
-                {
-                    buf.append("_v.scopedObjectCursor(");
-                }
-                else
-                {
-                    buf.append("_v.scopedObject(");
-                }
-                renderMultiBinary(node, ", ", null);
-                buf.append(")");
-                return true;
-            }
-            else if (operationName.equals("property"))
-            {
-                if (propDeclaration != null && propDeclaration.getType() == PropType.CURSOR_EXPRESSION)
-                {
-                    buf.append("_v.scopedPropertyCursor(");
-                }
-                else
-                {
-                    buf.append("_v.scopedProperty(");
-                }
-                renderMultiBinary(node, ", ", null);
-                buf.append(")");
-                return true;
-            }
-        }
         return false;
     }
 
@@ -309,7 +326,8 @@ public class ViewExpressionRenderer
     @Override
     protected boolean handleLocalIdentifiers(ASTPropertyChain node, ASTIdentifier identifier)
     {
-        if (identifier.getName().equals("vars"))
+        final String identifierName = identifier.getName();
+        if (identifierName.equals("vars"))
         {
             if (componentDescriptor == null || componentDescriptor.getVars() == null)
             {
@@ -328,7 +346,7 @@ public class ViewExpressionRenderer
                 return false;
             }
         }
-        else if (identifier.getName().equals("props"))
+        else if (identifierName.equals("props"))
         {
             Node second = node.jjtGetChild(1);
             if (second instanceof ASTIdentifier)
@@ -343,6 +361,8 @@ public class ViewExpressionRenderer
                 }
             }
         }
+
         return false;
     }
+
 }

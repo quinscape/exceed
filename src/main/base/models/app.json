@@ -15,10 +15,6 @@
             "increment": {
                 "type": "Integer",
                 "defaultValue": "2"
-            },
-            "limit": {
-                "type": "Integer",
-                "defaultValue": "10"
             }
         }
     },

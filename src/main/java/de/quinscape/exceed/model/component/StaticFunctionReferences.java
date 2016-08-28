@@ -8,12 +8,15 @@ import java.util.Map;
 /**
  * Encapsulates the information contained within a <code>track-usage.json</code> file on the java side.
  *
+ * It contains the results of JavaScript code analysis that detects statically analyzable calls within the application
+ * react components and other modules.
+ *
  */
 public class StaticFunctionReferences
 {
     private final Map<String, ModuleFunctionReferences> usages;
 
-    private final String version;
+//    private final String version;
 
 
     public StaticFunctionReferences(
@@ -23,7 +26,7 @@ public class StaticFunctionReferences
     )
     {
         this.usages = usages;
-        this.version = UUID.randomUUID().toString();
+//        this.version = UUID.randomUUID().toString();
     }
 
 
@@ -38,10 +41,10 @@ public class StaticFunctionReferences
         return usages.get(module);
     }
 
-    public String getVersion()
-    {
-        return version;
-    }
+//    public String getVersion()
+//    {
+//        return version;
+//    }
 
 
     public Map<String, ModuleFunctionReferences> getModuleFunctionReferences()

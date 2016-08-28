@@ -9,6 +9,7 @@ import de.quinscape.exceed.model.change.Shutdown;
 import de.quinscape.exceed.model.change.StyleChange;
 import de.quinscape.exceed.model.change.Timeout;
 import de.quinscape.exceed.model.context.ContextModel;
+import de.quinscape.exceed.model.context.ScopeMetaModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.process.ProcessState;
@@ -22,7 +23,7 @@ import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.component.DataProviderPreparationException;
-import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
+import de.quinscape.exceed.model.component.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.controller.TemplateVariables;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
@@ -185,7 +186,7 @@ public class DefaultRuntimeApplication
             this,
             SYSTEM_CONTEXT_PATH,
             Locale.forLanguageTag("en-US"),
-            new ScopedContextChain(Collections.singletonList(applicationContext)),
+            new ScopedContextChain(Collections.singletonList(applicationContext), applicationModel.getMetaData().getScopeMetaModel(), ScopeMetaModel.SYSTEM),
             domainService);
 
         scopedContextFactory.initializeContext(systemContext, applicationContext);
@@ -272,8 +273,8 @@ public class DefaultRuntimeApplication
     }
 
 
-    public boolean processView(HttpServletRequest request, HttpServletResponse response, Map<String, Object> model,
-                               String inAppURI, Map<String, String> variables, String template, String viewName, String processName) throws IOException, ParseException
+    public boolean  processView(HttpServletRequest request, HttpServletResponse response, Map<String, Object> model,
+                               String inAppURI, Map<String, String> variables, String template, final String viewName, final String processName) throws IOException, ParseException
     {
         SessionContext sessionContext = null;
         try
@@ -291,7 +292,7 @@ public class DefaultRuntimeApplication
                         applicationContext,
                         sessionContext
                     )
-                ),
+                    , applicationModel.getMetaData().getScopeMetaModel(), null),
                 domainService);
 
             RuntimeContextHolder.register(runtimeContext);
@@ -344,7 +345,8 @@ public class DefaultRuntimeApplication
                     {
                         log.debug("(Re)render state {}", stateId);
                         state = initialState;
-                        runtimeContext.getScopedContextChain().addContext(state.getScopedContext());
+
+                        runtimeContext.getScopedContextChain().update(state.getScopedContext(), Process.getProcessViewName(processName, state.getCurrentState()));
 
                         redirect = false;
                     }
@@ -401,7 +403,7 @@ public class DefaultRuntimeApplication
             {
                 final ViewContext viewContext = scopedContextFactory.createViewContext(view);
                 scopedContextFactory.initializeContext(runtimeContext, viewContext);
-                runtimeContext.getScopedContextChain().addContext(viewContext);
+                runtimeContext.getScopedContextChain().update(viewContext, view.getName());
             }
 
             ViewResult data;

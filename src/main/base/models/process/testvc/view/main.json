@@ -3,19 +3,6 @@
         "name": "View",
         "kids": [
             {
-                "name": "ViewContext",
-                "kids": [
-                    {
-                        "name": "Property",
-                        "attrs": {
-                            "name": "value",
-                            "type": "Integer",
-                            "defaultValue": "0"
-                        }
-                    }
-                ]
-            },
-            {
                 "name": "Grid",
                 "attrs": {
                     "fluid": "{ true }"
@@ -41,7 +28,7 @@
                                         "name": "Field",
                                         "attrs": {
                                             "label": "Counter Value",
-                                            "value": "{ property('value') }"
+                                            "value": "{ value }"
                                         }
                                     },
                                     {

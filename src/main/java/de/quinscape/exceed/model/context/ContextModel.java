@@ -8,34 +8,11 @@ import java.util.Map;
 
 public class ContextModel
 {
-    private Map<String, ScopedListModel> lists;
-
-    private Map<String, ScopedObjectModel> objects;
-
     private Map<String, ScopedPropertyModel> properties;
 
-
-    public Map<String, ScopedListModel> getLists()
+    private static void init(Map<String, ScopedPropertyModel> elems)
     {
-        if (lists == null)
-        {
-            return Collections.emptyMap();
-        }
-        return lists;
-    }
-
-
-    @JSONTypeHint(ScopedListModel.class)
-    public void setLists(Map<String, ScopedListModel> lists)
-    {
-        init(lists);
-        this.lists = lists;
-    }
-
-
-    private static void init(Map<String, ? extends ScopedElementModel> elems)
-    {
-        for (Map.Entry<String, ? extends ScopedElementModel> entry : elems.entrySet())
+        for (Map.Entry<String, ScopedPropertyModel> entry : elems.entrySet())
         {
             String name = entry.getKey();
             if (ProcessContext.RESERVED_NAMES.contains(name))
@@ -44,25 +21,6 @@ public class ContextModel
             }
             entry.getValue().setName(name);
         }
-    }
-
-
-    public Map<String, ScopedObjectModel> getObjects()
-    {
-        if (objects == null)
-        {
-            return Collections.emptyMap();
-        }
-
-        return objects;
-    }
-
-
-    @JSONTypeHint(ScopedObjectModel.class)
-    public void setObjects(Map<String, ScopedObjectModel> objects)
-    {
-        init(objects);
-        this.objects = objects;
     }
 
 

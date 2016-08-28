@@ -33,7 +33,7 @@
                                         "name": "Form",
                                         "attrs": {
                                             "id": "myForm",
-                                            "data": "{ object('scopedFoo') }"
+                                            "data": "{ scopedFoo }"
                                         },
                                         "kids": [
                                             {

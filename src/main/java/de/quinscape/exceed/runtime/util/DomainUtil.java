@@ -10,6 +10,8 @@ import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 public class DomainUtil
 {
     private final static Logger log = LoggerFactory.getLogger(DomainUtil.class);
@@ -58,8 +60,7 @@ public class DomainUtil
         }
     }
 
-    public static DomainObject convertToJava(RuntimeContext runtimeContext, DomainObject domainObject) throws
-        ParseException
+    public static DomainObject convertToJava(RuntimeContext runtimeContext, DomainObject domainObject) throws ParseException
 
     {
         if (domainObject == null)
@@ -74,6 +75,40 @@ public class DomainUtil
         {
             String propertyName = property.getName();
             Object value = domainObject.getProperty(propertyName);
+            PropertyConverter propertyConverter = domainService.getPropertyConverter(property.getType());
+
+            if (propertyConverter == null)
+            {
+                throw new IllegalStateException("No converter for property '" + property.getType() + "'");
+            }
+
+            Object converted = propertyConverter.convertToJava(runtimeContext, value);
+
+            domainObject.setProperty(propertyName, converted);
+        }
+
+        return domainObject;
+    }
+
+    public static DomainObject convertToJava(RuntimeContext runtimeContext, Map<String,Object> domainObjectMap) throws ParseException
+
+    {
+        if (domainObjectMap == null)
+        {
+            return null;
+        }
+
+        final DomainService domainService = runtimeContext.getDomainService();
+
+        final String domainTypeName = (String) domainObjectMap.get("_type");
+
+        final DomainObject domainObject = domainService.create(domainTypeName, (String) domainObjectMap.get("id"));
+
+        DomainType domainType = domainService.getDomainType(domainTypeName);
+        for (DomainProperty property : domainType.getProperties())
+        {
+            String propertyName = property.getName();
+            Object value = domainObjectMap.get(propertyName);
             PropertyConverter propertyConverter = domainService.getPropertyConverter(property.getType());
 
             if (propertyConverter == null)

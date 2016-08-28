@@ -1,6 +1,7 @@
 package de.quinscape.exceed.model;
 
-import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
+import de.quinscape.exceed.model.context.ScopeMetaModel;
+import de.quinscape.exceed.model.component.StaticFunctionReferences;
 
 /**
  * Encapsulates application meta data.
@@ -11,15 +12,22 @@ import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
  */
 public class ApplicationMetaData
 {
+    private final ApplicationModel applicationModel;
+
     private StaticFunctionReferences staticFunctionReferences;
 
     private DomainEditorViews domainEditorViews;
 
+    private final ScopeMetaModel scopeMetaModel;
 
-    public ApplicationMetaData()
+    public ApplicationMetaData(ApplicationModel applicationModel)
     {
+        this.applicationModel = applicationModel;
+
         domainEditorViews = new DomainEditorViews();
         domainEditorViews.setName("domain");
+
+        scopeMetaModel = new ScopeMetaModel(applicationModel);
     }
 
 
@@ -44,5 +52,11 @@ public class ApplicationMetaData
     public void setDomainEditorViews(DomainEditorViews domainEditorViews)
     {
         this.domainEditorViews = domainEditorViews;
+    }
+
+
+    public ScopeMetaModel getScopeMetaModel()
+    {
+        return scopeMetaModel;
     }
 }

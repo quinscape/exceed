@@ -12,31 +12,7 @@ function getViewService()
 
 function createScopeFn(type)
 {
-    return function(name)
-    {
-        var scope = getViewService().getScope();
-        //console.log("SCOPE", scope);
-
-        var value = scope.getCursor([name]).value;
-        if (value === undefined)
-        {
-            console.error("Scoped " + type + " '" + name + "' is undefined")
-        }
-        return value;
-    };
-}
-
-function createScopeCursorFn(type)
-{
-    return function(name)
-    {
-        var scope = getViewService().getScope();
-        var cursor = scope.getCursor([name]);
-
-//        console.log("SCOPE CURSOR", scope.id, name, cursor.value);
-
-        return cursor;
-    };
+    return ;
 }
 
 /**
@@ -48,21 +24,27 @@ function createScopeCursorFn(type)
  */
 var Scope = {
 
-    list: createScopeFn("list"),
-
-    object: createScopeFn("object"),
-
-    property: createScopeFn("property"),
-
-    listCursor: createScopeCursorFn("list"),
-
-    objectCursor: createScopeCursorFn("object"),
-
-    propertyCursor: createScopeCursorFn("property"),
-
-    objectType: function (name)
+    property: function(name)
     {
-        return getViewService().getRuntimeInfo().scopeInfo.objectTypes[name];
+        var scope = getViewService().getScope();
+        //console.log("SCOPE", scope);
+
+        var value = scope.getCursor([name]).value;
+        if (value === undefined)
+        {
+            console.error("Scoped value '" + name + "' is undefined")
+        }
+        return value;
+    },
+
+    propertyCursor: function(name)
+    {
+        var scope = getViewService().getScope();
+        var cursor = scope.getCursor([name]);
+
+//        console.log("SCOPE CURSOR", scope.id, name, cursor.value);
+
+        return cursor;
     },
 
     propertyType: function (name)

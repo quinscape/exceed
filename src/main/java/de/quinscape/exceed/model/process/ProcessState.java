@@ -8,6 +8,8 @@ public abstract class ProcessState
 {
     private String name;
 
+    private Process process;
+
 
     public String getName()
     {
@@ -22,8 +24,21 @@ public abstract class ProcessState
     }
 
 
-    public void validate(Process process)
+    public void postProcess()
     {
         // empty by default
+    }
+
+
+    @JSONProperty(ignore = true)
+    public Process getProcess()
+    {
+        return process;
+    }
+
+
+    public void setProcess(Process process)
+    {
+        this.process = process;
     }
 }

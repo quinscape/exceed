@@ -4,13 +4,16 @@ import de.quinscape.exceed.expression.ASTAssignment;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTIdentifier;
 import de.quinscape.exceed.expression.ASTPropertyChain;
-import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ExpressionParserDefaultVisitor;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.model.context.ScopeDeclaration;
+import de.quinscape.exceed.model.context.ScopeDeclarations;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.model.ExpressionRenderer;
+import de.quinscape.exceed.runtime.scope.ProcessContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,16 +28,11 @@ public class AssignmentReplacementVisitor
 
     private final static SingleQuoteJSONGenerator generator = SingleQuoteJSONGenerator.INSTANCE;
 
-    private boolean isValidScopeFunction(Node node)
+    private final ScopeDeclarations definitions;
+
+    public AssignmentReplacementVisitor(ApplicationModel applicationModel, String scopeLookupKey)
     {
-        // a valid scope function is an ASTFunction
-        return (node instanceof ASTFunction &&
-            // has a valid target name ("object"/"property"/"list")
-            ExpressionUtil.validAssignmentTarget(((ASTFunction) node).getName()) &&
-            // has exactly one child...
-            node.jjtGetNumChildren() == 1 &&
-            // which is a string literal
-            node.jjtGetChild(0) instanceof ASTString);
+        this.definitions = applicationModel.getMetaData().getScopeMetaModel().lookup(scopeLookupKey);
     }
 
     @Override
@@ -42,36 +40,41 @@ public class AssignmentReplacementVisitor
     {
         Node lft = node.jjtGetChild(0);
 
-        Node scopeFn;
+        ASTIdentifier identifier;
         String path;
-        if (isValidScopeFunction(lft))
+        if (lft instanceof ASTIdentifier)
         {
-            scopeFn = lft;
+            identifier = (ASTIdentifier) lft;
             path = null;
         }
-        else if (isChainWithScopeFunction(lft))
+        else if (isIdentifierChain(lft))
         {
-            scopeFn = lft.jjtGetChild(0);
+            identifier = (ASTIdentifier) lft.jjtGetChild(0);
 
             path = getIdentifierPath(lft, 1);
         }
         else
         {
-            throw new IllegalStateException("Assignment left side must be scope function : " + ExpressionRenderer.render(node));
+            throw new AssignmentReplacementException("Assignment left side must start with an identifier : " + ExpressionRenderer.render(node));
         }
+        String name = identifier.getName();
 
-        String name = ((ASTString) scopeFn.jjtGetChild(0)).getValue();
+        if (!name.equals(ProcessContext.DOMAIN_OBJECT_CONTEXT))
+        {
+            final ScopeDeclaration definition = definitions.get(name);
+            if (definition == null)
+            {
+                throw new AssignmentReplacementException("Undefined scope identifier '" + name +"': " + ExpressionRenderer.render(node));
+            }
+        }
 
         Node rgt = node.jjtGetChild(1);
 
         int indexInParent = ExpressionUtil.findSiblingIndex(node);
 
-        String fnName = ((ASTFunction) scopeFn).getName();
-
         try
         {
-            String actionSource = "set({ type: " + generator.quote(fnName.toUpperCase()) +
-                ", name: " + generator.quote(name) +
+            String actionSource = "set({ name: " + generator.quote(name) +
                 ", value: null" +
                 ", path: " + (path != null ? generator.quote(path) : "null") + "})";
 
@@ -79,25 +82,19 @@ public class AssignmentReplacementVisitor
 
             ASTFunction action = (ASTFunction) ExpressionParser.parse(actionSource).jjtGetChild(0);
 
-
             Node parent = node.jjtGetParent();
             parent.jjtAddChild(action, indexInParent);
 
-            Node nameEntry = action.jjtGetChild(0).jjtGetChild(2);
+            Node nameEntry = action.jjtGetChild(0).jjtGetChild(1);
 
             nameEntry.jjtAddChild(rgt, 1);
             rgt.jjtSetParent(nameEntry);
-
-            Node pathEntry = action.jjtGetChild(0).jjtGetChild(2);
-
-            pathEntry.jjtAddChild(rgt, 1);
-            rgt.jjtSetParent(pathEntry);
 
             action.jjtSetParent(parent);
 
             // since action invocation cannot happen recursively, it is better to not
             // visit our new action but instead let funky expressions run into errors with nested, untransformed assignment expressions
-            // (e,g. "property('x') = (property('x') =  1)" )
+            // (e,g. "x = (x =  1)" )
             return data;
 
         }
@@ -134,10 +131,10 @@ public class AssignmentReplacementVisitor
      * @return  <code>true</code> the given node is a property chain starting with a scope accessor function followed
      *          by only identifiers
      */
-    private boolean isChainWithScopeFunction(Node lft)
+    private boolean isIdentifierChain(Node lft)
     {
         return lft instanceof ASTPropertyChain &&
-            isValidScopeFunction(lft.jjtGetChild(0)) &&
+            lft.jjtGetChild(0) instanceof ASTIdentifier &&
             isIdentifierChain((ASTPropertyChain) lft, 1);
     }
 

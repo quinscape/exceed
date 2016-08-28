@@ -25,7 +25,7 @@ public class DecisionModel
     public void setExpression(String expression) throws ParseException
     {
         this.expression = expression;
-        this.expressionAST = ExpressionUtil.handleAssignmentAction(ExpressionParser.parse(expression));
+        this.expressionAST = ExpressionParser.parse(expression);
     }
 
 

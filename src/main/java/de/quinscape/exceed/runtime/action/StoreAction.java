@@ -98,7 +98,7 @@ public class StoreAction
         }
         else
         {
-            domainObject = ctx.getEnv().getScopedContext().getObject(ProcessContext.DOMAIN_OBJECT_CONTEXT);
+            domainObject = (DomainObject) ctx.getEnv().getScopedContext().getProperty(ProcessContext.DOMAIN_OBJECT_CONTEXT);
         }
         domainObject.setDomainService(ctx.getEnv().getRuntimeContext().getDomainService());
         storeActionModel.setObject((DomainObjectBase) domainObject);

@@ -10,10 +10,13 @@ import de.quinscape.exceed.model.action.ActionModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.action.Action;
 import de.quinscape.exceed.runtime.action.ServerActionConverter;
+import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.controller.ActionExecutionException;
 import de.quinscape.exceed.runtime.controller.ActionService;
+import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
+import de.quinscape.exceed.runtime.expression.annotation.Operation;
 import de.quinscape.exceed.runtime.model.ExpressionRenderer;
 import de.quinscape.exceed.runtime.scope.ScopedResolver;
 import org.svenson.util.JSONBeanUtil;
@@ -28,15 +31,18 @@ public class ActionExecutionEnvironment
 
     private final ActionService actionService;
 
+    private final String processName;
+
     private final RuntimeContext runtimeContext;
 
 
     public ActionExecutionEnvironment(RuntimeContext runtimeContext, ScopedResolver
-        scopedContext, ActionService actionService)
+        scopedContext, ActionService actionService, String processName)
     {
         this.runtimeContext = runtimeContext;
         this.scopedContext = scopedContext;
         this.actionService = actionService;
+        this.processName = processName;
     }
 
 
@@ -155,4 +161,17 @@ public class ActionExecutionEnvironment
         return scopedContext;
     }
 
+
+    @Override
+    public Object resolveIdentifier(String name)
+    {
+        if (scopedContext.hasProperty(name))
+        {
+            return scopedContext.getProperty(name);
+        }
+        else
+        {
+            return super.resolveIdentifier(name);
+        }
+    }
 }

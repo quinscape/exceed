@@ -1,12 +1,13 @@
 {
     "startTransition": {
         "to": "main",
-        "action": "object('scopedFoo').created = now()"
+        "action": "scopedFoo.created = now()"
     },
     "context": {
-        "objects": {
+        "properties": {
             "scopedFoo": {
-                "type": "Foo",
+                "type": "DomainType",
+                "typeParam": "Foo",
                 "defaultValue": "newObject()"
             }
         }
@@ -21,15 +22,15 @@
                 },
                 "update": {
                     "to": "main",
-                    "action": "syslog('Current : ', object('current'))"
+                    "action": "syslog('Current : ', current)"
                 },
                 "save": {
                     "to": "main",
-                    "action": "store(object('current'))"
+                    "action": "store(current)"
                 },
                 "save-scoped": {
                     "to": "main",
-                    "action": "store(object('scopedFoo'))"
+                    "action": "store(scopedFoo)"
                 }
             }
         },

@@ -107,7 +107,7 @@ public class ComponentModel
             return null;
         }
         AttributeValue value = attrs.getAttribute(DomainType.ID_PROPERTY);
-        return value != null ? (String) value.getValue() : null;
+        return value != null ? value.getValue() : null;
     }
 
 

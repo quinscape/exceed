@@ -47,6 +47,7 @@ public class ClientViewJSONGeneratorTest
 
         // to client format
         final TestApplication app = new TestApplicationBuilder().build();
+        app.getApplicationModel().getMetaData().getScopeMetaModel().addDefinitions(view);
         String out = viewJSONGenerator.toJSON(app, view, JSONFormat.CLIENT);
 
         //log.info(JSON.formatJSON(out));
@@ -147,6 +148,7 @@ public class ClientViewJSONGeneratorTest
             "./src/test/java/de/quinscape/exceed/runtime/model/test-views/client-json-2.json"));
         // external view json
         View view = modelJSONService.toModel(View.class, json);
+        view.setName("client-json-2");
 
         ComponentUtil.updateComponentRegsAndParents(registry, view, null);
 
@@ -154,6 +156,9 @@ public class ClientViewJSONGeneratorTest
 
         // to client format
         final TestApplication application = new TestApplicationBuilder().build();
+
+        application.getApplicationModel().getMetaData().getScopeMetaModel().addDeclarations(view);
+
         String out = viewJSONGenerator.toJSON(application, view, JSONFormat.CLIENT);
 
         // .. and then parsed as Map for testing ( the client format is only used on the client side )

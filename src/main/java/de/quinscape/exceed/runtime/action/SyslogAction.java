@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.action;
 
+import de.quinscape.dss.util.Util;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
@@ -22,7 +23,13 @@ public class SyslogAction
     {
         if (log.isInfoEnabled())
         {
-            log.info(JSON.defaultJSON().forValue(model.getArgs()));
+            StringBuilder buf = new StringBuilder();
+            for (Object arg : model.getArgs())
+            {
+                buf.append(arg).append(' ');
+            }
+
+            log.info("{}", buf);
         }
 
         return true;

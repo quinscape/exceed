@@ -59,10 +59,9 @@ public class TransitionScopeReferenceCollector
 
             final ScopedContextChain scopedContextChain = runtimeContext.getScopedContextChain();
 
-            if (scopedContextChain.findScopeWithList(name) instanceof ViewContext ||
-                scopedContextChain.findScopeWithObject(name) instanceof ViewContext ||
-                scopedContextChain.findScopeWithProperty(name) instanceof ViewContext
-                )
+
+
+            if (scopedContextChain.findScopeWithProperty(name) instanceof ViewContext)
             {
                 references.add(name);
             }

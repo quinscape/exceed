@@ -3,9 +3,6 @@ package de.quinscape.exceed.runtime.service;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.Node;
-import de.quinscape.exceed.model.context.ScopedElementModel;
-import de.quinscape.exceed.model.context.ScopedListModel;
-import de.quinscape.exceed.model.context.ScopedObjectModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
@@ -60,64 +57,16 @@ public class ContextExpressionOperations
         if (type == null)
         {
 
-            final ScopedElementModel scopedElementModel = env.getScopedElementModel();
-            if (scopedElementModel instanceof ScopedPropertyModel)
+            final ScopedPropertyModel propertyModel = env.getScopedPropertyModel();
+            if (!propertyModel.getType().equals(DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE))
             {
-                final ScopedPropertyModel propertyModel = (ScopedPropertyModel) scopedElementModel;
-                if (!propertyModel.getType().equals(DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE))
-                {
-                    throw new IllegalStateException("Can only create new objects for property models of type '" + DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE + "': " + propertyModel);
-                }
+                throw new IllegalStateException("Can only create new objects for property models of type '" + DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE + "': " + propertyModel);
+            }
 
-                type = (String) propertyModel.getTypeParam();
-            }
-            else if (scopedElementModel instanceof ScopedObjectModel)
-            {
-                type = ((ScopedObjectModel) scopedElementModel).getType();
-            }
-            else if (scopedElementModel instanceof ScopedListModel)
-            {
-                throw new IllegalStateException("Cannot create new domain object for scoped list");
-            }
+            type = (String) propertyModel.getTypeParam();
         }
 
         return env.getRuntimeContext().getDomainService().create(type, UUID.randomUUID().toString());
-    }
-
-    @Operation
-    public Object property(ExpressionContext<ContextExpressionEnvironment> ctx, String name)
-    {
-        ScopedContextChain scopedContext = ctx.getEnv().getRuntimeContext().getScopedContextChain();
-        if (scopedContext == null)
-        {
-            throw new IllegalStateException("Scoped context not initialized, can't access  process property");
-        }
-
-        return scopedContext.getProperty(name);
-    }
-
-    @Operation
-    public Object object(ExpressionContext<ContextExpressionEnvironment> ctx, String name)
-    {
-        ScopedContextChain scopedContext = ctx.getEnv().getRuntimeContext().getScopedContextChain();
-        if (scopedContext == null)
-        {
-            throw new IllegalStateException("Scoped context not initialized, can't access  process object");
-        }
-
-        return scopedContext.getObject(name);
-    }
-
-    @Operation
-    public Object list(ExpressionContext<ContextExpressionEnvironment> ctx, String name)
-    {
-        ScopedContextChain scopedContext = ctx.getEnv().getRuntimeContext().getScopedContextChain();
-        if (scopedContext == null)
-        {
-            throw new IllegalStateException("Scoped context not initialized, can't access  process list");
-        }
-
-        return scopedContext.getList(name);
     }
 
     @Operation

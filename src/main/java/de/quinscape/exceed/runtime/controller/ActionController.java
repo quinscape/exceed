@@ -2,13 +2,13 @@ package de.quinscape.exceed.runtime.controller;
 
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.action.ActionModel;
+import de.quinscape.exceed.model.context.ScopeMetaModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.action.Action;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.config.DefaultPropertyConverters;
 import de.quinscape.exceed.runtime.domain.DomainObject;
-import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.scope.SessionContext;
@@ -41,7 +41,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -118,21 +117,29 @@ public class ActionController
         }
 
         SessionContext sessionContext = scopedContextFactory.getSessionContext(request, appName, runtimeApplication.getApplicationModel().getSessionContext());
+
+        final ScopedContextChain scopedContextChain = new ScopedContextChain(
+            Arrays.asList(
+                runtimeApplication.getApplicationContext(),
+                sessionContext
+            ),
+            runtimeApplication.getApplicationModel().getMetaData().getScopeMetaModel(),
+            ScopeMetaModel.ACTION);
+
         RuntimeContext runtimeContext = runtimeContextFactory.create(
-            runtimeApplication, "/action/" + appName + "/" + actionName, request.getLocale(),
-            new ScopedContextChain(
-                Arrays.asList(
-                    runtimeApplication.getApplicationContext(),
-                    sessionContext
-                )
-            ), domainServiceRepository.getDomainService(appName));
+            runtimeApplication,
+            "/action/" + appName + "/" + actionName,
+            request.getLocale(),
+            scopedContextChain,
+            domainServiceRepository.getDomainService(appName)
+        );
 
         RuntimeContextHolder.register(runtimeContext);
         scopedContextFactory.initializeContext(runtimeContext, sessionContext);
 
         RuntimeContextHolder.register(runtimeContext);
 
-        ActionModel model = (ActionModel) runtimeContext.getDomainService().toDomainObject(actionClass, actionModelJSON);
+        ActionModel model = runtimeContext.getDomainService().toDomainObject(actionClass, actionModelJSON);
         convertProperties(runtimeContext, model);
 
         response.setContentType(ContentType.JSON);

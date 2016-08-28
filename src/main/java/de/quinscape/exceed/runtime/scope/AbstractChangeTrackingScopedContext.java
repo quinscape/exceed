@@ -8,7 +8,6 @@ import java.util.Map;
 
 /**
  * A scoped context that tracks if changes were made since the creation for synchronization purposes.
- *
  */
 public abstract class AbstractChangeTrackingScopedContext
     extends AbstractScopedContext
@@ -50,21 +49,4 @@ public abstract class AbstractChangeTrackingScopedContext
         markDirty();
         super.setProperty(name, value);
     }
-
-
-    @Override
-    public void setObject(String name, DomainObject value)
-    {
-        markDirty();
-        super.setObject(name, value);
-    }
-
-
-    @Override
-    public void setList(String name, DataGraph list)
-    {
-        markDirty();
-        super.setList(name, list);
-    }
-
 }

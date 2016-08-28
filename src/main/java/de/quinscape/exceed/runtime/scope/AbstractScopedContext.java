@@ -2,13 +2,9 @@ package de.quinscape.exceed.runtime.scope;
 
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.context.ContextModel;
-import de.quinscape.exceed.model.context.ScopedElementModel;
-import de.quinscape.exceed.model.context.ScopedObjectModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.controller.ActionService;
-import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.service.ContextExpressionEnvironment;
@@ -57,25 +53,6 @@ public abstract class AbstractScopedContext
         return context.get(name);
     }
 
-    @Override
-    public DomainObject getObject(String name)
-    {
-        if (!hasObject(name))
-        {
-            throw new ScopeResolutionException("Context has not object '" + name + "'");
-        }
-        return (DomainObject) context.get(name);
-    }
-
-    @Override
-    public DataGraph getList(String name)
-    {
-        if (!hasList(name))
-        {
-            throw new ScopeResolutionException("Context has not list '" + name + "'");
-        }
-        return (DataGraph) context.get(name);
-    }
 
     @Override
     public void setProperty(String name, Object value)
@@ -87,49 +64,12 @@ public abstract class AbstractScopedContext
         context.put(name, value);
     }
 
-    @Override
-    public void setObject(String name, DomainObject value)
-    {
-        if (!hasObject(name))
-        {
-            throw new ScopeResolutionException("Context has not object '" + name + "'");
-        }
-        context.put(name, value);
-    }
-
-
-    @Override
-    public void setList(String name, DataGraph list)
-    {
-        if (!hasList(name))
-        {
-            throw new ScopeResolutionException("Context has not list '" + name + "'");
-        }
-        context.put(name, list);
-    }
-
 
     @Override
     public boolean hasProperty(String name)
     {
         ensureInitialized();
         return contextModel != null && contextModel.getProperties().containsKey(name);
-    }
-
-
-    @Override
-    public boolean hasObject(String name)
-    {
-        ensureInitialized();
-        return contextModel != null  && contextModel.getObjects().containsKey(name);
-    }
-
-
-    @Override
-    public boolean hasList(String name)
-    {
-        ensureInitialized();
-        return contextModel != null && contextModel.getLists().containsKey(name);
     }
 
 
@@ -156,24 +96,6 @@ public abstract class AbstractScopedContext
         if (contextModel != null)
         {
             initProperties(runtimeContext, expressionService, actionService, inputValues);
-            initObjects(runtimeContext, expressionService, actionService);
-        }
-    }
-
-
-    private void initObjects(RuntimeContext runtimeContext, ExpressionService expressionService,
-                             ActionService actionService)
-    {
-        for (ScopedObjectModel scopedObjectModel : contextModel.getObjects().values())
-        {
-
-            final ASTExpression expr = scopedObjectModel.getDefaultValueExpression();
-            if (expr != null)
-            {
-                Object value = evaluateDefault(runtimeContext, expressionService, actionService, scopedObjectModel,
-                    expr);
-                context.put(scopedObjectModel.getName(), value);
-            }
         }
     }
 
@@ -226,7 +148,7 @@ public abstract class AbstractScopedContext
     }
 
 
-    private Object evaluateDefault(RuntimeContext runtimeContext, ExpressionService expressionService, ActionService actionService, ScopedElementModel scopedPropertyModel, ASTExpression defaultValueExpression)
+    private Object evaluateDefault(RuntimeContext runtimeContext, ExpressionService expressionService, ActionService actionService, ScopedPropertyModel scopedPropertyModel, ASTExpression defaultValueExpression)
     {
         Object value;ContextExpressionEnvironment env = new ContextExpressionEnvironment(runtimeContext, actionService, runtimeContext.getLocationParams(), scopedPropertyModel);
         value = expressionService.evaluate(defaultValueExpression, env);
@@ -256,22 +178,6 @@ public abstract class AbstractScopedContext
             return;
         }
 
-        for (String name : getContextModel().getLists().keySet())
-        {
-            if (contextUpdates.containsKey(name))
-            {
-                context.put(name, contextUpdates.get(name));
-            }
-        }
-
-        for (String name : getContextModel().getObjects().keySet())
-        {
-            if (contextUpdates.containsKey(name))
-            {
-                context.put(name, contextUpdates.get(name));
-            }
-        }
-
         for (String name : getContextModel().getProperties().keySet())
         {
             if (contextUpdates.containsKey(name))
@@ -279,5 +185,12 @@ public abstract class AbstractScopedContext
                 context.put(name, contextUpdates.get(name));
             }
         }
+    }
+
+
+    @Override
+    public ScopedPropertyModel getModel(String name)
+    {
+        return contextModel.getProperties().get(name);
     }
 }

@@ -2,14 +2,10 @@ package de.quinscape.exceed.runtime.process;
 
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.context.ContextModel;
-import de.quinscape.exceed.model.context.ScopedObjectModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.GenericDomainObject;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
@@ -135,12 +131,17 @@ public class TransitionData
 
         convertDomainObjectContext(runtimeContext, partialDomainObjectContext, transitionData);
 
-        convertContextToJava(runtimeContext, transitionData, runtimeContext.getApplicationModel()
-            .getApplicationContext());
-        convertContextToJava(runtimeContext, transitionData, runtimeContext.getApplicationModel().getSessionContext());
-        convertContextToJava(runtimeContext, transitionData, process.getContext());
-        convertContextToJava(runtimeContext, transitionData, view.getContextModel());
+        final Map<String, Object> contextUpdate = transitionData.getContextUpdate();
 
+        final ContextModel applicationContext = runtimeContext.getApplicationModel().getApplicationContext();
+        final ContextModel sessionContext = runtimeContext.getApplicationModel().getSessionContext();
+        final ContextModel viewContextModel = view.getContextModel();
+        final ContextModel processContext = process.getContext();
+
+        convertContextUpdateToJava(runtimeContext, contextUpdate, applicationContext);
+        convertContextUpdateToJava(runtimeContext, contextUpdate, sessionContext);
+        convertContextUpdateToJava(runtimeContext, contextUpdate, processContext);
+        convertContextUpdateToJava(runtimeContext, contextUpdate, viewContextModel);
     }
 
 
@@ -153,20 +154,10 @@ public class TransitionData
     }
 
 
-    private static void convertContextToJava(RuntimeContext runtimeContext, TransitionData transitionData, ContextModel
-        contextModel) throws ParseException
-    {
-        // XXX: convert lists?
-        convertObjects(runtimeContext, transitionData, contextModel);
-        convertProperties(runtimeContext, transitionData, contextModel);
-    }
-
-
-    private static void convertProperties(RuntimeContext runtimeContext, TransitionData transitionData, ContextModel
+    private static void convertContextUpdateToJava(RuntimeContext runtimeContext, Map<String, Object> contextUpdate, ContextModel
         contextModel) throws ParseException
     {
         final DomainService domainService = runtimeContext.getDomainService();
-        final Map<String, Object> contextUpdate = transitionData.getContextUpdate();
         for (Map.Entry<String, ScopedPropertyModel> e : contextModel.getProperties().entrySet())
         {
             final String name = e.getKey();
@@ -177,7 +168,7 @@ public class TransitionData
                 final Object value = contextUpdate.get(name);
                 log.debug("Convert property '{}': {}", name, value);
 
-                final PropertyConverter propertyConverter = domainService.getPropertyConverter(model.getType());
+                final PropertyConverter<Object, Object> propertyConverter = domainService.getPropertyConverter(model.getType());
                 final Object converted = propertyConverter.convertToJava(runtimeContext, value);
 
                 contextUpdate.put(name, converted);
@@ -185,52 +176,12 @@ public class TransitionData
         }
     }
 
-    private static void convertObjects(RuntimeContext runtimeContext, TransitionData transitionData, ContextModel
-        contextModel) throws ParseException
+
+    @Override
+    public String toString()
     {
-        final DomainService domainService = runtimeContext.getDomainService();
-        final Map<String, Object> contextUpdate = transitionData.getContextUpdate();
-
-        for (Map.Entry<String, ScopedObjectModel> e : contextModel.getObjects().entrySet())
-        {
-            final String name = e.getKey();
-            final ScopedObjectModel model = e.getValue();
-
-            if (contextUpdate.containsKey(name))
-            {
-                final Map<String, Object> m = (Map<String, Object>) contextUpdate.get(name);
-
-                final DomainType domainType = domainService.getDomainType(model.getType());
-                if (domainType == null)
-                {
-                    throw new IllegalStateException("Can't find domain type '" + model.getType() + "'");
-                }
-
-                final DomainObject domainObject;
-
-                if (m == null)
-                {
-                    domainObject = null;
-                }
-                else
-                {
-                    domainObject = domainService.create(model.getType(), (String) m.get(DomainType.ID_PROPERTY));
-
-                    log.debug("Convert domain object '{}': {}", name, m);
-
-                    for (DomainProperty property : domainType.getProperties())
-                    {
-
-                        final Object value = m.get(property.getName());
-                        final PropertyConverter propertyConverter = domainService.getPropertyConverter(property.getType());
-                        final Object converted = propertyConverter.convertToJava(runtimeContext, value);
-
-                        domainObject.setProperty(property.getName(), converted);
-                    }
-                }
-
-                contextUpdate.put(name, domainObject);
-            }
-        }
+        return this.getClass().getSimpleName() + ": "
+            + "objectContext = " + objectContext
+            + ", contextUpdate = " + contextUpdate;
     }
 }

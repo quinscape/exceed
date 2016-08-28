@@ -8,6 +8,10 @@
             "value": {
                 "type": "Integer",
                 "defaultValue": "0"
+            },
+            "limit": {
+                "type": "Integer",
+                "defaultValue": "10"
             }
         }
     },
@@ -21,7 +25,7 @@
                 },
                 "inc": {
                     "to": "check",
-                    "action": "property('value') = property('value') + property('increment')"
+                    "action": "value = value + increment"
                 }
             }
         },
@@ -29,7 +33,7 @@
             "type": "process.DecisionState",
             "decisions": [
                 {
-                    "expression": "property('value') >= property('limit')",
+                    "expression": "value >= limit",
                     "transition": {
                         "to": "end",
                         "action" : "syslog('Jumping to End')"
@@ -53,7 +57,7 @@
                 },
                 "save": {
                     "to": "list",
-                    "action": "object('current').num = 1 ; store(object('current'))"
+                    "action": "current.num = 1 ; store(current)"
                 }
             }
         }

@@ -5,7 +5,7 @@
     "components": {
         "ViewContext": {
             "classes": ["view-child", "configuration"],
-            "childRule" : "hasClass('scope-element')",
+            "childRule" : "component('Value')",
             "templates": [
                 {
                     "desc": "ViewContext",
@@ -16,41 +16,7 @@
                 }
             ]
         },
-        "List": {
-            "classes": ["scope-element"],
-            "propTypes": {
-                "name": {
-                    "type": "PLAINTEXT",
-                    "required": true
-                },
-                "queryExpression": {
-                    "client": false,
-                    "type": "QUERY_EXPRESSION",
-                    "rule": "domainType()",
-                    "required": false
-                }
-            }
-        },
-        "Object": {
-            "classes": ["scope-element"],
-            "propTypes": {
-                "name": {
-                    "type": "PLAINTEXT",
-                    "required": true
-                },
-                "type": {
-                    "type": "PLAINTEXT",
-                    "rule": "domainType()",
-                    "required": true
-                },
-                "defaultValue": {
-                    "type": "VALUE_EXPRESSION",
-                    "required": false
-                }
-            }
-        },
         "Property": {
-            "classes": ["scope-element"],
             "propTypes": {
                 "name": {
                     "type": "PLAINTEXT",

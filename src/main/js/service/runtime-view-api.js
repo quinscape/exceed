@@ -92,12 +92,10 @@ RTView.prototype.transition = function (name)
 };
 
 // Import scope functions into runtime view prototype chain
-RTView.prototype.scopedList = Scope.list;
-RTView.prototype.scopedObject = Scope.object;
-RTView.prototype.scopedProperty = Scope.property;
+RTView.prototype.scope = Scope.property;
 
-RTView.prototype.scopedListCursor = Scope.listCursor;
-RTView.prototype.scopedObjectCursor = Scope.objectCursor;
-RTView.prototype.scopedPropertyCursor = Scope.propertyCursor;
+RTView.prototype.scopeCursor = Scope.propertyCursor;
 
+
+console.log("RTView.prototype", RTView.prototype);
 module.exports = RTView;

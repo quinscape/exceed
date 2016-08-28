@@ -4,5 +4,5 @@ public enum AttributeValueType
 {
     STRING,
     EXPRESSION,
-    EXPRESSION_ERROR;
+    EXPRESSION_ERROR
 }

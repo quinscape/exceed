@@ -45,7 +45,7 @@ public class RuntimeContext
         this.translator = translator;
         this.locale = locale;
         this.domainService = domainService;
-        this.scopedContextChain = scopedContextChain != null ? scopedContextChain : new ScopedContextChain(Collections.emptyList());
+        this.scopedContextChain = scopedContextChain != null ? scopedContextChain : new ScopedContextChain(Collections.emptyList(), null, null);
     }
 
 
@@ -144,4 +144,6 @@ public class RuntimeContext
     {
         return runtimeApplication.getApplicationModel();
     }
+
+
 }

@@ -19,6 +19,7 @@ import de.quinscape.exceed.runtime.process.ProcessExecution;
 import de.quinscape.exceed.runtime.process.ProcessExecutionState;
 import de.quinscape.exceed.runtime.process.TransitionData;
 import de.quinscape.exceed.runtime.scope.ProcessContext;
+import de.quinscape.exceed.runtime.scope.ScopeType;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.scope.ViewContext;
@@ -47,6 +48,8 @@ public class ProcessService
 
     public ProcessExecutionState start(RuntimeContext runtimeContext, Process process)
     {
+        log.debug("Start {}", process.getName());
+
         String appName = runtimeContext.getApplicationModel().getName();
 
         ContextModel contextModel = process.getContext();
@@ -80,7 +83,7 @@ public class ProcessService
 
         if (!(processState instanceof ViewState))
         {
-            throw new ProcessExecutionException("Current state is not a view state");
+            throw new ProcessExecutionException("Current state '" + processState.getName() + "' is not a view state");
         }
 
         Transition transitionModel = ((ViewState) processState).getTransitions().get(transition);
@@ -99,12 +102,27 @@ public class ProcessService
     private ProcessExecutionState transition(RuntimeContext runtimeContext, ProcessExecution execution,
                                              ProcessContext scopedContext, Transition transitionModel, TransitionData transitionData)
     {
-        final ScopedContextChain scopedContextChain = runtimeContext.getScopedContextChain();
-
         final ApplicationModel applicationModel = runtimeContext.getApplicationModel();
 
-        ProcessContext newScopedCtx = (ProcessContext) scopedContext.copy(runtimeContext);
+        final String processName = execution.getProcessName();
+        final Process process = applicationModel.getProcess(processName);
+        final ProcessState sourceState = process.getStates().get(transitionModel.getFrom());
 
+        if (log.isDebugEnabled())
+        {
+            log.debug(
+                "Process {}: Transition '{}' from {} to {} ({})",
+                processName,
+                transitionModel.getName(),
+                sourceState != null ? sourceState.getName() : "start",
+                transitionModel.getTo(),
+                transitionData
+            );
+        }
+
+        final ScopedContextChain scopedContextChain = runtimeContext.getScopedContextChain();
+
+        ProcessContext newScopedCtx = (ProcessContext) scopedContext.copy(runtimeContext);
         newScopedCtx.update(transitionData.getContextUpdate());
 
         DomainObject domainObjectContext;
@@ -130,10 +148,9 @@ public class ProcessService
 
         newScopedCtx.setDomainObjectContext(domainObjectContext);
 
-        scopedContextChain.addContext(newScopedCtx);
 
-        final Process process = applicationModel.getProcess(execution.getProcessName());
-        final ProcessState sourceState = process.getStates().get(transitionModel.getFrom());
+
+        scopedContextChain.update(newScopedCtx, sourceState == null ? null : Process.getProcessViewName(process.getName(), sourceState.getName()));
 
         ViewContext viewContext = null;
         if (sourceState instanceof ViewState)
@@ -147,13 +164,13 @@ public class ProcessService
                 viewContext.update(transitionData.getContextUpdate());
             }
 
-            scopedContextChain.addContext(viewContext);
+            scopedContextChain.update(viewContext, view.getName());
         }
 
         ASTExpression actionAST = transitionModel.getActionAST();
         if (actionAST != null)
         {
-            ActionExecutionEnvironment environment = new ActionExecutionEnvironment(runtimeContext, scopedContextChain, actionService);
+            ActionExecutionEnvironment environment = new ActionExecutionEnvironment(runtimeContext, scopedContextChain, actionService, processName);
             expressionService.evaluate(actionAST, environment);
             transitionData.setContextUpdate(viewContext != null ? viewContext.getContext() : null);
         }
@@ -165,7 +182,20 @@ public class ProcessService
         // internally handled states
         if (targetStateModel instanceof DecisionState)
         {
+            scopedContextChain.clearContext(ScopeType.VIEW);
             return decide(runtimeContext, execution, newScopedCtx, (DecisionState) targetStateModel, transitionData);
+        }
+        else if (targetStateModel instanceof ViewState)
+        {
+            View view = process.getView(targetStateModel.getName());
+            if (!view.getName().equals(scopedContextChain.getScopeLocation()))
+            {
+                // entered a new view, still have the old view context.
+                // We recreate the view context for the new view.
+                final ViewContext newViewContext = scopedContextFactory.createViewContext(view);
+                scopedContextFactory.initializeContext(runtimeContext, newViewContext);
+                runtimeContext.getScopedContextChain().update(newViewContext, view.getName());
+            }
         }
 
         // user handled states
@@ -197,13 +227,18 @@ public class ProcessService
         for (DecisionModel decisionModel : decisionStateModel.getDecisions())
         {
             ActionExecutionEnvironment environment = new ActionExecutionEnvironment(runtimeContext, runtimeContext
-                .getScopedContextChain(), actionService);
+                .getScopedContextChain(), actionService, execution.getProcessName());
             Object result = expressionService.evaluate(decisionModel.getExpressionAST(), environment);
 
             if (!(result instanceof Boolean))
             {
                 throw new ProcessExecutionException("Decision expression '" + decisionModel.getExpression() + "' did not " +
                     "return a boolean result but " + result);
+            }
+
+            if (log.isDebugEnabled())
+            {
+                log.debug("Decision '{}' is {}", decisionModel.getExpression(), result);
             }
 
             if ((Boolean) result)
@@ -214,6 +249,4 @@ public class ProcessService
 
         return transition(runtimeContext, execution, newScopedCtx, decisionStateModel.getDefaultTransition(), transitionData);
     }
-
-
 }

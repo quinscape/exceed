@@ -1,11 +1,13 @@
 package de.quinscape.exceed.runtime.model;
 
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.component.ComponentDescriptor;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import org.junit.Before;
 import org.junit.Test;
@@ -106,7 +108,14 @@ public class ViewExpressionRendererTest
 
     private String transform(String expr) throws ParseException
     {
-        ActionExpressionBaseRenderer renderer = new ViewExpressionRenderer(null, null, componentModel, "test", path, null);
+        ApplicationModel applicationModel = new ApplicationModel();
+
+        View view = new View();
+        view.setName("testView");
+        applicationModel.addView(view.getName(), view);
+        applicationModel.getMetaData().getScopeMetaModel().addDeclarations(view);
+
+        ActionExpressionBaseRenderer renderer = new ViewExpressionRenderer(applicationModel, view, componentModel, "test", path, null);
         ASTExpression expression = ExpressionParser.parse(expr);
         expression.childrenAccept(renderer, null);
         return renderer.getOutput();

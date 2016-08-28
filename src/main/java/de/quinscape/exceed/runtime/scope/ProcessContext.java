@@ -2,10 +2,10 @@ package de.quinscape.exceed.runtime.scope;
 
 import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.model.context.ContextModel;
+import de.quinscape.exceed.model.context.ScopedPropertyModel;
+import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
-import de.quinscape.exceed.runtime.util.DomainUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,36 +44,58 @@ public final class ProcessContext
             contextCopy.put(propertyName, context.get(propertyName));
         }
 
-        for (String objectName : contextModel.getObjects().keySet())
-        {
-            contextCopy.put(objectName, DomainUtil.copy(runtimeContext, (DomainObject) context.get(objectName)));
-        }
-
-        for (String listName : contextModel.getLists().keySet())
-        {
-            contextCopy.put(listName, ((DataGraph)context.get(listName)).copy(runtimeContext));
-        }
-
         contextCopy.put(DOMAIN_OBJECT_CONTEXT, context.get(DOMAIN_OBJECT_CONTEXT));
 
         return new ProcessContext(contextModel, contextCopy);
     }
 
 
-    @Override
-    public boolean hasObject(String name)
-    {
-        return DOMAIN_OBJECT_CONTEXT.equals(name) || super.hasObject(name);
-    }
-
     public DomainObject getDomainObjectContext()
     {
-        return getObject(DOMAIN_OBJECT_CONTEXT);
+        return (DomainObject) getProperty(DOMAIN_OBJECT_CONTEXT);
     }
 
 
     public void setDomainObjectContext(DomainObject domainObjectContext)
     {
-        setObject(DOMAIN_OBJECT_CONTEXT, domainObjectContext);
+        setProperty(DOMAIN_OBJECT_CONTEXT, domainObjectContext);
+    }
+
+
+    @Override
+    public boolean hasProperty(String name)
+    {
+        if (name.equals(DOMAIN_OBJECT_CONTEXT))
+        {
+            return true;
+        }
+
+        return super.hasProperty(name);
+    }
+
+
+    @Override
+    public ScopedPropertyModel getModel(String name)
+    {
+        if (name.equals(DOMAIN_OBJECT_CONTEXT))
+        {
+            return getCurrentDomainObjectModel();
+        }
+
+        return super.getModel(name);
+    }
+
+
+    public ScopedPropertyModel getCurrentDomainObjectModel()
+    {
+        final DomainObject domainObject = (DomainObject) getProperty(DOMAIN_OBJECT_CONTEXT);
+
+        final ScopedPropertyModel scopedPropertyModel = new ScopedPropertyModel();
+        scopedPropertyModel.setName(DOMAIN_OBJECT_CONTEXT);
+        scopedPropertyModel.setType(DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE);
+        scopedPropertyModel.setTypeParam(
+            domainObject != null ? domainObject.getDomainType() : "None"
+        );
+        return scopedPropertyModel;
     }
 }

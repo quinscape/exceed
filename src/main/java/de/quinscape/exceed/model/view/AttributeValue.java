@@ -136,7 +136,7 @@ public class AttributeValue
             return null;
         }
 
-        String stringValue = (String) value;
+        String stringValue = value;
         if (forceExpression)
         {
             return new AttributeValue(AttributeValueType.EXPRESSION, stringValue, forceExpression);

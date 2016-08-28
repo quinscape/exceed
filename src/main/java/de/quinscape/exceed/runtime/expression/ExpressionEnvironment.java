@@ -493,7 +493,7 @@ public abstract class ExpressionEnvironment
             Node kid = node.jjtGetChild(i);
             if (kid instanceof ASTIdentifier)
             {
-                operand = ((ASTIdentifier) kid).jjtAccept(this, null);
+                operand = kid.jjtAccept(this, null);
             }
             else if (kid instanceof ASTFunction)
             {

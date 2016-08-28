@@ -70,14 +70,6 @@ public class Transition
     public void setAction(String action)
     {
         this.action = action;
-        try
-        {
-            this.actionAST = ExpressionUtil.handleAssignmentAction(ExpressionParser.parse(action));
-        }
-        catch (ParseException e)
-        {
-            throw new ExceedRuntimeException(e);
-        }
     }
 
 

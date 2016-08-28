@@ -16,7 +16,7 @@ import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.model.component.ModuleFunctionReferences;
 import de.quinscape.exceed.model.component.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.scope.ScopedContext;
-import de.quinscape.exceed.runtime.scope.ScopedValueType;
+import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 import de.quinscape.exceed.runtime.scope.ViewContext;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import org.springframework.stereotype.Service;
@@ -62,11 +62,11 @@ public class ScopeReferenceService
     private Holder holderForView(View view)
     {
         String viewName = view.getName();
-        Holder holder = new Holder(view.getVersion());
+        Holder holder = new Holder(view.getVersionGUID());
         Holder existing = references.putIfAbsent(viewName, holder);
         if (existing != null)
         {
-            if (existing.getViewVersion().equals(view.getVersion()))
+            if (existing.getViewVersion().equals(view.getVersionGUID()))
             {
                 holder = existing;
             }
@@ -328,14 +328,12 @@ public class ScopeReferenceService
                 ModuleFunctionReferences refs = staticFunctionReferences.getModuleFunctionReferences(moduleName);
                 if (refs != null)
                 {
-                    for (ScopedValueType type : ScopedValueType.values())
+                    // we're simply using the name of ScopedValueType as our static call definition names
+                    for (String name : refs.getCalls("scope"))
                     {
-                        // we're simply using the name of ScopedValueType as our static call definition names
-                        for (String name : refs.getCalls(type.name()))
-                        {
-                            ScopedContext scope = type.findScope(runtimeContext.getScopedContextChain(), name);
-                            set.add(new ScopeReference(type, name, scope.getClass(), scope.getModel(type, name)));
-                        }
+                        final ScopedContextChain chain = runtimeContext.getScopedContextChain();
+                        ScopedContext scope = chain.findScopeWithProperty(name);
+                        set.add(new ScopeReference(name, scope.getClass(), scope.getModel(name)));
                     }
 
                     for (String required : refs.getRequires())

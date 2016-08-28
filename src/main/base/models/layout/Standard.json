@@ -1,14 +1,30 @@
 {
     "root": {
-        "name" : "div",
+        "name" : "View",
         "kids": [
             {
+                "name": "ViewContext",
+                "kids": [
+                    {
+                        "name": "Property",
+                        "attrs": {
+                            "name": "layout",
+                            "type": "PlainText",
+                            "defaultValue": "'Layout Property'"
+                        }
+                    }
+                ]
+            },
+            {
                 "name": "div",
+                "attrs": {
+                    "className": "page-decoration"
+                },
                 "kids": [
                     {
                         "name": "[String]",
                         "attrs": {
-                            "value": "NAVIGATION"
+                            "value": "{ 'NAV:  + layout' }"
                         }
                     }
                 ]

@@ -54,6 +54,6 @@ public class TestApplication
 
     public RuntimeContext createRuntimeContext()
     {
-        return new RuntimeContext(this, "/test", new DefaultTranslator(null), Locale.getDefault(), new ScopedContextChain(Collections.emptyList()), domainService);
+        return new RuntimeContext(this, "/test", new DefaultTranslator(null), Locale.getDefault(), new ScopedContextChain(Collections.emptyList(), null, null), domainService);
     }
 }

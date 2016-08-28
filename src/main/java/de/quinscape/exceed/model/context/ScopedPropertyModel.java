@@ -5,8 +5,11 @@ import de.quinscape.exceed.model.view.AttributeValue;
 import org.svenson.JSONProperty;
 
 public class ScopedPropertyModel
-    extends ScopedElementModel
 {
+    private String name;
+
+    private String description;
+
     private String type;
 
     private Object typeParam;
@@ -81,6 +84,30 @@ public class ScopedPropertyModel
     public void setRequired(boolean required)
     {
         this.required = required;
+    }
+
+
+    public String getName()
+    {
+        return name;
+    }
+
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+
+    public void setDescription(String description)
+    {
+        this.description = description;
     }
 
 

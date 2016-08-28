@@ -5,35 +5,24 @@ import org.svenson.JSONParameter;
 
 public class ComponentViewContext
 {
-    private final String objectType;
-
     private final String propertyType;
 
     private final AttributeValue defaultValue;
 
 
     public ComponentViewContext(
-        @JSONParameter("objectType")
-        String objectType,
-        @JSONParameter("propertyType")
+        @JSONParameter("type")
         String propertyType,
         @JSONParameter("defaultValue")
         String defaultValue)
     {
-        if (objectType != null && propertyType != null)
+        if (propertyType == null)
         {
-            throw new IllegalStateException("objectType and propertyType cannot be both set.");
+            throw new IllegalArgumentException("propertyType can't be null");
         }
 
-        this.objectType = objectType;
         this.propertyType = propertyType;
         this.defaultValue = AttributeValue.forValue(defaultValue, true);
-    }
-
-
-    public String getObjectType()
-    {
-        return objectType;
     }
 
 
@@ -52,11 +41,5 @@ public class ComponentViewContext
     public AttributeValue getDefaultAttributeValue()
     {
         return defaultValue;
-    }
-
-
-    public boolean isList()
-    {
-        return objectType == null && propertyType == null;
     }
 }

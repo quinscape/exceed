@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.service;
 
-import de.quinscape.exceed.model.context.ScopedElementModel;
+import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
@@ -20,18 +20,18 @@ public class ContextExpressionEnvironment
 
     private final Map<String, Object> params;
 
-    private final ScopedElementModel scopedElementModel;
+    private final ScopedPropertyModel scopedPropertyModel;
 
     private final ScopedContextChain scopedContext;
 
 
     public ContextExpressionEnvironment(RuntimeContext runtimeContext, ActionService actionService, Map<String,
-        Object> locationParams, ScopedElementModel scopedElementModel)
+        Object> locationParams, ScopedPropertyModel scopedPropertyModel)
     {
         this.runtimeContext = runtimeContext;
         this.actionService = actionService;
         this.params = locationParams;
-        this.scopedElementModel = scopedElementModel;
+        this.scopedPropertyModel = scopedPropertyModel;
         this.scopedContext = runtimeContext.getScopedContextChain();
     }
 
@@ -88,8 +88,21 @@ public class ContextExpressionEnvironment
     }
 
 
-    public ScopedElementModel getScopedElementModel()
+    public ScopedPropertyModel getScopedPropertyModel()
     {
-        return scopedElementModel;
+        return scopedPropertyModel;
+    }
+
+    @Override
+    public Object resolveIdentifier(String name)
+    {
+        if (scopedContext.hasProperty(name))
+        {
+            return scopedContext.getProperty(name);
+        }
+        else
+        {
+            return super.resolveIdentifier(name);
+        }
     }
 }

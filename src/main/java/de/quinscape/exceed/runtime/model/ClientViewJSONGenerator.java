@@ -25,8 +25,8 @@ import de.quinscape.exceed.runtime.service.ActionExpressionRenderer;
 import de.quinscape.exceed.runtime.service.ActionExpressionRendererFactory;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.SyslogCallGenerator;
-import de.quinscape.exceed.runtime.util.ExpressionUtil;
 import org.svenson.JSON;
+import de.quinscape.exceed.runtime.util.AssignmentReplacementVisitor;
 import org.svenson.util.JSONBuilder;
 
 import java.util.Collections;
@@ -431,7 +431,7 @@ public class ClientViewJSONGenerator
 
         if (isActionExpression)
         {
-            expression = ExpressionUtil.handleAssignmentAction(expression);
+            expression.jjtAccept(new AssignmentReplacementVisitor(application.getApplicationModel(), view.getName()), null);
         }
 
         expression.childrenAccept(renderer, null);

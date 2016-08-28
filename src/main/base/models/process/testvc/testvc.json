@@ -7,6 +7,10 @@
             "limit": {
                 "type": "Integer",
                 "defaultValue": "10"
+            },
+            "value": {
+                "type": "Integer",
+                "defaultValue": "0"
             }
         }
     },
@@ -16,7 +20,7 @@
             "transitions": {
                 "inc": {
                     "to": "check",
-                    "action": "property('value') = property('value') + 1"
+                    "action": "value = value + 1"
                 }
             }
         },
@@ -24,7 +28,7 @@
             "type": "process.DecisionState",
             "decisions": [
                 {
-                    "expression": "property('value') >= property('limit')",
+                    "expression": "value >= limit",
                     "transition": {
                         "to": "end",
                         "action" : "syslog('Jumping to End')"

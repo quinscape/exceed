@@ -16,24 +16,6 @@ import java.util.UUID;
 public class ActionExecutionOperations
 {
     @Operation
-    public DomainObject object(ExpressionContext<ActionExecutionEnvironment> ctx, String name)
-    {
-        return ctx.getEnv().getScopedContext().getObject(name);
-    }
-
-    @Operation
-    public DataGraph list(ExpressionContext<ActionExecutionEnvironment> ctx, String name)
-    {
-        return ctx.getEnv().getScopedContext().getList(name);
-    }
-
-    @Operation
-    public Object property(ExpressionContext<ActionExecutionEnvironment> ctx, String name)
-    {
-        return ctx.getEnv().getScopedContext().getProperty(name);
-    }
-
-    @Operation
     public Object now(ExpressionContext<ActionExecutionEnvironment> ctx)
     {
         return Timestamp.from(Instant.now());

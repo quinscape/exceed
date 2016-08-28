@@ -5,6 +5,7 @@ import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.DomainEditorViews;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.context.ScopeMetaModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.DomainVersion;
 import de.quinscape.exceed.model.domain.EnumType;
@@ -15,7 +16,6 @@ import de.quinscape.exceed.model.process.Transition;
 import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.AttributeValue;
-import de.quinscape.exceed.model.view.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.Layout;
 import de.quinscape.exceed.model.view.View;
@@ -32,12 +32,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static de.quinscape.exceed.model.view.ComponentModelBuilder.*;
 
 @Service
 public class ModelCompositionService
@@ -328,7 +329,33 @@ public class ModelCompositionService
             postProcessView(application, view);
         }
 
+        for (Process process : applicationModel.getProcesses().values())
+        {
+            process.postProcess(applicationModel);
+        }
+
         validateProcesses(applicationModel);
+
+        final ScopeMetaModel scopeMetaModel = applicationModel.getMetaData().getScopeMetaModel();
+
+        for (Process process : applicationModel.getProcesses().values())
+        {
+            for (ProcessState processState : process.getStates().values())
+            {
+                scopeMetaModel.addDeclarations(processState);
+                processState.postProcess();
+            }
+        }
+
+        for (View view : applicationModel.getViews().values())
+        {
+            if (!view.isContainedInProcess())
+            {
+                scopeMetaModel.addDeclarations(view);
+            }
+
+            view.setCachedJSON(modelJSONService.toJSON(application, view, JSONFormat.CLIENT));
+        }
     }
 
 

@@ -10,7 +10,6 @@ import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.Layout;
 import de.quinscape.exceed.model.view.View;
-import de.quinscape.exceed.runtime.component.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.model.ModelNotFoundException;
 import org.springframework.util.StringUtils;
 import org.svenson.JSONProperty;
@@ -78,7 +77,7 @@ public class ApplicationModel
 
     private ContextModel sessionContextModel;
 
-    private final ApplicationMetaData metaData = new ApplicationMetaData();
+    private final ApplicationMetaData metaData = new ApplicationMetaData(this);
 
     /**
      * Database schema for this application
@@ -339,7 +338,6 @@ public class ApplicationModel
 
     public void addProcess(String name, Process process)
     {
-        process.setApplicationModel(this);
         processes.put(name, process);
     }
 
