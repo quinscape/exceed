@@ -1,10 +1,12 @@
 package de.quinscape.exceed.model.routing;
 
+import de.quinscape.exceed.runtime.util.LocationUtil;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
 
 public class MappingNode
 {
@@ -27,13 +29,16 @@ public class MappingNode
 
     public void setName(String name)
     {
-        if (name != null && name.startsWith("{") && name.endsWith("}"))
+        final Matcher matcher = LocationUtil.match(name);
+        if (matcher.matches())
         {
-            varName = name.substring(1, name.length() - 1).trim();
+            varName = matcher.group(LocationUtil.VAR_NAME_GROUP);
+            required = matcher.group(LocationUtil.VAR_OPTIONAL_GROUP) == null;
         }
         else
         {
             varName = null;
+            required = false;
         }
         this.name = name;
     }
@@ -48,6 +53,7 @@ public class MappingNode
 
         return children;
     }
+
 
     public boolean hasChildren()
     {
@@ -96,15 +102,10 @@ public class MappingNode
     }
 
 
+    @JSONProperty(readOnly = true)
     public boolean isRequired()
     {
         return required;
-    }
-
-
-    public void setRequired(boolean required)
-    {
-        this.required = required;
     }
 
 
@@ -113,4 +114,5 @@ public class MappingNode
     {
         return varName;
     }
+
 }

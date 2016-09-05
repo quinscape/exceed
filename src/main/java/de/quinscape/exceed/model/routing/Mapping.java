@@ -1,17 +1,31 @@
 package de.quinscape.exceed.model.routing;
 
 
-import de.quinscape.exceed.model.Model;
+import de.quinscape.exceed.runtime.model.InconsistentModelException;
 import org.svenson.JSONProperty;
 
-public class Mapping
-    extends Model
-{
-    private String alias;
+import javax.annotation.PostConstruct;
 
+public class Mapping
+{
     private String viewName;
 
     private String processName;
+
+    private Boolean disabled;
+
+
+    @JSONProperty(ignoreIfNull = true)
+    public Boolean getDisabled()
+    {
+        return disabled;
+    }
+
+
+    public void setDisabled(Boolean disabled)
+    {
+        this.disabled = disabled;
+    }
 
 
     public String getViewName()
@@ -23,18 +37,6 @@ public class Mapping
     public void setViewName(String viewName)
     {
         this.viewName = viewName;
-    }
-
-
-    public String getAlias()
-    {
-        return alias;
-    }
-
-
-    public void setAlias(String alias)
-    {
-        this.alias = alias;
     }
 
 
@@ -50,18 +52,27 @@ public class Mapping
     }
 
 
-
     @JSONProperty(ignore = true)
     public String getName()
     {
-        if (alias != null)
-        {
-            return alias;
-        }
         if (viewName != null)
         {
             return viewName;
         }
         return processName;
+    }
+
+
+    @PostConstruct
+    public void validate()
+    {
+        if (viewName == null && processName == null)
+        {
+            throw new InconsistentModelException("Mapping must have either a viewName or processName property");
+        }
+        if (viewName != null && processName != null)
+        {
+            throw new InconsistentModelException("Mapping cannot have both viewName and processName");
+        }
     }
 }

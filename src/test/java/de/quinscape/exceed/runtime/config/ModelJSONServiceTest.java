@@ -25,7 +25,7 @@ public class ModelJSONServiceTest
     @Test
     public void testToJSON() throws Exception
     {
-        assertThat(modelJSONService.toJSON(new RoutingTable()), is("{\"type\":\"routing.RoutingTable\",\"name\":\"routing\",\"rootNode\":null}"));
+        assertThat(modelJSONService.toJSON(new RoutingTable()), is("{\"type\":\"routing.RoutingTable\",\"name\":\"routing\",\"extension\":0,\"mappings\":null}"));
 
     }
 

@@ -1,66 +1,31 @@
 {
-    "rootNode": {
-        "kids": [
-            {
-                "name": "detail",
-                "kids" : [{
-                    "name" : "{id}",
-                    "mapping": {
-                        "viewName": "Detail"
-                    }
-                }]
-            },
-            {
-                "name": "detail2",
-                "kids" : [{
-                    "name" : "{id}",
-                    "mapping": {
-                        "viewName": "Detail2"
-                    }
-                }]
-            },
-            {
-                "name": "process",
-                "kids" : [{
-                    "name" : "{stateId}",
-                    "mapping": {
-                        "processName": "test"
-                    }
-                }]
-            },
-            {
-                "name": "testvc",
-                "kids" : [{
-                    "name" : "{stateId}",
-                    "mapping": {
-                        "processName": "testvc"
-                    }
-                }]
-            },
-            {
-                "name": "scoped",
-                "kids" : [{
-                    "name" : "{stateId}",
-                    "mapping": {
-                        "processName": "scoped"
-                    }
-                }]
-            },
-            {
-                "name": "domain-editor",
-                "mapping": {
-                    "viewName": "DomainEditor"
-                }
-            },
-            {
-                "name": "translation-editor",
-                "mapping": {
-                    "viewName": "TranslationEditor"
-                }
-            }
-        ],
-        "mapping": {
+    "mappings": {
+        "/": {
             "viewName": "Home"
+        },
+        "/detail/{id}": {
+            "viewName": "Detail"
+        },
+        "/detail2/{id}": {
+            "viewName": "Detail2"
+        },
+        "/domain-editor": {
+            "viewName": "DomainEditor"
+        },
+        "/editor-home": {
+            "viewName": "EditorHome"
+        },
+        "/process": {
+            "processName": "test"
+        },
+        "/scoped": {
+            "processName": "scoped"
+        },
+        "/testvc": {
+            "processName": "testvc"
+        },
+        "/translation-editor": {
+            "viewName": "TranslationEditor"
         }
     }
 }

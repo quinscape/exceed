@@ -8,9 +8,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LocationUtil
 {
+    final static Pattern VAR_PATTERN = Pattern.compile("^\\{([0-9a-z_]+)(\\?)?\\}$", Pattern.CASE_INSENSITIVE);
+
+    public final static int VAR_NAME_GROUP = 1;
+    public final static int VAR_OPTIONAL_GROUP = 2;
+
     public static String evaluateURI(String template, Map<String, Object> params)
     {
         try
@@ -24,9 +31,11 @@ public class LocationUtil
             for (String part : parts)
             {
                 sb.append('/');
-                if (part.startsWith("{") && part.startsWith("{"))
+
+                Matcher m = match(part);
+                if (m.matches())
                 {
-                    String varName = part.substring(1, part.length() - 1);
+                    String varName = m.group(VAR_NAME_GROUP);
                     sb.append(params.get(varName));
                     paramNames.remove(varName);
                 }
@@ -72,5 +81,11 @@ public class LocationUtil
             throw new ExceedRuntimeException(e);
         }
 
+    }
+
+
+    public static Matcher match(String name)
+    {
+        return VAR_PATTERN.matcher(name);
     }
 }

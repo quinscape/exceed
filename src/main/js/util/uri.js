@@ -30,7 +30,7 @@ function evaluateParams(params, usedInPath)
 
 function replacePathVariables(location, params, usedInPath)
 {
-   return location.replace(/{([a-z]+)}/gi, function (match, name, offset, str)
+   return location.replace(/\{([0-9a-z_]+)\??\}/gi, function (match, name, offset, str)
     {
         var value = params && params[name];
         if (value === undefined)
@@ -46,8 +46,10 @@ function uri(location, params, containsContextPath)
 {
     var usedInPath = {};
 
+    location = replacePathVariables(location, params, usedInPath);
+
     var hPos = location.indexOf("#");
-    if (hPos >=0)
+    if (hPos >= 0)
     {
         location = location.substring(0, hPos);
     }
@@ -59,7 +61,6 @@ function uri(location, params, containsContextPath)
         location = location.substring(0, qPos);
     }
 
-    location = replacePathVariables(location, params, usedInPath);
 
     var result = (containsContextPath ? "" : sys.contextPath) + location + evaluateParams(params, usedInPath);
 

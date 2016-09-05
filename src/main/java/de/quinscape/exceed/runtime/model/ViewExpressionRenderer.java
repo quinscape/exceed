@@ -1,9 +1,5 @@
 package de.quinscape.exceed.runtime.model;
 
-import de.quinscape.exceed.model.ApplicationModel;
-import de.quinscape.exceed.model.component.ComponentDescriptor;
-import de.quinscape.exceed.model.component.PropDeclaration;
-import de.quinscape.exceed.model.component.PropType;
 import de.quinscape.exceed.expression.ASTBool;
 import de.quinscape.exceed.expression.ASTComputedPropertyChain;
 import de.quinscape.exceed.expression.ASTExpression;
@@ -14,19 +10,20 @@ import de.quinscape.exceed.expression.ASTInteger;
 import de.quinscape.exceed.expression.ASTPropertyChain;
 import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.Node;
-import de.quinscape.exceed.model.context.ContextModel;
+import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.model.component.ComponentDescriptor;
+import de.quinscape.exceed.model.component.PropDeclaration;
+import de.quinscape.exceed.model.component.PropType;
+import de.quinscape.exceed.model.context.ScopeDeclaration;
+import de.quinscape.exceed.model.context.ScopeDeclarations;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.AttributeValueType;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
-import de.quinscape.exceed.runtime.scope.ScopedValueType;
 import de.quinscape.exceed.runtime.service.ActionExpressionRenderer;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
-import de.quinscape.exceed.runtime.util.ContextUtil;
 import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
-import de.quinscape.exceed.runtime.util.StaticScopeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.JSON;
@@ -57,16 +54,25 @@ public class ViewExpressionRenderer
 
     private final String attrName;
 
-    private final RuntimeApplication application;
+    private final ApplicationModel applicationModel;
 
     private final View view;
 
+    private final ScopeDeclarations declarations;
 
-    public ViewExpressionRenderer(RuntimeApplication application, View view, ComponentModel componentModel, String
+
+    public ViewExpressionRenderer(ApplicationModel applicationModel, View view, ComponentModel componentModel, String
         attrName, ComponentPath path, ActionExpressionRenderer actionExpressionRenderer)
     {
         super(view, actionExpressionRenderer);
-        this.application = application;
+
+        if (applicationModel == null)
+        {
+            throw new IllegalArgumentException("applicationModel can't be null");
+        }
+
+
+        this.applicationModel = applicationModel;
         this.view = view;
 
         if (componentModel == null)
@@ -86,6 +92,8 @@ public class ViewExpressionRenderer
 
         ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
         this.componentDescriptor = componentRegistration != null ? componentRegistration.getDescriptor() : null;
+
+        declarations = applicationModel.getMetaData().getScopeMetaModel().lookup(view);
     }
 
 
@@ -132,53 +140,21 @@ public class ViewExpressionRenderer
         {
             final PropDeclaration propDeclaration = componentDescriptor != null ? componentDescriptor.getPropTypes().get(attrName) : null;
 
-            StaticScopeReference ref = ContextUtil.findStaticScopeReference(application.getApplicationModel(), view.getProcessName(), view.getName(), name);
+            final ScopeDeclaration definition = declarations.get(name);
 
-            if (ref != null)
+            if (definition != null)
             {
                 final boolean isCursorExpression = propDeclaration != null && propDeclaration.getType() == PropType.CURSOR_EXPRESSION;
-                ScopedValueType type = ref.getValueType();
-
-                if (type == ScopedValueType.LIST)
+                if (isCursorExpression)
                 {
-                    if (isCursorExpression)
-                    {
-                        buf.append("_v.scopedListCursor(");
-                    }
-                    else
-                    {
-                        buf.append("_v.scopedList(");
-                    }
-
-                    buf.append(generator.quote(name)).append(")");
-                    return data;
+                    buf.append("_v.scopeCursor(");
                 }
-                if (type == ScopedValueType.OBJECT)
+                else
                 {
-                    if (isCursorExpression)
-                    {
-                        buf.append("_v.scopedObjectCursor(");
-                    }
-                    else
-                    {
-                        buf.append("_v.scopedObject(");
-                    }
-                    buf.append(generator.quote(name)).append(")");
-                    return data;
+                    buf.append("_v.scope(");
                 }
-                if (type == ScopedValueType.PROPERTY)
-                {
-                    if (isCursorExpression)
-                    {
-                        buf.append("_v.scopedPropertyCursor(");
-                    }
-                    else
-                    {
-                        buf.append("_v.scopedProperty(");
-                    }
-                    buf.append(generator.quote(name)).append(")");
-                    return data;
-                }
+                buf.append(generator.quote(name)).append(")");
+                return data;
             }
 
         }

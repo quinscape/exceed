@@ -1,0 +1,23 @@
+{
+    "mappings": {
+        "/": {
+            "viewName": "Home"
+        },
+        "/detail/{id?}": {
+            "viewName": "Detail"
+        },
+        "/scoped": {
+            "processName": "scoped"
+        },
+
+        "/foo/special": {
+            "processName": "specialFoo"
+        },
+        "/foo/{fooId}": {
+            "processName": "normalFoo"
+        },
+        "/multi/{a}/{b?}/{c?}": {
+            "viewName": "Multi"
+        }
+    }
+}
