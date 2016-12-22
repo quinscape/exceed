@@ -1,38 +1,41 @@
-var Promise = require("es6-promise-polyfill").Promise;
+const Promise = require("es6-promise-polyfill").Promise;
 
-var ajax = require("./ajax");
-var uri = require("../util/uri");
-var sys = require("../sys");
+const ajax = require("./ajax");
+const uri = require("../util/uri");
+const sys = require("../sys");
 
-var actions = {};
+const  MODULE_NAME_REGEXP = /^.\/(.*)\.js/;
+
+let actions;
 
 function defaultCatch(e)
 {
     return Promise.reject(e);
 }
 
-
-var ActionService = {
+const ActionService = {
     registerFromRequireContext: function (ctx)
     {
-        var modules = ctx.keys();
-        for (var i = 0; i < modules.length; i++)
+        const modules = ctx.keys();
+        for (let i = 0; i < modules.length; i++)
         {
-            var moduleName = modules[i];
-            var module = ctx(moduleName);
+            const moduleName = modules[i];
+            const module = ctx(moduleName);
 
             if (typeof module !== "function")
             {
                 throw new Error("Action module '" + moduleName + "' does not export a function");
             }
 
-            ActionService.register(name, module, module.catch);
+            const actionName = moduleName.replace(MODULE_NAME_REGEXP, "$1");
+            ActionService.register(actionName, module, module.catch);
         }
     },
 
     register: function (actionName, handler, errorHandler)
     {
         //console.log("Register", actionName, handler, errorHandler);
+
         actions[actionName] = {
             client: true,
             server: false,
@@ -69,14 +72,6 @@ var ActionService = {
         return actions;
     },
 
-    /**
-     * Forget about all registered actions. Internally used for tests.
-     * @private
-     */
-    _clearActions: function ()
-    {
-        actions = {};
-    },
     /**
      * Executes the action as specified by the given action model.
      *
@@ -147,6 +142,11 @@ var ActionService = {
         {
             return  Promise.reject(new Error("Invalid action" + action));
         }
+    },
+
+    reset: function ()
+    {
+        actions = {};
     }
 };
 

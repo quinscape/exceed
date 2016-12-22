@@ -1,9 +1,10 @@
-var assert = require("power-assert");
-var Promise = require("es6-promise-polyfill").Promise;
-var sinon = require("sinon");
-var proxyquire = require("proxyquire");
+const assert = require("power-assert");
+const Promise = require("es6-promise-polyfill").Promise;
+const sinon = require("sinon");
+const proxyquire = require("proxyquire");
 
-var sys = require("../../../../src/main/js/sys");
+const sys = require("../../../../src/main/js/sys");
+const keys = require("../../../../src/main/js/util/keys");
 sys.init("/test-context", "TestApp");
 
 var data;
@@ -14,6 +15,7 @@ function initData()
         calls: []
     }
 }
+
 
 
 var actionService = proxyquire("../../../../src/main/js/service/action", {
@@ -41,15 +43,12 @@ var actionService = proxyquire("../../../../src/main/js/service/action", {
 
         return Promise.resolve();
     }
-
 });
+
 
 describe("Action Service", function(){
 
-    before(function ()
-    {
-        actionService._clearActions();
-    });
+    before(actionService.reset);
 
 
 	it("registers bulk required client actions", function()
@@ -88,7 +87,8 @@ describe("Action Service", function(){
                     failed: true,
                     error: e
                 });
-                return Promise.reject(new Error("caught"));            });
+                return Promise.reject(new Error("caught"));
+            });
         };
 
         actionService.register("test", testAction, testAction.catch);
@@ -169,6 +169,4 @@ describe("Action Service", function(){
                 assert(data.calls[0].server);
             })
     });
-
-
 });
