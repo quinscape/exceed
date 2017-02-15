@@ -290,9 +290,10 @@ public class ModelCompositionService
                 namedModel.setName(name);
             }
         }
+
         if (model instanceof AutoVersionedModel)
         {
-            ((AutoVersionedModel) model).setVersion(UUID.randomUUID().toString());
+            ((AutoVersionedModel)model).initializeGUIDs();
         }
 
         return model;

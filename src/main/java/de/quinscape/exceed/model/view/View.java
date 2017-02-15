@@ -40,6 +40,8 @@ public class View
 
     private ContextModel contextModel;
 
+    private String identityGUID;
+
 
     /**
      * The root component of this view.
@@ -89,7 +91,7 @@ public class View
 
 
     @Override
-    public String getVersion()
+    public String getVersionGUID()
     {
 
         return version;
@@ -97,7 +99,7 @@ public class View
 
 
     @Override
-    public void setVersion(String version)
+    public void setVersionGUID(String version)
     {
         this.version = version;
     }
@@ -324,5 +326,18 @@ public class View
 
         return (ViewState) runtimeContext.getApplicationModel().getProcess(getProcessName()).getStates().get
             (getLocalName());
+    }
+
+    @Override
+    public String getIdentityGUID()
+    {
+        return identityGUID;
+    }
+
+
+    @Override
+    public void setIdentityGUID(String identity)
+    {
+        this.identityGUID = identity;
     }
 }
