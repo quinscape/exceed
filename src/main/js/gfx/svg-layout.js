@@ -44,7 +44,7 @@ var probeElems = {};
 /**
  * Helper module for SVG Text layout. It measures a test phrase in several sizes so that we have a rough guess what size a text is in vector units.
  *
- * @type {{TextSize: TextSize, getExampleTextSizes: module.exports.getExampleTextSizes, getFontSize: module.exports.getFontSize, init: module.exports.init}}
+ * @type {{TextSize: TextSize, getExampleTextSizes: function, getFontSize: function, init: function}}
  */
 module.exports = {
     TextSize: TextSize,
