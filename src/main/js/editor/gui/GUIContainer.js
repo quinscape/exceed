@@ -1,6 +1,6 @@
 const React = require("react");
 const GUIContext = require("./gui-context");
-const DragState = require("./drag-state");
+const ContainerContext = require("./container-context");
 const Event = require("../../util/event");
 const GlobalDrag = require("../../util/global-drag");
 
@@ -43,7 +43,12 @@ var GUIContainer = React.createClass({
         width: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string]),
         height: React.PropTypes.number,
         style: React.PropTypes.object,
+        zoom: React.PropTypes.bool,
         onInteraction: React.PropTypes.func
+    },
+
+    childContextTypes: {
+        containerContext: React.PropTypes.instanceOf(ContainerContext)
     },
 
     getDefaultProps : function ()
@@ -54,13 +59,27 @@ var GUIContainer = React.createClass({
             width: "100%",
             height: 600,
             style: null,
+            zoom: true,
             onInteraction: null
         };
 
     },
 
+    getChildContext: function()
+    {
+        //console.log("GUIContainer.getChildContext");
+
+        this.ctx = new ContainerContext(this);
+
+        return {
+            containerContext: this.ctx
+        };
+    },
+
     componentDidMount: function ()
     {
+        console.log("GUIContainer mount");
+
         GUIContext.update();
 
         this.centerX = this.props.centerX;
@@ -68,20 +87,19 @@ var GUIContainer = React.createClass({
         this.targetZoom = GUIContext.getZoom();
         this.dz = 0;
         this.animating = false;
-        this.drag = DragState.OFF;
 
-        if (this.svgElem)
+        if (this.props.zoom && this.ctx.svgElem)
         {
-            Event.add(this.svgElem, "mousewheel", this.onMouseWheel, false);
+            Event.add(this.ctx.svgElem, "mousewheel", this.onMouseWheel, false);
         }
 
         GlobalDrag.init();
     },
     componentWillUnmount: function ()
     {
-        if (this.svgElem)
+        if (this.props.zoom && this.ctx.svgElem)
         {
-            Event.remove(this.svgElem, "mousewheel", this.onMouseWheel, false);
+            Event.remove(this.ctx.svgElem, "mousewheel", this.onMouseWheel, false);
         }
 
         GlobalDrag.destroy();
@@ -152,15 +170,15 @@ var GUIContainer = React.createClass({
 
     updateViewBox: function ()
     {
-        if (this.svgElem)
+        if (this.ctx.svgElem)
         {
-            this.svgElem.setAttribute("viewBox", new ViewBox(this.centerX, this.centerY, this.props.height).render())
+            this.ctx.svgElem.setAttribute("viewBox", new ViewBox(this.centerX, this.centerY, this.props.height).render())
         }
     },
 
     onMouseWheel: function (ev)
     {
-        if (this.drag !== DragState.OFF)
+        if (GlobalDrag.isActiveDrag(this))
         {
             return;
         }
@@ -194,41 +212,47 @@ var GUIContainer = React.createClass({
 
     onMouseDown: function (ev)
     {
-        if (this.drag === DragState.OFF)
-        {
-            this.drag = DragState.LOCKED;
+        this.dragLocked = true;
 
-            var x = GUIContext.applyZoom(ev.pageX);
-            var y = GUIContext.applyZoom(ev.pageY);
+        var x = GUIContext.applyZoom(ev.pageX);
+        var y = GUIContext.applyZoom(ev.pageY);
 
-            this.offsetX = this.centerX + x;
-            this.offsetY = this.centerY + y;
+        this.offsetX = this.centerX + x;
+        this.offsetY = this.centerY + y;
 
-            GlobalDrag.setActiveDrag(this);
+        GlobalDrag.setActiveDrag(this);
 
-            return Event.preventDefault(ev);
-        }
+        return Event.preventDefault(ev);
     },
 
     onMouseMove: function (x, y)
     {
-        if (this.drag !== DragState.OFF)
+        if (GlobalDrag.isActiveDrag(this))
         {
+
             x = this.offsetX - GUIContext.applyZoom(x);
             y = this.offsetY - GUIContext.applyZoom(y);
 
-            if (this.drag === DragState.LOCKED)
+            if (this.dragLocked)
             {
                 var dx = this.centerX - x;
                 var dy = this.centerY - y;
-                if (Math.sqrt(dx * dx + dy * dy) > 3)
+
+                var dist = Math.sqrt( dx * dx + dy * dy);
+
+                console.log("LOCKED MOVE", dist);
+
+                if (dist > 2)
                 {
-                    this.drag = DragState.ON;
+                    //console.log("ACTIVATE DRAG");
+                    this.dragLocked = false;
                 }
             }
 
-            if (this.drag === DragState.ON)
+            if (!this.dragLocked)
             {
+                console.log("CONTAINER MOVE", x,y);
+
                 this.centerX = x;
                 this.centerY = y;
 
@@ -239,26 +263,25 @@ var GUIContainer = React.createClass({
 
     onMouseUp: function (x, y)
     {
-        var dragState = this.drag;
-        this.drag = DragState.OFF;
-
-        GlobalDrag.setActiveDrag(null);
-
-        if (dragState === DragState.ON)
+        if (GlobalDrag.isActiveDrag(this))
         {
             x = this.offsetX - GUIContext.applyZoom(x);
             y = this.offsetY - GUIContext.applyZoom(y);
 
-            this.centerX = x;
-            this.centerY = y;
+            GlobalDrag.setActiveDrag(null);
 
-            this.updateViewBox();
+            if (this.dragLocked)
+            {
+                var fn = this.props.onInteraction;
+                typeof fn == "function" && fn();
+            }
+            else
+            {
+                this.centerX = x;
+                this.centerY = y;
 
-        }
-        else if (dragState === DragState.LOCKED)
-        {
-            var fn = this.props.onInteraction;
-            typeof fn == "function" && fn();
+                this.updateViewBox();
+            }
         }
     },
 
@@ -279,7 +302,7 @@ var GUIContainer = React.createClass({
         return (
             <div className="gui-container">
                 <svg
-                    ref={ elem => this.svgElem = elem}
+                    ref={ elem => this.ctx.init(elem) }
                     width={ width }
                     height={ this.props.height }
                     style={ this.props.style }

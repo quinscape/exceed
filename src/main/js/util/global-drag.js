@@ -27,7 +27,6 @@ function globalMouseUp(ev)
 
         activeDragObject.onMouseUp(eventPos.x, eventPos.y);
         activeDragObject = null;
-
         return Event.preventDefault(ev);
     }
 }
@@ -66,8 +65,15 @@ var GlobalDrag = {
     },
     setActiveDrag: function (dragObject)
     {
+        //console.log("ACTIVE DRAG", dragObject);
+
         activeDragObject = dragObject;
+    },
+    isActiveDrag: function (dragObject)
+    {
+        return activeDragObject === dragObject;
     }
+
 };
 
 module.exports = GlobalDrag;

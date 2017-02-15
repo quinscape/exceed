@@ -1,4 +1,4 @@
-var Enum = require("../../util/enum");
+const Enum = require("../../util/enum");
 
 /**
  * @type UIState

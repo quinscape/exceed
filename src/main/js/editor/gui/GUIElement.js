@@ -1,34 +1,13 @@
 var React = require("react");
-var ReactDOM = require("react-dom");
+
+const ContainerContext = require("./container-context");
 
 var GUIContext = require("./gui-context");
 var UIState = require("./ui-state");
 
 const assign = require("object-assign");
 
-var DragState = require("./drag-state");
 var GlobalDrag = require("../../util/global-drag");
-
-
-var immutableUpdate = require("react-addons-update");
-
-function findSVG(e)
-{
-    do
-    {
-        if (e.tagName === "svg")
-        {
-            return e;
-        }
-    } while(e = e.parentNode);
-
-    return null;
-}
-
-function noOp()
-{
-
-}
 
 /**
  * SVGElement is a helper element for implementing SVG based user interface elements that can be interacted with by mouse and keyboard.
@@ -41,33 +20,45 @@ var GUIElement = React.createClass({
     {
         return {
             uiState: UIState.NORMAL,
-            dragThreshold: 4
+            dragThreshold: 2,
+            draggable: true
         };
     },
 
     propTypes: {
         id: React.PropTypes.string.isRequired,
+        className: React.PropTypes.string,
+        style: React.PropTypes.object,
         uiState: React.PropTypes.oneOf(UIState.values()),
         onInteraction: React.PropTypes.func,
         onUpdate: React.PropTypes.func.isRequired,
+        draggable: React.PropTypes.bool,
         dragThreshold: React.PropTypes.number
     },
+
+    contextTypes: {
+        containerContext: React.PropTypes.instanceOf(ContainerContext)
+    },
+
 
     componentDidMount: function ()
     {
         GUIContext._register(this);
-
-        this.drag = DragState.OFF;
-
         // we use a global move listener, so that our dragged object doesn't act strange when the user managed to
         // move the cursor outside of the svg element or svg container.
-        GlobalDrag.init();
+        if (this.props.draggable)
+        {
+            GlobalDrag.init();
+        }
     },
 
     componentWillUnmount: function ()
     {
         GUIContext._deregister(this);
-        GlobalDrag.destroy();
+        if (this.props.draggable)
+        {
+            GlobalDrag.destroy();
+        }
     },
 
     componentWillUpdate: function (nextProps, nextState)
@@ -80,19 +71,20 @@ var GUIElement = React.createClass({
 
     onMouseDown: function (ev)
     {
-        if (this.drag === DragState.OFF)
-        {
-            this.drag = DragState.LOCKED;
+        var layout = this.props.position;
 
-            var layout = this.props.positionLink.value;
+        var x = GUIContext.applyZoom(ev.pageX);
+        var y = GUIContext.applyZoom(ev.pageY);
 
-            //console.log("START:" , layout.x, layout.y);
+        //console.log("START:" , layout.x, layout.y, "EVENT", x, y);
 
-            this.offsetX = GUIContext.applyZoom(ev.pageX) - layout.x;
-            this.offsetY = GUIContext.applyZoom(ev.pageY) - layout.y;
+        // we use a simple offset system for dragging and dropping, we don't figure out the exact position of the mouse
+        // cursor in object space, we just remember the offset after accounting for zoom and apply it later.
+        this.offsetX = x - layout.x;
+        this.offsetY = y - layout.y;
 
-            GlobalDrag.setActiveDrag(this);
-        }
+        this.dragLocked = true;
+        GlobalDrag.setActiveDrag(this);
 
         ev.preventDefault();
         return false;
@@ -100,59 +92,80 @@ var GUIElement = React.createClass({
 
     onMouseMove: function (x, y)
     {
-        if (this.drag !== DragState.OFF)
+        if (GlobalDrag.isActiveDrag(this))
         {
-            var link = this.props.positionLink;
-            var layout = link.value;
+            var layout = this.props.position;
 
             x = GUIContext.applyZoom(x) - this.offsetX;
             y = GUIContext.applyZoom(y) - this.offsetY;
 
-            if (Math.sqrt( x * x+ y * y) > this.props.dragThreshold)
+            if (this.dragLocked)
             {
-                this.drag = DragState.ON;
+                var dx = layout.x - x;
+                var dy = layout.y - y;
+
+                if (Math.sqrt( dx * dx + dy * dy) > this.props.dragThreshold)
+                {
+                    //console.log("ACTIVATE DRAG");
+                    this.dragLocked = false;
+                }
             }
 
-            var copy = assign({}, layout);
-            copy.x = x;
-            copy.y = y;
-            link.requestChange(copy, false);
+            if (!this.dragLocked && this.props.draggable)
+            {
+                //console.log("GUIElement move");
+                var copy = assign({}, layout);
+                copy.x = x;
+                copy.y = y;
+                this.props.updatePosition(copy, false);
+            }
         }
     },
 
-    onMouseUp: function (x, y)
+    /**
+     * Called by GlobalDrag for every update in position for this GUIElement by dragging.
+     *
+     * @param screenX     x-coordinate in screen space
+     * @param screenY     y-coordinate in screen space
+     */
+    onMouseUp: function (screenX, screenY)
     {
-        if (this.drag !== DragState.OFF)
+        if (GlobalDrag.isActiveDrag(this))
         {
-            var dragState = this.drag;
-            this.drag = DragState.OFF;
+            // uncorrected object space values
+            var x = GUIContext.applyZoom(screenX) - this.offsetX;
+            var y = GUIContext.applyZoom(screenY) - this.offsetY;
 
             GlobalDrag.setActiveDrag(null);
 
-            x = GUIContext.applyZoom(x) - this.offsetX;
-            y = GUIContext.applyZoom(y) - this.offsetY;
+            //console.log("onMouseUp", link);
+            var pos = this.props.position;
 
-            if (dragState === DragState.ON)
-            {
-                var link = this.props.positionLink;
-                //console.log("onMouseUp", link);
-                var pos = link.value;
-
-                var copy = assign({}, pos);
-                copy.x = x;
-                copy.y = y;
-                link.requestChange(copy, true);
-            }
-            else
+            if (this.dragLocked)
             {
                 var fn = this.props.onInteraction;
                 if (typeof fn == "function")
                 {
-                    fn({
-                        x: x,
-                        y: y
-                    });
+                    var clickPos;
+                    // does the onInteraction method expect a position argument?
+                    if (fn.length === 1)
+                    {
+                        // yep -> figure out the actual object space position of the click relative to
+                        //        the current position
+                        clickPos = this.context.containerContext.toObjectCoordinates(screenX, screenY);
+                        clickPos.x -= pos.x;
+                        clickPos.y -= pos.y;
+                    }
+                    fn(clickPos);
                 }
+            }
+            else if (this.props.draggable)
+            {
+                // copy pos structure and update the coordinates
+                var copy = assign({}, pos);
+                copy.x = x;
+                copy.y = y;
+                this.props.updatePosition(copy, true);
             }
         }
     },
@@ -162,8 +175,12 @@ var GUIElement = React.createClass({
         //console.log("Render GUI element " + this.props.id);
         return (
             <g
+                onMouseOver={ this.props.onMouseOver }
+                onMouseOut={ this.props.onMouseOut }
                 onMouseDown={ this.onMouseDown }
-                className={ this.props.className }>
+                className={ this.props.className }
+                style={ this.props.style }
+            >
                 { this.props.children }
             </g>
         );

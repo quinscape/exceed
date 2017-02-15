@@ -11,16 +11,8 @@ const ZOOM_FACTOR = 8;
 
 var zoom = ZOOM_FACTOR;
 
-function GUIElementContext(id, uiState)
-{
-    this.id = id;
-    this.uiState = uiState;
-    this.onUpdate = null;
-    this.onInteraction = null;
-}
-
-
 var updateTimerId;
+var proxyContainer;
 
 var FocusProxies = React.createClass({
     onFocus: function (ev)
@@ -74,15 +66,21 @@ var FocusProxies = React.createClass({
     }
 });
 
-function renderProxies()
+function getProxyContainer()
 {
-    var proxyContainer = document.getElementById(CONTAINER_ID);
     if (!proxyContainer)
     {
         proxyContainer = document.createElement("div");
         proxyContainer.setAttribute("id", CONTAINER_ID);
         document.body.appendChild(proxyContainer);
     }
+    return proxyContainer;
+}
+
+function renderProxies()
+{
+    updateTimerId = null;
+    var proxyContainer = getProxyContainer();
 
     ReactDOM.render(React.createElement(FocusProxies, {
         elements: elements
@@ -101,11 +99,7 @@ var GUIContext = {
             clearTimeout(updateTimerId);
         }
 
-        updateTimerId = setTimeout(function ()
-        {
-            updateTimerId = null;
-            renderProxies();
-        }, 15);
+        updateTimerId = setTimeout(renderProxies, 10);
     },
     _register: function (guiElem)
     {
@@ -116,14 +110,16 @@ var GUIContext = {
         var elem = elements[id];
         if (!elem)
         {
-            elem = new GUIElementContext(id, UIState.NORMAL);
+            elem = {
+                id : guiElem.props.id,
+                uiState : guiElem.props.uiState,
+                onUpdate : guiElem.props.onUpdate,
+                onInteraction : guiElem.props.onInteraction
+            };
             elements[id] = elem;
+
+            //console.log("NEW ELEMENT", elem);
         }
-
-        elem.onUpdate = guiElem.props.onUpdate;
-        elem.onInteraction = guiElem.props.onInteraction;
-        elem.uiState = guiElem.props.uiState;
-
         GUIContext.update();
 
         return elem;
@@ -159,11 +155,14 @@ var GUIContext = {
     },
     focus: function(id)
     {
-        var proxy = document.querySelector("a[data-id='" + id + "']");
-
-        if (proxy)
+        var elem = proxyContainer.firstChild;
+        while (elem)
         {
-            proxy.focus();
+            if (elem.getAttribute("data-id") === id)
+            {
+                elem.focus();
+            }
+            elem = elem.nextSibling;
         }
     },
     _setElementState: function(id, uiState, noUpdate)

@@ -6,8 +6,8 @@ var Enum = require("./../../util/enum");
  */
 var DragState = new Enum({
     OFF: true,
-    LOCKED: true,
-    ON: true
+    ON: true,
+    STATIC: true
 });
 
 
