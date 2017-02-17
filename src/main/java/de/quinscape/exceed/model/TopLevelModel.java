@@ -16,6 +16,8 @@ public abstract class TopLevelModel
 
     private AppResource resource;
 
+    private int extensionIndex;
+
 
     /**
      * Name of the top level model.
@@ -45,5 +47,15 @@ public abstract class TopLevelModel
     public final AppResource getResource()
     {
         return resource;
+    }
+
+    public int getExtension()
+    {
+        return extensionIndex;
+    }
+
+    public void setExtension(int extensionIndex)
+    {
+        this.extensionIndex = extensionIndex;
     }
 }

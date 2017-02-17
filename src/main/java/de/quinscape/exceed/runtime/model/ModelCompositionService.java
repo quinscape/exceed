@@ -270,6 +270,7 @@ public class ModelCompositionService
         {
             TopLevelModel namedModel = (TopLevelModel) model;
             namedModel.setResource(resource);
+            namedModel.setExtension(resource.getResourceRoot().getExtensionIndex());
 
             String name = nameFromPath(path);
             String processName;
