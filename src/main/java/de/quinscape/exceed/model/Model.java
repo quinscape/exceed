@@ -1,7 +1,6 @@
 package de.quinscape.exceed.model;
 
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
-import org.svenson.JSON;
 import org.svenson.JSONProperty;
 
 /**
@@ -48,14 +47,9 @@ public abstract class Model
     }
 
 
-    /**
-     * JSONifies the current instance.
-     *
-     * @return JSON string
-     */
     @Override
     public String toString()
     {
-        return JSON.defaultJSON().forValue(this);
+        return super.toString() + (annotation != null ? ": ( " + annotation + " )" : "");
     }
 }
