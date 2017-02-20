@@ -3,6 +3,8 @@ package de.quinscape.exceed.model.context;
 import de.quinscape.exceed.runtime.scope.ProcessContext;
 import de.quinscape.exceed.runtime.scope.ScopeNameCollisionException;
 import de.quinscape.exceed.runtime.scope.ScopeType;
+import de.quinscape.exceed.runtime.util.JSONUtil;
+import org.svenson.JSON;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,5 +58,12 @@ public class ScopeDeclarations
     public ScopeDeclaration get(String name)
     {
         return definitions.get(name);
+    }
+
+
+    @Override
+    public String toString()
+    {
+        return super.toString() + ": At '" + key + "' :\n" + JSONUtil.formatJSON(JSON.defaultJSON().forValue(definitions));
     }
 }

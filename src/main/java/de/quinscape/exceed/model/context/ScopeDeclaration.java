@@ -1,6 +1,7 @@
 package de.quinscape.exceed.model.context;
 
 import de.quinscape.exceed.runtime.scope.ScopeType;
+import org.svenson.JSONProperty;
 
 import java.util.Objects;
 
@@ -47,18 +48,22 @@ public final class ScopeDeclaration
         this.model = model;
     }
 
+    // for now only JSONified for debug/toString() purposes
+    @JSONProperty(ignore = true)
     public ContextModel getContext()
     {
         return context;
     }
 
 
+    @JSONProperty(ignore = true)
     public String getName()
     {
         return name;
     }
 
 
+    @JSONProperty(ignore = true)
     public String getKey()
     {
         return key;
