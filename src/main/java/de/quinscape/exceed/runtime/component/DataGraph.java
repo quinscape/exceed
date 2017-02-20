@@ -13,22 +13,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DataGraph<T>
+public class DataGraph
 {
     private Map<String, DomainProperty> columns;
 
     private DataGraphType type;
 
-    private T rootObject;
+    private Object rootObject;
 
     private int count;
 
     private Object id;
 
-    public DataGraph(Map<String, DomainProperty> columns, T rootObject, int count)
+    public DataGraph(Map<String, DomainProperty> columns, Object rootObject, int count)
     {
         this.columns = columns;
         this.rootObject = rootObject;
+
         if (rootObject instanceof Collection)
         {
             type = DataGraphType.ARRAY;
@@ -55,13 +56,24 @@ public class DataGraph<T>
     }
 
 
-    public T getRootObject()
+    public Object getRootObject()
     {
         return rootObject;
     }
 
+    @JSONProperty(ignore = true)
+    public Collection<?> getRootCollection() {
 
-    public void setRootObject(T rootObject)
+        if (type != DataGraphType.ARRAY)
+        {
+            throw new IllegalStateException("Cannot get root collection from datagraph with type" + type);
+        }
+        
+        return (Collection<?>) rootObject;
+    }
+
+
+    public void setRootObject(Object rootObject)
     {
         this.rootObject = rootObject;
     }

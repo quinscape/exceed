@@ -87,7 +87,7 @@ public class DataGraphService
         {
             RuntimeContext runtimeContext = RuntimeContextHolder.get();
 
-            DataGraph<?> dataGraph = (DataGraph) o;
+            DataGraph dataGraph = (DataGraph) o;
 
             final Map<String, DomainProperty> columns = dataGraph.getColumns();
 
@@ -139,7 +139,7 @@ public class DataGraphService
         }
 
 
-        private Map<String, PropertyLookup> lookupConverters(DataGraph<?> dataGraph)
+        private Map<String, PropertyLookup> lookupConverters(DataGraph dataGraph)
         {
 
             Map<String, PropertyLookup> converters = new HashMap<>();
