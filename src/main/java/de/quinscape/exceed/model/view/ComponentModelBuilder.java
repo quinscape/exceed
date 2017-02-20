@@ -5,11 +5,11 @@ import java.util.Collections;
 import java.util.List;
 
 public class ComponentModelBuilder
+    implements ComponentSource
 {
     private final ComponentModel component;
 
-    private List<ComponentModelBuilder> builders;
-
+    private List<ComponentSource> children;
 
     public ComponentModelBuilder(String name)
     {
@@ -17,7 +17,8 @@ public class ComponentModelBuilder
         component.setName(name);
     }
 
-    public ComponentModelBuilder withAttribute(String name, String value)
+
+    public ComponentModelBuilder withAttribute(String name, Object value)
     {
         Attributes attrs = component.getAttrs();
         if (attrs == null)
@@ -33,24 +34,36 @@ public class ComponentModelBuilder
 
     public ComponentModelBuilder withKids(ComponentModelBuilder... builders)
     {
-        if (this.builders == null)
+        if (this.children == null)
         {
-            this.builders = new ArrayList<>();
+            this.children = new ArrayList<>();
         }
 
-        Collections.addAll(this.builders, builders);
+        Collections.addAll(this.children, builders);
+        return this;
+    }
+
+    public ComponentModelBuilder withKids(final List<ComponentModel> components)
+    {
+        if (this.children == null)
+        {
+            this.children = new ArrayList<>();
+        }
+
+        this.children.add(() -> components);
         return this;
     }
 
     public ComponentModel getComponent()
     {
-        if (builders != null)
+        if (children != null)
         {
             List<ComponentModel> kids = new ArrayList<>();
-            for (ComponentModelBuilder builder : builders)
+            for (ComponentSource src : children)
             {
-                kids.add(builder.getComponent());
+                kids.addAll(src.getComponents());
             }
+
             component.setKids(kids);
         }
         return component;
@@ -59,5 +72,12 @@ public class ComponentModelBuilder
     public static ComponentModelBuilder component(String name)
     {
         return new ComponentModelBuilder(name);
+    }
+
+
+    @Override
+    public List<ComponentModel> getComponents()
+    {
+        return Collections.singletonList(getComponent());
     }
 }
