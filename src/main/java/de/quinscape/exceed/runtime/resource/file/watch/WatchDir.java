@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.resource.file.watch;
 
+import de.quinscape.exceed.runtime.resource.file.ModuleResourceEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,7 @@ abstract class WatchDir
      * Register the given directory, and all its sub-directories, with the
      * WatchService.
      */
-    private void registerAll(final Path start) throws IOException
+    private void registerAll(final Path start, boolean triggerCreate) throws IOException
     {
         // register directory and sub-directories
         Files.walkFileTree(start, new SimpleFileVisitor<Path>()
@@ -58,6 +59,22 @@ abstract class WatchDir
                 throws IOException
             {
                 register(dir);
+                return FileVisitResult.CONTINUE;
+            }
+
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
+            {
+                // if a directory is created while we're watching the hierarchy, we only get DELETED and CREATED
+                // events for the directory itself. We register that directory for future watching, but we're missing
+                // potential files that have been created in the new directory.
+                // Therefore we have this triggerCreate mode so that we can issue an artificial module resource event
+                // to get that create/modification
+                if (triggerCreate)
+                {
+                    onWatchEvent(ModuleResourceEvent.CREATED, file.toAbsolutePath().toFile());
+                }
                 return FileVisitResult.CONTINUE;
             }
         });
@@ -76,8 +93,8 @@ abstract class WatchDir
 
         if (recursive)
         {
-            log.trace("Scanning %s ...\n", dir);
-            registerAll(dir);
+            log.trace("Scanning {}", dir);
+            registerAll(dir, false);
             log.trace("Done.");
         }
         else
@@ -129,7 +146,8 @@ abstract class WatchDir
                 Path child = dir.resolve(name);
                 try
                 {
-                    onWatchEvent(event, child.toAbsolutePath().toFile());
+                    ModuleResourceEvent resourceEvent = ModuleResourceEvent.forWatchEvent(event);
+                    onWatchEvent(resourceEvent, child.toAbsolutePath().toFile());
                 }
                 catch(RuntimeException e)
                 {
@@ -144,7 +162,7 @@ abstract class WatchDir
                     {
                         if (Files.isDirectory(child, NOFOLLOW_LINKS))
                         {
-                            registerAll(child);
+                            registerAll(child, true);
                         }
                     }
                     catch (IOException x)
@@ -169,7 +187,7 @@ abstract class WatchDir
         }
     }
 
-    protected abstract void onWatchEvent(WatchEvent<?> event, File child);
+    protected abstract void onWatchEvent(ModuleResourceEvent event, File child);
 
     public void shutDown()
     {

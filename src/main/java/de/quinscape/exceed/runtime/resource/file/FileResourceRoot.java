@@ -16,6 +16,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A file based resource root.
+ */
 public class FileResourceRoot
     implements ResourceRoot
 {

@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.WatchEvent;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -27,6 +26,9 @@ public class Java7NIOResourceWatcher
     private final int basePathLength;
 
     private CopyOnWriteArrayList<ResourceChangeListener> listeners = new CopyOnWriteArrayList<>();
+
+    private volatile boolean disabled;
+
 
     public Java7NIOResourceWatcher(FileResourceRoot root) throws IOException
     {
@@ -52,10 +54,14 @@ public class Java7NIOResourceWatcher
     }
 
     @Override
-    protected void onWatchEvent(WatchEvent<?> event, File child)
+    protected void onWatchEvent(ModuleResourceEvent resourceEvent, File child)
     {
+        if (disabled)
+        {
+            return;
+        }
+
         String path = child.getPath();
-        ModuleResourceEvent resourceEvent = ModuleResourceEvent.forWatchEvent(event);
         final String resourcePath = path.substring(basePathLength);
         for (ResourceChangeListener listener : listeners)
         {
@@ -80,5 +86,19 @@ public class Java7NIOResourceWatcher
     {
         log.debug("Clear all listeners");
         listeners.clear();
+    }
+
+
+    @Override
+    public void enable()
+    {
+        this.disabled = false;
+    }
+
+
+    @Override
+    public void disable()
+    {
+        this.disabled = true;
     }
 }

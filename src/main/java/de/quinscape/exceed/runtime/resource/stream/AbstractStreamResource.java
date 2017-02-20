@@ -86,7 +86,7 @@ public abstract class AbstractStreamResource
 
 
     @Override
-    public void delete()
+    public boolean delete()
     {
         throw new UnsupportedOperationException("Stream resource cannot support delete");
     }

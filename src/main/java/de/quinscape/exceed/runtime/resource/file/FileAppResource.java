@@ -3,11 +3,16 @@ package de.quinscape.exceed.runtime.resource.file;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
+import de.quinscape.exceed.runtime.resource.ResourceWatcher;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * A file backed resource implementation.
+ *
+ */
 public class FileAppResource
     implements AppResource
 {
@@ -77,15 +82,16 @@ public class FileAppResource
 
 
     @Override
-    public void delete()
+    public boolean delete()
     {
-        file.delete();
+        return file.delete();
     }
 
 
     @Override
     public void write(byte[] bytes)
     {
+
         try
         {
             FileUtils.writeByteArrayToFile(file, bytes);

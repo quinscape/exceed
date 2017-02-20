@@ -35,7 +35,7 @@ public interface AppResource
         return getResourceRoot().isWritable();
     }
 
-    void delete();
+    boolean delete();
 
     void write(byte[] bytes);
 }
