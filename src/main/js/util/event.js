@@ -68,7 +68,7 @@ function probe(name, array)
 
 
 // W3C DOM
-if (!window)
+if (typeof window === "undefined")
 {
     Event =
     {
@@ -79,7 +79,7 @@ if (!window)
         remove: function (elem, eventName, func, capture)
         {
         },
-        preventDefault(ev)
+        preventDefault: function(ev)
         {
         }
     }

@@ -6,6 +6,10 @@ if (haveWindow)
     Mousetrap = require("mousetrap");
 }
 
+function noOp()
+{
+}
+
 function checkSaved(ev)
 {
     if (!this.isSaved())
@@ -16,33 +20,33 @@ function checkSaved(ev)
     }
 }
 
-function undo()
+function undo(done)
 {
 //    console.log("BEFORE UNDO-PTR", this.ptr);
     if (this.canUndo())
     {
-        this.stateCallback(this.states[--this.ptr]);
+        this.stateCallback(this.states[--this.ptr], done || noOp);
 
 //        console.log("UNDO-PTR", this.ptr);
     }
 }
 
-function redo()
+function redo(done)
 {
 //    console.log("REDO-PTR", this.ptr, this.states.length);
     if (this.canRedo())
     {
-        this.stateCallback(this.states[++this.ptr])
+        this.stateCallback(this.states[++this.ptr], done || noOp)
     }
 }
 
-function revert()
+function revert(done)
 {
     //console.log("REDO-PTR", this.ptr, this.states.length);
     if (!this.isSaved())
     {
         this.ptr = this.saved;
-        this.stateCallback(this.states[this.ptr])
+        this.stateCallback(this.states[this.ptr], done || noOp)
     }
 }
 
@@ -53,13 +57,13 @@ function revert()
  * The undo service works under the assumption that the states it handles are immutable / copied when changed.
  */
 
-function UndoHandler(initialState, cb)
+function UndoHandler(initialState, stateCallback)
 {
     this.states = [initialState];
     this.ptr = 0;
     this.saved = 0;
 
-    this.stateCallback = cb;
+    this.stateCallback = stateCallback;
 
     this.checkSaved = checkSaved.bind(this);
     this.undo = undo.bind(this);
@@ -107,7 +111,7 @@ UndoHandler.prototype.getSavedState = function ()
     return this.states[this.saved];
 };
 
-UndoHandler.prototype.newState = function (state)
+UndoHandler.prototype.newState = function (state, done)
 {
     if (this.ptr < this.states.length - 1)
     {
@@ -115,15 +119,24 @@ UndoHandler.prototype.newState = function (state)
     }
 
     this.states[++this.ptr] = state;
-    this.stateCallback(state);
+    this.stateCallback(state, done || noOp);
 
 //    console.log("NEW-STATE", this.states, this.ptr, this.saved);
 };
 
-UndoHandler.prototype.markSaved = function ()
+UndoHandler.prototype.replaceState = function (state, done)
+{
+    console.log("REPLACE STATE", state);
+    this.states[this.ptr] = state;
+    this.stateCallback(state, done || noOp);
+
+//    console.log("REPLACED", this.states, this.ptr, this.saved);
+};
+
+UndoHandler.prototype.markSaved = function (done)
 {
     this.saved = this.ptr;
-    this.stateCallback(this.states[this.saved]);
+    this.stateCallback(this.states[this.saved], done || noOp);
 };
 
 module.exports = {
@@ -132,11 +145,12 @@ module.exports = {
      * Creates a new undo handler
      *
      * @param initialState          initial state
-     * @param cb                    call back to be
+     * @param stateCallback         call back to be called when a new undo state is created or reactivated and has to be
+     *                              reflected as component state
      * @returns {UndoHandler}
      */
-    create: function (initialState, cb)
+    create: function (initialState, stateCallback)
     {
-        return new UndoHandler(initialState, cb);
+        return new UndoHandler(initialState, stateCallback);
     }
 };
