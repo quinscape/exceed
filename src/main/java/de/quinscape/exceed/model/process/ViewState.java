@@ -40,16 +40,18 @@ public class ViewState
             {
                 Transition transition = entry.getValue();
                 String to = transition.getTo();
+                final String transitionName = entry.getKey();
                 if (to == null)
                 {
-                    throw new IllegalStateException("Process '" + process.getName() + "':  Transition '" + entry.getKey() + "' has no target process state");
+                    throw new IllegalStateException("Process '" + process.getName() + "':  Transition '" + transitionName + "' has no target process state");
                 }
                 if (!process.getStates().containsKey(to))
                 {
-                    throw new IllegalStateException("Process '" + process.getName() + "':  Transition '" + entry.getKey() + "' references non-existing process-state '" + to + "'");
+                    throw new IllegalStateException("Process '" + process.getName() + "':  Transition '" + transitionName + "' references non-existing process-state '" + to + "'");
                 }
 
                 transition.setFrom(getName());
+                transition.setName(transitionName);
 
                 try
                 {

@@ -14,6 +14,8 @@ import java.util.List;
 public class DecisionState
     extends ProcessState
 {
+    private static final String DEFAULT_TRANSITION_NAME = "default";
+
     private List<DecisionModel> decisions;
 
     private Transition defaultTransition;
@@ -43,7 +45,6 @@ public class DecisionState
             transition.setName("t" + i);
         }
 
-
         this.decisions = decisions;
     }
 
@@ -56,6 +57,7 @@ public class DecisionState
 
     public void setDefaultTransition(Transition defaultTransition)
     {
+        defaultTransition.setName(DEFAULT_TRANSITION_NAME);
         this.defaultTransition = defaultTransition;
     }
 
