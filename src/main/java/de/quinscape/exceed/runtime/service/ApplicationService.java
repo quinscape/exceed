@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.service;
 
 import de.quinscape.exceed.domain.tables.pojos.AppState;
 import de.quinscape.exceed.runtime.application.ApplicationStatus;
+import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
@@ -33,6 +34,8 @@ public interface ApplicationService
     List<AppState> getActiveApplications();
 
     RuntimeApplication getRuntimeApplication(ServletContext servletContext, String appName);
+
+    DefaultRuntimeApplication resetRuntimeApplication(ServletContext servletContext, String appName);
 
     void signalStyleChanges();
 

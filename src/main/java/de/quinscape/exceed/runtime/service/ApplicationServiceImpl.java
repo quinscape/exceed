@@ -132,7 +132,7 @@ public class ApplicationServiceImpl
             }
 
             holder.setStatus(status);
-            RuntimeApplication runtimeApplication = holder.getRuntimeApplication(servletContext);
+            RuntimeApplication runtimeApplication = holder.getRuntimeApplication(servletContext, false);
         }
     }
 
@@ -179,7 +179,20 @@ public class ApplicationServiceImpl
             throw new ApplicationNotFoundException("Application '" + appName + "' not found");
         }
 
-        return applicationHolder.getRuntimeApplication(servletContext);
+        return applicationHolder.getRuntimeApplication(servletContext, false);
+    }
+
+
+    @Override
+    public DefaultRuntimeApplication resetRuntimeApplication(ServletContext servletContext, String appName)
+    {
+        ApplicationHolder applicationHolder = applications.get(appName);
+        if (applicationHolder == null)
+        {
+            throw new ApplicationNotFoundException("Application '" + appName + "' not found");
+        }
+
+        return applicationHolder.getRuntimeApplication(servletContext, true);
     }
 
 
@@ -188,7 +201,7 @@ public class ApplicationServiceImpl
     {
         for (ApplicationHolder holder : applications.values())
         {
-            DefaultRuntimeApplication runtimeApplication = holder.getRuntimeApplication(null);
+            DefaultRuntimeApplication runtimeApplication = holder.getRuntimeApplication(null, false);
             if (runtimeApplication != null)
             {
                 runtimeApplication.notifyStyleChange();
@@ -202,7 +215,7 @@ public class ApplicationServiceImpl
     {
         for (ApplicationHolder holder : applications.values())
         {
-            DefaultRuntimeApplication runtimeApplication = holder.getRuntimeApplication(null);
+            DefaultRuntimeApplication runtimeApplication = holder.getRuntimeApplication(null, false);
             if (runtimeApplication != null)
             {
                 runtimeApplication.notifyCodeChange();
@@ -216,7 +229,7 @@ public class ApplicationServiceImpl
     {
         for (ApplicationHolder holder : applications.values())
         {
-            DefaultRuntimeApplication runtimeApplication = holder.getRuntimeApplication(null);
+            DefaultRuntimeApplication runtimeApplication = holder.getRuntimeApplication(null, false);
             if (runtimeApplication != null)
             {
                 runtimeApplication.signalComponentChanges(componentNames);
@@ -244,7 +257,7 @@ public class ApplicationServiceImpl
     {
         for (ApplicationHolder holder : applications.values())
         {
-            DefaultRuntimeApplication runtimeApplication = holder.getRuntimeApplication(null);
+            DefaultRuntimeApplication runtimeApplication = holder.getRuntimeApplication(null, false);
             if (runtimeApplication != null)
             {
                 runtimeApplication.notifyShutdown();
@@ -264,18 +277,18 @@ public class ApplicationServiceImpl
             this.name = name;
         }
 
-        public DefaultRuntimeApplication getRuntimeApplication(ServletContext servletContext)
+        public DefaultRuntimeApplication getRuntimeApplication(ServletContext servletContext, boolean forceRefresh)
         {
             if (status == ApplicationStatus.OFFLINE || servletContext == null)
             {
                 return runtimeApplication;
             }
 
-            if (runtimeApplication == null)
+            if (forceRefresh || runtimeApplication == null)
             {
                 synchronized (this)
                 {
-                    if (runtimeApplication == null)
+                    if (forceRefresh || runtimeApplication == null)
                     {
                         AppState applicationState = getApplicationState(name);
                         runtimeApplication = runtimeApplicationFactory.createRuntimeApplication(servletContext, applicationState);
@@ -291,6 +304,7 @@ public class ApplicationServiceImpl
             this.status = status;
         }
     }
+
 
     private volatile String defaultApp;
 
