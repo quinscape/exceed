@@ -356,7 +356,7 @@ public class ModelCompositionService
                 scopeMetaModel.addDeclarations(view);
             }
 
-            view.setCachedJSON(modelJSONService.toJSON(application, view, JSONFormat.CLIENT));
+            view.setCachedJSON(modelJSONService.toJSON(application, view, JSONFormat.INTERNAL));
         }
     }
 
@@ -397,7 +397,7 @@ public class ModelCompositionService
         applyLayout(view, application.getApplicationModel());
         ComponentUtil.updateComponentRegsAndParents(componentRegistry, view, null);
         view.initContext();
-        view.setCachedJSON(modelJSONService.toJSON(application, view, JSONFormat.CLIENT));
+        view.setCachedJSON(modelJSONService.toJSON(application, view, JSONFormat.INTERNAL));
     }
 
 

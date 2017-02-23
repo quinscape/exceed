@@ -48,7 +48,7 @@ public class ClientViewJSONGeneratorTest
         // to client format
         final TestApplication app = new TestApplicationBuilder().build();
         app.getApplicationModel().getMetaData().getScopeMetaModel().addDefinitions(view);
-        String out = viewJSONGenerator.toJSON(app, view, JSONFormat.CLIENT);
+        String out = viewJSONGenerator.toJSON(app, view, JSONFormat.INTERNAL);
 
         //log.info(JSON.formatJSON(out));
 
@@ -159,7 +159,7 @@ public class ClientViewJSONGeneratorTest
 
         application.getApplicationModel().getMetaData().getScopeMetaModel().addDeclarations(view);
 
-        String out = viewJSONGenerator.toJSON(application, view, JSONFormat.CLIENT);
+        String out = viewJSONGenerator.toJSON(application, view, JSONFormat.INTERNAL);
 
         // .. and then parsed as Map for testing ( the client format is only used on the client side )
         Map viewAsMap = JSONParser.defaultJSONParser().parse(Map.class, out);

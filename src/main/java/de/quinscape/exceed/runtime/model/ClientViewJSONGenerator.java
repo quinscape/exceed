@@ -97,7 +97,7 @@ public class ClientViewJSONGenerator
     private void dumpComponentRecursive(JSONBuilder builder, RuntimeApplication application, View view, ComponentModel componentModel, ComponentPath path, JSONFormat jsonFormat)
     {
         ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
-        if (jsonFormat == JSONFormat.CLIENT && componentRegistration != null)
+        if (jsonFormat == JSONFormat.INTERNAL && componentRegistration != null)
         {
 
             String providedContext = componentRegistration.getDescriptor().getProvidesContext();
@@ -155,7 +155,7 @@ public class ClientViewJSONGenerator
             builder.close();
         }
 
-        if (jsonFormat == JSONFormat.CLIENT)
+        if (jsonFormat == JSONFormat.INTERNAL)
         {
             builder.objectProperty("exprs");
             if (attrs != null)
