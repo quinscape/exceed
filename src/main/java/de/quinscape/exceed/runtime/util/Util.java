@@ -207,7 +207,7 @@ public final class Util
                         {
                             throw new ExceedRuntimeException("Unexpected end in unicode escape");
                         }
-                        int unicode = (hexValue((char)str.charAt(pos++)) << 12) + (hexValue(str.charAt(pos++)) << 8) + (hexValue(str.charAt(pos++)) << 4) + hexValue(str.charAt(pos++));
+                        int unicode = (hexValue(str.charAt(pos++)) << 12) + (hexValue(str.charAt(pos++)) << 8) + (hexValue(str.charAt(pos++)) << 4) + hexValue(str.charAt(pos++));
                         sb.append((char)unicode);
                         break;
                     default:
