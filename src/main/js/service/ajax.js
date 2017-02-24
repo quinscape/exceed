@@ -27,6 +27,7 @@ var defaultOpts = {
 
 var contentType = {};
 contentType[DataType.JSON] = "application/json";
+contentType[DataType.XHR] = "application/json";
 contentType[DataType.TEXT] = "text/plain";
 
 

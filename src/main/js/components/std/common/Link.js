@@ -26,7 +26,9 @@ var Link = React.createClass({
                className="btn btn-link"
                 onClick={function(ev) {
                     var viewService = require("../../../service/view");
-                    viewService.navigateTo(ev.target.href);
+                    viewService.navigateTo({
+                        url: ev.target.href
+                    });
                     ev.preventDefault();
                 }}>
                 { this.props.text }

@@ -26,20 +26,19 @@ module.exports = {
 
         var names = scopeInfo.queryRefs.concat(scopeInfo.transitionRefs[name].viewScopeRefs);
 
-        return (
-            viewService.navigateTo( renderURI(locInfo, name),
-                {
-                    objectContext: data,
-                    contextUpdate: Scope.getScopeUpdate(names)
-                },
-                function (data)
-                {
+        return viewService.navigateTo({
+            url: renderURI(locInfo, name),
+            data: {
+                objectContext: data,
+                contextUpdate: Scope.getScopeUpdate(names)
+            },
+            urlProvider: function (xhr, data)
+            {
 //                    console.log(data);
-                    var locInfo = data.viewData._exceed.location;
-                    return renderURI(locInfo);
-                }
-            )
-        );
+                var locInfo = data.viewData._exceed.location;
+                return renderURI(locInfo);
+            }
+        });
     },
     scope: RTView.prototype.scope
 };

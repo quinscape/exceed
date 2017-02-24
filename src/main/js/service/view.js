@@ -6,6 +6,14 @@ var currentViewData = typeof window !== "undefined" && window._exceed_initial_da
     }
 };
 
+const NAVIGATE_TO_DEFAULTS = {
+    progressive: true,
+    urlProvider: function (xhr, data)
+    {
+        return xhr.responseURL;
+    }
+};
+
 var viewService = {
 
     _init: function (data)
@@ -347,28 +355,49 @@ assign(viewService, {
         }, "exceed title", window.location.href);
     },
 
-    navigateTo: function(url, data, urlProvider)
+    navigateTo: function(opts)
     {
+        opts = assign({}, NAVIGATE_TO_DEFAULTS, opts);
+
+        const url = opts.url;
+        const data = opts.data;
+
+        if (!url)
+        {
+            return Promise.reject("No url given");
+        }
+
+        if (!opts.progressive)
+        {
+            window.location.href = opts.url;
+            return new Promise(function (resolve, reject)
+            {
+                //
+                // This promise will never actually resolve. It is meant to convey to the caller that the full view change
+                // operation is not done yet.
+                //
+                // When the page change happens, there will be a brand new js context.
+                //
+                // We add a long timeout to be sure the location change does not fail silently
+                //
+                window.setTimeout(
+                    () => reject(new Error("Non progressive page load timeout")),
+                    5000
+                );
+            });
+        }
+
         return this.fetch({
-                method: data ? "POST" : "GET",
-                url: url,
-                dataType: "XHR",
-                data: data
-            })
+            method: data ? "POST" : "GET",
+            url: url,
+            dataType: "XHR",
+            data: data
+        })
             .then((xhr) =>
             {
                 //console.log("URL", url, xhr.responseURL, xhr.responseText);
                 var data = JSON.parse(xhr.responseText);
-
-                if (urlProvider)
-                {
-                    url = urlProvider(data);
-                }
-                else
-                {
-                    url = xhr.responseURL;
-                }
-
+                var url = opts.urlProvider(xhr, data);
                 this.updateState();
                 window.history.pushState(data, "exceed title", url);
                 return this.render(data.viewModel, data.viewData, false);

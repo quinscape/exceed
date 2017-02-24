@@ -1,5 +1,4 @@
-var uri = require("../util/uri");
-var sys = require("../sys");
+var appUri = require("../util/app-uri");
 
 var Scope = require("./scope");
 
@@ -69,7 +68,9 @@ RTView.prototype.param = function (name)
  */
 RTView.prototype.navigateTo = function (location, params)
 {
-    return getViewService().navigateTo( uri( "/app/" + sys.appName + location, params));
+    return getViewService().navigateTo({
+        url: appUri( location, params)
+    });
 
 };
 
@@ -96,6 +97,4 @@ RTView.prototype.scope = Scope.property;
 
 RTView.prototype.scopeCursor = Scope.propertyCursor;
 
-
-console.log("RTView.prototype", RTView.prototype);
 module.exports = RTView;
