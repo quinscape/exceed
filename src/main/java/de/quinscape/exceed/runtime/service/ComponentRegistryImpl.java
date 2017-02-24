@@ -42,6 +42,8 @@ public class ComponentRegistryImpl
 
     private final static Logger log = LoggerFactory.getLogger(ComponentRegistryImpl.class);
 
+    private static final String COMPONENTS_JSON_SUFFIX = "/components.json";
+
     private JSONParser parser;
 
     private StyleService styleService;
@@ -96,7 +98,8 @@ public class ComponentRegistryImpl
     private synchronized void processResource(ResourceRoot root, AppResource appResource, boolean reload) throws
         IOException
     {
-        if (!appResource.getRelativePath().endsWith("/components.json"))
+        final String relativePath = appResource.getRelativePath();
+        if (!relativePath.endsWith(COMPONENTS_JSON_SUFFIX))
         {
             return;
         }
@@ -114,7 +117,19 @@ public class ComponentRegistryImpl
             throw new ExceedRuntimeException("Error parsing component package descriptor from " + appResource, e);
         }
 
-        //componentPackageDescriptor.setPath(appResource.getRelativePath());
+        componentPackageDescriptor.setResource(appResource);
+        componentPackageDescriptor.setExtension(appResource.getResourceRoot().getExtensionIndex());
+
+        final int end = relativePath.length() - COMPONENTS_JSON_SUFFIX.length();
+        final int slashPos = relativePath.lastIndexOf("/", end - 1);
+
+        final String name = relativePath.substring(
+            slashPos >= 0 ? slashPos + 1 : 0,
+            end
+        );
+
+        log.debug("COMPONENTS PACKAGE: {}", name);
+        componentPackageDescriptor.setName(name);
 
         Set<String> componentNames = new HashSet<>();
 
@@ -123,7 +138,7 @@ public class ComponentRegistryImpl
             String componentName = entry.getKey();
             ComponentDescriptor descriptor = entry.getValue();
 
-            String parentDir = Util.parentDir(appResource.getRelativePath());
+            String parentDir = Util.parentDir(relativePath);
 
             String styles = null;
 
@@ -169,7 +184,7 @@ public class ComponentRegistryImpl
 
         if (componentNames.size() > 0)
         {
-            packages.put(appResource.getRelativePath(), componentNames);
+            packages.put(relativePath, componentNames);
 
             if (reload)
             {
