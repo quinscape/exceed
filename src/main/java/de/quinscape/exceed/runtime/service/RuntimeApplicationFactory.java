@@ -79,7 +79,6 @@ public class RuntimeApplicationFactory
     @Autowired
     private StorageConfigurationRepository storageConfigurationRepository;
 
-
     public DefaultRuntimeApplication createRuntimeApplication(ServletContext servletContext, AppState state)
     {
         List<ResourceRoot> resourceRoots = configureExtensions(servletContext, state);
@@ -152,7 +151,7 @@ public class RuntimeApplicationFactory
         File sourceDir = Util.getExceedLibrarySource();
         if (sourceDir != null)
         {
-            File modelSourceLocation = new File(sourceDir, "./target/classes/de/quinscape/exceed/base").getAbsoluteFile();
+            File modelSourceLocation = new File(sourceDir, Util.path("src/main/base")).getAbsoluteFile();
 
             log.info("Using model source location {} for application {}", modelSourceLocation.getPath(), appName);
 
