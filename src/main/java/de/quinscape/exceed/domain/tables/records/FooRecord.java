@@ -32,7 +32,7 @@ import org.jooq.impl.UpdatableRecordImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class FooRecord extends UpdatableRecordImpl<FooRecord> implements Record8<String, String, Integer, Integer, Timestamp, String, String, String> {
 
-	private static final long serialVersionUID = 2042452757;
+	private static final long serialVersionUID = -1515221209;
 
 	/**
 	 * Setter for <code>public.foo.id</code>.
@@ -150,7 +150,6 @@ public class FooRecord extends UpdatableRecordImpl<FooRecord> implements Record8
 	/**
 	 * Getter for <code>public.foo.another</code>.
 	 */
-	@Size(max = 80)
 	public String getAnother() {
 		return (String) getValue(7);
 	}
