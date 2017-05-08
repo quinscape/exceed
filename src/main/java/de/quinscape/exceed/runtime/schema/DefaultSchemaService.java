@@ -32,7 +32,7 @@ public class DefaultSchemaService
     public void synchronizeSchema(RuntimeContext runtimeContext, List<DomainType> domainTypes)
     {
         final ApplicationModel applicationModel = runtimeContext.getRuntimeApplication().getApplicationModel();
-        final String schemaName = applicationModel.getSchema();
+        final String schemaName = applicationModel.getConfigModel().getSchema();
 
         List<String> schemata = op.listSchemata();
         if (!schemata.contains(schemaName))
@@ -86,7 +86,7 @@ public class DefaultSchemaService
     @Override
     public void removeSchema(RuntimeContext runtimeContext)
     {
-        op.dropSchema(runtimeContext.getRuntimeApplication().getApplicationModel().getSchema());
+        op.dropSchema(runtimeContext.getRuntimeApplication().getApplicationModel().getConfigModel().getSchema());
     }
 }
 

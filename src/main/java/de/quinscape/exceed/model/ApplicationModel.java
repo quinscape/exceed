@@ -1,6 +1,5 @@
 package de.quinscape.exceed.model;
 
-import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.DomainVersion;
@@ -8,28 +7,25 @@ import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.PropertyType;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.routing.RoutingTable;
-import de.quinscape.exceed.model.view.Layout;
+import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.model.ModelNotFoundException;
-import org.springframework.util.StringUtils;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 /**
- * Encapsulates the general application configuration.
- * <p>
- * The JSON-ignored properties contain models that live in their resource locations.
+ * Encapsulates the general application configuration. It corresponds to no model JSON file on its own, but is an
+ * aggregation of all model JSON resources.
  *
  * @see de.quinscape.exceed.runtime.model.ModelCompositionService
  */
 public class ApplicationModel
-    extends TopLevelModel
+    extends Model
 {
     private RoutingTable routingTable;
 
@@ -38,7 +34,7 @@ public class ApplicationModel
     private Map<String, DomainType> domainTypesRO = Collections.unmodifiableMap(domainTypes);
 
     private Map<String, DomainVersion> domainVersions = new HashMap<>();
-    
+
     private Map<String, DomainVersion> domainVersionsRO = Collections.unmodifiableMap(domainVersions);
 
     private Map<String, PropertyType> propertyTypes = new HashMap<>();
@@ -57,44 +53,24 @@ public class ApplicationModel
 
     private Map<String, Process> processesRO = Collections.unmodifiableMap(processes);
 
-    private Map<String, Layout> layouts = new HashMap<>();
+    private Map<String, LayoutModel> layouts = new HashMap<>();
 
-    private Map<String, Layout> layoutsRO = Collections.unmodifiableMap(layouts);
-
-    private List<String> supportedLocales = Collections.singletonList("en_US");
-
-    private Map<String, String> supportedLocalesMap = createLookup(supportedLocales);
-
-    private List<String> styleSheets;
-
-    private String schema;
-
-    private String defaultLayout = "Standard";
+    private Map<String, LayoutModel> layoutsRO = Collections.unmodifiableMap(layouts);
 
     private String name;
 
-    private ContextModel applicationContextModel;
+    private ApplicationConfig configModel = new ApplicationConfig();
 
-    private ContextModel sessionContextModel;
+    private ApplicationMetaData metaData;
 
-    private final ApplicationMetaData metaData = new ApplicationMetaData(this);
+    private String version;
 
-    /**
-     * Database schema for this application
-     *
-     * @return
-     */
-    public String getSchema()
+
+    public ApplicationModel()
     {
-        return schema;
+        metaData = new ApplicationMetaData(this);
+        version = UUID.randomUUID().toString();
     }
-
-
-    public void setSchema(String schema)
-    {
-        this.schema = schema;
-    }
-
 
     /**
      * Routing table for this application
@@ -132,6 +108,7 @@ public class ApplicationModel
         return domainVersionsRO;
     }
 
+
     /**
      * Map of property types in the application. Actually defined in their own file.
      *
@@ -158,50 +135,12 @@ public class ApplicationModel
     }
 
 
-    /**
-     * Stylesheets resource paths for this application
-     *
-     * @return
-     */
-    @JSONTypeHint(String.class)
-    public List<String> getStyleSheets()
-    {
-        return styleSheets;
-    }
-
-
-    public void setStyleSheets(List<String> styleSheets)
-    {
-        this.styleSheets = styleSheets;
-    }
-
-
-    @Override
     @JSONProperty(ignore = true)
     public String getName()
     {
         return name;
     }
 
-
-    /**
-     * Merges the app.json located parts of the given application model with this application model.
-     * <p>
-     * This is used internally to ensure location order independent parsing of application models. The system might
-     * encounter the actual app.json file later than other parts it needs to merge into it. So the system creates
-     * an empty application model where it sets all the secondary (non-app.json) models, using this method to merge in
-     * the contents of the actual app.json file.
-     *
-     * @param applicationModel application model
-     */
-    public void merge(ApplicationModel applicationModel)
-    {
-        this.styleSheets = applicationModel.styleSheets;
-        this.schema = applicationModel.schema;
-        this.applicationContextModel = applicationModel.applicationContextModel;
-        this.sessionContextModel = applicationModel.sessionContextModel;
-        setSupportedLocales(applicationModel.supportedLocales);
-    }
 
     /**
      * Map of enum types in the application. Actually defined in their own file.
@@ -235,8 +174,8 @@ public class ApplicationModel
      * @return
      */
     @JSONProperty(ignore = true)
-    @JSONTypeHint(Layout.class)
-    public Map<String, Layout> getLayouts()
+    @JSONTypeHint(LayoutModel.class)
+    public Map<String, LayoutModel> getLayouts()
     {
         return layoutsRO;
     }
@@ -266,9 +205,9 @@ public class ApplicationModel
     }
 
 
-    public Layout getLayout(String name)
+    public LayoutModel getLayout(String name)
     {
-        final Layout layout = layouts.get(name);
+        final LayoutModel layout = layouts.get(name);
         if (layout == null)
         {
             throw new ModelNotFoundException("Cannot find layout with name '" + name + "'");
@@ -319,10 +258,12 @@ public class ApplicationModel
         domainTypes.put(name, domainType);
     }
 
+
     public void addDomainVersion(String name, DomainVersion domainVersion)
     {
         domainVersions.put(name, domainVersion);
     }
+
 
     public void addEnum(String name, EnumType enumType)
     {
@@ -342,7 +283,7 @@ public class ApplicationModel
     }
 
 
-    public void addLayout(String name, Layout layout)
+    public void addLayout(String name, LayoutModel layout)
     {
         layouts.put(name, layout);
     }
@@ -354,146 +295,49 @@ public class ApplicationModel
     }
 
 
-    @Override
     public void setName(String name)
     {
         this.name = name;
     }
 
 
-    public ContextModel getApplicationContext()
-    {
-        return applicationContextModel;
-    }
-
-
-    public void setApplicationContext(ContextModel applicationContextModel)
-    {
-        this.applicationContextModel = applicationContextModel;
-    }
-
-
-    public ContextModel getSessionContext()
-    {
-        return sessionContextModel;
-    }
-
-
-    public void setSessionContext(ContextModel sessionContext)
-    {
-        this.sessionContextModel = sessionContext;
-    }
-
-    public List<String> getSupportedLocales()
-    {
-        if (supportedLocales == null)
-        {
-            return Collections.emptyList();
-        }
-        return supportedLocales;
-    }
-
-
-    /**
-     * Returns the language part of the given locale code
-     *
-     * @param code
-     * @return
-     */
-    private String languagePart(String code)
-    {
-        final int pos = code.indexOf('-');
-        if (pos >= 0)
-        {
-            return code.substring(0, pos);
-        }
-        return code;
-    }
-
-
-    public void setSupportedLocales(List<String> supportedLocales)
-    {
-        if (supportedLocales == null || supportedLocales.size() == 0)
-        {
-            throw new IllegalStateException("Supported locale list can't be empty or null");
-        }
-
-        this.supportedLocalesMap = createLookup(supportedLocales);
-        this.supportedLocales = supportedLocales;
-    }
-
-
-    private ImmutableMap<String, String> createLookup(List<String> supportedLocales)
-    {
-        Map<String, String> map = new HashMap<>();
-
-        for (String supportedLocale : supportedLocales)
-        {
-            map.put(supportedLocale, supportedLocale);
-
-            String lang = languagePart(supportedLocale);
-            map.putIfAbsent(lang, supportedLocale);
-        }
-
-        return ImmutableMap.copyOf(map);
-    }
-
-
-    /**
-     * Matches the given locale with the existing application locales and returns the most favorable.
-     * <p>
-     * If there is no full match, the matching falls back on language only matching, if that produces no result, the
-     * first supported locale defined in the application is returned.
-     * </p>
-     *
-     * @param locale locale
-     * @return supported application locale code
-     */
-    public String matchLocale(Locale locale)
-    {
-        final String country = locale.getCountry();
-        String code;
-        if (StringUtils.hasText(country))
-        {
-            code = locale.getLanguage() + "-" + country;
-        }
-        else
-        {
-            code = locale.getLanguage();
-        }
-        final String result = supportedLocalesMap.get(code);
-        if (result != null)
-        {
-            return result;
-        }
-        return supportedLocales.get(0);
-    }
-
-
-    /**
-     * Returns the default layout for this application.
-     *
-     * @return
-     */
-    public String getDefaultLayout()
-    {
-        return defaultLayout;
-    }
-
-
-    public void setDefaultLayout(String defaultLayout)
-    {
-        if (defaultLayout == null)
-        {
-            throw new IllegalArgumentException("defaultLayout can't be null");
-        }
-
-        this.defaultLayout = defaultLayout;
-    }
-
-
     public ApplicationMetaData getMetaData()
     {
         return metaData;
+    }
+
+
+    public void setConfigModel(ApplicationConfig configModel)
+    {
+        this.configModel = configModel;
+    }
+
+
+    public ApplicationConfig getConfigModel()
+    {
+        return configModel;
+    }
+
+
+    public ContextModel getApplicationContextModel()
+    {
+        return configModel.getApplicationContextModel();
+    }
+
+
+    public ContextModel getSessionContextModel()
+    {
+        return configModel.getSessionContextModel();
+    }
+
+
+    public void setVersion(String version)
+    {
+        this.version = version;
+    }
+
+    public String getVersion()
+    {
+        return version;
     }
 }

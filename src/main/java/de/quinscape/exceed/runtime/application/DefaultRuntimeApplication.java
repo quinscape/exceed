@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.application;
 
 import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.model.ApplicationMetaData;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
@@ -177,9 +178,11 @@ public class DefaultRuntimeApplication
 
         this.domainService = domainService;
         modelCompositionService.compose(this, resourceLoader.getResourceLocations(), applicationModel, domainService);
-        domainService.init(this, applicationModel.getSchema());
 
-        ContextModel context = applicationModel.getApplicationContext();
+
+        domainService.init(this, applicationModel.getConfigModel().getSchema());
+
+        ContextModel context = applicationModel.getApplicationContextModel();
 
         this.applicationContext = scopedContextFactory.createApplicationContext(context, appName);
         RuntimeContext systemContext = runtimeContextFactory.create(
@@ -209,10 +212,14 @@ public class DefaultRuntimeApplication
 
         synchronizeDomainTypeSchemata(systemContext, storageConfigurationRepository);
 
-        final StaticFunctionReferences staticFnRefs = loadUsageData(
-            resourceLoader.getResourceLocation(TRACK_USAGE_DATA_RESOURCE).getHighestPriorityResource()
+        final StaticFunctionReferences staticFnRefs = load(
+            resourceLoader.getResourceLocation(TRACK_USAGE_DATA_RESOURCE).getHighestPriorityResource(),
+            StaticFunctionReferences.class
         );
-        this.applicationModel.getMetaData().setStaticFunctionReferences(staticFnRefs);
+
+        final ApplicationMetaData metaData = this.applicationModel.getMetaData();
+
+        metaData.setStaticFunctionReferences(staticFnRefs);
     }
 
 
@@ -282,8 +289,9 @@ public class DefaultRuntimeApplication
             sessionContext = scopedContextFactory.getSessionContext(
                 request,
                 applicationModel.getName(),
-                applicationModel.getSessionContext()
+                applicationModel.getSessionContextModel()
             );
+            
             RuntimeContext runtimeContext = runtimeContextFactory.create(
                 this, inAppURI,
                 request.getLocale(),
@@ -638,7 +646,7 @@ public class DefaultRuntimeApplication
             StringBuilder sb = new StringBuilder();
 
 
-            for (String name : applicationModel.getStyleSheets())
+            for (String name : applicationModel.getConfigModel().getStyleSheets())
             {
                 ResourceLocation resourceLocation = resourceLoader.getResourceLocation(name);
 
@@ -739,7 +747,7 @@ public class DefaultRuntimeApplication
         {
             if (modulePath.endsWith(FileExtension.CSS))
             {
-                if (applicationModel.getStyleSheets().contains(modulePath))
+                if (applicationModel.getConfigModel().getStyleSheets().contains(modulePath))
                 {
                     try
                     {

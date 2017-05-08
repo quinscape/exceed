@@ -74,7 +74,7 @@ public class TranslationEditorProvider
 
         addUnqualifiedReferences(state);
 
-        final List<String> supportedLocales = runtimeContext.getApplicationModel().getSupportedLocales();
+        final List<String> supportedLocales = runtimeContext.getApplicationModel().getConfigModel().getSupportedLocales();
 
         Set<String> markedNew = state.initializeDefaults(runtimeContext, supportedLocales);
 
@@ -158,7 +158,7 @@ public class TranslationEditorProvider
      */
     public void addLanguageReferences(RuntimeContext runtimeContext, TranslationEditorState state)
     {
-        final List<String> supportedLocales = runtimeContext.getApplicationModel().getSupportedLocales();
+        final List<String> supportedLocales = runtimeContext.getApplicationModel().getConfigModel().getSupportedLocales();
         for (String locale : supportedLocales)
         {
             state.addReference(locale, ReferenceType.LOCALE, locale);

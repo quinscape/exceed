@@ -2,7 +2,8 @@
     "schema": "public",
 
     "styleSheets": [
-        "/resources/css/lumen-bootstrap.min.css",
+        "/resources/css/bootstrap.css",
+        "/resources/css/bootstrap-theme.css",
         "/resources/css/editor.css",
         "/resources/css/layout.css"
     ],

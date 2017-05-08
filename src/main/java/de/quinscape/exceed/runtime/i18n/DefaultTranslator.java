@@ -38,7 +38,7 @@ public class DefaultTranslator
         final String currentViewName;
         final String currentProcessName;
 
-        final String locale = applicationModel.matchLocale(runtimeContext.getLocale());
+        final String locale = applicationModel.getConfigModel().matchLocale(runtimeContext.getLocale());
 
 
         final View view = runtimeContext.getView();

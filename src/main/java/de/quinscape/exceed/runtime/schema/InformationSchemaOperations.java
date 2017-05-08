@@ -84,7 +84,7 @@ public class InformationSchemaOperations
     @Override
     public void createTable(RuntimeContext runtimeContext, DomainType type)
     {
-        final String schemaName = runtimeContext.getRuntimeApplication().getApplicationModel().getSchema();
+        final String schemaName = runtimeContext.getRuntimeApplication().getApplicationModel().getConfigModel().getSchema();
         final String tableName = namingStrategy.getTableName(type.getName());
 
         StringBuilder sql = new StringBuilder();
@@ -182,7 +182,7 @@ public class InformationSchemaOperations
     @Override
     public void updateTable(RuntimeContext runtimeContext, DomainType type)
     {
-        final String schemaName = runtimeContext.getRuntimeApplication().getApplicationModel().getSchema();
+        final String schemaName = runtimeContext.getRuntimeApplication().getApplicationModel().getConfigModel().getSchema();
         final String tableName = namingStrategy.getTableName(type.getName());
 
         Map<String, DatabaseColumn> columnsMap = listColumns(schemaName, tableName);
@@ -251,7 +251,7 @@ public class InformationSchemaOperations
     @Override
     public void dropKeys(RuntimeContext runtimeContext, DomainType type)
     {
-        final String schemaName = runtimeContext.getRuntimeApplication().getApplicationModel().getSchema();
+        final String schemaName = runtimeContext.getRuntimeApplication().getApplicationModel().getConfigModel().getSchema();
         final String tableName = namingStrategy.getTableName(type.getName());
 
         List<DatabaseKey> keys = keysMap(schemaName, tableName);
@@ -268,7 +268,7 @@ public class InformationSchemaOperations
     @Override
     public void createPrimaryKey(RuntimeContext runtimeContext, DomainType type)
     {
-        final String schemaName = runtimeContext.getRuntimeApplication().getApplicationModel().getSchema();
+        final String schemaName = runtimeContext.getRuntimeApplication().getApplicationModel().getConfigModel().getSchema();
         final String tableName = namingStrategy.getTableName(type.getName());
 
         // add primary key
@@ -286,7 +286,7 @@ public class InformationSchemaOperations
     @Override
     public void createForeignKeys(RuntimeContext runtimeContext, DomainType type, DomainProperty domainProperty)
     {
-        final String schemaName = runtimeContext.getRuntimeApplication().getApplicationModel().getSchema();
+        final String schemaName = runtimeContext.getRuntimeApplication().getApplicationModel().getConfigModel().getSchema();
         final String tableName = namingStrategy.getTableName(type.getName());
 
         final String alterTableRoot = "ALTER TABLE " + schemaName + "." + tableName + " ";
