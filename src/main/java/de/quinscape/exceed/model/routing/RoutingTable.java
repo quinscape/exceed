@@ -2,6 +2,7 @@ package de.quinscape.exceed.model.routing;
 
 
 import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.annotation.IncludeDocs;
 import de.quinscape.exceed.runtime.application.MappingNotFoundException;
 import de.quinscape.exceed.runtime.application.RoutingResult;
@@ -236,6 +237,13 @@ public class RoutingTable
             buf.append("/").append(node.getName());
         }
         return !node.hasChildren() ? node.getMapping() : null;
+    }
+
+
+    @Override
+    public <I,O> O accept(TopLevelModelVisitor<I,O> visitor, I in)
+    {
+        return visitor.visit(this, in);
     }
 }
 

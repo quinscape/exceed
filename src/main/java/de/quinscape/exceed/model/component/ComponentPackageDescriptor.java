@@ -2,6 +2,7 @@ package de.quinscape.exceed.model.component;
 
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.TopLevelModelVisitor;
 import org.svenson.JSONTypeHint;
 
 import java.util.Map;
@@ -33,8 +34,16 @@ public class ComponentPackageDescriptor
     }
 
     @JSONTypeHint(ComponentDescriptor.class)
+    @DocumentedMapKey("componentName")
     public void setComponents(Map<String, ComponentDescriptor> components)
     {
         this.components = components;
+    }
+
+
+    @Override
+    public <I,O> O accept(TopLevelModelVisitor<I,O> visitor, I in)
+    {
+        throw new UnsupportedOperationException();
     }
 }

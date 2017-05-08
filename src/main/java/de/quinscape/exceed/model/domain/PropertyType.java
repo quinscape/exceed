@@ -1,6 +1,7 @@
 package de.quinscape.exceed.model.domain;
 
 import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.TopLevelModelVisitor;
 
 /**
  * THe logical property types within the application.
@@ -38,5 +39,12 @@ public class PropertyType
     public void setDefaultLength(Integer defaultLength)
     {
         this.defaultLength = defaultLength;
+    }
+
+
+    @Override
+    public <I,O> O accept(TopLevelModelVisitor<I,O> visitor, I in)
+    {
+        return visitor.visit(this,in);
     }
 }

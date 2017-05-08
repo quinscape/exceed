@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.annotation.IncludeDocs;
+import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.model.JSONFormat;
@@ -154,6 +155,13 @@ public class DomainType
             + "pkFields = " + pkFields
             + ", properties = " + properties
             ;
+    }
+
+
+    @Override
+    public <I,O> O accept(TopLevelModelVisitor<I,O> visitor, I in)
+    {
+        return visitor.visit(this, in);
     }
 
 

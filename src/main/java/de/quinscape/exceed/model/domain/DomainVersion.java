@@ -3,6 +3,7 @@ package de.quinscape.exceed.model.domain;
 import de.quinscape.exceed.model.TopLevelModel;
 import org.svenson.JSONParameter;
 import org.svenson.JSONTypeHint;
+import de.quinscape.exceed.model.TopLevelModelVisitor;
 
 import java.util.List;
 import java.util.Map;
@@ -64,5 +65,12 @@ public class DomainVersion
     public String getSchema()
     {
         return schema;
+    }
+
+
+    @Override
+    public <I,O> O accept(TopLevelModelVisitor<I,O> visitor, I in)
+    {
+        return visitor.visit(this, in);
     }
 }

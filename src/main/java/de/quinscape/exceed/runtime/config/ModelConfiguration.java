@@ -15,7 +15,10 @@ import de.quinscape.exceed.runtime.model.ClientViewJSONGenerator;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
+import de.quinscape.exceed.runtime.model.ModelLocationRule;
+import de.quinscape.exceed.runtime.model.ModelLocationRules;
 import de.quinscape.exceed.runtime.service.ActionExpressionRendererFactory;
+import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,14 +67,7 @@ public class ModelConfiguration
         return new ActionExpressionRendererFactory(actionService);
     }
 
-
-    @Bean
-    public ModelCompositionService modelCompositionService()
-    {
-        ModelCompositionService svc = new ModelCompositionService();
-        return svc;
-    }
-
+    
     @Bean
     public ActionService actionService()
     {
@@ -128,5 +124,32 @@ public class ModelConfiguration
         queryTransformerOperations.setExpressionService(svc);
 
         return svc;
+    }
+
+    @Bean
+    public ModelLocationRules modelLocationRules()
+    {
+        return new ModelLocationRules(
+            Arrays.asList(
+                new ModelLocationRule(CONFIG_MODEL_NAME, Model.getType(ApplicationConfig.class)),
+                new ModelLocationRule(ROUTING_MODEL_NAME, Model.getType(RoutingTable.class)),
+                new ModelLocationRule(DOMAIN_VERSION_PREFIX, Model.getType(DomainVersion.class)),
+                new ModelLocationRule(DOMAIN_PROPERTY_MODEL_PREFIX, Model.getType(PropertyType.class)),
+                new ModelLocationRule(ENUM_MODEL_PREFIX, Model.getType(EnumType.class)),
+                new ModelLocationRule(SYSTEM_MODEL_PREFIX, Model.getType(DomainType.class)),
+                new ModelLocationRule(DOMAIN_MODEL_PREFIX, Model.getType(DomainType.class)),
+                new ModelLocationRule(VIEW_MODEL_PREFIX, Model.getType(View.class)),
+                new ModelLocationRule(LAYOUT_MODEL_PREFIX, Model.getType(LayoutModel.class)),
+                new ModelLocationRule(PROCESS_VIEW_MODEL_PATTERN, Model.getType(View.class)),
+                new ModelLocationRule(PROCESS_MODEL_PREFIX, Model.getType(Process.class)),
+                new ModelLocationRule(DOMAIN_LAYOUT_NAME, Model.getType(DomainEditorViews.class))
+            )
+        );
+    }
+
+    @Bean
+    public ModelCompositionService modelCompositionService(ModelLocationRules modelLocationRules, ComponentRegistry componentRegistry)
+    {
+        return new ModelCompositionService(modelLocationRules, componentRegistry);
     }
 }

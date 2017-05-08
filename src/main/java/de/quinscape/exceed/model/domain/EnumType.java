@@ -1,6 +1,7 @@
 package de.quinscape.exceed.model.domain;
 
 import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.runtime.domain.property.ConverterException;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
@@ -78,5 +79,12 @@ public class EnumType
     public void setDescription(String description)
     {
         this.description = description;
+    }
+
+
+    @Override
+    public <I,O> O accept(TopLevelModelVisitor<I,O> visitor, I in)
+    {
+        return visitor.visit(this, in);
     }
 }

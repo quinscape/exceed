@@ -3,6 +3,7 @@ package de.quinscape.exceed.model.process;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.view.View;
 import org.slf4j.Logger;
@@ -148,5 +149,23 @@ public class Process
     public void setIdentityGUID(String identity)
     {
         this.identityGUID = identity;
+    }
+
+
+    @Override
+    public String toString()
+    {
+        return super.toString() + ": "
+            + "startTransition = " + startTransition
+            + ", states = " + states
+            + ", context = " + contextModel
+            ;
+    }
+
+
+    @Override
+    public <I,O> O accept(TopLevelModelVisitor<I,O> visitor, I in)
+    {
+        return visitor.visit(this, in);
     }
 }

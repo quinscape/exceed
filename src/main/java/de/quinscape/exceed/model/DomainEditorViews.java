@@ -31,4 +31,11 @@ public class DomainEditorViews
     {
         this.views = views;
     }
+
+
+    @Override
+    public <I,O> O accept(TopLevelModelVisitor<I,O> visitor, I in)
+    {
+        throw new UnsupportedOperationException();
+    }
 }

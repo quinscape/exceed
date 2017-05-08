@@ -58,4 +58,6 @@ public abstract class TopLevelModel
     {
         this.extensionIndex = extensionIndex;
     }
+
+    public abstract <I,O> O accept(TopLevelModelVisitor<I,O> visitor, I in);
 }
