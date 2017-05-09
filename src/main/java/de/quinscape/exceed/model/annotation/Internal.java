@@ -9,18 +9,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotates action model properties as being subject to property conversion with the property converter
- * for the defined type;
+ * Marks a model type as internal, to be ignored by {@link de.quinscape.exceed.tooling.GenerateModelDocs}
  */
-@Target({ElementType.METHOD})
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Component
-public @interface PropertyConversion
+public @interface Internal
 {
-    /**
-     * Property type.
-     * @return
-     */
-    String type();
 }
