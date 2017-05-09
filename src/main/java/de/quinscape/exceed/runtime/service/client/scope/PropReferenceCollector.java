@@ -1,4 +1,4 @@
-package de.quinscape.exceed.runtime.service.rtinfo;
+package de.quinscape.exceed.runtime.service.client.scope;
 
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTString;
@@ -8,13 +8,16 @@ import de.quinscape.exceed.expression.Node;
 import java.util.HashSet;
 import java.util.Set;
 
-public class TranslationReferenceVisitor
+/**
+ * Expression visitor that collects scoped value references
+ */
+public class PropReferenceCollector
     extends ExpressionParserDefaultVisitor
 {
     private final Set<String> references;
 
 
-    public TranslationReferenceVisitor()
+    public PropReferenceCollector()
     {
         references = new HashSet<>();
     }
@@ -23,18 +26,15 @@ public class TranslationReferenceVisitor
     @Override
     public Object visit(ASTFunction node, Object data)
     {
-        String functionName = node.getName();
-
-        if (functionName.equals("i18n"))
+        if (node.getName().equals("prop"))
         {
             Node n = node.jjtGetChild(0);
             if (!(n instanceof ASTString))
             {
-                throw new IllegalStateException("First argument for i18n() is not a string literal");
+                throw new IllegalStateException("First argument for function prop() is not a string literal");
             }
-
-            String code = ((ASTString) n).getValue();
-            references.add(code);
+            String name = ((ASTString) n).getValue();
+            references.add(name);
         }
         return null;
     }
@@ -44,5 +44,4 @@ public class TranslationReferenceVisitor
     {
         return references;
     }
-
 }

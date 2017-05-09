@@ -49,8 +49,10 @@ import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.service.ProcessService;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
-import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;
 import de.quinscape.exceed.runtime.service.StyleService;
+import de.quinscape.exceed.runtime.service.client.ClientStateProvider;
+import de.quinscape.exceed.runtime.service.client.ClientStateService;
+import de.quinscape.exceed.runtime.template.TemplateVariables;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
 import de.quinscape.exceed.runtime.util.FileExtension;
 import de.quinscape.exceed.runtime.util.JSONUtil;
@@ -63,8 +65,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.JSON;
 import org.svenson.JSONParseException;
-import org.svenson.JSONParser;
-import org.svenson.util.JSONBuilder;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -127,17 +127,19 @@ public class DefaultRuntimeApplication
 
     private final DomainService domainService;
 
-    private final List<RuntimeInfoProvider> runtimeInfoProviders;
-
     private final ProcessService processService;
 
     private final ApplicationContext applicationContext;
 
     private final ScopedContextFactory scopedContextFactory;
 
+    private final ClientStateService clientStateService;
+
     private long lastChange;
 
     private final RuntimeContextFactory runtimeContextFactory;
+
+    private final Set<ClientStateProvider> clientStateProviders;
 
     private Model changeModel = null;
 
@@ -149,21 +151,23 @@ public class DefaultRuntimeApplication
         ModelCompositionService modelCompositionService,
         ResourceLoader resourceLoader,
         DomainService domainService,
-        List<RuntimeInfoProvider> runtimeInfoProviders,
+        ClientStateService clientStateService,
         ProcessService processService,
         String appName,
         RuntimeContextFactory runtimeContextFactory,
         ScopedContextFactory scopedContextFactory,
-        StorageConfigurationRepository storageConfigurationRepository
-    )
+        StorageConfigurationRepository storageConfigurationRepository,
+        Set<ClientStateProvider> clientStateProviders)
     {
-        this.processService = processService;
-        this.scopedContextFactory = scopedContextFactory;
-        this.runtimeContextFactory = runtimeContextFactory;
         if (servletContext == null)
         {
             throw new IllegalArgumentException("servletContext can't be null");
         }
+
+        this.processService = processService;
+        this.scopedContextFactory = scopedContextFactory;
+        this.runtimeContextFactory = runtimeContextFactory;
+        this.clientStateProviders = clientStateProviders;
 
         this.servletContext = servletContext;
         this.viewDataService = viewDataService;
@@ -171,7 +175,7 @@ public class DefaultRuntimeApplication
         this.componentRegistry = componentRegistry;
         this.modelCompositionService = modelCompositionService;
         this.resourceLoader = resourceLoader;
-        this.runtimeInfoProviders = runtimeInfoProviders;
+        this.clientStateService = clientStateService;
 
         //boolean production = ApplicationStatus.from(state) == ApplicationStatus.PRODUCTION;
         applicationModel = new ApplicationModel();
@@ -195,7 +199,7 @@ public class DefaultRuntimeApplication
 
         scopedContextFactory.initializeContext(systemContext, applicationContext);
 
-        modelCompositionService.postProcess(this, applicationModel);
+        modelCompositionService.postprocess(this, applicationModel);
 
         for (ResourceRoot root : resourceLoader.getExtensions())
         {
@@ -312,8 +316,10 @@ public class DefaultRuntimeApplication
             runtimeContext.setRoutingTemplate(template);
 
             View view;
-            boolean isAjaxRequest = RequestUtil.isAjaxRequest(request);
-            boolean isPreview = isAjaxRequest && isPreviewRequest(request);
+            final boolean isAjaxRequest = RequestUtil.isAjaxRequest(request);
+            final boolean isPreview = isAjaxRequest && isPreviewRequest(request);
+
+            TransitionData transitionData = null;
 
             ProcessExecutionState state = null;
             if (processName != null)
@@ -343,7 +349,9 @@ public class DefaultRuntimeApplication
                     {
                         log.debug("Process state {}, transition = {}", stateId, transition);
                         final String json = RequestUtil.readRequestBody(request);
-                        state = processService.resume(runtimeContext, initialState, transition, TransitionData.parse(runtimeContext, initialState.getExecution().getProcessName(), initialState.getCurrentState(), json));
+
+                        transitionData = TransitionData.parse(runtimeContext, initialState.getExecution().getProcessName(), initialState.getCurrentState(), json);
+                        state = processService.resume(runtimeContext, initialState, transition, transitionData);
                         state.register(request.getSession());
 
                         runtimeContext.setVariable(STATE_ID_PARAMETER, state.getId());
@@ -484,23 +492,16 @@ public class DefaultRuntimeApplication
                 }
             }
 
+
             if (!isAjaxRequest)
             {
-                model.put(TemplateVariables.VIEW_MODEL, data.rootModelJSON);
-                model.put(TemplateVariables.VIEW_DATA, data.viewDataJSON);
+                model.put(TemplateVariables.VIEW_DATA, viewDataJSON);
                 return false;
             }
             else
             {
-                String json =
-                    JSONBuilder.buildObject()
-                        .property("appName", model.get(applicationModel.getName()))
-                        .property("title", model.get("title"))
-                        .includeProperty("viewModel", data.rootModelJSON)
-                        .includeProperty("viewData", data.viewDataJSON)
-                        .output();
 
-                RequestUtil.sendJSON(response, json);
+                RequestUtil.sendJSON(response, viewDataJSON);
                 return true;
             }
         }
@@ -512,24 +513,12 @@ public class DefaultRuntimeApplication
     }
 
 
-    public ViewResult processView(HttpServletRequest request, RuntimeContext runtimeContext, View view, ProcessExecutionState state) throws IOException
+    public String processView(HttpServletRequest request, RuntimeContext runtimeContext, View view, ProcessExecutionState state) throws IOException
     {
         runtimeContext.setView(view);
 
         ViewData viewData = viewDataService.prepareView(runtimeContext, view, state);
-
-        final Map<String, Object> data = viewData.getData();
-        data.put(RUNTIME_INFO_NAME, getRuntimeInfo(request, runtimeContext, viewData));
-
-        String viewDataJSON = domainService.toJSON(data);
-        String viewModelJSON = view.getCachedJSON();
-
-        if (viewModelJSON == null)
-        {
-            throw new IllegalStateException("No view model JSON set in view");
-        }
-
-        return new ViewResult(viewModelJSON, JSON.formatJSON(viewDataJSON));
+        return clientStateService.getClientStateJSON(request, runtimeContext, viewData, clientStateProviders);
     }
 
 
@@ -553,25 +542,6 @@ public class DefaultRuntimeApplication
         return params;
     }
 
-
-    private Map<String, Object> getRuntimeInfo(HttpServletRequest request, RuntimeContext runtimeContext, ViewData viewData)
-    {
-        try
-        {
-            Map<String, Object> map = new HashMap<>();
-
-            for (RuntimeInfoProvider provider : runtimeInfoProviders)
-            {
-                map.put(provider.getName(), provider.provide(request, runtimeContext, viewData));
-            }
-
-            return map;
-        }
-        catch (Exception e)
-        {
-            throw new ExceedRuntimeException(e);
-        }
-    }
 
 
     private void updateComponentVars(RuntimeContext runtimeContext, HttpServletRequest request, HttpServletResponse response, ProcessExecutionState state, View view) throws IOException
@@ -607,7 +577,7 @@ public class DefaultRuntimeApplication
     {
         try
         {
-            return JSONParser.defaultJSONParser().parse(Map.class, varsJSON);
+            return JSONUtil.DEFAULT_PARSER.parse(Map.class, varsJSON);
         }
         catch(JSONParseException e)
         {
@@ -796,6 +766,12 @@ public class DefaultRuntimeApplication
                 if (model != null)
                 {
                     notifyChange(model);
+
+                    if (model instanceof View)
+                    {
+                        clientStateService.flushViewScope((View) model);
+                    }
+                    clientStateService.flushModelVersionScope(getName());
                 }
             }
             else if (modulePath.equals("/resources/js/main.js"))
@@ -807,15 +783,16 @@ public class DefaultRuntimeApplication
     }
 
 
-    private StaticFunctionReferences loadUsageData(AppResource resource)
+    private <T> T load(AppResource resource, Class<T> cls)
     {
         if (resource.exists())
         {
             String json = new String(resource.read(), RequestUtil.UTF_8);
             if (json.length() > 0)
             {
-                log.info("Load function usage data");
-                return JSONParser.defaultJSONParser().parse(StaticFunctionReferences.class, json);
+                log.debug("Load {} from {}", cls, json);
+                
+                return JSONUtil.DEFAULT_PARSER.parse(cls, json);
             }
         }
         return null;

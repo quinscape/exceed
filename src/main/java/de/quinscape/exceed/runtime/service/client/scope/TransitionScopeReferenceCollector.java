@@ -1,4 +1,4 @@
-package de.quinscape.exceed.runtime.service.rtinfo;
+package de.quinscape.exceed.runtime.service.client.scope;
 
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTMap;

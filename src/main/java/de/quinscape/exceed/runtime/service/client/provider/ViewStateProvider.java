@@ -1,19 +1,22 @@
-package de.quinscape.exceed.runtime.service.rtinfo;
+package de.quinscape.exceed.runtime.service.client.provider;
 
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;
+import de.quinscape.exceed.runtime.service.client.ClientData;
+import de.quinscape.exceed.runtime.service.client.ClientStateProvider;
+import de.quinscape.exceed.runtime.service.client.ClientStateScope;
+import de.quinscape.exceed.runtime.service.client.DefaultClientData;
+import de.quinscape.exceed.runtime.service.client.ExceedAppProvider;
 import de.quinscape.exceed.runtime.view.ViewData;
-import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 
-@Service
+@ExceedAppProvider
 public class ViewStateProvider
-    implements RuntimeInfoProvider
+    implements ClientStateProvider
 {
     @Override
     public String getName()
@@ -22,7 +25,13 @@ public class ViewStateProvider
     }
 
     @Override
-    public Object provide(HttpServletRequest request, RuntimeContext runtimeContext, ViewData viewData)
+    public ClientStateScope getScope()
+    {
+        return ClientStateScope.VIEW;
+    }
+
+    @Override
+    public ClientData provide(HttpServletRequest request, RuntimeContext runtimeContext, ViewData viewData)
     {
         View view = runtimeContext.getView();
         if (view != null)
@@ -36,11 +45,18 @@ public class ViewStateProvider
                 ProcessState state = process.getStates().get(localName);
                 if (state instanceof ViewState)
                 {
-                    return state;
+                    return new DefaultClientData(state);
                 }
             }
         }
-        return null;
+        return DefaultClientData.NONE;
+    }
+
+
+    @Override
+    public boolean isMutable()
+    {
+        return false;
     }
 
 }

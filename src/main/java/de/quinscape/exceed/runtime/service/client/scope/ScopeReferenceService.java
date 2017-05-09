@@ -1,4 +1,4 @@
-package de.quinscape.exceed.runtime.service.rtinfo;
+package de.quinscape.exceed.runtime.service.client.scope;
 
 import de.quinscape.exceed.model.component.ComponentDescriptor;
 import de.quinscape.exceed.model.component.PropDeclaration;
@@ -13,8 +13,8 @@ import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.model.component.ModuleFunctionReferences;
-import de.quinscape.exceed.model.component.StaticFunctionReferences;
+import de.quinscape.exceed.model.meta.ModuleFunctionReferences;
+import de.quinscape.exceed.model.meta.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.scope.ScopedContext;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 import de.quinscape.exceed.runtime.scope.ViewContext;
@@ -194,7 +194,12 @@ public class ScopeReferenceService
         {
             View view = runtimeContext.getView();
             Set<ScopeReference> set = new HashSet<>();
-            collectServerReferences(runtimeContext, set, view.getRoot());
+
+            for (ComponentModel componentModel : view.getContent().values())
+            {
+                collectServerReferences(runtimeContext, set, componentModel);
+            }
+
             return Collections.unmodifiableSet(set);
         }
 
@@ -268,7 +273,10 @@ public class ScopeReferenceService
             View view = runtimeContext.getView();
 
             Set<ScopeReference> set = new HashSet<>();
-            collectClientReferences(runtimeContext, set, new HashSet<>(), view.getRoot(), staticFunctionReferences);
+            for (ComponentModel componentModel : view.getContent().values())
+            {
+                collectClientReferences(runtimeContext, set, new HashSet<>(), componentModel, staticFunctionReferences);
+            }
             return Collections.unmodifiableSet(set);
         }
 

@@ -1,4 +1,4 @@
-package de.quinscape.exceed.runtime.service.rtinfo;
+package de.quinscape.exceed.runtime.service.client.scope;
 
 import com.google.common.base.Objects;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
