@@ -1,96 +1,91 @@
 {
-    "root": {
-        "name": "View",
-        "attrs": {
-            "title": "{ i18n('Test Process Home') }"
-        },
-        "kids": [
-            {
-                "name": "Grid",
-                "attrs": {
-                    "fluid": "{ true }"
-                },
-                "kids": [
-                    {
-                        "name": "Row",
-                        "kids": [
-                            {
-                                "name": "Col",
-                                "attrs": {
-                                    "md": "{ 6 }"
-                                },
-                                "kids": [
-                                    {
-                                        "name": "Heading",
-                                        "attrs": {
-                                            "id": "myHeading",
-                                            "value": "{ 'Heading: ' + value }"
-                                        }
-                                    },
-                                    {
-                                        "name": "Toolbar",
-                                        "kids": [
-                                            {
-                                                "name": "TButton",
-                                                "attrs": {
-                                                    "transition": "inc",
-                                                    "text": "++"
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "name": "DataGrid",
-                                        "attrs": {
-                                            "id": "myDG",
-                                            "limit": "{ 3 }",
-                                            "type": "{ Foo }",
-                                            "renderedIf": "{ value < 6 }"
-                                        },
-                                        "kids": [
-                                            {
-                                                "name": "DataGrid.Column",
-                                                "attrs": {
-                                                    "name": "id",
-                                                    "heading": "Detail"
-                                                },
-                                                "kids": [
-                                                    {
-                                                        "name": "TButton",
-                                                        "attrs": {
-                                                            "transition": "detail",
-                                                            "className": "btn-primary",
-                                                            "text": "Detail"
-                                                        }
-                                                    }
-                                                ]
-                                            },
-                                            {
-                                                "name": "DataGrid.Column",
-                                                "attrs": {
-                                                    "name": "name"
-                                                }
-                                            },
-                                            {
-                                                "name": "DataGrid.Column",
-                                                "attrs": {
-                                                    "name": "type"
-                                                }
-                                            },
-                                            {
-                                                "name": "DataGrid.Column",
-                                                "attrs": {
-                                                    "name": "num"
-                                                }
-                                            }
-                                        ]
+    "title": "{ i18n('Test Process Home') }",
+    "content": {
+        "main": {
+            "name": "Grid",
+            "attrs": {
+                "fluid": "{ true }"
+            },
+            "kids": [
+                {
+                    "name": "Row",
+                    "kids": [
+                        {
+                            "name": "Col",
+                            "attrs": {
+                                "md": "{ 6 }"
+                            },
+                            "kids": [
+                                {
+                                    "name": "Heading",
+                                    "attrs": {
+                                        "id": "myHeading",
+                                        "value": "{ 'Heading: ' + value }"
                                     }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
+                                },
+                                {
+                                    "name": "Toolbar",
+                                    "kids": [
+                                        {
+                                            "name": "TButton",
+                                            "attrs": {
+                                                "transition": "inc",
+                                                "text": "++"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "DataGrid",
+                                    "attrs": {
+                                        "id": "myDG",
+                                        "limit": "{ 3 }",
+                                        "type": "{ Foo }",
+                                        "renderedIf": "{ value < 6 }"
+                                    },
+                                    "kids": [
+                                        {
+                                            "name": "DataGrid.Column",
+                                            "attrs": {
+                                                "name": "id",
+                                                "heading": "Detail"
+                                            },
+                                            "kids": [
+                                                {
+                                                    "name": "TButton",
+                                                    "attrs": {
+                                                        "transition": "detail",
+                                                        "className": "btn-primary",
+                                                        "text": "Detail"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "DataGrid.Column",
+                                            "attrs": {
+                                                "name": "name"
+                                            }
+                                        },
+                                        {
+                                            "name": "DataGrid.Column",
+                                            "attrs": {
+                                                "name": "type"
+                                            }
+                                        },
+                                        {
+                                            "name": "DataGrid.Column",
+                                            "attrs": {
+                                                "name": "num"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
     }
 }

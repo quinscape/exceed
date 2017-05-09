@@ -15,6 +15,7 @@
                                 "name": "Col",
                                 "attrs": {
                                     "md": "{ 6 }"
+    "type": "xcd.view.View",
                                 },
                                 "kids": [
                                     {

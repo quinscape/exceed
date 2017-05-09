@@ -53,6 +53,7 @@ import de.quinscape.exceed.runtime.service.RuntimeInfoProvider;
 import de.quinscape.exceed.runtime.service.StyleService;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
 import de.quinscape.exceed.runtime.util.FileExtension;
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import de.quinscape.exceed.runtime.util.LocationUtil;
 import de.quinscape.exceed.runtime.util.RequestUtil;
 import de.quinscape.exceed.runtime.view.ComponentData;
@@ -414,42 +415,58 @@ public class DefaultRuntimeApplication
                 runtimeContext.getScopedContextChain().update(viewContext, view.getName());
             }
 
-            ViewResult data;
             if (isAjaxRequest)
             {
                 if (isPreview)
                 {
-                    String json = RequestUtil.readRequestBody(request);
-
-                    View previewView = modelCompositionService.createViewModel(this, view.getResource(), json, true);
-                    if (!Objects.equals(view.getName(), previewView.getName()))
+                    Map<String,String> changes;
+                    if (transitionData != null)
                     {
-                        throw new IllegalStateException("Cannot preview different view. view = " + view + ", preview " +
-                            "= " + previewView);
-                    }
-                    previewView.setProcessName(view.getProcessName());
-                    modelCompositionService.postProcessView(this, previewView);
-
-                    List<ComponentError> errors = new ArrayList<>();
-
-                    collectErrors(errors, previewView.getRoot(), 0);
-                    if (errors.size() == 0)
-                    {
-                        view = previewView;
+                        changes = transitionData.getCurrentViewChanges();
                     }
                     else
                     {
-                        model.put("previewErrors", errors);
-                        RequestUtil.sendJSON(response, JSON.defaultJSON().forValue(model));
-                        return true;
+                        String changesJSON = RequestUtil.readRequestBody(request);
+                        changes = (Map<String, String>) JSONUtil.DEFAULT_PARSER.parse(Map.class, changesJSON).get("currentEditorChanges");
+                    }
+
+                    // check if the current view is in the changed view set
+                    String viewJSON = changes.get(view.getName());
+                    if (viewJSON != null)
+                    {
+                        // yes -> use the preview view instead of the stored view
+                        
+                        View previewView = modelCompositionService.createViewModel(this, view.getResource(), viewJSON, true);
+                        if (!Objects.equals(view.getName(), previewView.getName()))
+                        {
+                            throw new IllegalStateException(
+                                "Cannot preview different view. view = " + view + ", preview = " + previewView);
+                        }
+                        previewView.setProcessName(view.getProcessName());
+                        modelCompositionService.postprocessView(this, previewView);
+
+                        List<ComponentError> errors = new ArrayList<>();
+
+                        for (Map.Entry<String, ComponentModel> entry : previewView.getContent().entrySet())
+                        {
+                            collectErrors(errors, entry.getKey(), entry.getValue(), 0);
+                        }
+                        
+                        if (errors.size() > 0)
+                        {
+                            RequestUtil.sendJSON(response, JSONUtil.error("Preview error", errors));
+                            return true;
+                        }
+                        view = previewView;
                     }
                 }
             }
 
 
+            final String viewDataJSON;
             try
             {
-                data = processView(request, runtimeContext, view, state);
+                viewDataJSON = processView(request, runtimeContext, view, state);
             }
             catch (DataProviderPreparationException e)
             {
@@ -609,7 +626,7 @@ public class DefaultRuntimeApplication
          return "true".equals(request.getHeader(UPDATE_HEADER_NAME));
     }
 
-    private int collectErrors(List<ComponentError> errors, ComponentModel model, int id)
+    private int collectErrors(List<ComponentError> errors, String contentName, ComponentModel model, int id)
     {
         Attributes attrs = model.getAttrs();
         if (attrs != null)
@@ -619,7 +636,7 @@ public class DefaultRuntimeApplication
                 AttributeValue attributeValue = attrs.getAttribute(name);
                 if (attributeValue.getType() == AttributeValueType.EXPRESSION_ERROR)
                 {
-                    errors.add(new ComponentError((String) attributeValue.getValue(), attributeValue.getExpressionError(), id, name));
+                    errors.add(new ComponentError(contentName, attributeValue.getValue(), attributeValue.getExpressionError(), id, name));
                 }
             }
         }
@@ -631,7 +648,7 @@ public class DefaultRuntimeApplication
         {
             for (ComponentModel kid : kids)
             {
-                id = collectErrors(errors, kid, id);
+                id = collectErrors(errors, contentName, kid, id);
             }
         }
 
@@ -711,7 +728,10 @@ public class DefaultRuntimeApplication
         Set<String> usedComponents = new HashSet<>();
         for (View view : applicationModel.getViews().values())
         {
-            addComponentsRecursive(view.getRoot(), usedComponents);
+            for (ComponentModel componentModel : view.getContent().values())
+            {
+                addComponentsRecursive(componentModel, usedComponents);
+            }
         }
 
         return usedComponents;
@@ -720,7 +740,12 @@ public class DefaultRuntimeApplication
 
     private void addComponentsRecursive(ComponentModel component, Set<String> usedComponents)
     {
-        usedComponents.add(component.getName());
+        final String componentName = component.getName();
+        if (!usedComponents.contains(componentName))
+        {
+            usedComponents.add(componentName);
+        }
+        
         for (ComponentModel kid : component.children())
         {
             addComponentsRecursive(kid, usedComponents);
@@ -732,7 +757,7 @@ public class DefaultRuntimeApplication
     public synchronized void onResourceChange(ModuleResourceEvent resourceEvent, FileResourceRoot root, String
         modulePath)
     {
-        log.debug("onResourceChange:  {}:{}", resourceEvent, root, modulePath);
+        log.debug("onResourceChange:  {} {} ( ROOT {} ) ", resourceEvent, modulePath, root);
 
         ResourceLocation resourceLocation = resourceLoader.getResourceLocation(modulePath);
 

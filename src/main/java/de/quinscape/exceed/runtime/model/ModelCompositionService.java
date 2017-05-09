@@ -6,6 +6,7 @@ import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.DomainEditorViews;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.context.ScopeMetaModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
@@ -18,9 +19,8 @@ import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.process.Transition;
 import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.model.routing.RoutingTable;
-import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.ComponentModel;
-import de.quinscape.exceed.model.view.Layout;
+import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DomainService;
@@ -116,9 +116,26 @@ public class ModelCompositionService
 
         TopLevelModel topLevelModel = updateInternal(runtimeApplication, applicationModel, resource, domainService);
 
+        applicationModel.setVersion(UUID.randomUUID().toString());
+
         if (topLevelModel instanceof View)
         {
-            postProcessView(runtimeApplication, (View) topLevelModel);
+            final View newView = (View) topLevelModel;
+            postprocessView(runtimeApplication, newView);
+        }
+        else if (topLevelModel instanceof Process)
+        {
+            final Process newProcess = (Process) topLevelModel;
+            newProcess.postProcess(applicationModel);
+
+            final ScopeMetaModel scopeMetaModel = applicationModel.getMetaData().getScopeMetaModel();
+
+            for (ProcessState processState : newProcess.getStates().values())
+            {
+                scopeMetaModel.addDeclarations(processState);
+                processState.postProcess();
+            }
+        }
         else if (topLevelModel instanceof LayoutModel)
         {
             LayoutModel layout = (LayoutModel)topLevelModel;
@@ -409,21 +426,45 @@ public class ModelCompositionService
     }
 
 
-    public void postProcessView(RuntimeApplication application, View view)
+    public void postprocessView(RuntimeApplication application, View view)
     {
-        applyLayout(view, application.getApplicationModel());
-        ComponentUtil.updateComponentRegsAndParents(componentRegistry, view, null);
-        view.initContext();
-        view.setCachedJSON(modelJSONService.toJSON(application, view, JSONFormat.INTERNAL));
+        log.debug("Postprocess {}", view);
+        try
+        {
+            final ApplicationModel applicationModel = application.getApplicationModel();
+            final ScopeMetaModel scopeMetaModel = applicationModel.getMetaData().getScopeMetaModel();
+
+            applyLayout(view, applicationModel);
+            ComponentUtil.updateComponentRegsAndParents(componentRegistry, view, null);
+
+            final String processName = view.getProcessName();
+            if (processName != null)
+            {
+                final Process process = applicationModel.getProcess(processName);
+                final ProcessState processState = process.getStates().get(view.getLocalName());
+
+                if (processState == null)
+                {
+                    throw new InconsistentModelException("No view state with the name '" + view.getName() + " in " + process);
+                }
+
+                scopeMetaModel.addDeclarations(processState);
+                processState.postProcess();
+            }
+            else
+            {
+                scopeMetaModel.addDeclarations(view);
+            }
+        }
+        catch(Exception e)
+        {
+            throw new InconsistentModelException("Error postprocessing view '" + view.getName() + "' ( " + view.getResource() + ")", e);
+        }
     }
 
 
     private void applyLayout(View view, ApplicationModel applicationModel)
     {
-        final ComponentModel viewComponent = view.getRoot();
-        final AttributeValue attr = viewComponent.getAttribute("layout");
-        final String layoutName = attr != null ? attr.getValue() : applicationModel.getDefaultLayout();
-        final Layout layout = applicationModel.getLayout(layoutName);
         final String layoutFromView = view.getLayout();
 
         final String effectiveLayout = layoutFromView != null ? layoutFromView : applicationModel.getConfigModel().getDefaultLayout();

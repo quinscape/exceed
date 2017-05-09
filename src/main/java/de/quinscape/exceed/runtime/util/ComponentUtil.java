@@ -1,13 +1,15 @@
 package de.quinscape.exceed.runtime.util;
 
+import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class ComponentUtil
@@ -27,9 +29,44 @@ public class ComponentUtil
         {
             componentNames = null;
         }
-        updateComponentRegsAndParentsRecursive(componentRegistry, view.getRoot(), componentNames, null);
-    }
 
+        // XXX: is this really a good idea or too clever to be good?
+        // provide parents for content subtrees
+        for (ComponentModel componentModel : view.getContent().values())
+        {
+            updateComponentRegsAndParentsRecursive(componentRegistry, componentModel, componentNames, null);
+        }
+
+        final ComponentModel layoutRoot = view.getContent(View.ROOT);
+
+        for (Map.Entry<String, ComponentModel> entry : view.getContent().entrySet())
+        {
+            final ComponentModel componentModel = entry.getValue();
+            final String name = entry.getKey();
+
+            final ComponentModel importingComponent = layoutRoot.find(c ->
+            {
+                if (!c.getName().equals(LayoutModel.CONTENT))
+                    return false;
+
+                final AttributeValue attr = c.getAttribute("name");
+                if (attr == null)
+                {
+                    return name.equals(View.MAIN);
+                }
+                else
+                {
+                    return attr.getValue().equals(name);
+                }
+            });
+
+            if (importingComponent != null)
+            {
+                // set content root parent to the (first) importing component
+                componentModel.setParent(importingComponent);
+            }
+        }
+    }
 
     private static void updateComponentRegsAndParentsRecursive(ComponentRegistry componentRegistry, ComponentModel elem, Set<String> componentNames, ComponentModel parent)
     {
@@ -39,12 +76,7 @@ public class ComponentUtil
             if (registration != null)
             {
                 final String componentId = elem.getComponentId();
-
-                if (RuntimeApplication.RUNTIME_INFO_NAME.equals(componentId))
-                {
-                    throw new IllegalStateException("'" + RuntimeApplication.RUNTIME_INFO_NAME + "' is a reserved component name.");
-                }
-
+                
                 if (registration.getDataProvider() != null && componentId == null)
                 {
                     final String id = COUNTER.nextId();
@@ -85,7 +117,11 @@ public class ComponentUtil
     public static int findFlatIndex(View view, String componentId)
     {
         FindFlatResult res = new FindFlatResult();
-        findFlatIndexRecursive(view.getRoot(), componentId, res);
+        for (ComponentModel componentModel : view.getContent().values())
+        {
+            // XXX: handle 
+            findFlatIndexRecursive(componentModel, componentId, res);
+        }
         return res.index;
     }
 

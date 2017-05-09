@@ -1,97 +1,95 @@
 {
-    "root": {
-        "name": "View",
-        "kids": [
-            {
-                "name": "Grid",
-                "attrs": {
-                    "fluid": "{ true }"
-                },
-                "kids": [
-                    {
-                        "name": "Row",
-                        "kids": [
-                            {
-                                "name": "Col",
-                                "attrs": {
-                                    "md": "{ 6 }"
-                                },
-                                "kids": [
-                                    {
-                                        "name": "Heading",
-                                        "attrs": {
-                                            "id": "myHeading",
-                                            "value": "{ 'Detail: ' + param('id') }"
-                                        }
-                                    },
-                                    {
-                                        "name": "Form",
-                                        "attrs": {
-                                            "id": "myForm",
-                                            "filter": "{ id == param('id') }",
-                                            "horizontal": "{ true }",
-                                            "type": "{ Foo }"
-                                        },
-                                        "kids": [
-                                            {
-                                                "name": "StaticText",
-                                                "attrs": {
-                                                    "value": "id"
-                                                }
-                                            },
-                                            {
-                                                "name": "Field",
-                                                "attrs": {
-                                                    "value": "name"
-                                                }
-                                            },
-                                            {
-                                                "name": "Field",
-                                                "attrs": {
-                                                    "value": "created"
-                                                }
-                                            },
-                                            {
-                                                "name": "Field",
-                                                "attrs": {
-                                                    "value": "type"
-                                                }
-                                            },
-                                            {
-                                                "name": "Field",
-                                                "attrs": {
-                                                    "value": "num"
-                                                }
-                                            },
-                                            {
-                                                "name": "Toolbar",
-                                                "kids": [
-                                                    {
-                                                        "name": "Button",
-                                                        "attrs": {
-                                                            "discard": "{ true }",
-                                                            "action": "{ navigateTo('/') }",
-                                                            "text": "{ i18n('Cancel') }"
-                                                        }
-                                                    },
-                                                    {
-                                                        "name": "Button",
-                                                        "attrs": {
-                                                            "action": "{ store(context) ; syslog(result); navigateTo('/') }",
-                                                            "className": "btn-primary",
-                                                            "text": "{ i18n('Save') }"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        ]
+    "title" : "{ i18n('Detail') }",
+    "content": {
+        "main": {
+            "name": "Grid",
+            "attrs": {
+                "fluid": "{ true }"
+            },
+            "kids": [
+                {
+                    "name": "Row",
+                    "kids": [
+                        {
+                            "name": "Col",
+                            "attrs": {
+                                "md": "{ 6 }"
+                            },
+                            "kids": [
+                                {
+                                    "name": "Heading",
+                                    "attrs": {
+                                        "id": "myHeading",
+                                        "value": "{ 'Detail: ' + param('id') }"
                                     }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
+                                },
+                                {
+                                    "name": "Form",
+                                    "attrs": {
+                                        "id": "myForm",
+                                        "filter": "{ id == param('id') }",
+                                        "horizontal": "{ true }",
+                                        "type": "{ Foo }"
+                                    },
+                                    "kids": [
+                                        {
+                                            "name": "StaticText",
+                                            "attrs": {
+                                                "value": "id"
+                                            }
+                                        },
+                                        {
+                                            "name": "Field",
+                                            "attrs": {
+                                                "value": "name"
+                                            }
+                                        },
+                                        {
+                                            "name": "Field",
+                                            "attrs": {
+                                                "value": "created"
+                                            }
+                                        },
+                                        {
+                                            "name": "Field",
+                                            "attrs": {
+                                                "value": "type"
+                                            }
+                                        },
+                                        {
+                                            "name": "Field",
+                                            "attrs": {
+                                                "value": "num"
+                                            }
+                                        },
+                                        {
+                                            "name": "Toolbar",
+                                            "kids": [
+                                                {
+                                                    "name": "Button",
+                                                    "attrs": {
+                                                        "discard": "{ true }",
+                                                        "action": "{ navigateTo('/') }",
+                                                        "text": "{ i18n('Cancel') }"
+                                                    }
+                                                },
+                                                {
+                                                    "name": "Button",
+                                                    "attrs": {
+                                                        "action": "{ store(context) ; syslog(result); navigateTo('/') }",
+                                                        "className": "btn-primary",
+                                                        "text": "{ i18n('Save') }"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
     }
 }

@@ -35,9 +35,13 @@ public class ViewDataService
      */
     public ViewData prepareView(RuntimeContext runtimeContext, View view, ProcessExecutionState state)
     {
-        ViewData viewData = new ViewData(runtimeContext, view.getName());
+        ViewData viewData = new ViewData();
         DataProviderContext context = new DataProviderContext(this, runtimeContext, expressionService, view.getName(), state, viewData, null, null);
-        prepareRecursive(context, view.getRoot());
+
+        for (ComponentModel componentModel : view.getContent().values())
+        {
+            prepareRecursive(context, componentModel);
+        }
         return viewData;
     }
 
@@ -60,10 +64,10 @@ public class ViewDataService
     public ComponentData prepareComponent(RuntimeContext runtimeContext, View view, ComponentModel componentModel,
                                           Map<String, Object> vars, ProcessExecutionState state)
     {
-        ViewData viewData = new ViewData(runtimeContext, view.getName());
+        ViewData viewData = new ViewData();
         DataProviderContext context = new DataProviderContext(this, runtimeContext, expressionService, view.getName(), state, viewData, componentModel, vars);
         prepareRecursive(context, componentModel);
-        return (ComponentData) viewData.getData().get(componentModel.getComponentId());
+        return viewData.getComponentData().get(componentModel.getComponentId());
     }
 
     void prepareRecursive(DataProviderContext context, ComponentModel element)
@@ -84,7 +88,16 @@ public class ViewDataService
                 ViewData viewData = context.getViewData();
                 String componentId = element.getComponentId();
 
-                viewData.provide(componentId, vars.size() > 0 ? vars : false, componentDataMap != null ? componentDataMap :false);
+                final Object varsArg = vars.size() > 0 ? vars : false;
+
+                if (componentDataMap != null)
+                {
+                    viewData.provide(componentId, new ComponentData(varsArg, componentDataMap));
+                }
+                else
+                {
+                    viewData.provide(componentId, new ComponentData(varsArg, false));
+                }
 
                 if (context.isContinueOnChildren())
                 {

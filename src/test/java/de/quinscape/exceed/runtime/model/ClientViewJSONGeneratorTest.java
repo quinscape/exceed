@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.svenson.JSON;
 import org.svenson.JSONParser;
 
 import java.io.File;
@@ -47,15 +48,15 @@ public class ClientViewJSONGeneratorTest
 
         // to client format
         final TestApplication app = new TestApplicationBuilder().build();
-        app.getApplicationModel().getMetaData().getScopeMetaModel().addDefinitions(view);
-        String out = viewJSONGenerator.toJSON(app, view, JSONFormat.INTERNAL);
+        app.getApplicationModel().getMetaData().getScopeMetaModel().addDeclarations(view);
+        String out = viewJSONGenerator.toJSON(app.getApplicationModel(), view, JSONFormat.INTERNAL);
 
         //log.info(JSON.formatJSON(out));
 
         // .. and then parsed as Map for testing ( the client format is only used on the client side )
 
         Map viewAsMap = JSONParser.defaultJSONParser().parse(Map.class, out);
-        Map<String,Object> grid = kid((Map<String, Object>) viewAsMap.get("root"), 0);
+        Map<String,Object> grid = content(viewAsMap, "main");
 
         {
             assertThat(grid.get("name"),is("Grid"));
@@ -105,7 +106,7 @@ public class ClientViewJSONGeneratorTest
         {
             Map<String, Object> foo = kid(col, 2);
             assertThat(foo.get("name"),is("Foo"));
-            assertThat(expr(foo, "model"),is("_v.root.kids[0].kids[0].kids[0].kids[2]"));
+            assertThat(expr(foo, "model"),is("_v.content.main.kids[0].kids[0].kids[2]"));
         }
 
         {
@@ -152,18 +153,19 @@ public class ClientViewJSONGeneratorTest
 
         ComponentUtil.updateComponentRegsAndParents(registry, view, null);
 
-        //log.info(JSON.formatJSON(out));
 
         // to client format
         final TestApplication application = new TestApplicationBuilder().build();
 
         application.getApplicationModel().getMetaData().getScopeMetaModel().addDeclarations(view);
 
-        String out = viewJSONGenerator.toJSON(application, view, JSONFormat.INTERNAL);
+        String out = viewJSONGenerator.toJSON(application.getApplicationModel(), view, JSONFormat.INTERNAL);
+
+        log.info(JSON.formatJSON(out));
 
         // .. and then parsed as Map for testing ( the client format is only used on the client side )
         Map viewAsMap = JSONParser.defaultJSONParser().parse(Map.class, out);
-        Map<String,Object> col = kid((Map<String, Object>) viewAsMap.get("root"), 0);
+        Map<String,Object> col = content(viewAsMap, "main");
         assertThat(attr(col, "ctx"),is("{ 'from prop' }"));
         assertThat(expr(col, "ctx"),is("'from prop'"));
 
@@ -241,5 +243,11 @@ public class ClientViewJSONGeneratorTest
             throw new IllegalStateException("attrs is no map:" + attrs);
         }
 
+    }
+
+    private Map<String,Object> content(Map<String, Object> viewAsMap, String name)
+    {
+        final Map contentMap = (Map) viewAsMap.get("content");
+        return (Map<String, Object>) contentMap.get(name);
     }
 }

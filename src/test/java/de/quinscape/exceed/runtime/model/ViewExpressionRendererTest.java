@@ -25,7 +25,7 @@ public class ViewExpressionRendererTest
 
     private ComponentModel componentModel;
 
-    private ComponentPath path;
+    private ComponentRenderPath path;
 
 
     @Before
@@ -37,7 +37,7 @@ public class ViewExpressionRendererTest
 
         componentModel =
             component("TestComponent")
-                .withAttribute(DomainType.ID_PROPERTY, "testComponentId")
+                .withAttribute(ComponentModel.ID_ATTRIBUTE, "testComponentId")
                 .withAttribute("intProp", "{ 123 }")
                 .withAttribute("floatProp", "{ 123.3 }")
                 .withAttribute("boolProp", "{ true }")
@@ -51,7 +51,7 @@ public class ViewExpressionRendererTest
         componentModel.setComponentRegistration(new ComponentRegistration("TestComponent", componentDescriptor, "",
             null, null));
 
-        path = new ComponentPath().firstChildPath("");
+        path = new ComponentRenderPath("testContent").firstChildPath("");
         path.increment("");
         path.increment("");
         path = path.firstChildPath("");
@@ -62,14 +62,14 @@ public class ViewExpressionRendererTest
     @Test
     public void testModelIdentifierTransformation() throws Exception
     {
-        assertThat(transform("model"), is("_v.root.kids[2].kids[1]"));
+        assertThat(transform("model"), is("_v.content.testContent.kids[2].kids[1]"));
     }
 
     @Test
     public void testPropsTransformation() throws Exception
     {
-        assertThat(transform("props.longStrProp"), is("_v.root.kids[2].kids[1].attrs.longStrProp"));
-        assertThat(transform("props['longStrProp']"), is("_v.root.kids[2].kids[1].attrs['longStrProp']"));
+        assertThat(transform("props.longStrProp"), is("_v.content.testContent.kids[2].kids[1].attrs.longStrProp"));
+        assertThat(transform("props['longStrProp']"), is("_v.content.testContent.kids[2].kids[1].attrs['longStrProp']"));
     }
 
 

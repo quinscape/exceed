@@ -1,7 +1,8 @@
 package de.quinscape.exceed.model.view;
 
+import de.quinscape.exceed.model.annotation.DocumentedMapKey;
+import de.quinscape.exceed.model.annotation.DocumentedModelType;
 import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.util.Util;
 import org.svenson.JSON;
@@ -16,10 +17,16 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+/**
+ * A view component within an exceed application. Following the react conventions, it is a full-fledged Javascript react
+ * component when its name is uppercase and a simple HTML tag if its name is lowercase.
+ */
 public class ComponentModel
 {
 
     public static final String STRING_MODEL_NAME = "[String]";
+
+    public static final String ID_ATTRIBUTE = "id";
 
     private String name;
 
@@ -37,6 +44,10 @@ public class ComponentModel
 
     }
 
+    /**
+     * Component name. Following react conventions, all components with uppercase names are exceed components and
+     * all components with lowercase names are normal HTML tags.
+     */
     @JSONProperty(priority = 10)
     public String getName()
     {
@@ -44,13 +55,21 @@ public class ComponentModel
     }
 
 
+    /**
+     * Map of attribute values <code>"value"</code> or expressions <code>"{ expr() }"</code>.
+     */
     @JSONProperty(ignoreIfNull = true, priority = 5)
+    @DocumentedModelType("Map attributeName -> Attribute")
+    @DocumentedMapKey("attributeName")
     public Attributes getAttrs()
     {
         return attrs;
     }
 
 
+    /**
+     * List of children of this component model.
+     */
     public List<ComponentModel> getKids()
     {
         return kids;
@@ -106,7 +125,7 @@ public class ComponentModel
         {
             return null;
         }
-        AttributeValue value = attrs.getAttribute(DomainType.ID_PROPERTY);
+        AttributeValue value = attrs.getAttribute(ID_ATTRIBUTE);
         return value != null ? value.getValue() : null;
     }
 
@@ -124,15 +143,6 @@ public class ComponentModel
 
     public void setAttrs(Attributes attrs)
     {
-        final AttributeValue idAttr = attrs.getAttribute(DomainType.ID_PROPERTY);
-        if (idAttr != null)
-        {
-            if (idAttr.getValue().equals(RuntimeApplication.RUNTIME_INFO_NAME))
-            {
-                throw new IllegalStateException(RuntimeApplication.RUNTIME_INFO_NAME + " is a reserved component id.");
-            }
-        }
-
         this.attrs = attrs;
     }
 

@@ -1,54 +1,51 @@
 {
-    "root": {
-        "name": "View",
-        "kids": [
-            {
-                "name": "Grid",
-                "attrs": {
-                    "fluid": "{ true }"
-                },
-                "kids": [
-                    {
-                        "name": "Row",
-                        "kids": [
-                            {
-                                "name": "Col",
-                                "attrs": {
-                                    "md": "{ 6 }"
-                                },
-                                "kids": [
-                                    {
-                                        "name": "Heading",
-                                        "attrs": {
-                                            "id": "myHeading",
-                                            "value": "View Context Count"
-                                        }
-                                    },
-                                    {
-                                        "name": "Field",
-                                        "attrs": {
-                                            "label": "Counter Value",
-                                            "value": "{ value }"
-                                        }
-                                    },
-                                    {
-                                        "name": "Toolbar",
-                                        "kids": [
-                                            {
-                                                "name": "TButton",
-                                                "attrs": {
-                                                    "transition": "inc",
-                                                    "text": "++"
-                                                }
-                                            }
-                                        ]
+    "content": {
+        "main": {
+            "name": "Grid",
+            "attrs": {
+                "fluid": "{ true }"
+            },
+            "kids": [
+                {
+                    "name": "Row",
+                    "kids": [
+                        {
+                            "name": "Col",
+                            "attrs": {
+                                "md": "{ 6 }"
+                            },
+                            "kids": [
+                                {
+                                    "name": "Heading",
+                                    "attrs": {
+                                        "id": "myHeading",
+                                        "value": "View Context Count"
                                     }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
+                                },
+                                {
+                                    "name": "Field",
+                                    "attrs": {
+                                        "label": "Counter Value",
+                                        "value": "{ value }"
+                                    }
+                                },
+                                {
+                                    "name": "Toolbar",
+                                    "kids": [
+                                        {
+                                            "name": "TButton",
+                                            "attrs": {
+                                                "transition": "inc",
+                                                "text": "++"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
     }
 }

@@ -177,7 +177,12 @@ public class TranslationEditorProvider
         for (View view : runtimeContext.getApplicationModel().getViews().values())
         {
             final TranslationReferenceVisitor visitor = new TranslationReferenceVisitor();
-            findTranslationRefs(visitor, view.getRoot());
+
+            for (ComponentModel componentModel : view.getContent().values())
+            {
+                findTranslationRefs(visitor, componentModel);
+            }
+
             for (String ref : visitor.getReferences())
             {
                 state.addReference(ref, ReferenceType.VIEW, view.getName());

@@ -1,0 +1,24 @@
+{
+    "title": "Test",
+    "content": {
+        "main": {
+            "name": "Test",
+            "attrs": {
+                "value": "var default"
+            },
+            "kids" : [
+                {
+                    "name": "em",
+                    "kids" : [
+                        {
+                            "name": "[String]",
+                            "attrs": {
+                                "value": "{ '[[]]' }"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

@@ -1,5 +1,5 @@
 /**
- *  Renders Javasript source code from the JSON view model.
+ *  Renders JavaScript source code from the JSON view model.
  *
  *  It creates the described component and context hierarchy and creates the react class for that view.
  *
@@ -7,47 +7,51 @@
  *  to have catch-errors protection for the view component, too.
  */
 
-var catchErrors;
-var ErrorReport;
+let catchErrors;
+let ErrorReport;
 
-var sys = require("../sys");
+const sys = require("../sys");
 
 // we repeat this full expression so that uglify is clever enough to really strip the code when inactive
-if (process.env.NODE_ENV !== "production" && process.env.NO_CATCH_ERRORS !== "true")
-{
-    catchErrors = require("react-transform-catch-errors");
-    ErrorReport = require("../ui/ErrorReport.es5");
-}
+// if (__DEV && !process.env.NO_CATCH_ERRORS)
+// {
+//     catchErrors = require("react-transform-catch-errors");
+//     ErrorReport = require("../ui/ErrorReport.es5");
+// }
 
-var componentService = require("./component");
+const React = require("react");
 
-var React = require("react");
+const rtViewAPI = require("./runtime-view-api");
+const rtActionAPI = require("./runtime-action-api");
+const ViewWrapper = require("../ui/ViewWrapper");
+const i18n = require("./i18n");
+const ComponentClasses = require("../components/component-classes");
 
-var rtViewAPI = require("./runtime-view-api");
-var rtActionAPI = require("./runtime-action-api");
-var i18n = require("./i18n");
-
-var ComponentClasses = require("../components/component-classes");
+import ComponentError from "../ui/ComponentError"
 
 const RENDERED_IF_PROP = "renderedIf";
 
-function RenderContext(out, components)
+import * as Reducers from "../reducers";
+
+function RenderContext(out, components, contentMap)
 {
-    this.usedComponents = {};
     this.out = out;
-    this.contexts = [];
     this.components = components;
+    this.contentMap = contentMap;
+
+    //this.usedComponents = {};
+    this.contexts = [];
 }
 
 function indent(ctx, depth)
 {
-    for (var i = 0; i < depth; i++)
+    for (let i = 0; i < depth; i++)
     {
         ctx.out.push("  ");
     }
 }
 
-var trivialExpr = /^(true|false|null|\d+|\w+)$/;
+const trivialExpr = /^(true|false|null|\d+|\w+)$/;
 
 
 function hasClass(componentDescriptor, cls)
@@ -57,18 +61,16 @@ function hasClass(componentDescriptor, cls)
 
 function evaluateExpression(componentModel,attrName)
 {
-    var exprs = componentModel.exprs;
-    var attrs = componentModel.attrs;
+    const exprs = componentModel.exprs;
+    const attrs = componentModel.attrs;
     if (exprs && exprs.hasOwnProperty(attrName))
     {
-        var expr = exprs[attrName];
-
-        var attr = attrs && attrs[attrName];
+        const expr = exprs[attrName];
+        const attr = attrs && attrs[attrName];
         if (!trivialExpr.test(expr) && attr)
         {
-            expr +=  " /* " + attr + " */"
+            return expr + " /* " + attr + " */"
         }
-
         return expr;
     }
     return attrs && JSON.stringify(attrs[attrName]);
@@ -76,12 +78,14 @@ function evaluateExpression(componentModel,attrName)
 
 function renderRecursively(ctx, componentModel, depth, childIndex)
 {
-    var name = componentModel.name;
-    var value, component, i;
-    var attrName;
+    const name = componentModel.name;
 
-    var componentDescriptor;
-    var isComponent = ctx.components.hasOwnProperty(name);
+
+    const isComponent = ctx.components.hasOwnProperty(name);
+
+    let componentSource;
+    let componentDescriptor;
+
     if (isComponent)
     {
 
@@ -93,11 +97,11 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
             return;
         }
 
-        component = name;
+        componentSource = "_c['" + name + "'].component";
 
 
         // record usage of component module export
-        ctx.usedComponents[name.split(".")[0]] = true;
+        //ctx.usedComponents[name.split(".")[0]] = true;
     }
     else
     {
@@ -108,36 +112,57 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
             return;
         }
 
-        component = JSON.stringify(name);
-        //console.log("builtin", component, ctx.components);
+        componentSource = JSON.stringify(name);
     }
 
-    var attrs = componentModel.attrs;
-    var exprs = componentModel.exprs;
-    var kids = componentModel.kids;
+    //console.log("COMPONENT", componentSource);
+
+    const attrs = componentModel.attrs;
+    const exprs = componentModel.exprs;
+    const kids = componentModel.kids;
+
+    let queries, propTypes, contextKey, currentContextName;
 
     if (componentDescriptor)
     {
-        var queries = componentDescriptor.queries;
-        var propTypes = componentDescriptor.propTypes;
+        queries = componentDescriptor.queries;
+        propTypes = componentDescriptor.propTypes;
 
-        var contextKey = attrs && componentDescriptor.contextKey;
-        var currentContextName = ctx.contexts[0] || "undefined";
+        contextKey = attrs && componentDescriptor.contextKey;
+        currentContextName = ctx.contexts[0] || "undefined";
     }
+
+
+    if (name === "Content")
+    {
+        const contentRoot = ctx.contentMap[attrs ? attrs.name : "main"];
+        if (contentRoot)
+        {
+            renderRecursively(ctx, contentRoot, depth, childIndex);
+        }
+        return;
+    }
+
 
     indent(ctx, depth);
 
-    var attrsStartIndex;
+    let attrsStartIndex;
 
     if (exprs && exprs[RENDERED_IF_PROP])
     {
         ctx.out.push("!!(" + evaluateExpression(componentModel, RENDERED_IF_PROP) + ") && ");
     }
 
+    const hasInjection = !!queries || !!componentDescriptor && componentDescriptor.dataProvider;
 
-    ctx.out.push("_React.createElement(", component, ", ");
+    if (hasInjection)
+    {
+        ctx.out.push("_React.createElement(_ComponentError, { componentId: " + JSON.stringify(attrs.id) + "},");
+        depth++;
+    }
 
-    var hasInjection = !!queries || !!componentDescriptor && componentDescriptor.dataProvider;
+    ctx.out.push("_React.createElement(", componentSource, ", ");
+
 
     if (hasInjection)
     {
@@ -149,9 +174,9 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
         attrsStartIndex = ctx.out.length;
     }
 
-    var first = true;
+    let first = true;
 
-    var commaIfNotFirst = function ()
+    const commaIfNotFirst = function ()
     {
         if (!first)
         {
@@ -162,11 +187,10 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
 
     if (attrs)
     {
-        for (attrName in attrs)
+        for (let attrName in attrs)
         {
             if (attrs.hasOwnProperty(attrName) && ( !exprs || !exprs.hasOwnProperty(attrName)))
             {
-                value = attrs[attrName];
                 commaIfNotFirst();
                 indent(ctx, depth + 2);
                 if (propTypes && propTypes[attrName] && (attrName === "var" || propTypes[attrName].client === false))
@@ -180,7 +204,7 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
 
     if (exprs)
     {
-        for (attrName in exprs)
+        for (let attrName in exprs)
         {
             if (exprs.hasOwnProperty(attrName) && attrName !== RENDERED_IF_PROP)
             {
@@ -220,37 +244,11 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
             ctx.out.push("context: ", currentContextName);
         }
 
-        if (queries)
+        if (componentDescriptor && componentDescriptor.vars)
         {
             commaIfNotFirst();
             indent(ctx, depth + 2);
-            ctx.out.push("vars: _v.data[\"" + attrs.id + "\"].vars");
-        }
-
-        if (kids && componentDescriptor.providesContext)
-        {
-            var newContextName = (attrs && attrs.var) || "context";
-            ctx.contexts.unshift(newContextName);
-
-            commaIfNotFirst();
-            indent(ctx, depth + 2);
-            ctx.out.push("renderChildren", " : function(" + newContextName + "){\n");
-            indent(ctx, depth + 3);
-            ctx.out.push("return ([\n");
-            for (i = 0; i < kids.length; i++)
-            {
-                if (i > 0)
-                {
-                    ctx.out.push(",\n");
-                }
-                renderRecursively(ctx, kids[i], depth + 4, i);
-            }
-
-            ctx.out.push("\n");
-            indent(ctx, depth + 2);
-            ctx.out.push("])}");
-
-            ctx.contexts.shift();
+            ctx.out.push("vars: _r.getComponentVars(_state, \"" + attrs.id + "\")");
         }
     }
 
@@ -258,12 +256,12 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
     {
         ctx.out.push("\n");
         indent(ctx, depth + 1);
-        ctx.out.push("}, _v.data[\"" + attrs.id + "\"].data)");
+        ctx.out.push("}, _r.getComponentInjections(_state, \"" + attrs.id + "\"))");
     }
     else
     {
         // if we're still right were we were before we started generating non-injected attributes
-        if (attrsStartIndex == ctx.out.length)
+        if (attrsStartIndex === ctx.out.length)
         {
             // we just rewrite the last entry to give React a null props
             ctx.out[attrsStartIndex - 1] = "null";
@@ -276,14 +274,51 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
         }
     }
 
-    if (kids && (!componentDescriptor || !componentDescriptor.providesContext))
+    if (kids)
     {
-        for (i = 0; i < kids.length; i++)
+        if (!componentDescriptor || !componentDescriptor.providesContext)
         {
+            for (let i = 0; i < kids.length; i++)
+            {
+                ctx.out.push(",\n");
+                renderRecursively(ctx, kids[i], depth + 1);
+            }
+        }
+        else
+        {
+
             ctx.out.push(",\n");
-            renderRecursively(ctx, kids[i], depth + 1);
+
+            const newContextName = (attrs && attrs.var) || "context";
+            ctx.contexts.unshift(newContextName);
+            indent(ctx, depth + 1);
+            ctx.out.push("function(" + newContextName + "){\n");
+            indent(ctx, depth + 2);
+            ctx.out.push("return ([\n");
+            for (let i = 0; i < kids.length; i++)
+            {
+                if (i > 0)
+                {
+                    ctx.out.push(",\n");
+                }
+                renderRecursively(ctx, kids[i], depth + 4, i);
+            }
+            ctx.out.push("\n");
+            indent(ctx, depth + 1);
+            ctx.out.push("])}");
+
+            ctx.contexts.shift();
         }
     }
+
+    if (hasInjection)
+    {
+        ctx.out.push("\n");
+        indent(ctx, depth);
+        ctx.out.push(")");
+        depth--;
+    }
+    
     ctx.out.push("\n");
     indent(ctx, depth);
     ctx.out.push(")");
@@ -291,28 +326,35 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
 
 function renderViewComponentSource(viewModel, components)
 {
-    var buf = [];
+    //console.log("renderViewComponentSource", viewModel);
+
+    const buf = [];
 
     buf.push(
-        "var _v= new _RTView(this.props.model, this.props.componentData);\n",
-        "return (\n\n"
+        "var _store = this.props.store;\n",
+        "var _state = _store.getState();\n",
+        "var _v= new _RTView(_store);\n",
+//        "console.log('REDUCERS', _r);\n",
+        "return (\n\n",
+        "  _React.createElement( _ViewWrapper, { title: ", viewModel.titleExpr || "\"\"" , ", store: _store},\n"
     );
 
-    var ctx = new RenderContext(buf, components);
+    const contentMap = viewModel.content;
+    const ctx = new RenderContext(buf, components, contentMap);
+    renderRecursively(ctx, contentMap.root, 2);
 
-    renderRecursively(ctx, viewModel.root, 1);
-
-    var usedComponents = ctx.usedComponents;
-    for (var componentName in usedComponents)
-    {
-        if (usedComponents.hasOwnProperty(componentName))
-        {
-            buf.unshift("var " + componentName + " = _components[\"" + componentName + "\"].component;\n");
-        }
-    }
+    //buf.unshift("console.log('COMPONENTS', _c);\n");
+    // const usedComponents = ctx.usedComponents;
+    // for (let componentName in usedComponents)
+    // {
+    //     if (usedComponents.hasOwnProperty(componentName))
+    //     {
+    //         buf.unshift("var " + componentName + " = _c[\"" + componentName + "\"].component;\n");
+    //     }
+    // }
 
     buf.push(
-        "\n);"
+        "\n  )\n);"
     );
 
     return buf.join("");
@@ -321,16 +363,15 @@ function renderViewComponentSource(viewModel, components)
 module.exports = {
     createRenderFunction : function(viewModel, components)
     {
-        //console.log("\nVIEWMODEL:\n", JSON.stringify(viewModel, null, "  "));
-        var code = renderViewComponentSource(viewModel, components);
+        const code = renderViewComponentSource(viewModel, components);
         //console.log("\nRENDER-FN:\n", code);
 
-        var renderFn = new Function("_React", "_components", "_RTView", "_catchErrors", "_ErrorReport", "_sys", "_a", "i18n", code);
+        const renderFn = new Function("_React", "_c", "_RTView", "_ComponentError", "_sys", "_a", "i18n", "_ViewWrapper", "_r", code);
         return {
             src: code,
             fn: function (component)
             {
-                return renderFn.call(component, React, components, rtViewAPI, catchErrors, ErrorReport, sys, rtActionAPI, i18n);
+                return renderFn.call(component, React, components, rtViewAPI, ComponentError, sys, rtActionAPI, i18n, ViewWrapper, Reducers);
             }
         };
     }

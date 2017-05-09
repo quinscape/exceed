@@ -1,10 +1,6 @@
 package de.quinscape.exceed.runtime.model;
 
 import com.google.common.base.Objects;
-import de.quinscape.exceed.model.component.ComponentClasses;
-import de.quinscape.exceed.model.component.ComponentDescriptor;
-import de.quinscape.exceed.model.component.PropDeclaration;
-import de.quinscape.exceed.model.component.PropType;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ASTIdentifier;
 import de.quinscape.exceed.expression.ASTNull;
@@ -13,6 +9,11 @@ import de.quinscape.exceed.expression.ExpressionParserConstants;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.expression.SimpleNode;
+import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.model.component.ComponentClasses;
+import de.quinscape.exceed.model.component.ComponentDescriptor;
+import de.quinscape.exceed.model.component.PropDeclaration;
+import de.quinscape.exceed.model.component.PropType;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.AttributeValueType;
 import de.quinscape.exceed.model.view.Attributes;
@@ -25,8 +26,10 @@ import de.quinscape.exceed.runtime.service.ActionExpressionRenderer;
 import de.quinscape.exceed.runtime.service.ActionExpressionRendererFactory;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.SyslogCallGenerator;
-import org.svenson.JSON;
 import de.quinscape.exceed.runtime.util.AssignmentReplacementVisitor;
+import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.svenson.util.JSONBuilder;
 
 import java.util.Collections;
@@ -35,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static de.quinscape.exceed.model.view.ComponentModelBuilder.component;
 
 /**
  * Produces a special augmented view model JSON from a view model.
@@ -46,11 +51,13 @@ import java.util.stream.Collectors;
  */
 public class ClientViewJSONGenerator
 {
-    private final static JSON json = JSON.defaultJSON();
+    private final static Logger log = LoggerFactory.getLogger(ClientViewJSONGenerator.class);
 
     public static final String CONTEXT_DEFAULT_NAME = "context";
 
     public static final String MODEL_ATTR_NAME = "model";
+
+    private static final ComponentModel TITLE_MODEL = component("div").getComponent();
 
     private final ActionExpressionRendererFactory actionExpressionRendererFactory;
 
@@ -65,27 +72,47 @@ public class ClientViewJSONGenerator
         generators.put("syslog", new SyslogCallGenerator());
     }
 
-    public String toJSON(RuntimeApplication application, View view, JSONFormat jsonFormat)
+    public String toJSON(ApplicationModel applicationModel, View view, JSONFormat jsonFormat)
     {
         JSONBuilder builder = JSONBuilder.buildObject();
 
-        builder.property("type", "view.View")
+        builder.property("type", "xcd.view.View")
             .property("name", view.getName())
-            .property("preview", view.isPreview())
+            .property("synthetic", view.isSynthetic())
             .property("processName", view.getProcessName());
 
-        String version = view.getVersion();
-        if (version != null)
+
+        builder.propertyUnlessNull("identityGUID", view.getIdentityGUID());
+        builder.propertyUnlessNull("versionGUID", view.getVersionGUID());
+
+
+        final String title = view.getTitle();
+        final ASTExpression titleExpression = view.getTitleExpression();
+
+        builder.property("title", title);
+
+        if (titleExpression != null)
         {
-            builder.property("version", version);
+            builder.property("titleExpr", transformExpression(titleExpression, applicationModel, view, TITLE_MODEL, "title", new ComponentRenderPath("root"), false));
+        }
+        else
+        {
+            builder.property("titleExpr", SingleQuoteJSONGenerator.INSTANCE.quote(title));
         }
 
-        JSONBuilder.Level lvl = builder.getCurrentLevel();
+        builder.objectProperty("content");
 
-        builder.objectProperty("root");
+        for (Map.Entry<String, ComponentModel> entry : view.getContent().entrySet())
+        {
+            final String contentName = entry.getKey();
+            final ComponentModel contentRoot = entry.getValue();
 
-        dumpComponentRecursive(builder, application, view, view.getRoot(), new ComponentPath(), jsonFormat);
-        builder.closeUntil(lvl);
+            JSONBuilder.Level lvl = builder.getCurrentLevel();
+            builder.objectProperty(contentName);
+            dumpComponentRecursive(builder, applicationModel, view, contentRoot, new ComponentRenderPath(contentName), jsonFormat);
+            builder.closeUntil(lvl);
+        }
+        builder.close();
 
         builder.property("comments", view.getComments());
 
@@ -94,7 +121,7 @@ public class ClientViewJSONGenerator
 
 
 
-    private void dumpComponentRecursive(JSONBuilder builder, RuntimeApplication application, View view, ComponentModel componentModel, ComponentPath path, JSONFormat jsonFormat)
+    private void dumpComponentRecursive(JSONBuilder builder, ApplicationModel application, View view, ComponentModel componentModel, ComponentRenderPath path, JSONFormat jsonFormat)
     {
         ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
         if (jsonFormat == JSONFormat.INTERNAL && componentRegistration != null)
@@ -111,7 +138,7 @@ public class ClientViewJSONGenerator
                 }
                 else
                 {
-                    contextName = (String) varAttr.getValue();
+                    contextName = varAttr.getValue();
                 }
                 path.setContextName(contextName);
                 path.setProvidedContext(providedContext);
@@ -174,7 +201,7 @@ public class ClientViewJSONGenerator
 
                     if (expression != null)
                     {
-                        /** if this is a context expression, we will deal with it later in {@link #provideContextExpressions(JSONBuilder, RuntimeApplication, View, ComponentModel, ComponentPath, ComponentDescriptor)} ) */
+                        /** if this is a context expression, we will deal with it later in {@link #provideContextExpressions(JSONBuilder, RuntimeApplication, View, ComponentModel, ComponentRenderPath, ComponentDescriptor)} ) */
                         boolean isContextExpression = propDecl != null && propDecl.getContext() != null;
                         if (!isContextExpression)
                         {
@@ -209,7 +236,7 @@ public class ClientViewJSONGenerator
         if (kids != null)
         {
             builder.arrayProperty("kids");
-            ComponentPath kidPath = null;
+            ComponentRenderPath kidPath = null;
             for (ComponentModel kid : kids)
             {
                 final String name = kid.getName();
@@ -256,7 +283,7 @@ public class ClientViewJSONGenerator
     }
 
 
-    private void addDefaults(JSONBuilder builder, View view, ComponentDescriptor descriptor, Set<String> defaultAttrs, boolean isExpression, RuntimeApplication application, ComponentModel componentModel, ComponentPath path)
+    private void addDefaults(JSONBuilder builder, View view, ComponentDescriptor descriptor, Set<String> defaultAttrs, boolean isExpression, ApplicationModel applicationModel, ComponentModel componentModel, ComponentRenderPath path)
 
     {
         Map<String, PropDeclaration> propTypes = descriptor.getPropTypes();
@@ -268,7 +295,7 @@ public class ClientViewJSONGenerator
             {
                 if (isExpression)
                 {
-                    builder.property(name, transformExpression(defaultValue.getAstExpression(), application, view, componentModel, name, path, propDecl.getType() == PropType.ACTION_EXPRESSION));
+                    builder.property(name, transformExpression(defaultValue.getAstExpression(), applicationModel, view, componentModel, name, path, propDecl.getType() == PropType.ACTION_EXPRESSION));
                 }
                 else
                 {
@@ -287,7 +314,7 @@ public class ClientViewJSONGenerator
     }
 
 
-    private void provideContextExpressions(JSONBuilder builder, RuntimeApplication application, View view, ComponentModel componentModel, ComponentPath path, ComponentDescriptor descriptor)
+    private void provideContextExpressions(JSONBuilder builder, ApplicationModel applicationModel, View view, ComponentModel componentModel, ComponentRenderPath path, ComponentDescriptor descriptor)
     {
         // we check all property declarations of the current component
         Map<String, PropDeclaration> propTypes = descriptor.getPropTypes();
@@ -331,7 +358,7 @@ public class ClientViewJSONGenerator
                     {
                         // otherwise we default to the first parent of matching type to provide a context
                         // type can be null here meaning to accept every kind of context
-                        ComponentPath contextByType = findContextByType(path.getParent(), decl.getContextType());
+                        ComponentRenderPath contextByType = findContextByType(path.getParent(), decl.getContextType());
                         if (contextByType == null)
                         {
                             if (decl.isRequired())
@@ -349,7 +376,7 @@ public class ClientViewJSONGenerator
                     }
 
                     // .. and transform it for client consumption
-                    builder.property(propName, transformExpression(contextAST, application, view, componentModel, propName, path, false));
+                    builder.property(propName, transformExpression(contextAST, applicationModel, view, componentModel, propName, path, false));
                 }
                 catch (ParseException e)
                 {
@@ -403,7 +430,7 @@ public class ClientViewJSONGenerator
     }
 
 
-    private ComponentPath findContextByType(ComponentPath path, String type)
+    private ComponentRenderPath findContextByType(ComponentRenderPath path, String type)
     {
         while (path != null)
         {
@@ -419,19 +446,19 @@ public class ClientViewJSONGenerator
 
     private String transformExpression(
         SimpleNode expression,
-        RuntimeApplication application,
+        ApplicationModel applicationModel,
         View view, ComponentModel componentModel,
         String attrName,
-        ComponentPath path,
+        ComponentRenderPath path,
         boolean isActionExpression)
     {
         ActionExpressionRenderer actionExpressionRenderer = isActionExpression ? actionExpressionRendererFactory.create(generators) : null;
-        ActionExpressionBaseRenderer renderer = new ViewExpressionRenderer(application, view, componentModel, attrName,
+        ActionExpressionBaseRenderer renderer = new ViewExpressionRenderer(applicationModel, view, componentModel, attrName,
             path, actionExpressionRenderer);
 
         if (isActionExpression)
         {
-            expression.jjtAccept(new AssignmentReplacementVisitor(application.getApplicationModel(), view.getName()), null);
+            expression.jjtAccept(new AssignmentReplacementVisitor(applicationModel, view.getName()), null);
         }
 
         expression.childrenAccept(renderer, null);
@@ -444,6 +471,5 @@ public class ClientViewJSONGenerator
             return renderer.getOutput();
         }
     }
-
 }
 
