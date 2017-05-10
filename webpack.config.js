@@ -18,29 +18,36 @@ const babelConfig =(
         function ()
         {
             const BabelConfig = JSON.parse(fs.readFileSync("./.babelrc", "UTF-8"));
+
+            // turn off import/export handling for webpack
             BabelConfig.presets[0][1].modules = false;
 
-            // we need our track-usage plugin in any case
-            BabelConfig.plugins.push(
-                [
-                    "track-usage",
-                    {
-                        "sourceRoot" : "src/main/js/",
-                        "trackedFunctions": {
-                            "i18n": {
-                                "module": "./service/i18n",
-                                "fn": "",
-                                "varArgs": true
-                            },
-                            "scope": {
-                                "module": "./service/process",
-                                "fn": "scope"
-                            }
+            // filter out espower
+            BabelConfig.plugins = BabelConfig.plugins.filter(
+                function(s)
+                {
+                    return s !== "babel-plugin-espower"
+                });
+
+            // add our track-usage plugin
+            BabelConfig.plugins.push([
+                "track-usage",
+                {
+                    "sourceRoot": "src/main/js/",
+                    "trackedFunctions": {
+                        "i18n": {
+                            "module": "./service/i18n",
+                            "fn": "",
+                            "varArgs": true
                         },
-                        "debug": false
-                    }
-                ]
-            );
+                        "scope": {
+                            "module": "./service/process",
+                            "fn": "scope"
+                        }
+                    },
+                    "debug": false
+                }
+            ]);
 
             return BabelConfig;
         }
