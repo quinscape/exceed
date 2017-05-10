@@ -1,9 +1,10 @@
-const endsWith = require("../util/endsWith");
+import endsWith from "../util/endsWith";
+import isES2015 from "../util/is-es2015";
 
 const COMPONENTS_JSON_SUFFIX = "/components.json";
 const JS_EXTENSION = ".js";
 
-var components = {};
+const components = {};
 
 function resolveWizardComponents(componentDef, ctx, dir, componentName)
 {
@@ -17,12 +18,12 @@ function resolveWizardComponents(componentDef, ctx, dir, componentName)
             if (wizardComponentName)
             {
                 let moduleName = dir + wizardComponentName + JS_EXTENSION;
-                let componentClass = ctx(moduleName);
-                if (!componentClass)
+                let moduleExport = ctx(moduleName);
+                if (!moduleExport)
                 {
                     throw new Error("Wizard component '" + wizardComponentName + "' not found for component '" + componentName + "'")
                 }
-                template.wizardComponent = componentClass;
+                template.wizardComponent = isES2015(moduleExport) ? moduleExport.default: moduleExport;
             }
         }
     }
@@ -36,14 +37,14 @@ function resolveWizardComponents(componentDef, ctx, dir, componentName)
             {
                 let entry = propWizards[propName];
                 let moduleName = dir + entry.wizard + JS_EXTENSION;
-                let componentClass = ctx(moduleName);
+                let moduleExport = ctx(moduleName);
 
-                if (!componentClass)
+                if (!moduleExport)
                 {
                     throw new Error("Wizard prop component '" + entry.wizard + "' not found for component '" + componentName + "'")
                 }
 
-                entry.wizardComponent = componentClass;
+                entry.wizardComponent = isES2015(moduleExport) ? moduleExport.default: moduleExport;
             }
         }
     }
@@ -62,30 +63,46 @@ function register(ctx, name)
     {
         if (subComponents.hasOwnProperty(componentName))
         {
-            let componentDef = subComponents[componentName];
+            const componentDef = subComponents[componentName];
 
-            let parts = componentName.split(".");
-            let component = ctx(dir + parts[0] + JS_EXTENSION);
-
-            for (let i = 1; i < parts.length; i++)
+            const parts = componentName.split(".");
+            const len = parts.length;
+            const moduleExport = ctx(dir + parts[0] + JS_EXTENSION);
+            let component;
+            if (len === 1)
             {
-                let part = parts[i];
-                if (part === "")
-                {
-                    throw new Error("Invalid component name '" + componentName + "': contains empty property");
-                }
-                component = component[part];
+                component = isES2015(moduleExport) ? moduleExport.default : moduleExport;
             }
+            else
+            {
+                if (len[1] === "default")
+                {
+                    throw new Error("Invalid component name '" + componentName + "'");
+                }
+                component = moduleExport;
+                for (let i = 1; i < len; i++)
+                {
+                    let part = parts[i];
+                    if (part === "")
+                    {
+                        throw new Error("Invalid component name '" + componentName + "': contains empty property");
+                    }
+                    component = component[part];
+                }
+            }
+
             componentDef.component  = component;
             resolveWizardComponents(componentDef, ctx, dir, componentName);
 
             components[componentName] = componentDef;
+
+            //console.log(componentName, {componentDef})
         }
     }
 }
 
 
-var ComponentService = {
+const ComponentService = {
     getComponents: function ()
     {
         return components;

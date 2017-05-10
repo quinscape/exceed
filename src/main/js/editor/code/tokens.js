@@ -1,8 +1,23 @@
-var TokenIterator = require("brace").acequire("ace/token_iterator").TokenIterator;
+import { updateContentModel } from "../../actions/inpage"
+
+import aceLoader from "../ace-loader"
+
+function getTokenIterator()
+{
+    return aceLoader.get().acequire("ace/token_iterator").TokenIterator;
+}
+
 
 function trim(s)
 {
     return s.replace(/^\s*(.*?)\s*$/, "$1");
+}
+
+function htmlDecode(input)
+{
+    const e = document.createElement("div");
+    e.innerHTML = input;
+    return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
 }
 
 /**
@@ -44,7 +59,7 @@ function ModelLocation()
 
 function setAttr(model, attrName, value)
 {
-    var attrs = model.attrs;
+    let attrs = model.attrs;
     if (!attrs)
     {
         attrs = model.attrs = {};
@@ -56,7 +71,7 @@ function setAttr(model, attrName, value)
  *
  * @type {{currentLocation: module.exports.currentLocation}}
  */
-module.exports = {
+const Tokens = {
     /**
      * Inspects the token stream to find the model position corresponding to the current editor position.
      *
@@ -70,14 +85,16 @@ module.exports = {
     currentLocation: function (session, row, column, model)
     {
 
-        var entry;
-        var iterator = new TokenIterator(session, 0, 0);
+        const TokenIterator = getTokenIterator();
 
-        var loc = new ModelLocation();
+        let entry;
+        const iterator = new TokenIterator(session, 0, 0);
 
-        var stack = loc.parentPath;
+        const loc = new ModelLocation();
 
-        var start = session.getTokenAt(row, column);
+        const stack = loc.parentPath;
+
+        let start = session.getTokenAt(row, column);
 
         if (!start)
         {
@@ -85,9 +102,9 @@ module.exports = {
         }
 
 
-        var tokenStart = start.start;
+        const tokenStart = start.start;
 
-        var startTokenLen = start.value.length;
+        const startTokenLen = start.value.length;
 
         //console.log("start token", start, column);
         if ((start.type === "meta.tag.punctuation.tag-close.xml" || start.type === "meta.tag.punctuation.end-tag-open.xml") && column < start.start + startTokenLen)
@@ -95,7 +112,7 @@ module.exports = {
             return null;
         }
 
-        var token, last;
+        let token, last;
 
         token = iterator.getCurrentToken();
         while (token)
@@ -114,7 +131,7 @@ module.exports = {
                 if (!stack.length)
                 {
                     stack.unshift({
-                        model: model.root,
+                        model: model.content[session.exceedContentName],
                         index: -1
                     });
                 }
@@ -162,8 +179,8 @@ module.exports = {
 
             loc.attrValue = (start.type === "string.attribute-value.xml" &&  column < start.start + startTokenLen) || loc.expression;
 
-            var currentRow = iterator.getCurrentTokenRow();
-            var currentColumn = iterator.getCurrentTokenColumn();
+            const currentRow = iterator.getCurrentTokenRow();
+            const currentColumn = iterator.getCurrentTokenColumn();
 
             //console.log("check", currentRow, row, currentColumn, tokenStart, loc);
 
@@ -173,7 +190,7 @@ module.exports = {
                 {
                     // if the location is marked not valid, we have an incomplete tag which we remove from the
                     // stack
-                    var removed = loc.parentPath.shift();
+                    const removed = loc.parentPath.shift();
                     //console.log("Remove invalid parent", removed);
                 }
 
@@ -187,7 +204,7 @@ module.exports = {
 
                     //console.log("Add root to empty path");
                     loc.parentPath = [{
-                        model: model.root,
+                        model: model.content[session.exceedContentName],
                         index: -1
                     }];
                 }
@@ -204,38 +221,45 @@ module.exports = {
     /**
      * Converts the current editor session state to a JSON model.
      *
-     * @param session
-     * @param withPosition if true, add pos attribute with start end and pos
-     * @returns view model
+     * @param session           {EditSession} edit session
+     * @param withPosition      {boolean?} if true, add pos attribute with start end and pos
+     * @returns {View} view model
      */
     toModel: function (session, withPosition)
     {
-        var iterator = new TokenIterator(session, 0, 0);
+        //console.log({editSessions});
 
-        var viewModel = { root: null };
+        let currentComponent = null;
 
-        var token, last, currentComponent, attrName, attrValue, record = false;
-
-        var stack = [];
-
-        var addKid = function (kid)
+        const addKid = function (kid)
         {
-            var kids = currentComponent.kids;
+            let kids = currentComponent.kids;
             if (!kids)
             {
-                currentComponent.kids = [ kid ];
+                currentComponent.kids = [kid];
             }
             else
             {
-                kids.push( kid);
+                kids.push(kid);
             }
         };
+
+        let contentModel;
+
+        //console.log("parsing", name);
+
+        const TokenIterator = getTokenIterator();
+        const iterator = new TokenIterator(session, 0, 0);
+
+        currentComponent = null;
+
+        let token, last, attrName, attrValue = "", record = false;
+        const stack = [];
 
         token = iterator.getCurrentToken();
         while (token)
         {
             //console.log("toModel: token", JSON.stringify(token));
-
 
             if (last && last.type === "meta.tag.punctuation.tag-open.xml")
             {
@@ -244,7 +268,7 @@ module.exports = {
                     break;
                 }
 
-                var newComponent = {
+                const newComponent = {
                     name: token.value
                 };
 
@@ -261,12 +285,7 @@ module.exports = {
 
                 if (!currentComponent)
                 {
-                    if (viewModel.root !== null)
-                    {
-                        throw new Error("Already have root");
-                    }
-
-                    viewModel.root = currentComponent = newComponent;
+                    contentModel = currentComponent = newComponent;
 
                 }
                 else
@@ -294,14 +313,14 @@ module.exports = {
             {
                 if (attrName)
                 {
-                    setAttr(currentComponent, attrName, attrValue + " }");
+                    setAttr(currentComponent, attrName, htmlDecode(attrValue) + " }");
                 }
                 else
                 {
                     addKid({
                         name: "[String]",
                         attrs: {
-                            "value" : attrValue + "}"
+                            "value" : htmlDecode(attrValue) + "}"
                         }
                     });
 
@@ -320,7 +339,7 @@ module.exports = {
                 {
                     if (withPosition)
                     {
-                        var end = {
+                        const end = {
                             row: iterator.getCurrentTokenRow(),
                             column: iterator.getCurrentTokenColumn() + token.value.length
                         };
@@ -348,7 +367,7 @@ module.exports = {
             }
             else if (token.type === "text.xml")
             {
-                var text = trim(token.value);
+                const text = trim(token.value);
                 if (text.length > 0)
                 {
                     addKid({
@@ -362,14 +381,16 @@ module.exports = {
 
             if (record)
             {
-                attrValue += token.value;
+                attrValue +=  token.value;
             }
 
             last = token;
             token = iterator.stepForward();
         }
-        return viewModel;
 
+        //console.log("Tokens.toModel => ", contentModel);
+
+        return contentModel;
     },
     /**
      * Fills in rows and columns for in the list of given expression errors.
@@ -383,23 +404,24 @@ module.exports = {
      */
     fillInErrorLocations: function(session, expressionErrors)
     {
-        var row, column;
-        var iterator = new TokenIterator(session, 0, 0);
+        let row, column;
+        const TokenIterator = getTokenIterator();
+        const iterator = new TokenIterator(session, 0, 0);
 
-        var pos = 0;
+        let pos = 0;
 
-        var componentIndex = -1;
+        let componentIndex = -1;
 
-        var token, attrName, inTag = false;
+        let token, attrName, inTag = false;
 
-        var currentError = expressionErrors[pos];
+        let currentError = expressionErrors[pos];
 
         token = iterator.getCurrentToken();
         while (token && pos < expressionErrors.length)
         {
             //console.log("token", JSON.stringify(token));
 
-            var text = null;
+            let text = null;
 
             if (token.type === "meta.tag.punctuation.tag-open.xml")
             {
@@ -464,6 +486,19 @@ module.exports = {
 
             token = iterator.stepForward();
         }
-        return;
+    },
+
+    syncSession: function(store, session, withPosition)
+    {
+        const model = Tokens.toModel(session, withPosition);
+
+        store.dispatch(
+            updateContentModel(
+                session.exceedContentName,
+                model
+            )
+        );
     }
 };
+
+export default Tokens;

@@ -1,29 +1,21 @@
 require("brace/mode/xml");
 
-var Tokens = require("./tokens");
+import { refetchView, showError } from "../../actions"
 
-var escapedRe = "\\\\(?:x[0-9a-fA-F]{2}|" + "u[0-9a-fA-F]{4}|" + "u{[0-9a-fA-F]{1,6}}|" + "[0-2][0-7]{0,2}|" + "3[0-7][0-7]?|" + "[4-7][0-7]?|" + ".)";
+import { getViewModel, getCurrentViewDocument } from "../../reducers"
+import Tokens from "./tokens";
 
-var _viewService;
-
-function getViewService()
-{
-    if (!_viewService)
-    {
-        _viewService = require("../../service/view");
-    }
-    return _viewService;
-}
+const escapedRe = "\\\\(?:x[0-9a-fA-F]{2}|" + "u[0-9a-fA-F]{4}|" + "u{[0-9a-fA-F]{1,6}}|" + "[0-2][0-7]{0,2}|" + "3[0-7][0-7]?|" + "[4-7][0-7]?|" + ".)";
 
 ace.define('ace/mode/exceed_expr_highlight_rules',["require","exports","module"], function (ace_require, exports, module)
 {
     "use strict";
-    var oop = ace_require("ace/lib/oop");
-    var TextHighlightRules = ace_require("ace/mode/text_highlight_rules").TextHighlightRules;
-    var identifierRe = "[a-zA-Z\\$_\u00a1-\uffff][a-zA-Z\\d\\$_\u00a1-\uffff]*\\b";
-    var ExceedExprHighlightRules = function()
+    const oop = ace_require("ace/lib/oop");
+    const TextHighlightRules = ace_require("ace/mode/text_highlight_rules").TextHighlightRules;
+    const identifierRe = "[a-zA-Z\\$_\u00a1-\uffff][a-zA-Z\\d\\$_\u00a1-\uffff]*\\b";
+    const ExceedExprHighlightRules = function ()
     {
-        var keywordMapper = this.createKeywordMapper({
+        const keywordMapper = this.createKeywordMapper({
             "variable.language": "context|model|props|vars",
             "constant.language": "null",
             "constant.language.boolean": "true|false"
@@ -171,29 +163,30 @@ ace.define('ace/mode/exceed_expr_highlight_rules',["require","exports","module"]
 
 ace.define('ace/mode/exceed_view_highlight_rules',["require","exports","module"], function(ace_require, exports, module) {
 
-    var oop = ace_require("ace/lib/oop");
+    const oop = ace_require("ace/lib/oop");
 
-    var XmlHighlightRules = ace_require("ace/mode/xml_highlight_rules").XmlHighlightRules;
-    var ExceedExprHighlightRules = ace_require("ace/mode/exceed_expr_highlight_rules").ExceedExprHighlightRules;
+    const XmlHighlightRules = ace_require("ace/mode/xml_highlight_rules").XmlHighlightRules;
+    const ExceedExprHighlightRules = ace_require("ace/mode/exceed_expr_highlight_rules").ExceedExprHighlightRules;
 
 
 
-    var ExceedViewHighlightRules = function() {
+    const ExceedViewHighlightRules = function ()
+    {
 
         XmlHighlightRules.call(this);
 
         this.$rules['start'].unshift([
             {
-                token : "expression-open.xml",
-                regex : '\\{\\s*',
-                push : [
+                token: "expression-open.xml",
+                regex: '\\{\\s*',
+                push: [
                     {
                         token: "expression-close.xml",
                         regex: '\\s*\\}',
                         next: "pop"
                     },
                     {
-                        include : "expr-start"
+                        include: "expr-start"
                     },
                     {
                         defaultToken: "expr-start"
@@ -201,37 +194,37 @@ ace.define('ace/mode/exceed_view_highlight_rules',["require","exports","module"]
             }
         ]);
 
-        this.$rules['attribute_value'] =  [
+        this.$rules['attribute_value'] = [
             {
-                token : "expression-open.xml",
-                regex : '"\\{\\s*',
-                push : [
+                token: "expression-open.xml",
+                regex: '"\\{\\s*',
+                push: [
                     {
                         token: "expression-close.xml",
                         regex: '\\s*\\}\\s*"',
                         next: "pop"
                     },
                     {
-                        include : "expr-start"
+                        include: "expr-start"
                     },
                     {
                     defaultToken: "expr-start"
                 }]
             },
             {
-                token : "string.attribute-value.xml",
-                regex : '"',
-                push : [
+                token: "string.attribute-value.xml",
+                regex: '"',
+                push: [
                     {
-                        token : "string.attribute-value.xml",
+                        token: "string.attribute-value.xml",
                         regex: '"',
                         next: "pop"
                     },
                     {
-                        include : "attr_reference"
+                        include: "attr_reference"
                     },
                     {
-                        defaultToken : "string.attribute-value.xml"
+                        defaultToken: "string.attribute-value.xml"
                     }
                 ]
             }
@@ -245,7 +238,6 @@ ace.define('ace/mode/exceed_view_highlight_rules',["require","exports","module"]
             }
         ]);
 
-
         //console.log("view",JSON.stringify(this.$rules['attribute_value'], null, "  "));
         this.normalizeRules();
     };
@@ -257,60 +249,67 @@ ace.define('ace/mode/exceed_view_highlight_rules',["require","exports","module"]
 
 ace.define('ace/mode/exceed_view',["require","exports","module"], function(ace_require, exports, module) {
 
-    var oop = ace_require("ace/lib/oop");
-    var XmlMode = ace_require("ace/mode/xml").Mode;
+    const oop = ace_require("ace/lib/oop");
+    const XmlMode = ace_require("ace/mode/xml").Mode;
 
-    var ExceedViewHighlightRules = ace_require("ace/mode/exceed_view_highlight_rules").ExceedViewHighlightRules;
+    const store = require("../../service/store").default;
 
-    var Mode = function() {
+    const ExceedViewHighlightRules = ace_require("ace/mode/exceed_view_highlight_rules").ExceedViewHighlightRules;
+
+    const Mode = function ()
+    {
         XmlMode.call(this);
         this.HighlightRules = ExceedViewHighlightRules;
 
-        var old = this.createWorker;
+        const old = this.createWorker;
         this.createWorker = function (session)
         {
-            var worker = old(session);
-            worker.first = true;
+            const worker = old(session);
+            //worker.first = true;
 
             worker.on("error", (e) =>
             {
+                //console.log("worker error", e);
+
                 if (session.suppressPreviewOnce)
                 {
                     session.suppressPreviewOnce = false;
                     return;
                 }
 
-                var annos = session.getAnnotations();
+                const annos = session.getAnnotations();
 
-                if (!annos.length && !session.getUndoManager().isClean())
+                if (!annos.length)
                 {
-                    var model = Tokens.toModel(session);
+                    Tokens.syncSession(store, session);
 
-                    var viewService = getViewService();
+                    const state = store.getState();
+                    const document = getCurrentViewDocument(state);
+                    const viewModel = getViewModel(state);
 
-                    if (model && model.root && viewService.getViewModel().name === session.exceedViewName)
+                    if (document.viewName === viewModel.name)
                     {
-                        viewService.fetch({ preview: model }).then(function (data)
+                        store.dispatch(
+                            refetchView()
+                        )
+                        .then(function (data)
                         {
-                            var expressionErrors = data.previewErrors;
-                            if (expressionErrors)
+                            if (data.error)
                             {
-                                Tokens.fillInErrorLocations(session, expressionErrors);
-                                session.setAnnotations(annos.concat(expressionErrors));
+                                const expressionErrors = data.detail;
+                                if (expressionErrors)
+                                {
+                                    Tokens.fillInErrorLocations(session, expressionErrors);
+                                    session.setAnnotations(annos.concat(expressionErrors));
+                                }
                             }
-                            else
-                            {
-                                return viewService.render(
-                                    data.viewModel,
-                                    data.viewData
-                                );
-                            }
-                            worker.first = false;
+                            //worker.first = false;
                         })
                         .catch(function (e)
                         {
                             console.error(e);
-                            return viewService.renderError(new Error(JSON.stringify(e)), true);
+
+                            showError(new Error(JSON.stringify(e)));
                         });
                     }
                 }

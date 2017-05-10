@@ -2,6 +2,8 @@ package de.quinscape.exceed.runtime.application;
 
 public class ComponentError
 {
+    private final String content;
+
     private final String text;
 
     private final String value;
@@ -11,8 +13,11 @@ public class ComponentError
     private final String attrName;
 
 
-    public ComponentError(String value, Throwable expressionError, int componentIndex, String attrName)
+    public ComponentError(String content, String value, Throwable expressionError, int componentIndex, String attrName)
+
+
     {
+        this.content = content;
         text = expressionError.getMessage();
         this.value = value;
         this.componentIndex = componentIndex;
@@ -47,5 +52,11 @@ public class ComponentError
     public String getAttrName()
     {
         return attrName;
+    }
+
+
+    public String getContent()
+    {
+        return content;
     }
 }

@@ -37,7 +37,7 @@ var match = {
             console.warn("matchesSelector: Using slow querySelectAll matching");
             return function (element, selector)
             {
-                if (elem.nodeType !== Node.ELEMENT_NODE)
+                if (element.nodeType !== Node.ELEMENT_NODE)
                 {
                     return false;
                 }

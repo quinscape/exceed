@@ -9,6 +9,8 @@ import de.quinscape.exceed.runtime.service.websocket.MessageContext;
 import de.quinscape.exceed.runtime.util.RequestUtil;
 import org.apache.commons.io.FileUtils;
 
+import java.util.Map;
+
 public class SaveViewHandler
     implements EditorMessageHandler<SaveViewRequest>
 {
@@ -16,28 +18,33 @@ public class SaveViewHandler
     @Override
     public void handle(MessageContext context, SaveViewRequest msg) throws Exception
     {
-        String viewName = msg.getViewName();
-
-        if (viewName == null)
+        for (Map.Entry<String, String> entry : msg.getDocuments().entrySet())
         {
-            throw new IllegalArgumentException("viewName can't be null");
+            final String viewName = entry.getKey();
+            final String json = entry.getValue();
+
+            if (viewName == null)
+            {
+                throw new IllegalArgumentException("viewName can't be null");
+            }
+
+            RuntimeApplication runtimeApplication = context.getRuntimeContext().getRuntimeApplication();
+
+            View view = runtimeApplication.getApplicationModel().getView(viewName);
+
+            AppResource resource = view.getResource();
+
+            if (resource.isWritable())
+            {
+                FileUtils.writeStringToFile(((FileAppResource) resource).getFile(), json, RequestUtil.UTF_8);
+            }
+            else
+            {
+                context.reply(msg, new Error("Cannot write resource " + resource));
+                return;
+            }
         }
-
-        RuntimeApplication runtimeApplication = context.getRuntimeContext().getRuntimeApplication();
-
-        View view = runtimeApplication.getApplicationModel().getView(viewName);
-
-        AppResource resource = view.getResource();
-
-        if (resource instanceof FileAppResource)
-        {
-            FileUtils.writeStringToFile(((FileAppResource) resource).getFile(), msg.getJson(), RequestUtil.UTF_8);
-            context.reply(msg, true);
-        }
-        else
-        {
-            context.reply(msg, new Error("Cannot write resource " + resource));
-        }
+        context.reply(msg, true);
     }
 
 

@@ -7,8 +7,6 @@ import java.util.Objects;
 
 public final class ScopeDeclaration
 {
-    private final ContextModel context;
-
     private final String name;
 
     private final String key;
@@ -18,13 +16,8 @@ public final class ScopeDeclaration
     private final ScopedPropertyModel model;
 
 
-    public ScopeDeclaration(ContextModel context, String name, String key, ScopeType scopeType, ScopedPropertyModel model)
+    public ScopeDeclaration(String name, String key, ScopeType scopeType, ScopedPropertyModel model)
     {
-        if (context == null)
-        {
-            throw new IllegalArgumentException("context can't be null");
-        }
-
         if (name == null)
         {
             throw new IllegalArgumentException("name can't be null");
@@ -41,22 +34,12 @@ public final class ScopeDeclaration
         }
 
 
-        this.context = context;
         this.name = name;
         this.key = key;
         this.scopeType = scopeType;
         this.model = model;
     }
 
-    // for now only JSONified for debug/toString() purposes
-    @JSONProperty(ignore = true)
-    public ContextModel getContext()
-    {
-        return context;
-    }
-
-
-    @JSONProperty(ignore = true)
     public String getName()
     {
         return name;

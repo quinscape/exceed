@@ -116,7 +116,7 @@ public class FileResourceRoot
     @Override
     public String getName()
     {
-        return baseDirectory.getName();
+        return baseDirectory.getPath();
     }
 
     @Override

@@ -1,12 +1,11 @@
 package de.quinscape.exceed.runtime.component;
 
-import de.quinscape.exceed.component.ComponentDescriptor;
 import de.quinscape.exceed.expression.TokenMgrError;
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.component.ComponentDescriptor;
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.runtime.expression.query.InvalidFieldReferenceException;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryDomainType;
-import de.quinscape.exceed.runtime.expression.query.QueryTransformationException;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
 import de.quinscape.exceed.runtime.schema.StorageConfiguration;
 import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
@@ -20,7 +19,7 @@ import java.util.Map;
 
 /**
  * Data provider implementation for the default query definition mechanism. Can be replaced
- * by setting an alternate DataProvider in {@link ComponentDescriptor#dataProviderName}
+ * by setting an alternate DataProvider in {@link ComponentDescriptor#dataProvider}
  */
 public class QueryDataProvider
     implements DataProvider
@@ -40,11 +39,12 @@ public class QueryDataProvider
 
 
     @Override
-    public Map<String, Object> provide(DataProviderContext dataProviderContext, ComponentModel componentModel, Map
-        <String, Object> vars)
+    public Map<String, Object> provide(
+        DataProviderContext dataProviderContext,
+        ComponentModel componentModel,
+        Map<String, Object> vars
+    )
     {
-
-
         ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
         if (componentRegistration == null)
         {
@@ -52,35 +52,38 @@ public class QueryDataProvider
             return null;
         }
 
-        Map<String, QueryDefinition> runtimeQueries = prepare(dataProviderContext, componentModel, vars);
-        if (runtimeQueries == null)
+        PreparedQueries queries = prepare(dataProviderContext, componentModel, vars);
+        if (queries == null)
         {
             return null;
         }
 
+
+        Map<String, QueryDefinition> runtimeQueries = queries.getQueryDefinitions();
         registerQueryTranslations(dataProviderContext, runtimeQueries);
 
         Map<String, Object> map = new HashMap<>();
+
+
         for (Map.Entry<String, QueryDefinition> entry : runtimeQueries.entrySet())
         {
             String name = entry.getKey();
             QueryDefinition queryDefinition = entry.getValue();
-
             final String config = queryDefinition.getQueryDomainType().getType().getStorageConfiguration();
             final StorageConfiguration configuration = storageConfigurationRepository.getConfiguration(config);
             QueryExecutor executor = configuration.getQueryExecutor();
 
             if (executor == null)
             {
-                throw new UnsupportedOperationException("Querying not supported by storage config '"  +  config + "'");
+                throw new UnsupportedOperationException("Querying not supported by storage config '" + config + "'");
             }
 
             Object result = executor.execute(dataProviderContext.getRuntimeContext(), queryDefinition);
-
             log.debug("Result: {}", result);
-
             map.put(name, result);
         }
+
+        map.putAll(queries.getQueryErrors());
 
         return map;
     }
@@ -118,10 +121,13 @@ public class QueryDataProvider
         // intentionally empty
     }
 
-    private Map<String, QueryDefinition> prepare(DataProviderContext dataProviderContext, ComponentModel elem,
-                                                 Map<String,
-        Object> vars)
+    private PreparedQueries prepare(
+        DataProviderContext dataProviderContext,
+        ComponentModel elem,
+        Map<String,Object> vars
+    )
     {
+        final PreparedQueries preparedQueries = new PreparedQueries();
         ComponentRegistration registration = elem.getComponentRegistration();
         Map<String, Object> queries = registration.getDescriptor().getQueries();
         if (queries == null)
@@ -129,7 +135,6 @@ public class QueryDataProvider
             return null;
         }
 
-        Map<String, QueryDefinition> preparedQueries = new HashMap<>();
         for (Map.Entry<String, Object> entry : queries.entrySet())
         {
             String name = entry.getKey();
@@ -149,25 +154,24 @@ public class QueryDataProvider
                 {
                     QueryDefinition definition = queryTransformer.transform(dataProviderContext.getRuntimeContext(),
                         queryExpression, elem, vars);
-                    preparedQueries.put(name, definition);
+
+                    preparedQueries.addDefinition(name, definition);
                 }
-                catch (QueryTransformationException e)
+                catch(InvalidFieldReferenceException e)
                 {
-                    throw new DataProviderPreparationException(elem.getComponentId(), "Error parsing expression '" +
-                        name + "' = " + queryExpression + " of " + elem, e.getCause());
+                    preparedQueries.addError(name, new QueryError(name ,"Invalid field reference in query", e));
                 }
                 catch (Exception e)
                 {
-                    throw new DataProviderPreparationException(elem.getComponentId(), "Error parsing expression '" +
-                        name + "' = " + queryExpression + " of " + elem, e);
+                    preparedQueries.addError(name, new QueryError(name,"Error parsing expression '" +
+                        name + "' = " + queryExpression + " of " + elem, e));
                 }
                 catch (TokenMgrError e)
                 {
-                    throw new DataProviderPreparationException(elem.getComponentId(), "Token error parsing expression" +
-                        " '" + name + "' = " + queryExpression + " of " + elem, e);
+                    preparedQueries.addError(name, new QueryError(name,"Token error parsing expression" +
+                        " '" + name + "' = " + queryExpression + " of " + elem, e));
                 }
             }
-
         }
         return preparedQueries;
     }

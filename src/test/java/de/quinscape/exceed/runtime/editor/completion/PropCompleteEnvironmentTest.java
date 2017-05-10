@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.editor.completion;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.quinscape.exceed.TestDomainServiceBase;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumType;
@@ -63,7 +64,7 @@ public class PropCompleteEnvironmentTest
             return attrValue != null && attrValue.getValue().equals("xxx");
         });
 
-        TestRegistry testRegistry = TestRegistry.loadComponentPackages("datagrid");
+        TestRegistry testRegistry = TestRegistry.loadComponentPackages("std/datagrid");
 
         ComponentUtil.updateComponentRegsAndParents(testRegistry, viewModel, null);
 
@@ -102,29 +103,8 @@ public class PropCompleteEnvironmentTest
     }
 
     private class TestDomainService
-        implements DomainService
+        extends TestDomainServiceBase
     {
-        @Override
-        public void init(RuntimeApplication runtimeApplication, String schema)
-        {
-
-        }
-
-
-        @Override
-        public String toJSON(Object domainObject)
-        {
-            return null;
-        }
-
-
-        @Override
-        public <T> T toDomainObject(Class<T> cls, String json)
-        {
-            return null;
-        }
-
-
         @Override
         public DomainType getDomainType(String name)
         {
@@ -143,14 +123,6 @@ public class PropCompleteEnvironmentTest
             return domainType;
         }
 
-
-        @Override
-        public String getSchema()
-        {
-            return "test";
-        }
-
-
         @Override
         public Map<String, DomainType> getDomainTypes()
         {
@@ -160,69 +132,6 @@ public class PropCompleteEnvironmentTest
                 "Qux", getDomainType("Baz")
             );
         }
-
-
-        @Override
-        public Map<String, EnumType> getEnums()
-        {
-            return Collections.emptyMap();
-        }
-
-
-        @Override
-        public DomainObject create(String type, String id)
-        {
-            return null;
-        }
-
-
-        @Override
-        public DomainObject read(String type, String id)
-        {
-            return null;
-        }
-
-        @Override
-        public void delete(DomainObject genericDomainObject)
-        {
-
-        }
-
-        @Override
-        public void insert(DomainObject genericDomainObject)
-        {
-
-        }
-
-
-        @Override
-        public void insertOrUpdate(DomainObject genericDomainObject)
-        {
-
-        }
-
-
-        @Override
-        public void update(DomainObject genericDomainObject)
-        {
-
-        }
-
-
-        @Override
-        public PropertyConverter getPropertyConverter(String name)
-        {
-            return null;
-        }
-
-
-        @Override
-        public StorageConfiguration getStorageConfiguration(String domainType)
-        {
-            return null;
-        }
-
-
     }
 
 }

@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.domain;
 
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
@@ -28,6 +29,8 @@ public class DomainServiceImpl
 
     private final StorageConfigurationRepository storageConfigurationRepository;
 
+    private final Map<Class<?>, DomainType> modelDomainTypes;
+
     private final JSONParser parser;
 
     private String schema;
@@ -36,14 +39,17 @@ public class DomainServiceImpl
 
     private DataGraphService dataGraphService;
 
+    private Map<String, DomainType> domainTypes;
+
 
     public DomainServiceImpl(
         Map<String, PropertyConverter> converters,
-        StorageConfigurationRepository storageConfigurationRepository
-    )
+        StorageConfigurationRepository storageConfigurationRepository,
+        Map<Class<?>, DomainType> modelDomainTypes)
     {
         this.converters = converters;
         this.storageConfigurationRepository = storageConfigurationRepository;
+        this.modelDomainTypes = modelDomainTypes;
 
         parser = new JSONParser();
         parser.addObjectFactory(new DomainFactory(this));
@@ -64,8 +70,16 @@ public class DomainServiceImpl
         this.runtimeApplication = runtimeApplication;
         this.schema = schema;
 
-        this.dataGraphService = new DataGraphService(runtimeApplication.getApplicationModel().getDomainTypes(),
-            converters);
+        final ApplicationModel applicationModel = runtimeApplication.getApplicationModel();
+        final Map<String, DomainType> domainTypes = new HashMap<>(applicationModel.getDomainTypes());
+
+        modelDomainTypes.values().forEach( domainType ->
+            domainTypes.put(domainType.getName(), domainType)
+        );
+
+        this.domainTypes = domainTypes;
+
+        this.dataGraphService = new DataGraphService(this, domainTypes, converters);
     }
 
 
@@ -93,7 +107,12 @@ public class DomainServiceImpl
     @Override
     public DomainType getDomainType(String name)
     {
-        return runtimeApplication.getApplicationModel().getDomainType(name);
+        final DomainType domainType = domainTypes.get(name);
+        if (domainType == null)
+        {
+            throw new DomainTypeNotFoundException("Domain type '" + name + "' not found");
+        }
+        return domainType;
     }
 
 
@@ -107,7 +126,7 @@ public class DomainServiceImpl
     @Override
     public Map<String, DomainType> getDomainTypes()
     {
-        return runtimeApplication.getApplicationModel().getDomainTypes();
+        return domainTypes;
     }
 
 
@@ -235,7 +254,7 @@ public class DomainServiceImpl
     @Override
     public StorageConfiguration getStorageConfiguration(String domainType)
     {
-        final DomainType type = runtimeApplication.getApplicationModel().getDomainType(domainType);
+        final DomainType type = domainTypes.get(domainType);
         final String config = type.getStorageConfiguration();
         return storageConfigurationRepository.getConfiguration(config);
     }

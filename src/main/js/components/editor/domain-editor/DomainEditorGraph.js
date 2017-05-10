@@ -28,7 +28,6 @@ const NodeType = DomainGraph.NodeType;
 
 var Entity = React.createClass({
 
-
     onUpdate: function ()
     {
         this.forceUpdate();
@@ -36,24 +35,27 @@ var Entity = React.createClass({
 
     onInteraction: function (pos)
     {
-        // var layout = this.props.positionLink.value;
-        //
-        // var yStart = layout.y - layout.height/2 + layout.headerHeight + layout.lineHeight * 2;
-        //
-        // if (pos.y > yStart && pos.y < yStart + layout.height)
-        // {
-        //     console.log("SUB POS: ", ((pos.y - yStart) / layout.lineHeight)|0)
-        // }
+        var layout = this.props.position;
 
+        //console.log("ENTITY click at", pos.x, pos.y);
+
+        var yStart = -layout.height/2 + layout.headerHeight + layout.lineHeight;
+
+        var line = ((pos.y - yStart) / layout.lineHeight)|0;
+        if (line < 0 || line >= this.props.model.properties.length)
+        {
+            line = null;
+        }
+
+        //console.log("INTERACT", line);
         GUIContext.focus(this.props.model.name);
-//        console.log("INTERACT");
-        this.props.onInteraction && this.props.onInteraction.call(null, this.props.model.name);
+        this.props.onInteraction && this.props.onInteraction.call(null, this.props.model.name, line);
     },
 
     shouldComponentUpdate: function(nextProps, nextState)
     {
         return (
-            this.props.positionLink.value !== nextProps.positionLink.value ||
+            this.props.position !== nextProps.position ||
             this.props.model !== nextProps.model
         );
     },
@@ -68,7 +70,7 @@ var Entity = React.createClass({
             var properties = model.properties;
 
             var elementId = model.name;
-            var layout = this.props.positionLink.value;
+            var layout = this.props.position;
 
             //console.log(JSON.stringify(layout));
 
@@ -82,6 +84,8 @@ var Entity = React.createClass({
 
             var x = layout.x - layout.width/2;
             var y = layout.y - layout.height/2;
+
+            //console.log("Entity '" +  elementId + "': " + x + "," + y + " to " + (x + layout.width) + "," + (y + layout.height));
 
             var xPos = x + 10;
             var yPos = y + layout.headerHeight;
@@ -132,8 +136,24 @@ var Entity = React.createClass({
             }
 
             return (
-                <GUIElement className="entity" id={ elementId } positionLink={ this.props.positionLink } onInteraction={ this.onInteraction } onUpdate={ this.onUpdate }>
-                    <rect x={ x } y={ y } width={ layout.width } height={ layout.height } stroke={ entityBorderColor } fill={ entityFillColor } rx="4" ry="4"/>
+                <GUIElement
+                    id={ elementId }
+                    className="entity"
+                    position={ this.props.position }
+                    updatePosition={ this.props.updatePosition }
+                    onInteraction={ this.onInteraction }
+                    onUpdate={ this.onUpdate }
+                >
+                    <rect
+                        x={ x }
+                        y={ y }
+                        width={ layout.width }
+                        height={ layout.height }
+                        stroke={ entityBorderColor }
+                        fill={ entityFillColor }
+                        rx="4"
+                        ry="4"
+                    />
                     { texts }
                 </GUIElement>
             );
@@ -232,9 +252,41 @@ var DomainEditorGraph = React.createClass({
 
         if (permanent)
         {
-            var link = this.props.positionsLink;
 
-            if (!link.value)
+            var link = this.props.positionsLink;
+            const haveExistingLayout = !!link.value;
+
+            if (node.type === NodeType.ENTITY)
+            {
+                var nodes = graph.nodes;
+                var changedId = node.id;
+
+                // FK nodes should be all at the end of the nodes array
+
+                var index = nodes.length - 1;
+                var fkNode;
+
+                var changedFkNodes = [];
+                while ( (fkNode = nodes[index]).type === NodeType.FK)
+                {
+
+                    var srcId = fkNode.srcId;
+                    var dstId = fkNode.dstId;
+                    // does the transition for the FK node touch the currently moved entity node?
+                    if (srcId === changedId || dstId === changedId)
+                    {
+                        // yes -> recalculate position
+                        DomainGraph.setFKNodePosition(nodes[srcId], nodes[dstId], fkNode);
+                        if (haveExistingLayout)
+                        {
+                            changedFkNodes.push(fkNode);
+                        }
+                    }
+                    index--;
+                }
+            }
+
+            if (!haveExistingLayout)
             {
                 var fullLayout = {};
                 var lookup = graph.lookup;
@@ -253,15 +305,25 @@ var DomainEditorGraph = React.createClass({
             }
             else
             {
-                link.requestChange(
-                    immutableUpdate(link.value,
-                    {
-                        [name] : { $set: {
-                            x: layout.x,
-                            y: layout.y
-                        } }
-                    })
-                );
+                var spec = {
+                    [name] : { $set: {
+                        x: layout.x,
+                        y: layout.y
+                    } }
+                };
+
+                for (var i = 0; i < changedFkNodes.length; i++)
+                {
+                    fkNode = changedFkNodes[i];
+                    spec[fkNode.name] = {
+                        $set: {
+                            x: fkNode.x,
+                            y: fkNode.y
+                        }
+                    };
+                }
+
+                link.requestChange( immutableUpdate(link.value, spec));
             }
         }
     },
@@ -284,8 +346,9 @@ var DomainEditorGraph = React.createClass({
                     <Entity
                         key={ name }
                         model={ domainTypes[name] }
-                        onInteraction={ (name) => { this.props.onInteraction(name) } }
-                        positionLink={ new ValueLink(node, this.onLayoutChange ) }
+                        onInteraction={ this.props.onInteraction }
+                        position={ node }
+                        updatePosition={this.onLayoutChange }
                     />
                 );
             }
@@ -313,7 +376,12 @@ var DomainEditorGraph = React.createClass({
                         y2={ y2 }
                     />,
 
-                    <Handle id={ key } key={ key } positionLink={  new ValueLink(node, this.onLayoutChange )  } />
+                    <Handle
+                        id={ key }
+                        key={ key }
+                        position={ node }
+                        updatePosition={ this.onLayoutChange }
+                    />
                 );
             }
         }

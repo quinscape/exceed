@@ -1,77 +1,90 @@
-const React = require("react");
-const cx = require("classnames");
+import React, {Component} from "react"
+import cx from "classnames"
 
-module.exports = function (name, defaultClass)
-{
-    return React.createClass({
+import { navigateView } from "../actions/view"
 
-        displayName: name,
+class ActionComponent extends Component {
 
-        propTypes: {
-            text: React.PropTypes.string,
-            icon: React.PropTypes.string,
-            onClick: React.PropTypes.func
-        },
+    static propTypes = {
+        defaultClass: React.PropTypes.string.isRequired,
+        href: React.PropTypes.string,
+        text: React.PropTypes.string,
+        icon: React.PropTypes.string,
+        onClick: React.PropTypes.func,
+        progressive: React.PropTypes.bool
+    };
 
-        getDefaultProps: function ()
+    static defaultProps = {
+        icon: "",
+        text: "",
+        href: "#",
+        progressive: true
+    };
+
+    onClick = (ev) =>
+    {
+        try
         {
-            return {
-                icon: "",
-                text: ""
-            }
-        },
 
-        onClick: function (ev)
-        {
-            try
+            if (this.props.onClick)
             {
-
-                if (this.props.onClick)
+                if (!this.props.disabled)
                 {
-                    if (!this.props.disabled)
-                    {
-                        this.props.onClick(ev);
-                    }
+                    this.props.onClick(ev);
+                }
+            }
+            else if (this.props.href)
+            {
+                if (this.props.progressive)
+                {
+                    navigateView({
+                        url: this.props.href
+                    });
                 }
                 else
                 {
-                    console.warn("No onClick for Link '" + this.props.text + "'");
+                    window.location.href = this.props.href;
                 }
-
             }
-            catch (err)
+            else
             {
-                console.error("Error in Link", err);
+                console.warn("No target set for Link '" + this.props.text + "'");
             }
 
-            ev.preventDefault();
-        },
-
-        render: function ()
-        {
-            var icon = this.props.icon;
-            var text = this.props.text;
-
-            var disabled = this.props.disabled;
-
-            var propClasses = this.props.className;
-
-            return (
-                React.createElement(disabled ? "span" : "a", {
-                        href: this.props.href || "#",
-                        className: cx(
-                            "btn app-link",
-                            !propClasses || propClasses.indexOf("btn-") < 0 ? defaultClass : null,
-                            propClasses,
-                            disabled && "disabled"),
-                        onClick: this.onClick,
-                        accessKey: this.props.accessKey
-                    },
-                    icon && <span className={ "glyphicon glyphicon-" + icon } aria-hidden="true"/>,
-                    text && " " + this.props.text
-                )
-            );
         }
-    });
+        catch (err)
+        {
+            console.error("Error in Link", err);
+        }
 
-};
+        ev.preventDefault();
+    };
+
+    render()
+    {
+        const icon = this.props.icon;
+        const text = this.props.text;
+
+        const disabled = this.props.disabled;
+
+        let propClasses = this.props.className;
+
+        return (
+            React.createElement(disabled ? "span" : "a", {
+                    href: this.props.href,
+                    className: cx(
+                        "btn app-link",
+                        !propClasses || propClasses.indexOf("btn-") < 0 ? this.props.defaultClass : null,
+                        propClasses,
+                        disabled && "disabled"),
+                    onClick: this.onClick,
+                    accessKey: this.props.accessKey
+                },
+                icon && <span aria-hidden="true" className={ "glyphicon glyphicon-" + icon }/>,
+                text && " " + this.props.text
+            )
+        );
+    }
+}
+
+export default ActionComponent

@@ -1,20 +1,15 @@
 {
+    "context": {
+        "properties": {
+            "layout": {
+                "type": "PlainText",
+                "defaultValue": "'Layout Property'"
+            }
+        }
+    },
     "root": {
-        "name" : "View",
+        "name" : "div",
         "kids": [
-            {
-                "name": "ViewContext",
-                "kids": [
-                    {
-                        "name": "Property",
-                        "attrs": {
-                            "name": "layout",
-                            "type": "PlainText",
-                            "defaultValue": "'Layout Property'"
-                        }
-                    }
-                ]
-            },
             {
                 "name": "div",
                 "attrs": {
@@ -24,7 +19,7 @@
                     {
                         "name": "[String]",
                         "attrs": {
-                            "value": "{ 'NAV:  + layout' }"
+                            "value": "{ 'NAVIG '+ layout }"
                         }
                     }
                 ]

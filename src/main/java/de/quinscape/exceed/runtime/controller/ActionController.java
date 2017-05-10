@@ -17,6 +17,7 @@ import de.quinscape.exceed.runtime.service.DomainServiceRepository;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
 import de.quinscape.exceed.runtime.util.ContentType;
 import de.quinscape.exceed.runtime.util.DomainUtil;
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +58,6 @@ public class ActionController
 {
     private final static Logger log = LoggerFactory.getLogger(ActionController.class);
 
-    private static final String RESULT_OK = "{\"ok\":true}";
 
 
     @Autowired
@@ -107,7 +107,9 @@ public class ActionController
         RuntimeApplication runtimeApplication = applicationService.getRuntimeApplication(servletContext, appName);
         if (runtimeApplication == null)
         {
-            return new ResponseEntity<String>("{\"ok\":false,\"error\":\"Action not found\"}", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<String>("{\"ok\":f" +
+                "" +
+                "alse,\"error\":\"Action not found\"}", HttpStatus.NOT_FOUND);
         }
 
         Class<? extends ActionModel> actionClass = modelsByName.get(actionName);
@@ -116,7 +118,7 @@ public class ActionController
             throw new ActionNotFoundException("Action '" + actionName + "' not found.");
         }
 
-        SessionContext sessionContext = scopedContextFactory.getSessionContext(request, appName, runtimeApplication.getApplicationModel().getSessionContext());
+        SessionContext sessionContext = scopedContextFactory.getSessionContext(request, appName, runtimeApplication.getApplicationModel().getSessionContextModel());
 
         final ScopedContextChain scopedContextChain = new ScopedContextChain(
             Arrays.asList(
@@ -134,10 +136,10 @@ public class ActionController
             domainServiceRepository.getDomainService(appName)
         );
 
-        RuntimeContextHolder.register(runtimeContext);
+        RuntimeContextHolder.register(runtimeContext, request);
         scopedContextFactory.initializeContext(runtimeContext, sessionContext);
 
-        RuntimeContextHolder.register(runtimeContext);
+        RuntimeContextHolder.register(runtimeContext, request);
 
         ActionModel model = runtimeContext.getDomainService().toDomainObject(actionClass, actionModelJSON);
         convertProperties(runtimeContext, model);
@@ -151,7 +153,7 @@ public class ActionController
 
             if (Boolean.TRUE.equals(result))
             {
-                return new ResponseEntity<String>(RESULT_OK, HttpStatus.OK);
+                return new ResponseEntity<String>(JSONUtil.ok(), HttpStatus.OK);
             }
             else
             {
@@ -163,10 +165,10 @@ public class ActionController
         {
             log.error("Error executing action " + action + ", model = " + actionModelJSON, e);
 
-            String errorJSON = "{\"ok\":false,\"error\":" + resultGenerator.quote("Action " +
-                actionModelJSON + " failed") + "}";
-
-            return new ResponseEntity<String>(errorJSON, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>(
+                JSONUtil.error("Action " + actionModelJSON + " failed"),
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
         finally
         {
@@ -200,8 +202,7 @@ public class ActionController
     public ResponseEntity<String> actionNotFound(HttpServletResponse response, ActionNotFoundException e)
     {
         response.setContentType(ContentType.JSON);
-        return new ResponseEntity<String>("{\"ok\":false,\"error\":" + resultGenerator.quote(e.getMessage()) + "}",
-            HttpStatus.NOT_FOUND);
+        return new ResponseEntity<String>(JSONUtil.error(e), HttpStatus.NOT_FOUND);
     }
 
 

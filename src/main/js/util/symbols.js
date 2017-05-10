@@ -1,5 +1,5 @@
 
-var re = /^symbol:(.*?):/
+var re = /^symbol:(.*?):/;
 
 function findSymbols(symbols, elem)
 {

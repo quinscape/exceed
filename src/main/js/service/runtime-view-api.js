@@ -1,17 +1,9 @@
-var appUri = require("../util/app-uri");
+import appUri from "../util/app-uri";
+import Scope from "./scope"
 
-var Scope = require("./scope");
-
-var viewService;
-
-function getViewService()
-{
-    if (!viewService)
-    {
-        viewService = require("../service/view");
-    }
-    return viewService;
-}
+import store from "../service/store"
+import { navigateView } from "../actions/view"
+import { getViewModel, getViewState, getLocation } from "../reducers"
 
 /**
  * Runtime view API. Gets created in the automatically rendered code for views and assigned to the variable "_v".
@@ -21,12 +13,16 @@ function getViewService()
  * @param data      view data
  * @constructor
  */
-function RTView(model, data)
+function RTView(store)
 {
-    this.name = model.name;
-    this.root = model.root;
-    this.data = data;
-    this.viewModel = model;
+
+    const viewModel = getViewModel(store.getState());
+
+    this.store = store;
+    this.name = viewModel.name;
+    this.content = viewModel.content;
+    //this.data = data;
+    this.viewModel = viewModel;
 }
 
 /**
@@ -53,8 +49,9 @@ RTView.prototype.inject = function (props, data)
 
 RTView.prototype.param = function (name)
 {
+    const state = store.getState();
     /** @see LocationParamsProvider.java */
-    return this.data._exceed.location.params[name];
+    return getLocation(state).params[name];
 };
 
 
@@ -68,20 +65,22 @@ RTView.prototype.param = function (name)
  */
 RTView.prototype.navigateTo = function (location, params)
 {
-    return getViewService().navigateTo({
-        url: appUri( location, params)
-    });
-
+    return store.dispatch(
+        navigateView({
+            url: appUri( location, params)
+        })
+    );
 };
 
 RTView.prototype.uri = require("../util/uri");
 
 RTView.prototype.transition = function (name)
 {
-    var viewState = getViewService().getRuntimeInfo().viewState;
+    const state = store.getState();
+    const viewState = getViewState(state);
     if (!viewState)
     {
-        throw new Error("transitionIsDiscard but no view state");
+        throw new Error("transition but no view state");
     }
 
     var transition = viewState.transitions[name];

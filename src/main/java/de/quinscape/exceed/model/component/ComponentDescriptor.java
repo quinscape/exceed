@@ -51,20 +51,11 @@ public class ComponentDescriptor
 
     private final Set<String> classes;
 
-    /**
-     * Name of spring bean implementing the {@link DataProvider} interface to use as an alternate data provider to use for this component.
-     * The default is to use {@link QueryDataProvider}.
-     */
-    private final String dataProviderName;
-    /**
-     * Defines the symbolic type name of the context provided by this component. Other components can receive that component type either
-     * by inheriting it from the first parent to offer any context or by specifying a context type they depend on.
-     */
+    private final String dataProvider;
+
     private final String providesContext;
 
     private final Map<String,ComponentPropWizard> componentPropWizards;
-
-    private final Map<String,String> queryExecutors;
 
     public ComponentDescriptor(
         @JSONParameter("vars")
@@ -89,34 +80,27 @@ public class ComponentDescriptor
         List<String> classes,
 
         @JSONParameter("dataProvider")
-        String dataProviderName,
+        String dataProvider,
 
         @JSONParameter("childRule")
         String childRule,
-
-        @JSONParameter("queryExecutors")
-        Map<String, String> queryExecutors,
 
         @JSONParameter("providesContext")
         String providesContext,
 
         @JSONParameter("parentRule")
-        String parentRule,
-        @JSONParameter("viewContext")
-        ComponentViewContext componentViewContext
+        String parentRule
     ) throws ParseException
 
     {
         this.vars = vars;
         this.parentRule = parentRule;
-        this.componentViewContext = componentViewContext;
         this.queries = Util.immutableMap(queries);
         this.propTypes = Util.immutableMap(propTypes);
         this.templates = Util.immutableList(templates);
         this.classes = Util.immutableSet(classes);
-        this.dataProviderName = dataProviderName;
+        this.dataProvider = dataProvider;
         this.childRule = childRule;
-        this.queryExecutors = Util.immutableMap(queryExecutors);
         this.providesContext = providesContext;
 
         childRuleExpression = ExpressionParser.parse(childRule);
@@ -169,7 +153,7 @@ public class ComponentDescriptor
      */
     public String getDataProvider()
     {
-        return dataProviderName;
+        return dataProvider;
     }
 
 
@@ -189,7 +173,6 @@ public class ComponentDescriptor
      * by inheriting it from the first parent to offer any context or by specifying a context type they depend on.
      */
     @JSONProperty(ignoreIfNull = true)
-
     public String getProvidesContext()
     {
         return providesContext;
@@ -246,9 +229,4 @@ public class ComponentDescriptor
         return classes.contains(cls);
     }
 
-
-    public ComponentViewContext getComponentViewContext()
-    {
-        return componentViewContext;
-    }
 }

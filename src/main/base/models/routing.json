@@ -3,6 +3,12 @@
         "/": {
             "viewName": "Home"
         },
+        "/a/longer/url": {
+            "viewName": "Home"
+        },
+        "/test": {
+            "viewName": "Test"
+        },
         "/detail/{id}": {
             "viewName": "Detail"
         },

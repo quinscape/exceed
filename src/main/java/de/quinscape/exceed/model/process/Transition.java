@@ -1,10 +1,6 @@
 package de.quinscape.exceed.model.process;
 
 import de.quinscape.exceed.expression.ASTExpression;
-import de.quinscape.exceed.expression.ExpressionParser;
-import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.runtime.ExceedRuntimeException;
-import de.quinscape.exceed.runtime.util.ExpressionUtil;
 import de.quinscape.exceed.model.annotation.Internal;
 import org.svenson.JSONProperty;
 
@@ -147,7 +143,6 @@ public class Transition
 
     /**
      * Description of the transition. 
-     * @return
      */
     public String getDescription()
     {
@@ -163,6 +158,5 @@ public class Transition
             + ", '" + from + "' => '" + to + "'"
             ;
     }
-
 
 }

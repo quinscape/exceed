@@ -18,9 +18,7 @@ import de.quinscape.exceed.runtime.scope.ScopedContext;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Encapsulates the necessary context for a view data provisioning invocation for
@@ -46,8 +44,6 @@ public final class DataProviderContext
     private final ComponentModel overridden;
 
     private final Map<String, Object> varsOverride;
-
-    public final static String PROVIDER_TRANSLATIONS = "providerTranslations";
 
     public DataProviderContext(ViewDataService viewDataService, RuntimeContext runtimeContext, ExpressionService expressionService, String viewName, ProcessExecutionState state, ViewData viewData, ComponentModel overridden, Map<String, Object> varsOverride)
     {
@@ -195,33 +191,18 @@ public final class DataProviderContext
     }
 
 
-    public void registerTranslations(String tag)
+    public void registerTranslation(String tag)
     {
-        Set<String> translations = DataProviderContext.getTranslations(viewData);
-        translations.add(tag);
+        viewData.registerTranslation(tag);
     }
-
-
-    public static Set<String> getTranslations(ViewData viewData)
-    {
-        final Map<String, Object> data = viewData.getData();
-        Set<String> translations = (Set<String>) data.get(PROVIDER_TRANSLATIONS);
-        if (translations == null)
-        {
-            translations = new HashSet<>();
-            data.put(PROVIDER_TRANSLATIONS, translations);
-        }
-        return translations;
-    }
-
 
     public void registerTranslations(DomainType type)
     {
-        registerTranslations(type.getName());
+        registerTranslation(type.getName());
 
         for (DomainProperty domainProperty : type.getProperties())
         {
-            registerTranslations(domainProperty.getTranslationTag());
+            registerTranslation(domainProperty.getTranslationTag());
         }
     }
 

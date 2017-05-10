@@ -6,7 +6,8 @@ const assign = require("object-assign");
 const keys = require("../../../util/keys");
 const values = require("../../../util/values");
 
-const DataGraph = require("../../../util/data-graph");
+// XXX: only require fixed. Needs API update to new version
+const DataGraph = require("../../../domain/graph");
 const ValueLink = require("../../../util/value-link");
 const Link = require("../../../ui/Link");
 const Button = require("../../../ui/Button");

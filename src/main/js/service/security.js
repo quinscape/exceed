@@ -1,11 +1,9 @@
-var roles;
-
-var login;
+let login , roles;
 
 module.exports = {
-    init: function (_login, rolesString)
+    init: function (_login, rolesArray)
     {
-        if (!rolesString)
+        if (!rolesArray || !rolesArray.length)
         {
             throw new Error("No roles");
         }
@@ -13,8 +11,7 @@ module.exports = {
         login = _login;
         roles = {};
 
-        var rolesArray = rolesString.replace(" ", "").split(",");
-        for (var i = 0; i < rolesArray.length; i++)
+        for (let i = 0; i < rolesArray.length; i++)
         {
             roles[rolesArray[i]] = true;
         }

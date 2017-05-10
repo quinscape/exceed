@@ -1,0 +1,794 @@
+{
+    "modelDocs": {
+        "xcd.context.ContextModel": {
+            "propertyDocs": [
+                {
+                    "name": "properties",
+                    "typeDescription": "Map of ScopedPropertyModel",
+                    "propertyDescription": "List of properties for this context.",
+                    "subTypeDocs": [
+                        "xcd.context.ScopedPropertyModel"
+                    ]
+                }
+            ],
+            "type": "xcd.context.ContextModel",
+            "locationDescription": "",
+            "classDescription": "Model for a scoped context (e.g. application context, session context, process context etc)."
+        },
+        "xcd.domain.ForeignKeyDefinition": {
+            "propertyDocs": [
+                {
+                    "name": "property",
+                    "typeDescription": "String",
+                    "propertyDescription": "Target property name. Default is <code>id</code>,",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "type",
+                    "typeDescription": "String",
+                    "propertyDescription": "Target domain type name",
+                    "subTypeDocs": []
+                }
+            ],
+            "type": "xcd.domain.ForeignKeyDefinition",
+            "locationDescription": "",
+            "classDescription": "Domain foreign key definition.\n \n  Note that not all StorageConfiguration might support foreign keys."
+        },
+        "xcd.process.Transition": {
+            "propertyDocs": [
+                {
+                    "name": "discard",
+                    "typeDescription": "boolean",
+                    "propertyDescription": "True if the transition discards user input, e.g. a \"Cancel\" transition.",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "mergeContext",
+                    "typeDescription": "boolean",
+                    "propertyDescription": "If set to <code>false</code>, the context transitioned with the executing transition is not merged\n      with an existing entity with the same id. The default is <code>true</code> which means that the\n      context object will be merged by default.",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "action",
+                    "typeDescription": "String",
+                    "propertyDescription": "Action(s) to execute for this transition.\n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "description",
+                    "typeDescription": "String",
+                    "propertyDescription": "Description of the transition. \n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "to",
+                    "typeDescription": "String",
+                    "propertyDescription": "Target state for this transition.",
+                    "subTypeDocs": []
+                }
+            ],
+            "type": "xcd.process.Transition",
+            "locationDescription": "",
+            "classDescription": "A transition within a process"
+        },
+        "xcd.process.DecisionState": {
+            "propertyDocs": [
+                {
+                    "name": "decisions",
+                    "typeDescription": "Array of DecisionModel",
+                    "propertyDescription": null,
+                    "subTypeDocs": [
+                        "xcd.process.DecisionModel"
+                    ]
+                },
+                {
+                    "name": "defaultTransition",
+                    "typeDescription": "Transition",
+                    "propertyDescription": null,
+                    "subTypeDocs": [
+                        "xcd.process.Transition"
+                    ]
+                }
+            ],
+            "type": "xcd.process.DecisionState",
+            "locationDescription": "",
+            "classDescription": null
+        },
+        "xcd.domain.DomainType": {
+            "propertyDocs": [
+                {
+                    "name": "identityGUID",
+                    "typeDescription": "String",
+                    "propertyDescription": "UUID uniquely identifying the domain type. Doesn't need to be defined but needs to remain unchanged if it exists.\n     \n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "versionGUID",
+                    "typeDescription": "String",
+                    "propertyDescription": "UUID uniquely indentifying the current version of the domain type. Doesn't need to be set, needs to be removed\n      or changed if you change the domain type manually.\n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "name",
+                    "typeDescription": "String",
+                    "propertyDescription": "Name of the top level model.\n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "pkFields",
+                    "typeDescription": "Array of String",
+                    "propertyDescription": "List of properties that form the primary key for this type.",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "storage",
+                    "typeDescription": "String",
+                    "propertyDescription": "Configures the storage configuration to use for this domain type. Default is <code>\"jooqDatabaseStorage\"</code>.",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "properties",
+                    "typeDescription": "Array of DomainProperty",
+                    "propertyDescription": "List of properties for this domain type.\n     \n      @return",
+                    "subTypeDocs": [
+                        "xcd.domain.DomainProperty"
+                    ]
+                }
+            ],
+            "type": "xcd.domain.DomainType",
+            "locationDescription": "/models/domain/system/ or /models/domain/",
+            "classDescription": "Represents an domain entity type within an exceed application.\n \n  The persistent JSON output for this model generated by  {@link de.quinscape.exceed.runtime.model.ModelJSONServiceImpl#toJSON(RuntimeApplication, DomainType, JSONFormat)}."
+        },
+        "xcd.ApplicationConfig": {
+            "propertyDocs": [
+                {
+                    "name": "schema",
+                    "typeDescription": "String",
+                    "propertyDescription": "Database schema for this application\n     \n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "sessionContext",
+                    "typeDescription": "ContextModel",
+                    "propertyDescription": "The session context model. Each property in it will exist once per user session.",
+                    "subTypeDocs": [
+                        "xcd.context.ContextModel"
+                    ]
+                },
+                {
+                    "name": "supportedLocales",
+                    "typeDescription": "Array",
+                    "propertyDescription": "Array of normalized locale specifications to support for this application.",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "applicationContext",
+                    "typeDescription": "ContextModel",
+                    "propertyDescription": "The application context for this application. Each property will exist once per application.",
+                    "subTypeDocs": [
+                        "xcd.context.ContextModel"
+                    ]
+                },
+                {
+                    "name": "name",
+                    "typeDescription": "String",
+                    "propertyDescription": "Name of the top level model.\n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "defaultLayout",
+                    "typeDescription": "String",
+                    "propertyDescription": "Returns the default layout for this application.\n     \n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "styleSheets",
+                    "typeDescription": "Array of String",
+                    "propertyDescription": "Stylesheets resource paths for this application\n     \n      @return",
+                    "subTypeDocs": []
+                }
+            ],
+            "type": "xcd.ApplicationConfig",
+            "locationDescription": "/models/config.json",
+            "classDescription": "Encapsulates general application configuration. Corresponds to the \"/models/config.json\" resource."
+        },
+        "xcd.process.ProcessState": {
+            "propertyDocs": [],
+            "type": "xcd.process.ProcessState",
+            "locationDescription": "",
+            "classDescription": null
+        },
+        "xcd.domain.PropertyType": {
+            "propertyDocs": [
+                {
+                    "name": "defaultLength",
+                    "typeDescription": "int",
+                    "propertyDescription": "Default length for this property type.\n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "converter",
+                    "typeDescription": "String",
+                    "propertyDescription": "Converter spring bean name for the property type.\n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "name",
+                    "typeDescription": "String",
+                    "propertyDescription": "Name of the top level model.\n      @return",
+                    "subTypeDocs": []
+                }
+            ],
+            "type": "xcd.domain.PropertyType",
+            "locationDescription": "/models/domain/property/",
+            "classDescription": "THe logical property types within the application."
+        },
+        "xcd.routing.Mapping": {
+            "propertyDocs": [
+                {
+                    "name": "disabled",
+                    "typeDescription": "boolean",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "viewName",
+                    "typeDescription": "String",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "processName",
+                    "typeDescription": "String",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                }
+            ],
+            "type": "xcd.routing.Mapping",
+            "locationDescription": "",
+            "classDescription": null
+        },
+        "xcd.view.LayoutModel": {
+            "propertyDocs": [
+                {
+                    "name": "root",
+                    "typeDescription": "ComponentModel",
+                    "propertyDescription": "Layout root component. When a view uses a layout, its root content gets replaced by the layout root content.\n     \n      The view starts rendering starts with the <code>\"root\"</code> content.\n     \n      At the position of each &lt;Content/&gt; component within, the corresponding content block from the view will be\n      rendered.",
+                    "subTypeDocs": [
+                        "xcd.view.ComponentModel"
+                    ]
+                },
+                {
+                    "name": "name",
+                    "typeDescription": "String",
+                    "propertyDescription": "Name of the top level model.\n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "context",
+                    "typeDescription": "ContextModel",
+                    "propertyDescription": "Context model for the layout. The layout context is special in that it is a prototypic context. Each property\n      defined here will exists in every view the layout is used in without any connection between them.",
+                    "subTypeDocs": [
+                        "xcd.context.ContextModel"
+                    ]
+                }
+            ],
+            "type": "xcd.view.LayoutModel",
+            "locationDescription": "/models/layout/",
+            "classDescription": "Reusable top level layout definition model. The default layout for the application is defined in the application model.\n  Views can override the default by providing a layout prop to their root View component."
+        },
+        "xcd.domain.DomainProperty": {
+            "propertyDocs": [
+                {
+                    "name": "name",
+                    "typeDescription": "String",
+                    "propertyDescription": "Name of the property.\n     \n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "type",
+                    "typeDescription": "String",
+                    "propertyDescription": "Logical property type for this property.\n     \n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "typeParam",
+                    "typeDescription": "Object",
+                    "propertyDescription": "Type parameter for the property. Set for List, Map, Enum.\n     \n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "required",
+                    "typeDescription": "boolean",
+                    "propertyDescription": "Set true if this property is required.\n     \n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "maxLength",
+                    "typeDescription": "int",
+                    "propertyDescription": "Maximum length for this property if applicable.\n     \n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "defaultValue",
+                    "typeDescription": "String",
+                    "propertyDescription": "Default value for this property.\n     \n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "data",
+                    "typeDescription": "Object",
+                    "propertyDescription": "User data field. Not used by the system.\n     \n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "foreignKey",
+                    "typeDescription": "ForeignKeyDefinition",
+                    "propertyDescription": "Foreign key definition for this property.",
+                    "subTypeDocs": [
+                        "xcd.domain.ForeignKeyDefinition"
+                    ]
+                }
+            ],
+            "type": "xcd.domain.DomainProperty",
+            "locationDescription": "",
+            "classDescription": null
+        },
+        "xcd.process.DecisionModel": {
+            "propertyDocs": [
+                {
+                    "name": "expression",
+                    "typeDescription": "String",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "transition",
+                    "typeDescription": "Transition",
+                    "propertyDescription": null,
+                    "subTypeDocs": [
+                        "xcd.process.Transition"
+                    ]
+                }
+            ],
+            "type": "xcd.process.DecisionModel",
+            "locationDescription": "",
+            "classDescription": null
+        },
+        "xcd.process.Process": {
+            "propertyDocs": [
+                {
+                    "name": "identityGUID",
+                    "typeDescription": "String",
+                    "propertyDescription": "UUID uniquely identifying the process. Doesn't need to be defined but needs to remain unchanged if it exists.",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "startTransition",
+                    "typeDescription": "Transition",
+                    "propertyDescription": "Transition be executed when the process is entered.",
+                    "subTypeDocs": [
+                        "xcd.process.Transition"
+                    ]
+                },
+                {
+                    "name": "name",
+                    "typeDescription": "String",
+                    "propertyDescription": "Name of the top level model.\n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "context",
+                    "typeDescription": "ContextModel",
+                    "propertyDescription": "Process context. Each property in it will exist once per execution of the process. The server remembers past\n      process contexts to continue work at this point when the user returns to another view with browser history\n      navigation.",
+                    "subTypeDocs": [
+                        "xcd.context.ContextModel"
+                    ]
+                },
+                {
+                    "name": "versionGUID",
+                    "typeDescription": "String",
+                    "propertyDescription": "UUID uniquely indentifying the current version of the process. Doesn't need to be set, needs to be removed\n      or changed if you change the process manually.\n     \n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "states",
+                    "typeDescription": "Map of ProcessState",
+                    "propertyDescription": "Process states of the process.\n     \n      @return",
+                    "subTypeDocs": [
+                        "xcd.process.ViewState",
+                        "xcd.process.DecisionState"
+                    ]
+                }
+            ],
+            "type": "xcd.process.Process",
+            "locationDescription": "/models/process/",
+            "classDescription": "Exceed process model"
+        },
+        "xcd.domain.EnumType": {
+            "propertyDocs": [
+                {
+                    "name": "values",
+                    "typeDescription": "Array of String",
+                    "propertyDescription": "String values for this enum\n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "name",
+                    "typeDescription": "String",
+                    "propertyDescription": "Name of the top level model.\n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "description",
+                    "typeDescription": "String",
+                    "propertyDescription": "Description for the enum type.",
+                    "subTypeDocs": []
+                }
+            ],
+            "type": "xcd.domain.EnumType",
+            "locationDescription": "/models/domain/enum/",
+            "classDescription": null
+        },
+        "xcd.process.ViewState": {
+            "propertyDocs": [
+                {
+                    "name": "transitions",
+                    "typeDescription": "Map of Transition",
+                    "propertyDescription": null,
+                    "subTypeDocs": [
+                        "xcd.process.Transition"
+                    ]
+                }
+            ],
+            "type": "xcd.process.ViewState",
+            "locationDescription": "",
+            "classDescription": null
+        },
+        "xcd.component.ComponentDescriptor": {
+            "propertyDocs": [
+                {
+                    "name": "templates",
+                    "typeDescription": "Array",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "classes",
+                    "typeDescription": "Array",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "childRule",
+                    "typeDescription": "String",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "componentPropWizards",
+                    "typeDescription": "Map of ComponentPropWizard",
+                    "propertyDescription": null,
+                    "subTypeDocs": [
+                        "xcd.component.ComponentPropWizard"
+                    ]
+                },
+                {
+                    "name": "queries",
+                    "typeDescription": "Map",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "queryExecutors",
+                    "typeDescription": "Map",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "parentRule",
+                    "typeDescription": "String",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "providesContext",
+                    "typeDescription": "String",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "propTypes",
+                    "typeDescription": "Map of PropDeclaration",
+                    "propertyDescription": null,
+                    "subTypeDocs": [
+                        "xcd.component.PropDeclaration"
+                    ]
+                },
+                {
+                    "name": "dataProvider",
+                    "typeDescription": "String",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "vars",
+                    "typeDescription": "Map",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                }
+            ],
+            "type": "xcd.component.ComponentDescriptor",
+            "locationDescription": "",
+            "classDescription": "Descriptor for a single component within a component package. It contains a formal description of component properties and\n  their types. It is used by the server side to compose components in the editor, to provide the declared queries and call the declared\n  data providers and by the client-side view-renderer module to render a method producing a reactjs component tree from the\n  JSON model description of the view.\n \n  @see ComponentPackageDescriptor\n  @see PropDeclaration"
+        },
+        "xcd.context.ScopedPropertyModel": {
+            "propertyDocs": [
+                {
+                    "name": "defaultValue",
+                    "typeDescription": "Expression",
+                    "propertyDescription": "The default value expression for this scoped property.",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "name",
+                    "typeDescription": "String",
+                    "propertyDescription": "The name of the scoped property. Must be unique for all scope locations, i.e. within the combination of all\n      applicable scopes the each context.",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "description",
+                    "typeDescription": "String",
+                    "propertyDescription": "Description of this scoped property",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "typeParam",
+                    "typeDescription": "Object",
+                    "propertyDescription": "Property type specific type parameter:\n      <ul>\n          <li>\n               For the simple property types, this is <code>null</code>,\n          </li>\n          <li>\n               For the <code>DomainType</code> type this is the name of the property type.\n          </li>\n          <li>\n               For the <code>Map</code> and <code>List</code> types the type param is either\n               a domain type name or a property type name.\n          </li>\n      </p>",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "type",
+                    "typeDescription": "String",
+                    "propertyDescription": "The property type of the scoped property.\n     \n      @see DomainProperty#DOMAIN_TYPE_PROPERTY_TYPE\n      @see DomainProperty#MAP_PROPERTY_TYPE\n      @see DomainProperty#LIST_PROPERTY_TYPE\n     \n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "maxLength",
+                    "typeDescription": "int",
+                    "propertyDescription": "For <code>PlainText</code> and  <code>RichText</code> type, this defines the maximum number of characters.\n      If it is less or equal to 0, the property is unbounded.\n      @return",
+                    "subTypeDocs": []
+                }
+            ],
+            "type": "xcd.context.ScopedPropertyModel",
+            "locationDescription": "",
+            "classDescription": "A single scoped property value within a scope."
+        },
+        "xcd.view.View": {
+            "propertyDocs": [
+                {
+                    "name": "identityGUID",
+                    "typeDescription": "String",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "comments",
+                    "typeDescription": "Array",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "title",
+                    "typeDescription": "String",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "versionGUID",
+                    "typeDescription": "String",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "content",
+                    "typeDescription": "Map of ComponentModel",
+                    "propertyDescription": "Returns the complete content map of this view.\n     \n      @return content map.",
+                    "subTypeDocs": [
+                        "xcd.view.ComponentModel"
+                    ]
+                },
+                {
+                    "name": "layout",
+                    "typeDescription": "String",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "processName",
+                    "typeDescription": "String",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "context",
+                    "typeDescription": "ContextModel",
+                    "propertyDescription": null,
+                    "subTypeDocs": [
+                        "xcd.context.ContextModel"
+                    ]
+                },
+                {
+                    "name": "name",
+                    "typeDescription": "String",
+                    "propertyDescription": "Name of the top level model.\n      @return",
+                    "subTypeDocs": []
+                }
+            ],
+            "type": "xcd.view.View",
+            "locationDescription": "/models/view/ or /models/process/*/view",
+            "classDescription": "Represents a view model within an exceed application\n \n  The persistent JSON output for this model generated by  {@link de.quinscape.exceed.runtime.model.ClientViewJSONGenerator#toJSON(de.quinscape.exceed.model.ApplicationModel, View, JSONFormat)}  }."
+        },
+        "xcd.routing.RoutingTable": {
+            "propertyDocs": [
+                {
+                    "name": "name",
+                    "typeDescription": "String",
+                    "propertyDescription": "Name of the top level model.\n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "mappings",
+                    "typeDescription": "Map of Mapping",
+                    "propertyDescription": null,
+                    "subTypeDocs": [
+                        "xcd.routing.Mapping"
+                    ]
+                }
+            ],
+            "type": "xcd.routing.RoutingTable",
+            "locationDescription": "/models/routing.json",
+            "classDescription": null
+        },
+        "xcd.component.PropDeclaration": {
+            "propertyDocs": [
+                {
+                    "name": "defaultValue",
+                    "typeDescription": "Expression",
+                    "propertyDescription": "Default value for this prop.",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "contextType",
+                    "typeDescription": "String",
+                    "propertyDescription": "Type of context this prop declaration is dependent on.",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "context",
+                    "typeDescription": "String",
+                    "propertyDescription": "Contains a context expression for the value of this prop or null. <code>true</code> given in the the constructor\n      will be converted into \"context\".",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "rule",
+                    "typeDescription": "Expression",
+                    "propertyDescription": "Completion rule for this prop. Wizard dialogs can be specified by setting {@link ComponentDescriptor#componentPropWizards}",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "client",
+                    "typeDescription": "boolean",
+                    "propertyDescription": "<code>true</code> if this prop is visible to the client as a value. Some props are only needed for server\n      operation and / or might contain expression types not available on the client per-se. Setting this to\n      <code>false</code> will cause such an attribute to be only added as a comment.",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "description",
+                    "typeDescription": "String",
+                    "propertyDescription": "Prop declaration description for autocomplete purposes.",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "type",
+                    "typeDescription": "PropType Enum",
+                    "propertyDescription": "Proptype for for this prop.<br/>Values: PLAINTEXT, INTEGER, FLOAT, BOOLEAN, CLASSES, TRANSITION, QUERY_EXPRESSION, CURSOR_EXPRESSION, FILTER_EXPRESSION, VALUE_EXPRESSION, ACTION_EXPRESSION",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "required",
+                    "typeDescription": "boolean",
+                    "propertyDescription": "<code>true</code> if the prop is required for the component.",
+                    "subTypeDocs": []
+                }
+            ],
+            "type": "xcd.component.PropDeclaration",
+            "locationDescription": "",
+            "classDescription": "Declaration for a single property within a {@link ComponentDescriptor}."
+        },
+        "xcd.view.ComponentModel": {
+            "propertyDocs": [
+                {
+                    "name": "name",
+                    "typeDescription": "String",
+                    "propertyDescription": null,
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "attrs",
+                    "typeDescription": "Map of Attribute",
+                    "propertyDescription": "Map of attribute values <code>\"value\"</code> or expressions <code>\"{ expr() }\"</code>\n     \n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "kids",
+                    "typeDescription": "Array of ComponentModel",
+                    "propertyDescription": null,
+                    "subTypeDocs": [
+                        "xcd.view.ComponentModel"
+                    ]
+                }
+            ],
+            "type": "xcd.view.ComponentModel",
+            "locationDescription": "",
+            "classDescription": null
+        },
+        "xcd.component.ComponentPackageDescriptor": {
+            "propertyDocs": [
+                {
+                    "name": "name",
+                    "typeDescription": "String",
+                    "propertyDescription": "Name of the top level model.\n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "components",
+                    "typeDescription": "Map of ComponentDescriptor",
+                    "propertyDescription": "Returns the a map mapping component names to the component descriptors for that component.\n     \n      @return components map",
+                    "subTypeDocs": [
+                        "xcd.component.ComponentDescriptor"
+                    ]
+                }
+            ],
+            "type": "xcd.component.ComponentPackageDescriptor",
+            "locationDescription": "components.json declarations",
+            "classDescription": "Contains component descriptions for all components in a component package directory. It is the result of parsing a\n  \"components.json\" file.\n  <p>\n  The package descriptor differs from the other top level models in that it is not subject to composition by the\n  ModelCompositionService but is handled by ComponentRegistryImpl.\n  </p>\n  <p>\n  It describes component\n  </p>"
+        },
+        "xcd.component.ComponentPropWizard": {
+            "propertyDocs": [
+                {
+                    "name": "title",
+                    "typeDescription": "String",
+                    "propertyDescription": "Title for the prop wizard component\n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "description",
+                    "typeDescription": "String",
+                    "propertyDescription": "Description for the prop wizard\n      @return",
+                    "subTypeDocs": []
+                },
+                {
+                    "name": "wizard",
+                    "typeDescription": "String",
+                    "propertyDescription": "Wizard Component js name.\n      @return",
+                    "subTypeDocs": []
+                }
+            ],
+            "type": "xcd.component.ComponentPropWizard",
+            "locationDescription": "",
+            "classDescription": "A wizard component definition for the component."
+        }
+    },
+    "topLevelModelDocs": [
+        "xcd.ApplicationConfig",
+        "xcd.domain.DomainType",
+        "xcd.domain.EnumType",
+        "xcd.view.LayoutModel",
+        "xcd.process.Process",
+        "xcd.domain.PropertyType",
+        "xcd.routing.RoutingTable",
+        "xcd.view.View",
+        "xcd.component.ComponentPackageDescriptor"
+    ]
+}

@@ -6,6 +6,7 @@ import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
+import de.quinscape.exceed.runtime.util.AppAuthentication;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -30,6 +31,8 @@ public class RuntimeContext
 
     private final DomainService domainService;
 
+    private final AppAuthentication authentication;
+
     private View view;
 
     private Map<String, Object> variables;
@@ -46,6 +49,9 @@ public class RuntimeContext
         this.locale = locale;
         this.domainService = domainService;
         this.scopedContextChain = scopedContextChain != null ? scopedContextChain : new ScopedContextChain(Collections.emptyList(), null, null);
+
+        this.authentication = AppAuthentication.get();
+
     }
 
 
@@ -146,4 +152,8 @@ public class RuntimeContext
     }
 
 
+    public AppAuthentication getAuthentication()
+    {
+        return authentication;
+    }
 }

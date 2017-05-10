@@ -1,19 +1,11 @@
-var viewService;
+import store from "../service/store"
+import * as domainService from "../service/domain"
+import { getScopeGraph, getScopeDirty, getDomainTypes } from "../reducers"
 
+import { DataGraph, getColumnType } from "../domain/graph"
+import DataCursor from "../domain/cursor"
 
-function getViewService()
-{
-    if (!viewService)
-    {
-        viewService = require("../service/view");
-    }
-    return viewService;
-}
-
-function createScopeFn(type)
-{
-    return ;
-}
+const keys = require("../util/keys");
 
 /**
  * Provides access to the scoped values available in the current context.
@@ -22,58 +14,49 @@ function createScopeFn(type)
  *
  * @type {{list: Scope.list, object: Scope.object, property: Scope.property}}
  */
-var Scope = {
+const Scope = {
 
     property: function(name)
     {
-        var scope = getViewService().getScope();
-        //console.log("SCOPE", scope);
-
-        var value = scope.getCursor([name]).value;
-        if (value === undefined)
-        {
-            console.error("Scoped value '" + name + "' is undefined")
-        }
-        return value;
+        return Scope.propertyCursor(name).get();
     },
 
     propertyCursor: function(name)
     {
-        var scope = getViewService().getScope();
-        var cursor = scope.getCursor([name]);
-
-//        console.log("SCOPE CURSOR", scope.id, name, cursor.value);
-
-        return cursor;
+        const state = store.getState();
+        const scope = DataGraph(
+            getScopeGraph(state)
+        );
+        return new DataCursor(domainService.getDomainTypes(), scope, [ name ]);
     },
 
     propertyType: function (name)
     {
-        return getViewService().getRuntimeInfo().scopeInfo.propertyTypes[name];
+        const state = store.getState();
+        const scope = DataGraph(
+            getScopeGraph(state)
+        );
+
+        return getColumnType(scope, name);
     },
 
-    getScopeUpdate: function (names)
+    getScopeUpdate: function ()
     {
+        const state = store.getState();
+        const names = keys(getScopeDirty(state));
 
-        var viewService = getViewService();
+        const values = {};
 
-        // if we're not asked for specific keys, we use all view context keys
-        names = names || viewService.getViewContextKeys();
+        const scope = getScopeGraph(state);
+        const domainTypes = getDomainTypes(state);                                      
 
-        //
-        names = names.concat(viewService.getDirtyScopeKeys());
-
-        var values = {};
-
-        var scope = viewService.getScope().rootObject;
-
-        for (var i = 0; i < names.length; i++)
+        for (let i = 0; i < names.length; i++)
         {
-            var name = names[i];
-            values[name] = scope[name];
+            const name = names[i];
+            values[name] = new DataCursor(domainTypes, scope, [ name ]).get();
         }
         return values;
     }
 };
 
-module.exports = Scope;
+export default Scope;

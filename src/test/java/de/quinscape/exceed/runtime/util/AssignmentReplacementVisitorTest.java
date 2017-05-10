@@ -91,7 +91,7 @@ public class AssignmentReplacementVisitorTest
             "listName", scopedListModel
         ));
 
-        process.setContext(processContext);
+        process.setContextModel(processContext);
 
         process.setStates(ImmutableMap.of("testView", new ViewState()));
 

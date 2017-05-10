@@ -1,4 +1,7 @@
+import { getTranslationTemplate } from "../reducers"
+import store from "./store"
 
+const EMPTY = [];
 
 function format(tag, arg)
 {
@@ -10,36 +13,27 @@ function format(tag, arg)
 
 module.exports = function(s, arg)
 {
-    var viewService = require("./view");
-
-    if (!viewService || typeof viewService.getRuntimeInfo !== "function")
-    {
-        throw new Error("View Service not initialized");
-    }
-
-    var translations = viewService.getRuntimeInfo().translations;
-
-    var result = translations[s];
+    const result = getTranslationTemplate( store.getState(), s);
     if (result !== undefined)
     {
-        if (arg)
+        if (arg !== undefined)
         {
             return format(result, Array.prototype.slice.call(arguments, 1));
         }
         else
         {
-            return format(result, []);
+            return format(result, EMPTY);
         }
     }
 
-    var colonPos = s.indexOf(':');
+    const colonPos = s.indexOf(':');
 
     if (colonPos >= 0)
     {
         s = s.substr( colonPos + 1);
     }
 
-    if (arg)
+    if (arg !== undefined)
     {
         return "[" + format(s, Array.prototype.slice.call(arguments, 1)) + "]"
     }

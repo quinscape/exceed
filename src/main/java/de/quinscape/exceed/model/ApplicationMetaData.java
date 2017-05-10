@@ -1,7 +1,8 @@
 package de.quinscape.exceed.model;
 
 import de.quinscape.exceed.model.context.ScopeMetaModel;
-import de.quinscape.exceed.model.component.StaticFunctionReferences;
+import de.quinscape.exceed.model.meta.StaticFunctionReferences;
+import de.quinscape.exceed.model.meta.WebpackStats;
 
 /**
  * Encapsulates application meta data.
@@ -19,6 +20,9 @@ public class ApplicationMetaData
     private DomainEditorViews domainEditorViews;
 
     private final ScopeMetaModel scopeMetaModel;
+
+    private WebpackStats webpackStats;
+
 
     public ApplicationMetaData(ApplicationModel applicationModel)
     {
@@ -59,4 +63,17 @@ public class ApplicationMetaData
     {
         return scopeMetaModel;
     }
+
+
+    public void setWebpackStats(WebpackStats webpackStats)
+    {
+        this.webpackStats = webpackStats;
+    }
+
+
+    public WebpackStats getWebpackStats()
+    {
+        return webpackStats;
+    }
+
 }

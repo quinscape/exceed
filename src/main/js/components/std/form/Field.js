@@ -6,26 +6,26 @@ const Checkbox =  require("./Checkbox");
 const CalendarField = require("./CalendarField");
 const EnumSelect = require("./EnumSelect");
 
-var Field = FormElement(React.createClass({
-
-    propTypes: {
+const Field = FormElement(class Field extends React.Component
+{
+    static propTypes = {
         validate: React.PropTypes.func
-    },
+    };
 
-    getInputField: function ()
+    getInputField()
     {
-        var input = this._input;
-        if (typeof input.appendChild == "function")
+        const input = this._input;
+        if (typeof input.appendChild === "function")
         {
             return input
         }
 
         return input.getInputField();
-    },
+    }
 
-    render: function ()
+    render()
     {
-        var typeName = this.props.propertyType.type;
+        const typeName = this.props.propertyType.type;
         if (typeName === "Date" || typeName === "Timestamp")
         {
             return (
@@ -62,12 +62,14 @@ var Field = FormElement(React.createClass({
                 onChange={ ev => this.props.valueLink.requestChange(ev.target.value) }
                 disabled={ this.props.disabled }
                 onBlur={ (ev) => {
-                    this.props.onChange( ev.target.value)
+                    const value = ev.target.value;
+                    //console.log("input CHANGE", value);
+                    this.props.onChange( value)
                 }}
                 autoFocus={ this.props.autoFocus }
             />
         )
     }
-}));
+});
 
 module.exports = Field;

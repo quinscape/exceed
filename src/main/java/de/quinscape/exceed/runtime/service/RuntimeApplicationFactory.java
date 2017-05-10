@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.service;
 
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ImmutableList;
 import de.quinscape.exceed.domain.tables.pojos.AppState;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.action.ClientActionRenderer;
@@ -15,6 +14,10 @@ import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.stream.ClassPathResourceRoot;
 import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
+import de.quinscape.exceed.runtime.service.client.ClientStateProvider;
+import de.quinscape.exceed.runtime.service.client.ClientStateService;
+import de.quinscape.exceed.runtime.service.client.ExceedAppProvider;
+import de.quinscape.exceed.runtime.service.model.ModelSchemaService;
 import de.quinscape.exceed.runtime.util.Util;
 import de.quinscape.exceed.runtime.view.ViewDataService;
 import org.slf4j.Logger;
@@ -32,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 @Service
@@ -41,43 +45,56 @@ public class RuntimeApplicationFactory
 
     private final static Logger log = LoggerFactory.getLogger(RuntimeApplicationFactory.class);
 
-    @Autowired
-    private ApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
+
+    private final ModelCompositionService modelCompositionService;
+
+    private final ComponentRegistry componentRegistry;
+
+    private final StyleService styleService;
+
+    private final ViewDataService viewDataService;
+
+    private final ResourceCacheFactory resourceCacheFactory;
+
+    private final DomainServiceFactory domainServiceFactory;
+
+    private final ProcessService processService;
+
+    private final RuntimeContextFactory runtimeContextFactory;
+
+    private final ScopedContextFactory scopedContextFactory;
+
+    private final DomainServiceRepository domainServiceRepository;
+
+    private final StorageConfigurationRepository storageConfigurationRepository;
+
+    private final ClientStateService clientStateService;
+
+    private final ModelSchemaService modelSchemaService;
+
+    private Set<ClientStateProvider> clientStateProviders;
+
 
     @Autowired
-    private ModelCompositionService modelCompositionService;
+    public RuntimeApplicationFactory(ResourceCacheFactory resourceCacheFactory, ApplicationContext applicationContext, ModelCompositionService modelCompositionService, StorageConfigurationRepository storageConfigurationRepository, ComponentRegistry componentRegistry, ClientStateService clientStateService, StyleService styleService, ViewDataService viewDataService, DomainServiceFactory domainServiceFactory, ProcessService processService, RuntimeContextFactory runtimeContextFactory, ScopedContextFactory scopedContextFactory, ModelSchemaService modelSchemaService, DomainServiceRepository domainServiceRepository)
+    {
+        this.resourceCacheFactory = resourceCacheFactory;
+        this.applicationContext = applicationContext;
+        this.modelCompositionService = modelCompositionService;
+        this.storageConfigurationRepository = storageConfigurationRepository;
+        this.componentRegistry = componentRegistry;
+        this.clientStateService = clientStateService;
+        this.styleService = styleService;
+        this.viewDataService = viewDataService;
+        this.domainServiceFactory = domainServiceFactory;
+        this.processService = processService;
+        this.runtimeContextFactory = runtimeContextFactory;
+        this.scopedContextFactory = scopedContextFactory;
+        this.modelSchemaService = modelSchemaService;
+        this.domainServiceRepository = domainServiceRepository;
+    }
 
-    @Autowired
-    private ComponentRegistry componentRegistry;
-
-    @Autowired
-    private StyleService styleService;
-
-    @Autowired
-    private ViewDataService viewDataService;
-
-    @Autowired
-    private ResourceCacheFactory resourceCacheFactory;
-
-    @Autowired
-    private DomainServiceFactory domainServiceFactory;
-
-    private List<RuntimeInfoProvider> runtimeInfoProviders;
-
-    @Autowired
-    private ProcessService processService;
-
-    @Autowired
-    private RuntimeContextFactory runtimeContextFactory;
-
-    @Autowired
-    private ScopedContextFactory scopedContextFactory;
-
-    @Autowired
-    private DomainServiceRepository domainServiceRepository;
-
-    @Autowired
-    private StorageConfigurationRepository storageConfigurationRepository;
 
     public DefaultRuntimeApplication createRuntimeApplication(ServletContext servletContext, AppState state)
     {
@@ -96,11 +113,11 @@ public class RuntimeApplicationFactory
         Map<String, ClientActionRenderer> generators = new HashMap<>();
         generators.put("syslog", new SyslogCallGenerator());
 
-        final DomainService domainService = domainServiceFactory.create();
+        final DomainService domainService = domainServiceFactory.create(modelSchemaService.getModelDomainTypes());
 
         domainServiceRepository.register(appName, domainService);
 
-        return new DefaultRuntimeApplication( servletContext, viewDataService, componentRegistry, styleService,  modelCompositionService, resourceLoader, domainService, runtimeInfoProviders, processService, appName, runtimeContextFactory, scopedContextFactory, storageConfigurationRepository);
+        return new DefaultRuntimeApplication( servletContext, viewDataService, componentRegistry, styleService,  modelCompositionService, resourceLoader, domainService, clientStateService, processService, appName, runtimeContextFactory, scopedContextFactory, storageConfigurationRepository, clientStateProviders);
     }
 
     private List<ResourceRoot> configureExtensions(ServletContext servletContext, AppState state)
@@ -173,25 +190,10 @@ public class RuntimeApplicationFactory
     }
 
     @PostConstruct
-    public void init()
+    public void initProviders()
     {
-        Map<String, RuntimeInfoProvider> providers = new HashMap<>();
-
-        for (RuntimeInfoProvider provider : applicationContext.getBeansOfType(RuntimeInfoProvider.class)
-            .values())
-        {
-            String name = provider.getName();
-            RuntimeInfoProvider existing = providers.get(name);
-            if (existing != null)
-            {
-                throw new IllegalStateException("Runtime provider " + existing + " and " + provider + " declare the same name.");
-            }
-            providers.put(name, provider);
-        }
-
-        this.runtimeInfoProviders = ImmutableList.copyOf(providers.values());
-
-        log.info("Runtime Info Providers: {}", this.runtimeInfoProviders);
+        clientStateProviders = ClientStateService.findProviderBeans(applicationContext, ExceedAppProvider.class);
     }
+
 }
 

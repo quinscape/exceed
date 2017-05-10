@@ -1,7 +1,9 @@
-var extend = require("extend");
+var assign = require("object-assign");
 
 
 var angle = 0;
+
+const STEP =  1.61803398875;
 
 function Vector(x,y)
 {
@@ -9,7 +11,7 @@ function Vector(x,y)
     this.y = y;
 }
 
-extend(Vector.prototype, {
+assign(Vector.prototype, {
     add: function(x,y)
     {
         if (y === undefined)

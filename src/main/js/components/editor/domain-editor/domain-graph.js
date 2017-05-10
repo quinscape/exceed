@@ -87,6 +87,26 @@ function addToGraph(graph, domainType)
     });
 }
 
+function setFKNodePosition(srcNode, dstNode, node)
+{
+    let x0 = srcNode.x + ( dstNode.x < srcNode.x ? -srcNode.width / 2 : srcNode.width / 2 );
+    let y0 = srcNode.y - srcNode.height / 2 + srcNode.headerHeight + srcNode.headerHeight + node.srcPropIndex * DomainLayout.getPropLayout().height + DomainLayout.getPropLayout().height / 2;
+
+    let x2 = dstNode.x + ( dstNode.x >= srcNode.x ? -dstNode.width / 2 : dstNode.width / 2 );
+    let y2 = dstNode.y - dstNode.height / 2 + dstNode.headerHeight + dstNode.headerHeight + node.dstPropIndex * DomainLayout.getPropLayout().height + DomainLayout.getPropLayout().height / 2;
+
+    let dx = (x2 - x0) / 2;
+    let dy = (y2 - y0) / 2;
+
+    let x1 = x0 + dx;
+    let y1 = y0 + dy;
+
+    x1 += dy / GOLDEN_CUBED;
+    y1 -= dx / GOLDEN_CUBED;
+
+    node.x = x1;
+    node.y = y1;
+}
 /**
  * Factory for domain model graphs. Creates a graph with a node for each entity. For foreign keys, the entities are connected
  * to a node representing the arrow bezier curve control point
@@ -157,8 +177,8 @@ module.exports = {
 
         let nodes = graph.nodes;
         let lookup = graph.lookup;
-        var entityNodesEnd = nodes.length;
-        for (let i = 0; i < entityNodesEnd; i++)
+        var firstFKNode = nodes.length;
+        for (let i = 0; i < firstFKNode; i++)
         {
             let node = nodes[i];
             var typeName = node.name;
@@ -178,7 +198,7 @@ module.exports = {
                         let srcPropIndex = j;
                         let dstPropIndex = findPropertyIndexWithName(domainTypes[type], foreignKey.property);
 
-                        var fkNode = graph.newNode({
+                        graph.newNode({
                             type: NodeType.FK,
                             name: fkKey(typeName, j),
                             width: 20,
@@ -216,7 +236,8 @@ module.exports = {
         }
 
 
-        for (let i = entityNodesEnd; i < nodes.length; i++)
+        // iterate over all foreign key nodes.
+        for (let i = firstFKNode; i < nodes.length; i++)
         {
             let node = nodes[i];
             let name = node.name;
@@ -232,25 +253,7 @@ module.exports = {
 
                 let srcNode = nodes[node.srcId];
                 let dstNode = nodes[node.dstId];
-
-                let x0 = srcNode.x + ( dstNode.x < srcNode.x ? -srcNode.width/2 : srcNode.width/2 );
-                let y0 = srcNode.y - srcNode.height/2 + srcNode.headerHeight + srcNode.headerHeight + node.srcPropIndex * DomainLayout.getPropLayout().height + DomainLayout.getPropLayout().height / 2;
-
-                let x2 = dstNode.x + ( dstNode.x >= srcNode.x ? -dstNode.width/2 : dstNode.width/2 );
-                let y2 = dstNode.y - dstNode.height/2 + dstNode.headerHeight + dstNode.headerHeight + node.dstPropIndex * DomainLayout.getPropLayout().height + DomainLayout.getPropLayout().height/2;
-
-                let dx = (x2 - x0)/2;
-                let dy = (y2 - y0)/2;
-
-                let x1 = x0 + dx;
-                let y1 = y0 + dy;
-
-                //we push our handle / the curve center a bit off the straight line in a 90 degree angle (2d rotation)
-                x1 += dy / GOLDEN_CUBED;
-                y1 -= dx / GOLDEN_CUBED;
-
-                node.x = x1;
-                node.y = y1;
+                setFKNodePosition(srcNode, dstNode, node);
                 // node.x = (srcNode.x + dstNode.x) /2 ;
                 // node.y = (srcNode.y + dstNode.y) /2;
             }
@@ -262,6 +265,8 @@ module.exports = {
 
     },
 
-    NodeType : NodeType
+    NodeType : NodeType,
+
+    setFKNodePosition: setFKNodePosition
 
 };

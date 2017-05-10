@@ -12,22 +12,24 @@ import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.util.DomainUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.svenson.JSONProperty;
 
 import java.util.Collections;
 import java.util.Map;
 
 /**
  * Contains context data for a transition invocation.
- *
- * When one of the transitions defined in the current process view state is triggered from the outside, there domain object data
+ * <p>
+ * When one of the transitions defined in the current process view state is triggered from the outside, there domain
+ * object data
  * to transmit along that transition this data contains:
+ * <p>
+ * <ul>
+ * <li>The domain object context for the transition execution which is extracted from the data cursor of TButton</li>
+ * <li>Updates for context values the process allowed the user to edit via input fields or similar</li>
+ * </ul>
  *
- *  <ul>
- *      <li>The domain object context for the transition execution which is extracted from the data cursor of TButton</li>
- *      <li>Updates for context values the process allowed the user to edit via input fields or similar</li>
- *  </ul>
- *
- *  @see #parse(RuntimeContext, String, String, String)
+ * @see #parse(RuntimeContext, String, String, String)
  */
 public class TransitionData
 {
@@ -36,6 +38,8 @@ public class TransitionData
     private GenericDomainObject objectContext;
 
     private Map<String, Object> contextUpdate;
+
+    private Map<String, String> currentViewChanges;
 
     private String stateName;
 
@@ -84,12 +88,11 @@ public class TransitionData
     /**
      * Parses the given transition data JSON and converts it according to the context model definitions involved.
      *
-     * @param runtimeContext        runtime context
-     * @param processName           process name
-     * @param currentState          current view state
-     * @param json                  JSON data
+     * @param runtimeContext runtime context
+     * @param processName    process name
+     * @param currentState   current view state
+     * @param json           JSON data
      * @return converted transition data instance
-     *
      * @throws ParseException if conversion fails
      */
     public static TransitionData parse(RuntimeContext runtimeContext, String processName, String currentState, String
@@ -133,10 +136,10 @@ public class TransitionData
 
         final Map<String, Object> contextUpdate = transitionData.getContextUpdate();
 
-        final ContextModel applicationContext = runtimeContext.getApplicationModel().getApplicationContext();
-        final ContextModel sessionContext = runtimeContext.getApplicationModel().getSessionContext();
+        final ContextModel applicationContext = runtimeContext.getApplicationModel().getApplicationContextModel();
+        final ContextModel sessionContext = runtimeContext.getApplicationModel().getSessionContextModel();
         final ContextModel viewContextModel = view.getContextModel();
-        final ContextModel processContext = process.getContext();
+        final ContextModel processContext = process.getContextModel();
 
         convertContextUpdateToJava(runtimeContext, contextUpdate, applicationContext);
         convertContextUpdateToJava(runtimeContext, contextUpdate, sessionContext);
@@ -154,26 +157,48 @@ public class TransitionData
     }
 
 
-    private static void convertContextUpdateToJava(RuntimeContext runtimeContext, Map<String, Object> contextUpdate, ContextModel
-        contextModel) throws ParseException
+    private static void convertContextUpdateToJava(
+        RuntimeContext runtimeContext, Map<String, Object> contextUpdate, ContextModel contextModel
+    ) throws ParseException
     {
-        final DomainService domainService = runtimeContext.getDomainService();
-        for (Map.Entry<String, ScopedPropertyModel> e : contextModel.getProperties().entrySet())
+        if (contextModel != null)
         {
-            final String name = e.getKey();
-            final ScopedPropertyModel model = e.getValue();
-
-            if (contextUpdate.containsKey(name))
+            final DomainService domainService = runtimeContext.getDomainService();
+            for (Map.Entry<String, ScopedPropertyModel> e : contextModel.getProperties().entrySet())
             {
-                final Object value = contextUpdate.get(name);
-                log.debug("Convert property '{}': {}", name, value);
+                final String name = e.getKey();
+                final ScopedPropertyModel model = e.getValue();
 
-                final PropertyConverter<Object, Object> propertyConverter = domainService.getPropertyConverter(model.getType());
-                final Object converted = propertyConverter.convertToJava(runtimeContext, value);
+                if (contextUpdate.containsKey(name))
+                {
+                    final Object value = contextUpdate.get(name);
 
-                contextUpdate.put(name, converted);
+                    final PropertyConverter propertyConverter = domainService.getPropertyConverter
+                        (model.getType());
+                    final Object converted = propertyConverter.convertToJava(runtimeContext, value);
+
+                    if (log.isDebugEnabled())
+                    {
+                        log.debug("Convert property '{}': {} => {}", name, value, converted);
+                    }
+
+                    contextUpdate.put(name, converted);
+                }
             }
         }
+    }
+
+
+    public Map<String, String> getCurrentViewChanges()
+    {
+        return currentViewChanges;
+    }
+
+
+    @JSONProperty("currentEditorChanges")
+    public void setCurrentViewChanges(Map<String, String> currentViewChanges)
+    {
+        this.currentViewChanges = currentViewChanges;
     }
 
 
@@ -182,6 +207,8 @@ public class TransitionData
     {
         return this.getClass().getSimpleName() + ": "
             + "objectContext = " + objectContext
-            + ", contextUpdate = " + contextUpdate;
+            + ", contextUpdate = " + contextUpdate
+            + ", currentViewChanges = " + currentViewChanges;
+
     }
 }

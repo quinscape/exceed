@@ -1,10 +1,11 @@
 package de.quinscape.exceed.runtime.editor.completion.expression;
 
 
+import de.quinscape.exceed.expression.ASTExpression;
+import de.quinscape.exceed.expression.Node;
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.model.component.PropType;
-import de.quinscape.exceed.expression.ASTExpression;
-import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.process.ViewState;
@@ -55,7 +56,34 @@ public class PropCompleteOperations
     }
 
     @Operation
+    public List<AceCompletion> oneOf(ExpressionContext<PropCompleteEnvironment> ctx)
+    {
+        List<AceCompletion> suggestions = new ArrayList<>();
+
+        for (int i = 0; i < ctx.getASTFunction().jjtGetNumChildren(); i++)
+        {
+            Node kid = ctx.getASTFunction().jjtGetChild(i);
+
+            Object value = kid.jjtAccept(ctx.getEnv(), null);
+            suggestions.add(new AceCompletion(CompletionType.PROP, value.toString(), "Value", null));
+        }
+        return suggestions;
+    }
+
+    @Operation
     public List<AceCompletion> location(ExpressionContext<PropCompleteEnvironment> ctx)
+    {
+        RuntimeApplication application = ctx.getEnv().getRuntimeContext().getRuntimeApplication();
+
+        List<AceCompletion> suggestions = new ArrayList<>();
+
+        MappingNode rootNode = application.getApplicationModel().getRoutingTable().getRootNode();
+        collectLocations(ctx, suggestions, rootNode, new LocationPath(rootNode));
+        return suggestions;
+    }
+
+    @Operation
+    public List<AceCompletion> layout(ExpressionContext<PropCompleteEnvironment> ctx)
     {
         final RuntimeContext runtimeContext = ctx.getEnv().getRuntimeContext();
         final ApplicationModel applicationModel = runtimeContext.getRuntimeApplication().getApplicationModel();
@@ -67,18 +95,6 @@ public class PropCompleteOperations
         {
             suggestions.add(new AceCompletion(CompletionType.PROP, name, "Layout", null));
         }
-        return suggestions;
-    }
-
-    @Operation
-    public List<AceCompletion> layout(ExpressionContext<PropCompleteEnvironment> ctx)
-    {
-        RuntimeApplication application = ctx.getEnv().getRuntimeContext().getRuntimeApplication();
-
-        List<AceCompletion> suggestions = new ArrayList<>();
-
-        MappingNode rootNode = application.getApplicationModel().getRoutingTable().getRootNode();
-        collectLocations(ctx, suggestions, rootNode, new LocationPath(rootNode));
         return suggestions;
     }
 
@@ -153,8 +169,8 @@ public class PropCompleteOperations
             if (kid.getName().equals("Link.Param"))
             {
                 Attributes attrs = kid.getAttrs();
-                String varName = (String) attrs.getAttribute("name").getValue();
-                String value = (String) attrs.getAttribute("value").getValue();
+                String varName = attrs.getAttribute("name").getValue();
+                String value = attrs.getAttribute("value").getValue();
                 map.put(varName, value);
             }
         }

@@ -150,4 +150,6 @@ const ActionService = {
     }
 };
 
+ActionService.reset();
+
 module.exports = ActionService;

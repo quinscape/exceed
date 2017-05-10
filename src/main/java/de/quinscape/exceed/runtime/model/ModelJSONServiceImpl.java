@@ -1,9 +1,12 @@
 package de.quinscape.exceed.runtime.model;
 
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.Model;
+import de.quinscape.exceed.model.domain.DomainProperty;
+import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.ForeignKeyDefinition;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -11,14 +14,11 @@ import org.svenson.AbstractPropertyValueBasedTypeMapper;
 import org.svenson.JSON;
 import org.svenson.JSONParser;
 import org.svenson.matcher.SubtypeMatcher;
+import org.svenson.util.JSONBuilder;
 
 public class ModelJSONServiceImpl
     implements ModelJSONService
 {
-    /**
-     * Base package for all model classes.
-     */
-    public final static String MODEL_PACKAGE = Model.class.getPackage().getName();
 
     public static final String CONTEXT_DEFAULT_NAME = "context";
 
@@ -54,18 +54,71 @@ public class ModelJSONServiceImpl
         {
             return toJSON(null, (View) model, JSONFormat.EXTERNAL);
         }
+        if (model instanceof DomainType)
+        {
+            return toJSON(null, (DomainType) model, JSONFormat.EXTERNAL);
+        }
         return generator.forValue(model);
     }
 
     @Override
-    public String toJSON(RuntimeApplication application, View model, JSONFormat jsonFormat)
+    public String toJSON(ApplicationModel applicationModel, View model, JSONFormat jsonFormat)
     {
         if (jsonFormat == null)
         {
             throw new IllegalArgumentException("jsonFormat can't be null");
         }
 
-        return clientViewJSONGenerator.toJSON(application, model, jsonFormat);
+        return clientViewJSONGenerator.toJSON(applicationModel, model, jsonFormat);
+    }
+
+
+    @Override
+    public String toJSON(ApplicationModel applicationModel, DomainType model, JSONFormat jsonFormat)
+    {
+        JSONBuilder b = JSONBuilder.buildObject();
+
+        b.propertyUnlessNull("identityGUID", model.getIdentityGUID());
+        b.propertyUnlessNull("versionGUID", model.getVersionGUID());
+        b.property("name", model.getName());
+        b.propertyUnlessNull("storage", model.getStorageConfiguration());
+        b.arrayProperty("properties");
+
+        for (DomainProperty domainProperty : model.getProperties())
+        {
+            b.objectElement();
+            b.property("name", domainProperty.getName());
+            b.property("type", domainProperty.getType());
+            b.propertyUnlessNull("typeParam", domainProperty.getTypeParam());
+
+            if (domainProperty.isRequired())
+            {
+                b.property("required", true);
+            }
+
+            final int maxLength = domainProperty.getMaxLength();
+            if (maxLength > 0)
+            {
+                b.property("maxLength", maxLength);
+            }
+
+            b.propertyUnlessNull("defaultValue", domainProperty.getDefaultValue());
+
+            final ForeignKeyDefinition foreignKey = domainProperty.getForeignKey();
+            if (foreignKey != null)
+            {
+                b.objectProperty("foreignKey");
+                b.property("type", foreignKey.getType());
+                final String property = foreignKey.getProperty();
+                if (!property.equals(DomainType.ID_PROPERTY))
+                {
+                    b.property("property", property);
+                }
+                b.close();
+            }
+            b.close();
+        }
+        return b.output();
     }
 
 
@@ -112,34 +165,8 @@ public class ModelJSONServiceImpl
             {
                 return null;
             }
-
-            try
-            {
-                return Class.forName(MODEL_PACKAGE + "." + o);
-            }
-            catch (ClassNotFoundException e)
-            {
-                throw new ExceedRuntimeException(e);
-            }
+            return Model.getType((String)o);
         }
     }
 
-
-    /**
-     * Returns a type string for a model class.
-     *
-     * @param cls model class
-     * @return type string used by domain object "type" fields.
-     */
-    public static String getType(Class<? extends Model> cls)
-    {
-        String className = cls.getName();
-
-        if (!className.startsWith(MODEL_PACKAGE) || className.charAt(MODEL_PACKAGE.length()) != '.')
-        {
-            throw new IllegalArgumentException(cls + " is not in package " + MODEL_PACKAGE);
-        }
-
-        return className.substring(MODEL_PACKAGE.length() + 1);
-    }
 }

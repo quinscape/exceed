@@ -157,7 +157,7 @@ public class ComponentRegistryImpl
             }
 
 
-            String dataProviderName = descriptor.getDataProviderName();
+            String dataProviderName = descriptor.getDataProvider();
             DataProvider dataProviderBean = dataProviders.get(dataProviderName != null ? dataProviderName :
                 DEFAULT_DATA_PROVIDER);
             if (dataProviderBean == null)

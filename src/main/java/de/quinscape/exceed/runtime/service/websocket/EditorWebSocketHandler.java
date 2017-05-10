@@ -6,10 +6,8 @@ import de.quinscape.exceed.message.IncomingMessage;
 import de.quinscape.exceed.message.Message;
 import de.quinscape.exceed.message.Query;
 import de.quinscape.exceed.model.Model;
-import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.domain.DomainService;
-import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
 import de.quinscape.exceed.runtime.util.AppAuthentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -219,14 +217,7 @@ public class EditorWebSocketHandler
                 return editorMessageHandler.getMessageType();
             }
 
-            try
-            {
-                return Class.forName(ModelJSONServiceImpl.MODEL_PACKAGE + "." + o);
-            }
-            catch (ClassNotFoundException e)
-            {
-                throw new ExceedRuntimeException(e);
-            }
+            return Model.getType((String)o);
         }
     }
 }

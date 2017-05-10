@@ -1,6 +1,5 @@
+import DataCursor from "../domain/cursor";
 const actionService = require("../service/action");
-
-const DataCursor = require("../util/data-cursor");
 
 module.exports = function (model)
 {
@@ -16,7 +15,7 @@ module.exports = function (model)
         throw new Error("No data");
     }
 
-    var data = model.object;
+    const data = model.object;
 
     if (data instanceof DataCursor)
     {
@@ -28,9 +27,8 @@ module.exports = function (model)
     }
     else
     {
-        throw new Error("Cannot store unknown object" + model)
+        throw new Error("Cannot store unknown object" + model);
     }
-
 
     return actionService.execute(model, true);
 };

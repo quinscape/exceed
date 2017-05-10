@@ -1,13 +1,10 @@
 package de.quinscape.exceed.runtime.config;
 
-import de.quinscape.exceed.runtime.component.domain.DomainEditorProvider;
-import de.quinscape.exceed.runtime.component.translation.TranslationEditorProvider;
 import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.domain.migration.MigrationStep;
 import de.quinscape.exceed.runtime.domain.migration.MigrationStepRepository;
 import de.quinscape.exceed.runtime.editor.completion.CompletionService;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
-import de.quinscape.exceed.runtime.i18n.TranslationProvider;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.resource.DefaultResourceCacheFactory;
 import de.quinscape.exceed.runtime.resource.ResourceCacheFactory;
@@ -18,6 +15,8 @@ import de.quinscape.exceed.runtime.service.DomainServiceFactory;
 import de.quinscape.exceed.runtime.service.ProcessService;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
 import de.quinscape.exceed.runtime.view.ViewDataService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -32,14 +31,18 @@ import java.util.Map;
 })
 public class ServiceConfiguration
 {
+    private final static Logger log = LoggerFactory.getLogger(ServiceConfiguration.class);
+
     @Autowired
     private ApplicationContext applicationContext;
+
 
     @Bean
     public ViewDataService viewDataService()
     {
         return new ViewDataService();
     }
+
 
     @Bean
     public ResourceCacheFactory resourceCacheFactory()
@@ -49,11 +52,6 @@ public class ServiceConfiguration
         return cacheFactory;
     }
 
-    @Bean
-    public ModelDocsProvider modelDocsProvider()
-    {
-        return new ModelDocsProvider();
-    }
 
     @Bean
     public DefaultPropertyConverters defaultPropertyConverters()
@@ -61,11 +59,13 @@ public class ServiceConfiguration
         return new DefaultPropertyConverters();
     }
 
+
     @Bean
     public CompletionService completionService()
     {
         return new CompletionService();
     }
+
 
     @Bean
     public ScopedContextFactory scopedContextFactory(
@@ -77,11 +77,13 @@ public class ServiceConfiguration
         return new ScopedContextFactory(applicationService, expressionService, actionService);
     }
 
+
     @Bean
     public RuntimeContextFactory runtimeContextFactory(Translator translator)
     {
         return new RuntimeContextFactory(translator);
     }
+
 
     @Bean
     public DomainServiceFactory domainServiceFactory(
@@ -89,25 +91,16 @@ public class ServiceConfiguration
         StorageConfigurationRepository storageConfigurationRepository
     )
     {
-        return new DomainServiceFactory(defaultPropertyConverters,storageConfigurationRepository);
+        return new DomainServiceFactory(defaultPropertyConverters, storageConfigurationRepository);
     }
+
+
     @Bean
-    public ProcessService ProcessService(ActionService actionService, ExpressionService expressionService, ScopedContextFactory
+    public ProcessService ProcessService(ActionService actionService, ExpressionService expressionService,
+                                         ScopedContextFactory
         scopedContextFactory)
     {
         return new ProcessService(actionService, expressionService, scopedContextFactory);
-    }
-
-    @Bean
-    public TranslationEditorProvider translationReferenceProvider(TranslationProvider translationProvider)
-    {
-        return new TranslationEditorProvider(translationProvider);
-    }
-
-    @Bean
-    public DomainEditorProvider domainEditorProvider(StorageConfigurationRepository storageConfigurationRepository, ApplicationService applicationService)
-    {
-        return new DomainEditorProvider(storageConfigurationRepository, applicationService);
     }
 
     @Bean

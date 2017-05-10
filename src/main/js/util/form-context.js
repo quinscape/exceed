@@ -1,95 +1,98 @@
-var immutableUpdate = require("react-addons-update");
+const immutableUpdate = require("react-addons-update");
 const assign = require("object-assign");
 
-var count = 0;
+let count = 0;
 
-/**
- * Creates a new Form context
- *
- * @param horizontal        true if horizontal form
- * @param labelClass        default label classes
- * @param wrapperClass      defaul wrapper classes
- * @param errorsLink        ValueLink for the errors map.
- * @constructor
- */
-function FormContext(horizontal, labelClass, wrapperClass)
-{
-    this.id = ++count;
-    this.fieldIdCount = 0;
-
-    this.horizontal = horizontal;
-    this._labelClass = labelClass;
-    this._wrapperClass = wrapperClass;
-    this.errors = {};
-    this._errorMessages = null;
-}
-
-FormContext.prototype.nextId = function ()
-{
-    var id = ++this.fieldIdCount;
-    return "f" + this.id + "-" + id;
-};
-
-
-FormContext.prototype.labelClass = function (component)
-{
-    var classes = component.props.labelClass || this._labelClass;
-
-    if (this.horizontal)
+class FormContext {
+    /**
+     * Creates a new Form context
+     *
+     * @param horizontal        {boolean}true if horizontal form
+     * @param labelClass        {string} default label classes
+     * @param wrapperClass      {string} default wrapper classes
+     * @param updateAction      {function} action producer (cursor,newValue) => action
+     * @constructor
+     */
+    constructor(horizontal, labelClass, wrapperClass, updateAction)
     {
-        return classes.replace(/col-.*?\b/g, " ");
+        this.id = ++count;
+        this.fieldIdCount = 0;
+
+        this.horizontal = horizontal;
+        this._labelClass = labelClass;
+        this._wrapperClass = wrapperClass;
+        this.errors = {};
+        this._errorMessages = null;
+
+        this.update = updateAction;
     }
 
-    return classes;
-};
-
-FormContext.prototype.wrapperClass = function (component)
-{
-    return component.props.wrapperClass || this._wrapperClass;
-};
-
-FormContext.prototype.signalError = function (id, error)
-{
-    var newErrors = assign({}, this.errors);
-    newErrors[id] = error;
-    this.errors = newErrors;
-
-    if (this._errorMessages)
+    nextId()
     {
-        this._errorMessages.forceUpdate();
+        const id = ++this.fieldIdCount;
+        return "f" + this.id + "-" + id;
     }
-};
 
-FormContext.prototype.hasError = function (id)
-{
-    var errors = this.errors;
-    if (id)
+    labelClass(component)
     {
-        return errors.hasOwnProperty(id) && !!errors[id];
-    }
-    else
-    {
-        for (var name in errors)
+
+        if (this.horizontal)
         {
-            if (errors.hasOwnProperty(name) && errors[name])
-            {
-                return true;
-            }
+            return component.props.labelClass || this._labelClass;
         }
-        return false;
+
+        return "";
     }
-};
 
-FormContext.prototype.getErrorMessage = function (id)
-{
-    var errors = this.errors;
-    return errors.hasOwnProperty(id) && errors[id];
-};
+    wrapperClass(component)
+    {
+        return component.props.wrapperClass || this._wrapperClass;
+    }
 
-FormContext.prototype.deregister = function (id)
-{
-    var errors = this.errors;
-    delete errors[id];
-};
+    signalError(id, error)
+    {
+        const newErrors = assign({}, this.errors);
+        newErrors[id] = error;
+        this.errors = newErrors;
+
+        if (this._errorMessages)
+        {
+            this._errorMessages.forceUpdate();
+        }
+    }
+
+    hasError(id)
+    {
+        const errors = this.errors;
+        if (id)
+        {
+            return errors.hasOwnProperty(id) && !!errors[id];
+        }
+        else
+        {
+            for (let name in errors)
+            {
+                if (errors.hasOwnProperty(name) && errors[name])
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    getErrorMessage(id)
+    {
+        const errors = this.errors;
+        return errors.hasOwnProperty(id) && errors[id];
+    }
+
+    deregister(id)
+    {
+        const errors = this.errors;
+        delete errors[id];
+    }
+
+}
 
 module.exports = FormContext;

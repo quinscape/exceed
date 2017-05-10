@@ -1,53 +1,19 @@
-var token;
-var header;
-var param;
+import store from "./store";
 
-function init()
-{
-    if (!token)
-    {
-        var metas = document.getElementsByTagName("meta");
-        for (var i = 0; i < metas.length; i++)
-        {
-            var elem = metas[i];
-            var currentName = elem.getAttribute("name");
-            if (currentName === "token")
-            {
-                token = elem.getAttribute("content");
-            }
-            else if (currentName === "token-header")
-            {
-                header = elem.getAttribute("content");
-            }
-            else if (currentName === "token-param")
-            {
-                param = elem.getAttribute("content");
-            }
-        }
-
-        if (!token || !header || !param)
-        {
-            throw new Error("Could not initialize CSFR module");
-        }
-    }
-}
+import { getTokenInfo } from "../reducers"
 
 module.exports = {
     token: function ()
     {
-        init();
-        return token;
+        return getTokenInfo(store.getState()).value;
     },
     tokenHeader: function ()
     {
-        init();
-        return header;
-
+        return getTokenInfo(store.getState()).header;
     },
     tokenParam: function ()
     {
 
-        init();
-        return param;
+        return getTokenInfo(store.getState()).param;
     }
 };

@@ -6,9 +6,9 @@ import de.quinscape.exceed.runtime.scope.ScopeType;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.svenson.JSON;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Encapsulates references to the scope declaration of a single application location.
@@ -16,12 +16,18 @@ import java.util.Set;
 public class ScopeDeclarations
 {
     private final Map<String,ScopeDeclaration> definitions = new HashMap<>();
+    private final Map<String,ScopeDeclaration> definitionsRO = Collections.unmodifiableMap(definitions);
 
     private final String key;
 
 
     public ScopeDeclarations(String key)
     {
+        if (key == null)
+        {
+            throw new IllegalArgumentException("key can't be null");
+        }
+
 
         this.key = key;
     }
@@ -33,13 +39,27 @@ public class ScopeDeclarations
     }
 
 
-    public void add(ContextModel context, Set<String> names, ScopeType scopeType)
+    /**
+     * Returns an unmodifiable map with all valid scope declarations for this location.
+     *
+     * @return map of scope declarations
+     */
+    public Map<String, ScopeDeclaration> getDeclarations()
     {
-        for (String name : names)
+        return definitionsRO;
+    }
+
+
+    public void add(ContextModel context, ScopeType scopeType)
+    {
+        for (String name : context.getProperties().keySet())
         {
             final ScopeDeclaration existing = definitions.get(name);
             final ScopedPropertyModel model = context.getProperties().get(name);
-            final ScopeDeclaration definition = new ScopeDeclaration(context, name, key, scopeType, model);
+
+
+            final ScopeType declarationScopeType = scopeType == ScopeType.VIEW && model.isFromLayout() ? ScopeType.LAYOUT : scopeType;
+            final ScopeDeclaration definition = new ScopeDeclaration(name, key, declarationScopeType, model);
             if (existing != null && !existing.equals(definition))
             {
                 throw new ScopeNameCollisionException("Scoped definition '" + name + "' exists in both " + existing +
@@ -50,7 +70,7 @@ public class ScopeDeclarations
 
         if (scopeType == ScopeType.PROCESS)
         {
-            definitions.put(ProcessContext.DOMAIN_OBJECT_CONTEXT, new ScopeDeclaration(context, ProcessContext.DOMAIN_OBJECT_CONTEXT, key, ScopeType.PROCESS, null));
+            definitions.put(ProcessContext.DOMAIN_OBJECT_CONTEXT, new ScopeDeclaration(ProcessContext.DOMAIN_OBJECT_CONTEXT, key, ScopeType.PROCESS, null));
         }
     }
 

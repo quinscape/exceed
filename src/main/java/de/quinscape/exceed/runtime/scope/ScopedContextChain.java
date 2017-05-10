@@ -1,9 +1,9 @@
 package de.quinscape.exceed.runtime.scope;
 
 import com.google.common.collect.ImmutableMap;
-import de.quinscape.exceed.model.context.ScopeMetaModel;
 import de.quinscape.exceed.model.context.ScopeDeclaration;
 import de.quinscape.exceed.model.context.ScopeDeclarations;
+import de.quinscape.exceed.model.context.ScopeMetaModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 
 import java.util.ArrayList;
@@ -79,7 +79,7 @@ public final class ScopedContextChain
     public Object getProperty(String name)
     {
         final ScopeDeclaration definition = getDefinitionInternal(name);
-        return chainedScopes.get(definition.getScopeType().ordinal()).getProperty(name);
+        return chainedScopes.get(getScopeIndex(definition)).getProperty(name);
     }
 
     @Override
@@ -91,8 +91,7 @@ public final class ScopedContextChain
 
         if (definition.getScopeType() == ScopeType.PROCESS && name.equals(ProcessContext.DOMAIN_OBJECT_CONTEXT))
         {
-            final ProcessContext processContext = (ProcessContext) chainedScopes.get(definition.getScopeType()
-                .ordinal());
+            final ProcessContext processContext = (ProcessContext) chainedScopes.get(getScopeIndex(definition));
             return processContext.getCurrentDomainObjectModel();
         }
         return model;
@@ -103,7 +102,7 @@ public final class ScopedContextChain
     public void setProperty(String name, Object value)
     {
         final ScopeDeclaration declaration = getDefinitionInternal(name);
-        chainedScopes.get(declaration.getScopeType().ordinal()).setProperty(name, value);
+        chainedScopes.get(getScopeIndex(declaration)).setProperty(name, value);
     }
 
 
@@ -130,10 +129,18 @@ public final class ScopedContextChain
         final ScopeDeclaration declaration = scopeDeclarations.get(name);
         if (declaration != null)
         {
-            return chainedScopes.get(declaration.getScopeType().ordinal());
+            return chainedScopes.get(getScopeIndex(declaration));
         }
         return null;
     }
+
+
+    public int getScopeIndex(ScopeDeclaration declaration)
+    {
+        final ScopeType scopeType = declaration.getScopeType();
+        return scopeType == ScopeType.LAYOUT ? ScopeType.VIEW.ordinal() : scopeType.ordinal();
+    }
+
 
     private String describe()
     {

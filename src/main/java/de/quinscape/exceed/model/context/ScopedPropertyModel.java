@@ -26,6 +26,15 @@ public class ScopedPropertyModel
     private boolean fromLayout;
 
 
+    /**
+     * The property type of the scoped property.
+     *
+     * @see DomainProperty#DOMAIN_TYPE_PROPERTY_TYPE
+     * @see DomainProperty#MAP_PROPERTY_TYPE
+     * @see DomainProperty#LIST_PROPERTY_TYPE
+     *
+     * @return
+     */
     public String getType()
     {
         return type;
@@ -103,19 +112,6 @@ public class ScopedPropertyModel
         this.maxLength = maxLength;
     }
 
-
-    public boolean isRequired()
-    {
-        return required;
-    }
-
-
-    public void setRequired(boolean required)
-    {
-        this.required = required;
-    }
-
-
     /**
      * The name of the scoped property. Must be unique for all scope locations, i.e. within the combination of all
      * applicable scopes the each context.
@@ -147,6 +143,19 @@ public class ScopedPropertyModel
     }
 
 
+    @JSONProperty(ignore = true)
+    public boolean isFromLayout()
+    {
+        return fromLayout;
+    }
+
+
+    public void setFromLayout(boolean fromLayout)
+    {
+        this.fromLayout = fromLayout;
+    }
+
+
     @Override
     public String toString()
     {
@@ -155,7 +164,6 @@ public class ScopedPropertyModel
             + "type = '" + type + '\''
             + ", typeParam = " + typeParam
             + ", defaultValue = " + defaultValue
-            + ", required = " + required
             + ", maxLength = " + maxLength
             ;
     }

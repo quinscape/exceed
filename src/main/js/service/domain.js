@@ -1,8 +1,6 @@
-"use strict";
+import uuid from "uuid";
 
-var applicationDomain;
-
-var uuid = require("node-uuid");
+let applicationDomain;
 
 module.exports =
 {
@@ -15,7 +13,7 @@ module.exports =
     },
     init: function (domainData)
     {
-        //console.log("INIT DOMAIN", domainData);
+        console.log("INIT DOMAIN", domainData);
         applicationDomain = domainData;
     },
     getEnum: function (name)

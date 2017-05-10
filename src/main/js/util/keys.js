@@ -1,9 +1,21 @@
 if (typeof Object.keys === "function")
 {
+    /**
+     * Returns the keys of the given object
+     *
+     * @param o     object
+     * @returns {Array} keys
+     */
     module.exports = Object.keys;
 }
 else
 {
+    /**
+     * Returns the keys of the given object
+     *
+     * @param o     object
+     * @returns {Array} keys
+     */
     module.exports = function (o)
     {
         if (o !== Object(o))

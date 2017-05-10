@@ -1,25 +1,23 @@
-var React = require("react");
-var cx = require("classnames");
+import React from "react";
+import cx from "classnames";
+import DataCursor from "../../../domain/cursor"
+import DataGraph, { validateDataGraph } from "../../../domain/graph"
 
-var DataGraph = require("../../../util/data-graph");
-var DataCursor = require("../../../util/data-cursor");
-var Scope = require("../../../service/scope");
-var domainService = require("../../../service/domain");
+import Scope from "../../../service/scope";
+const domainService = require("../../../service/domain");
+import FormContext from "../../../util/form-context";
+import LinkedStateMixin from "react-addons-linked-state-mixin";
 
-var FormContext = require("../../../util/form-context");
-
-var LinkedStateMixin = require("react-addons-linked-state-mixin");
-
-
+import renderWithContext from "../../../util/render-with-context";
 
 function objectToDataGraph(input)
 {
-    var typeName = input._type;
-    var domainType = Scope.objectType(typeName);
+    const typeName = input._type;
+    const domainType = Scope.objectType(typeName);
 
-    var cols = {};
-    var obj = {};
-    for (var name in input)
+    const cols = {};
+    const obj = {};
+    for (let name in input)
     {
         if (input.hasOwnProperty(name))
         {
@@ -29,7 +27,7 @@ function objectToDataGraph(input)
             }
             else
             {
-                var qualified = typeName + "." + name;
+                const qualified = typeName + "." + name;
                 obj[qualified] = input[name];
                 cols[qualified] = {
                     type: typeName,
@@ -46,52 +44,47 @@ function objectToDataGraph(input)
         },
         columns: cols,
         rootObject: [ obj ],
+        isMap: false,
         count: 1
     };
 }
 
-var Form = React.createClass({
+class Form extends React.Component
+{
 
-    mixins: [ LinkedStateMixin ],
-
-    contextTypes: {
+    static contextTypes = {
         formContext: React.PropTypes.instanceOf(FormContext)
-    },
+    };
 
     // childContextTypes: {
     //     formContext: React.PropTypes.instanceOf(FormContext)
     // },
 
-    propTypes: {
+    static propTypes = {
         data: React.PropTypes.object.isRequired,
         horizontal: React.PropTypes.bool,
         labelClass: React.PropTypes.string,
         wrapperClass: React.PropTypes.string,
-        index: React.PropTypes.number
-    },
+        path: React.PropTypes.array
+    };
 
-    getDefaultProps: function ()
-    {
-        return {
-            horizontal: true,
-            labelClass: "col-md-2",
-            wrapperClass: "col-md-4",
-            index: 0
-        };
-    },
+    static defaultProps = {
+        horizontal: true,
+        labelClass: "col-md-2",
+        wrapperClass: "col-md-4",
+        path: [0]
+    };
 
-    cursorFromData: function(data)
+    cursorFromData(data)
     {
         if (!data)
         {
             throw new Error("No data");
         }
 
-        var types = domainService.getDomainTypes();
-
-        if (DataGraph.prototype.isRawDataGraph(data))
+        if (validateDataGraph(data))
         {
-            return new DataGraph(types, data, this.onChange).getCursor([this.props.index]);
+            return new DataCursor(domainService.getDomainTypes(), data, this.props.path);
         }
         else if (data instanceof DataCursor)
         {
@@ -99,32 +92,52 @@ var Form = React.createClass({
         }
         else if (data._type)
         {
-            return new DataGraph(types, objectToDataGraph(data), this.onChange).getCursor([this.props.index]);
+                return new DataCursor(domainService.getDomainTypes(), objectToDataGraph(data), this.props.path);
         }
         else
         {
             console.error("Cannot handle data", data);
         }
-    },
-
-    onChange: function (newGraph, path)
-    {
-        //console.log("onChange", JSON.stringify(newGraph), path);
-
-        this.setState({
-            dataGraph: newGraph
-        });
-    },
-
-    render: function ()
-    {
-        var ctx = this.context.formContext;
-
-        var cursor = this.cursorFromData(this.props.data);
-        return ( <form className={ cx("form", ctx.horizontal && "form-horizontal") } onSubmit={ this.onSubmit }>
-            { this.props.renderChildren ? this.props.renderChildren(cursor) : this.props.children }
-        </form> );
     }
-});
 
-module.exports = Form;
+    onSubmit = ev => {
+
+        const primaryButtons = document.querySelectorAll(".btn-primary");
+        if (primaryButtons.length && !primaryButtons[0].disabled)
+        {
+            primaryButtons[0].focus();
+        }
+        else
+        {
+            const tmp = document.createElement("input");
+            document.body.appendChild(tmp);
+            tmp.focus();
+            document.body.removeChild(tmp);
+        }
+
+        ev.preventDefault();
+    };
+
+    // onChange: function (newGraph, path)
+    // {
+    //     //console.log("onChange", JSON.stringify(newGraph), path);
+    //
+    //     this.setState({
+    //         dataGraph: newGraph
+    //     });
+    // },
+
+    render()
+    {
+        const ctx = this.context.formContext;
+        const cursor = this.cursorFromData(this.props.data);
+        return (
+            <form className={ cx( ctx && ctx.horizontal ? "form-horizontal" : "form") } onSubmit={ this.onSubmit }>
+                { renderWithContext(this.props.children, cursor) }
+            </form>
+        );
+    }
+}
+
+export default Form;
+

@@ -60,17 +60,17 @@ public class ScopeMetaModel
         this.applicationModel = applicationModel;
 
         definitions.put(SYSTEM, createDefinitionMap(
+            SYSTEM,
             null,
             null,
-            null,
-            applicationModel.getApplicationContext()
+            applicationModel.getApplicationContextModel()
         ));
 
 
-        definitions.put(ACTION, createDefinitionMap(null,
+        definitions.put(ACTION, createDefinitionMap(ACTION,
             null,
-            applicationModel.getSessionContext(),
-            applicationModel.getApplicationContext()
+            applicationModel.getSessionContextModel(),
+            applicationModel.getApplicationContextModel()
         ));
     }
 
@@ -87,9 +87,9 @@ public class ScopeMetaModel
         definitions.put(key, createDefinitionMap(
             key,
             processState instanceof ViewState ? process.getView(processState.getName()).getContextModel() : null,
-            process.getContext(),
-            applicationModel.getSessionContext(),
-            applicationModel.getApplicationContext()
+            process.getContextModel(),
+            applicationModel.getSessionContextModel(),
+            applicationModel.getApplicationContextModel()
         ));
     }
 
@@ -113,8 +113,8 @@ public class ScopeMetaModel
             key,
             view.getContextModel(),
             null,
-            applicationModel.getSessionContext(),
-            applicationModel.getApplicationContext()
+            applicationModel.getSessionContextModel(),
+            applicationModel.getApplicationContextModel()
         ));
     }
 
@@ -134,7 +134,7 @@ public class ScopeMetaModel
 
     private ScopeDeclarations createDefinitionMap(String key, ContextModel... contexts)
     {
-        final ScopeDeclarations scopeDefinitions = new ScopeDeclarations(key);
+        final ScopeDeclarations scopeDeclarations = new ScopeDeclarations(key);
 
         for (int i = 0, contextsLength = contexts.length; i < contextsLength; i++)
         {
@@ -143,12 +143,11 @@ public class ScopeMetaModel
             if (context != null)
             {
                 final ScopeType scopeType = ScopeType.values()[i];
-
-                scopeDefinitions.add(context, context.getProperties().keySet(), scopeType);
+                scopeDeclarations.add(context, scopeType);
             }
         }
 
-        return scopeDefinitions;
+        return scopeDeclarations;
     }
 
 

@@ -92,7 +92,7 @@ public class ExpressionParserTest
 
         ASTMult multNode = (ASTMult) parse("(2 + 3) * 4");
         assertThat(multNode, is(notNullValue()));
-        assertThat(((ASTAdd) ((ASTExpression) multNode.jjtGetChild(0)).jjtGetChild(0)).getOperator(), is(Operator.ADD));
+        assertThat(((ASTAdd) multNode.jjtGetChild(0).jjtGetChild(0)).getOperator(), is(Operator.ADD));
 
     }
 

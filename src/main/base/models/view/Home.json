@@ -1,126 +1,120 @@
 {
-    "root": {
-        "name": "View",
-        "kids": [
-            {
-                "name": "Grid",
-                "attrs": {
-                    "fluid": "{ true }"
-                },
-                "kids": [
-                    {
-                        "name": "Row",
-                        "kids": [
-                            {
-                                "name": "Col",
-                                "attrs": {
-                                    "md": "{ 6 }"
     "type": "xcd.view.View",
-                                },
-                                "kids": [
-                                    {
-                                        "name": "Heading",
-                                        "attrs": {
-                                            "id": "myHeading",
-                                            "value": "{ i18n('Home') }"
-                                        }
-                                    },
-                                    {
-                                        "name": "Link",
-                                        "attrs": {
-                                            "location": "/process",
-                                            "text": "Counter"
-                                        }
-                                    },
-                                    {
-                                        "name": "Link",
-                                        "attrs": {
-                                            "location": "/process",
-                                            "text": "Counter"
-                                        }
-                                    },
-                                    {
-                                        "name": "Heading",
-                                        "attrs": {
-                                            "id": "myHeading",
-                                            "value": "{ 'Heading: ' + props.id }"
-                                        }
-                                    },
-                                    {
-                                        "name": "DataGrid",
-                                        "attrs": {
-                                            "id": "myDG",
-                                            "limit": "{ 3 }",
-                                            "type": "{ Foo }"
-                                        },
-                                        "kids": [
-                                            {
-                                                "name": "DataGrid.Column",
-                                                "attrs": {
-                                                    "name": "id",
-                                                    "heading": "Detail"
-                                                },
-                                                "kids": [
-                                                    {
-                                                        "name": "Link",
-                                                        "attrs": {
-                                                            "location": "/detail/{id}",
-                                                            "text": "Detail"
-                                                        },
-                                                        "kids": [
-                                                            {
-                                                                "name": "Link.Param",
-                                                                "attrs": {
-                                                                    "name": "id",
-                                                                    "value": "{ context }"
-                                                                }
-                                                            }
-                                                        ]
-                                                    },
-                                                    {
-                                                        "name": "Link",
-                                                        "attrs": {
-                                                            "location": "/detail2/{id}",
-                                                            "text": "Detail 2"
-                                                        },
-                                                        "kids": [
-                                                            {
-                                                                "name": "Link.Param",
-                                                                "attrs": {
-                                                                    "name": "id",
-                                                                    "value": "{ context }"
-                                                                }
-                                                            }
-                                                        ]
-                                                    }
-                                                ]
-                                            },
-                                            {
-                                                "name": "DataGrid.Column",
-                                                "attrs": {
-                                                    "name": "name"
-                                                }
-                                            },
-                                            {
-                                                "name": "DataGrid.Column",
-                                                "attrs": {
-                                                    "name": "type"
-                                                }
-                                            },
-                                            {
-                                                "name": "DataGrid.Column",
-                                                "attrs": {
-                                                    "name": "created"
-                                                }
-                                            }
-                                        ]
+    "name": "Home",
+    "identityGUID": "064d0906-c6a3-46a6-a939-5302913e6642",
+    "title": "Home",
+    "content": {
+        "main": {
+            "name": "Grid",
+            "attrs": {
+                "fluid": "{ true }"
+            },
+            "kids": [
+                {
+                    "name": "Row",
+                    "kids": [
+                        {
+                            "name": "Col",
+                            "attrs": {
+                                "md": "{ 6 }"
+                            },
+                            "kids": [
+                                {
+                                    "name": "Heading",
+                                    "attrs": {
+                                        "value": "{ i18n('Home') }",
+                                        "id": "myHeading2"
                                     }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-    }
+                                },
+                                {
+                                    "name": "Link",
+                                    "attrs": {
+                                        "location": "/process",
+                                        "text": "Counter"
+                                    }
+                                },
+                                {
+                                    "name": "Heading",
+                                    "attrs": {
+                                        "value": "{ 'Heading: ' + props.id }",
+                                        "id": "myHeading"
+                                    }
+                                },
+                                {
+                                    "name": "DataGrid",
+                                    "attrs": {
+                                        "limit": "{ 3 }",
+                                        "type": "{ Foo }",
+                                        "id": "myDG"
+                                    },
+                                    "kids": [
+                                        {
+                                            "name": "DataGrid.Column",
+                                            "attrs": {
+                                                "name": "id",
+                                                "heading": "Detail"
+                                            },
+                                            "kids": [
+                                                {
+                                                    "name": "Link",
+                                                    "attrs": {
+                                                        "location": "/detail/{id}",
+                                                        "text": "Detail"
+                                                    },
+                                                    "kids": [
+                                                        {
+                                                            "name": "Link.Param",
+                                                            "attrs": {
+                                                                "name": "id",
+                                                                "value": "{ context }"
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "Link",
+                                                    "attrs": {
+                                                        "location": "/detail2/{id}",
+                                                        "text": "Detail 2"
+                                                    },
+                                                    "kids": [
+                                                        {
+                                                            "name": "Link.Param",
+                                                            "attrs": {
+                                                                "name": "id",
+                                                                "value": "{ context }"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "DataGrid.Column",
+                                            "attrs": {
+                                                "name": "name"
+                                            }
+                                        },
+                                        {
+                                            "name": "DataGrid.Column",
+                                            "attrs": {
+                                                "name": "description"
+                                            }
+                                        },
+                                        {
+                                            "name": "DataGrid.Column",
+                                            "attrs": {
+                                                "name": "created"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "comments": null
 }

@@ -1,6 +1,17 @@
 package de.quinscape.exceed.runtime.config;
 
+import de.quinscape.exceed.model.ApplicationConfig;
+import de.quinscape.exceed.model.DomainEditorViews;
+import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.action.ActionModel;
+import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.DomainVersion;
+import de.quinscape.exceed.model.domain.EnumType;
+import de.quinscape.exceed.model.domain.PropertyType;
+import de.quinscape.exceed.model.process.Process;
+import de.quinscape.exceed.model.routing.RoutingTable;
+import de.quinscape.exceed.model.view.LayoutModel;
+import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.action.Action;
 import de.quinscape.exceed.runtime.action.ClientSideOnlyAction;
@@ -28,9 +39,12 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+
+import static de.quinscape.exceed.runtime.model.ModelCompositionService.*;
 
 @Configuration
 @ComponentScan(value = {

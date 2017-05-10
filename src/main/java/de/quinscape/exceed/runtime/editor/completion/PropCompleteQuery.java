@@ -2,10 +2,9 @@ package de.quinscape.exceed.runtime.editor.completion;
 
 import de.quinscape.exceed.message.MessageMeta;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.util.ComponentPath;
 import org.svenson.JSONParameter;
 import org.svenson.JSONTypeHint;
-
-import java.util.List;
 
 public class PropCompleteQuery
     extends PropNameCompleteQuery
@@ -14,16 +13,20 @@ public class PropCompleteQuery
 
 
     public PropCompleteQuery(
+
         @JSONParameter("path")
-        List<Long> path,
+        ComponentPath path,
+
         @JSONParameter("viewModel")
         @JSONTypeHint(View.class)
         View viewModel,
+
         @JSONParameter("propName")
         String propName,
+
         @JSONParameter("meta")
-        MessageMeta
-            meta)
+        MessageMeta meta
+    )
     {
         super(path, viewModel, meta);
 

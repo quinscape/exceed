@@ -21,8 +21,7 @@ const Button = require("../../../ui/Button");
 
 const Modal = require("react-bootstrap/lib/Modal");
 
-const DataCursor = require("../../../util/data-cursor");
-const util = require("../../../util/data-graph-util");
+import DataCursor from "../../../domain/cursor"
 
 function mapToName(type)
 {
@@ -143,16 +142,18 @@ var DomainTypeForm = React.createClass({
     render: function ()
     {
         const domainTypeName = this.props.name;
+        const domainTypeCursor = this.props.cursor;
+        const properties = domainTypeCursor.get(["properties"]);
+
         if (!domainTypeName)
         {
             return false;
         }
-
-        const domainTypeCursor = this.props.cursor;
-
-        const editing = this.props.editingPropLink.value;
-
-        const properties = domainTypeCursor.get(["properties"]);
+        var  editing = this.props.editingPropLink.value;
+        if (editing >= properties.length)
+        {
+            editing = properties.length - 1;
+        }
 
         const propertyCursor = domainTypeCursor.getCursor(["properties", editing]);
         const foreignKey = propertyCursor.get(['foreignKey']);

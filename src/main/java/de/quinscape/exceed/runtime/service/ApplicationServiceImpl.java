@@ -6,6 +6,7 @@ import de.quinscape.exceed.runtime.application.ApplicationNotFoundException;
 import de.quinscape.exceed.runtime.application.ApplicationStatus;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.service.client.ClientStateService;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,16 +35,45 @@ public class ApplicationServiceImpl
 
     private final static Logger log = LoggerFactory.getLogger(ApplicationServiceImpl.class);
 
-    @Autowired
     private ApplicationContext applicationContext;
 
-    @Autowired
     private DSLContext dslContext;
 
-    @Autowired
     private RuntimeApplicationFactory runtimeApplicationFactory;
 
+    private ClientStateService clientStateService;
+
+
+    @Autowired
+    public void setApplicationContext(ApplicationContext applicationContext)
+    {
+        this.applicationContext = applicationContext;
+    }
+
+
+    @Autowired
+    public void setDslContext(DSLContext dslContext)
+    {
+        this.dslContext = dslContext;
+    }
+
+
+    @Autowired
+    public void setRuntimeApplicationFactory(RuntimeApplicationFactory runtimeApplicationFactory)
+    {
+        this.runtimeApplicationFactory = runtimeApplicationFactory;
+    }
+
+
+    @Autowired
+    public void setClientStateService(ClientStateService clientStateService)
+    {
+        this.clientStateService = clientStateService;
+    }
+
+
     private ConcurrentMap<String, ApplicationHolder> applications = new ConcurrentHashMap<>();
+
 
     @Override
     public AppState getApplicationState(String name)
@@ -292,6 +322,11 @@ public class ApplicationServiceImpl
                     {
                         AppState applicationState = getApplicationState(name);
                         runtimeApplication = runtimeApplicationFactory.createRuntimeApplication(servletContext, applicationState);
+
+                        if (forceRefresh)
+                        {
+                            clientStateService.flushApplicationScope(name);
+                        }
                     }
                 }
             }

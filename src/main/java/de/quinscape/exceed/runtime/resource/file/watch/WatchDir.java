@@ -151,7 +151,7 @@ abstract class WatchDir
                 }
                 catch(RuntimeException e)
                 {
-                    log.info("Error processing watch event", e);
+                    log.error("Error processing watch event", e);
                 }
 
                 // if directory is created, and watching recursively, then

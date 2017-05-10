@@ -10,35 +10,39 @@ import java.util.Map;
 /**
  * Encapsulates a domain state
  */
+@Internal
 public class DomainVersion
     extends TopLevelModel
 {
-    private final String schema;
+    private String schema;
 
-    private final Map<String, DomainType> domainTypes;
+    private Map<String, DomainType> domainTypes;
 
-    private final Map<String, EnumType> enumTypes;
+    private Map<String, EnumType> enumTypes;
 
-    private final List<MigrationStepModel> migrationSteps;
+    private List<MigrationStepModel> migrationSteps;
 
 
-    public DomainVersion(
-        @JSONParameter("schema")
-        String schema,
-        @JSONParameter("domainTypes")
-        @JSONTypeHint(DomainType.class)
-        Map<String, DomainType> domainTypes,
-        @JSONParameter("enumTypes")
-        @JSONTypeHint(EnumType.class)
-            Map<String, EnumType> enumTypes,
-        @JSONParameter("migrationSteps")
-        @JSONTypeHint(MigrationStepModel.class)
-            List<MigrationStepModel>
-            migrationSteps)
+    public void setSchema(String schema)
     {
         this.schema = schema;
+    }
+
+
+    public void setDomainTypes(Map<String, DomainType> domainTypes)
+    {
         this.domainTypes = domainTypes;
+    }
+
+
+    public void setEnumTypes(Map<String, EnumType> enumTypes)
+    {
         this.enumTypes = enumTypes;
+    }
+
+
+    public void setMigrationSteps(List<MigrationStepModel> migrationSteps)
+    {
         this.migrationSteps = migrationSteps;
     }
 

@@ -18,8 +18,7 @@ const Link = require("../../../ui/Link");
 
 const Modal = require("react-bootstrap/lib/Modal");
 
-const DataCursor = require("../../../util/data-cursor");
-const util = require("../../../util/data-graph-util");
+import DataCursor from "../../../domain/cursor"
 
 var EnumTypeForm = React.createClass({
 

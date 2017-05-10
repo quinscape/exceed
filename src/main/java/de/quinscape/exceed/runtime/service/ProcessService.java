@@ -52,7 +52,7 @@ public class ProcessService
 
         String appName = runtimeContext.getApplicationModel().getName();
 
-        ContextModel contextModel = process.getContext();
+        ContextModel contextModel = process.getContextModel();
 
         ProcessContext scopedContext = scopedContextFactory.createProcessContext(contextModel);
         scopedContextFactory.initializeContext(runtimeContext, scopedContext);

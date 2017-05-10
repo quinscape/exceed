@@ -12,10 +12,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class Util
@@ -49,10 +51,49 @@ public final class Util
         StringBuilder sb = new StringBuilder();
         do
         {
-            int lowerBits = (int) (value & 31);
-            sb.append(BASE32_ALPHABET[lowerBits]);
-            value >>>= 5;
+            value = dump32(sb, value);
         } while (value != 0);
+        return sb.reverse().toString();
+    }
+
+
+    private static long dump32(StringBuilder sb, long value)
+    {
+        int lowerBits = (int) (value & 31);
+        sb.append(BASE32_ALPHABET[lowerBits]);
+        value >>>= 5;
+        return value;
+    }
+
+
+    /**
+     * Returns a base32 representation of a 128-bit value split into two longs.
+     *
+     * @param lo        lower 64 bits
+     * @param hi        upper 64 bits
+     * @return  base32 string
+     */
+    public static String base32(long lo, long hi)
+    {
+        StringBuilder sb = new StringBuilder(26);
+
+        long value = lo;
+        for (int i=0; i < 12; i++)
+        {
+            value = dump32(sb, value);
+        }
+
+        // upper 4 bits of lo (unsigned) and lower bit of hi
+        //noinspection NumericOverflow
+        final int carry = (int) (((hi & 1) << 4) + (lo >>> 60));
+
+        sb.append(BASE32_ALPHABET[carry]);
+
+        value = hi >>> 1;
+        for (int i=0; i < 13; i++)
+        {
+            value = dump32(sb, value);
+        }
         return sb.reverse().toString();
     }
 
@@ -272,6 +313,11 @@ public final class Util
         return hashcode;
     }
 
+    public static String base32UUID()
+    {
+        UUID uuid = UUID.randomUUID();
+        return base32(uuid.getLeastSignificantBits(), uuid.getMostSignificantBits());
+    }
 
     public static <K,V> Map<K, V> immutableMap(Map<K, V> map)
     {
@@ -289,4 +335,21 @@ public final class Util
         return set != null ? ImmutableSet.copyOf(set) : Collections.emptySet();
     }
 
+
+    public static String join(List<Object> values, String sep)
+    {
+        StringBuilder sb = new StringBuilder();
+        for (Iterator<Object> iterator = values.iterator(); iterator.hasNext(); )
+        {
+            Object value = iterator.next();
+            sb.append(value);
+
+            if (iterator.hasNext())
+            {
+                sb.append(sep);
+            }
+        }
+
+        return sb.toString();
+    }
 }

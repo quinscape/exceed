@@ -7,7 +7,7 @@ var sys = require("../sys");
 
 var Hub;
 
-if ( process.env.NODE_ENV === "production")
+if (!process.env.USE_EDITOR)
 {
     const ERROR = new Error("Hub inactive");
     Hub =  {
@@ -228,7 +228,7 @@ else
 
                     ws.onopen = function ()
                     {
-                        console.info("connected");
+                        //console.info("connected");
 
                         wasConnected = true;
                         attempts = 0;
@@ -274,7 +274,7 @@ else
         {
             if (reply.ok)
             {
-                //console.debug("REPLY: %o", JSON.stringify(message, null, 2));
+                console.debug("REPLY: %o", JSON.stringify(message, null, 2));
                 deferred.resolve(message);
             }
             else

@@ -1,47 +1,50 @@
 const PRODUCTION = (process.env.NODE_ENV === "production");
+const USE_EDITOR = (process.env.USE_EDITOR !== "false");
 const REACT_CATCH_ERRORS = !PRODUCTION && !process.env.NO_CATCH_ERRORS;
 
-var path = require("path");
-var os = require("os");
-var webpack = require("webpack");
+const path = require("path");
+const fs = require("fs");
+const os = require("os");
+const webpack = require("webpack");
 
-var TrackUsagePlugin = require("babel-plugin-track-usage/webpack/track-usage-plugin");
+const WebpackStatsPlugin  = require("./tooling/webpack-stats-plugin");
+const CleanObsoleteChunks = require('webpack-clean-obsolete-chunks');
 
-var babelConfig = {
-    "plugins": [
-        "check-es2015-constants",
-        "transform-es2015-arrow-functions",
-        "transform-react-jsx",
-        "transform-react-display-name",
-        "transform-es2015-computed-properties",
-        "transform-es2015-destructuring",
-        "transform-es2015-block-scoping",
-        "transform-node-env-inline",
-        "transform-es2015-modules-commonjs",
-        "transform-strict-mode",
-        "transform-object-rest-spread",
-        [
-            "track-usage",
-            {
-                "sourceRoot" : "src/main/js/",
-                "trackedFunctions": {
-                    "i18n": {
-                        "module": "./service/i18n",
-                        "fn": "",
-                        "varArgs": true
-                    },
-                    "scope": {
-                        "module": "./service/process",
-                        "fn": "scope"
+const TrackUsagePlugin = require("babel-plugin-track-usage/webpack/track-usage-plugin");
+
+// load .babelrc config but change turn off import handling because webpack does that
+// the .babelrc is used as-is for the tests (for which it is converted to commonjs)
+const babelConfig =(
+        function ()
+        {
+            const BabelConfig = JSON.parse(fs.readFileSync("./.babelrc", "UTF-8"));
+            BabelConfig.presets[0][1].modules = false;
+
+            // we need our track-usage plugin in any case
+            BabelConfig.plugins.push(
+                [
+                    "track-usage",
+                    {
+                        "sourceRoot" : "src/main/js/",
+                        "trackedFunctions": {
+                            "i18n": {
+                                "module": "./service/i18n",
+                                "fn": "",
+                                "varArgs": true
+                            },
+                            "scope": {
+                                "module": "./service/process",
+                                "fn": "scope"
+                            }
+                        },
+                        "debug": false
                     }
-                },
-                "debug": false
-            }
-        ]
-    ]
-    // using "cacheDirectory" would unfortunately cause problems with the track-usages output
-};
+                ]
+            );
 
+            return BabelConfig;
+        }
+    )();
 
 if (REACT_CATCH_ERRORS)
 {
@@ -77,37 +80,71 @@ if (REACT_CATCH_ERRORS)
 
 
 module.exports = {
-    entry: "./src/main/js/main.js",
-    output: {
-        path: __dirname,
-        filename: "src/main/base/resources/js/main.js",
-        library: "Exceed",
-        libraryTarget: "var"
+
+    devtool: "source-map",
+
+    context: path.resolve(__dirname, "src/main/js"),
+    entry: {
+        app: "./app-main.js",
+        editor: "./editor-main.js",
+        docs: "./docs-main.js"
     },
+
+    output: {
+        path: path.join(__dirname, "src/main/base/resources/js"),
+        publicPath: "/exceed/res/exceed/js",
+        filename: "exceed-[name]-[chunkhash].js",
+        library: "Exceed",
+        libraryTarget: "var",
+        //pathinfo: true
+    },
+
     plugins: [
+        new webpack.optimize.CommonsChunkPlugin({
+            name: "common"
+        }),
+
         // Always expose NODE_ENV to webpack, you can now use `process.env.NODE_ENV`
         // inside your code for any environment checks; UglifyJS will automatically
         // drop any unreachable code.
         new webpack.DefinePlugin({
+            "__PROD": PRODUCTION,
+            "__DEV": !PRODUCTION,
             "process.env": {
-                "NODE_ENV": "'" + process.env.NODE_ENV + "'"
+                "USE_EDITOR": USE_EDITOR,
+                "NO_CATCH_ERRORS": !REACT_CATCH_ERRORS
             }
         }),
         new TrackUsagePlugin({
             output: path.join(__dirname, "src/main/base/resources/js/track-usage.json")
-        })
+        }),
+        WebpackStatsPlugin(path.join(__dirname, "src/main/base/resources/js/webpack-stats.json")),
+        new CleanObsoleteChunks()
     ],
+
     module: {
         loaders: [
             {
                 test: /\.jsx?$/,
                 loader: "babel-loader",
                 exclude: [/node_modules/, /\.es5\.js/],
+                // XXX: jsonified to escape warning "DeprecationWarning: loaderUtils.parseQuery() received a non-string value"
+                //query: JSON.stringify(babelConfig)
                 query: babelConfig
             },
             {
                 test: /.json$/,
-                loader: "json-loader"
+                loader: "json-loader",
+                include: [
+                    /node_modules/
+                ]
+            },
+            {
+                test: /.svg$/,
+                loader: "symbol-loader",
+                query: {
+                    parseStyle: true
+                }
             }
         ]
     }

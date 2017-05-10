@@ -20,20 +20,17 @@
     <meta name="token-header" content="$CSRF_HEADER_NAME"/>
     <meta name="token-param" content="$CSRF_PARAMETER_NAME"/>
 
-<script id="root-model" type="x-ceed/view-model">
-$VIEW_MODEL
-</script>
 <script id="root-data" type="x-ceed/view-data">
 $VIEW_DATA
 </script>
-<script id="system-info" type="x-ceed/system-info">
-$SYSTEM_INFO
-</script>
 $SCRIPTS
+$HEAD
 </head>
-<body data-app-name="$APP_NAME" data-login="$USER_NAME" data-roles="$USER_ROLES" data-connection-id="$CONNECTION_ID">
+<body>
+$CONTENT_BEFORE
 <div id="root">
-    $CONTENT
+$CONTENT
 </div>
+$CONTENT_AFTER
 </body>
 </html>

@@ -4,37 +4,29 @@ import de.quinscape.exceed.message.MessageMeta;
 import de.quinscape.exceed.message.Query;
 import org.svenson.JSONParameter;
 
+import java.util.Map;
+
 public class SaveViewRequest
     extends Query
 {
-    private final String viewName;
+    private final Map<String, String> documents;
 
-    private final String json;
 
     public SaveViewRequest(
-        @JSONParameter("viewName")
-        String viewName,
-        @JSONParameter("document")
-        String json,
+        @JSONParameter("documents")
+        Map<String, String> documents,
         @JSONParameter("meta")
         MessageMeta meta
     )
     {
         super(meta);
 
-        this.viewName = viewName;
-        this.json = json;
+        this.documents = documents;
     }
 
 
-    public String getViewName()
+    public Map<String, String> getDocuments()
     {
-        return viewName;
-    }
-
-
-    public String getJson()
-    {
-        return json;
+        return documents;
     }
 }

@@ -2,11 +2,11 @@
     "components": {
         "View": {
             "classes": ["toplevel"],
-            "childRule" : "hasClass('view-child')",
+            "childRule": "hasClass('view-child')",
             "propTypes": {
                 "title": {
                     "type": "PLAINTEXT",
-                    "defaultValue" : "i18n('Untitled')"
+                    "defaultValue": "i18n('Untitled')"
                 },
                 "layout": {
                     "rule": "layout()",
@@ -21,7 +21,7 @@
             "classes": ["element"],
             "propTypes": {
                 "value": {
-                    "type" : "PLAINTEXT"
+                    "type": "PLAINTEXT"
                 },
                 "size": {
                     "rule": "range(1,6)"
@@ -33,29 +33,52 @@
             "propTypes": {
                 "location": {
                     "rule": "location()",
-                    "required" : true
+                    "required": true
                 },
                 "text": {
                     "type": "PLAINTEXT",
-                    "required" : true
+                    "required": true
                 }
             },
-            "childRule" : "component('Link.Param')"
+            "childRule": "component('Link.Param')"
         },
         "Link.Param": {
             "propTypes": {
                 "name": {
-                    "type" : "PLAINTEXT",
-                    "rule" : "locationParams()",
-                    "required" : true
+                    "type": "PLAINTEXT",
+                    "rule": "locationParams()",
+                    "required": true
                 },
                 "value": {
-                    "required" : true
+                    "required": true
                 }
             }
         },
         "Footer": {
             "classes": ["top-level", "element"]
+        },
+        "Error": {
+            "classes": ["top-level", "element"],
+            "propTypes": {
+                "error": {
+                    "type": "VALUE_EXPRESSION",
+                    "required": true
+                }
+            }
+        },
+        "Test" : {
+            "classes" : [ "element", "model-aware"],
+            "dataProvider" : "testDataProvider",
+
+            "vars": {
+                "value": "prop('value')"
+            },
+            "propTypes": {
+                "value": {
+                    "type" : "VALUE_EXPRESSION"
+                }
+            },
+            "childRule" : "hasClass('element')"
         }
     }
 }

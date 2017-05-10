@@ -25,7 +25,7 @@ public class ModelJSONServiceTest
     @Test
     public void testToJSON() throws Exception
     {
-        assertThat(modelJSONService.toJSON(new RoutingTable()), is("{\"type\":\"routing.RoutingTable\",\"name\":\"routing\",\"extension\":0,\"mappings\":null}"));
+        assertThat(modelJSONService.toJSON(new RoutingTable()), is("{\"type\":\"xcd.routing.RoutingTable\",\"name\":\"routing\",\"extension\":0,\"mappings\":null}"));
 
     }
 
@@ -35,19 +35,19 @@ public class ModelJSONServiceTest
     {
 
         {
-            RoutingTable routingTable = (RoutingTable) modelJSONService.toModel(Model.class, "{\"type\":\"routing.RoutingTable\",\"rootNode\":{\"name\":\"foo\", \"mapping\": null}}");
+            RoutingTable routingTable = (RoutingTable) modelJSONService.toModel(Model.class, "{\"type\":\"xcd.routing.RoutingTable\",\"rootNode\":{\"name\":\"foo\", \"mapping\": null}}");
 
             assertThat(routingTable,is(notNullValue()));
             assertThat(routingTable.getRootNode().getName(),is("foo"));
             assertThat(routingTable.getRootNode().getMapping(), is(nullValue()));
         }
 
-        View view = (View) modelJSONService.toModel(Model.class, "{\"type\":\"view.View\"," +
-            "\"root\":{\"name\":\"View\",\"kids\": [{\"name\":\"div\", \"kids\": [\"String child\"]}]}}");
+        View view = (View) modelJSONService.toModel(Model.class, "{\"type\":\"xcd.view.View\"," +
+            "\"content\":{\"main\":{\"name\":\"div\", \"kids\": [\"String child\"]}}}");
 
         assertThat(view,is(notNullValue()));
-        assertThat(view.getRoot().getKids().size(),is(1));
-        ComponentModel strModel = view.getRoot().getKids().get(0).getKids().get(0);
+        assertThat(view.getContent(View.MAIN).getKids().size(),is(1));
+        ComponentModel strModel = view.getContent(View.MAIN).getKids().get(0);
         AttributeValue valueAttr = strModel.getAttribute("value");
         assertThat(strModel.getName(),is("[String]"));
         assertThat(valueAttr.getType(),is(AttributeValueType.STRING));
@@ -58,6 +58,6 @@ public class ModelJSONServiceTest
     @Test
     public void testGetType() throws Exception
     {
-        assertThat(ModelJSONServiceImpl.getType(RoutingTable.class), is("routing.RoutingTable"));
+        assertThat(Model.getType(RoutingTable.class), is("xcd.routing.RoutingTable"));
     }
 }

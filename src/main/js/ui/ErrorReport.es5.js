@@ -25,30 +25,21 @@ var ErrorReport = React.createClass({
 
     render: function ()
     {
-        var error = this.props.error;
+        const error = this.props.error;
 
-        if (typeof error === "object")
+        if (error instanceof Error)
         {
+            console.error(error);
+            
             return (
+
                 div(
                     {
-                        className: "error-report bg-danger"
-                    },
-                    p(null, this.props.text + "\n\n"),
-                    p(null,JSON.stringify(error))
-                )
-            );
-        }
-        else
-        {
-            return (
-                div(
-                    {
-                        className: "error-report bg-danger"
+                        className: "error-report"
                     },
                     p(null, this.props.text + String(error) + "\n\n"),
                     ul(null,
-                        ErrorStackParser.parse(error).map(function(entry, index)
+                        ErrorStackParser.parse(error).map(function (entry, index)
                         {
                             return li(
                                 {
@@ -59,7 +50,7 @@ var ErrorReport = React.createClass({
                                         href: "view-source:" + entry.fileName,
                                         target: "exceed-source"
                                     },
-                                    entry.functionName + " ( Line " + entry.lineNumber +", Column " + entry.column+ ")"
+                                    entry.functionName + " ( " + entry.fileName + ", Line " + entry.lineNumber + ", Column " + entry.column + ")"
                                 )
                             );
                         }, this)
@@ -67,6 +58,17 @@ var ErrorReport = React.createClass({
                 )
             );
 
+        } else
+        {
+            return (
+                div(
+                    {
+                        className: "error-report bg-danger"
+                    },
+                    p(null, this.props.text + "\n\n"),
+                    p(null, JSON.stringify(error))
+                )
+            );
         }
 
 

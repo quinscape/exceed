@@ -1,88 +1,82 @@
 "use strict";
 
-var React = require("react");
+import { updateComponent } from "../../../actions/component"
+import store from "../../../service/store"
 
-var i18n = require("../../../service/i18n");
+import React from "react"
+import i18n from "../../../service/i18n";
+import ValueLink from "../../../util/value-link";
+import DataGraph, { validateDataGraph } from "../../../domain/graph";
+import DataCursor from "../../../domain/cursor";
+import immutableUpdate from "react-addons-update";
+import domainService from "../../../service/domain";
+import converter from "../../../service/property-converter";
+import Enum from "../../../util/enum";
+import debounce from "../../../util/debounce";
+import PagingComponent from "../../../ui/PagingComponent";
+import renderWithContext from "../../../util/render-with-context";
 
-var ValueLink = require("../../../util/value-link");
-
-var DebounceMixin = require("../../../mixin/debounce-mixin");
-var ComponentUpdateMixin = require("../../../mixin/component-update-mixin");
-
-var DataGraph = require("../../../util/data-graph");
-var DataCursor = require("../../../util/data-cursor");
-
-var PagingComponent = require("../../../ui/PagingComponent");
-
-var Enum = require("../../../util/enum");
-
-var converter = require("../../../service/property-converter");
-var domainService = require("../../../service/domain");
-
-var immutableUpdate = require("react-addons-update");
-
-var Column = React.createClass({
-    propTypes: {
+export class Column extends React.Component
+{
+    static propTypes = {
         name: React.PropTypes.string.isRequired
-    },
-    render: function ()
+    };
+
+    render()
     {
-        var renderKids = this.props.renderChildren;
-        if (!renderKids)
+        if (typeof this.props.children === "function")
         {
-            var cursor = this.props.context;
-
-            var propertyType = cursor.getPropertyType(null);
-
             return (
                 <td>
-                    <p className="form-control-static">
-                        { converter.toUser(this.props.context.value, propertyType).value }
-                    </p>
+                    { this.props.children(this.props.context) }
                 </td>
             );
         }
         else
         {
+            const cursor = this.props.context;
+            const propertyType = cursor.getPropertyType(null);
+
             return (
                 <td>
-                    { renderKids(this.props.context) }
+                    <p className="form-control-static">
+                        { converter.toUser(this.props.context.get(), propertyType).value }
+                    </p>
                 </td>
             );
         }
     }
-});
+}
 
-var FilterField = React.createClass({
-
-    mixins: [ DebounceMixin ],
-
-    handleChange: function(ev)
-    {
-        this.debounce(function(value)
-        {
+class FilterField extends React.Component
+{
+    handleChange = debounce(
+        (value) => {
             this.props.valueLink.requestChange(value);
+        },
+        250
+    );
 
-        }, 250, ev.target.value);
-    },
-
-    render: function ()
+    render()
     {
         return (
             <th>
-                <input type="text" className="form-control" defaultValue={ this.props.valueLink.value } onChange={ this.handleChange } />
+                <input type="text" className="form-control" defaultValue={ this.props.valueLink.value }
+                       onChange={ (ev) => {
+                           this.handleChange(ev.target.value)
+                       } }/>
             </th>
         );
     }
-});
+}
 
-var Header = React.createClass({
-
-    toggle: function(ev)
+class Header extends React.Component
+{
+    toggle = (ev) =>
     {
-        var currentSort = this.props.currentSortLink.value;
+        const currentSort = this.props.currentSortLink.value;
 
-        if (currentSort && currentSort.length == 1 && currentSort[0] ===  this.props.sort)
+        if (currentSort && currentSort.length === 1 && currentSort[0] === this.props.sort)
         {
             this.props.currentSortLink.requestChange("!" + this.props.sort)
         }
@@ -91,20 +85,33 @@ var Header = React.createClass({
             this.props.currentSortLink.requestChange(this.props.sort)
         }
         ev.preventDefault();
-    },
+    };
 
-    render: function ()
+    render()
     {
-        var currentSort = this.props.currentSortLink.value;
+        const currentSort = this.props.currentSortLink.value;
 
-        var arrow = false;
-        if (currentSort ===  this.props.sort)
+        //console.log("SORT", currentSort, this.props.sort);
+
+        let arrow = false;
+        if (currentSort && currentSort.length === 1)
         {
-            arrow = <span className="sort-indicator">{"\u21D3"}</span>
-        }
-        else if (currentSort === "!" + this.props.sort)
-        {
-            arrow = <span className="sort-indicator">{"\u21D1"}</span>
+            if (currentSort[0] === this.props.sort)
+            {
+                arrow = (
+                    <span className="sort-indicator">
+                    <span className="glyphicon glyphicon-sort-by-attributes"></span>
+                </span>
+                );
+            }
+            else if (currentSort[0] === "!" + this.props.sort)
+            {
+                arrow = (
+                    <span className="sort-indicator">
+                        <span className="glyphicon glyphicon-sort-by-attributes-alt"></span>
+                    </span>
+                );
+            }
         }
 
         return (
@@ -116,72 +123,75 @@ var Header = React.createClass({
             </th>
         );
     }
-});
+}
 
 
-var DataGrid = React.createClass({
+class DataGrid extends React.Component
+{
 
-    propTypes: {
+    static propTypes = {
         orderBy: React.PropTypes.string,
         limit: React.PropTypes.number,
         result: React.PropTypes.object
-    },
+    };
 
-    mixins: [ ComponentUpdateMixin ],
-
-    changeSort: function (newValue)
+    changeSort = (newValue) =>
     {
-        this.updateComponent({
-            orderBy: [ newValue ],
-            // restart paging on sort change
-            offset: 0
-        });
-    },
+        store.dispatch(
+            updateComponent(this.props.id, {
+                orderBy: [newValue],
+                // restart paging on sort change
+                offset: 0
+            })
+        );
+    };
 
-    setFilter: function(v)
+    setFilter(v)
     {
-        this.updateComponent({
-                filter: immutableUpdate( this.props.vars.filter, {
-                    [v.name]: { $set: v.value}
+        store.dispatch(
+            updateComponent(this.props.id, {
+                filter: immutableUpdate(this.props.vars.filter, {
+                    [v.name]: {$set: v.value}
                 }),
                 // restart paging on filter change
                 offset: 0
-        });
-    },
+            })
+        );
+    }
 
-    setPagingOffset: function(offset)
+    setPagingOffset = (offset) =>
     {
-        this.updateComponent({
-            offset: offset
-        });
-    },
+        store.dispatch(
+            updateComponent(this.props.id, {offset})
+        );
+    };
 
-    renderHeader: function ()
+    renderHeader()
     {
-        var currentSortLink = new ValueLink( this.props.vars.orderBy, this.changeSort);
+        const currentSortLink = new ValueLink(this.props.vars.orderBy, this.changeSort);
 
-        var kids = this.props.model.kids;
-        var headers = [];
-        for (var i=0; i < kids.length; i++)
+        const kids = this.props.model.kids;
+        const headers = [];
+        for (let i = 0; i < kids.length; i++)
         {
-            var kid = kids[i];
+            const kid = kids[i];
             if (kid.name !== "DataGrid.Column")
             {
                 throw new Error("Datagrid component should only have Datagrid.Column children.");
             }
 
-            var name = kid.attrs.name;
+            const name = kid.attrs.name;
 
             //console.log("kid", name, kid);
 
-            var column = this.props.result.columns[name];
+            const column = this.props.result.columns[name];
             headers.push(
                 <Header
                     key={ i }
                     currentSortLink={ currentSortLink }
-                    heading={ i18n(kid.attrs.heading || (column.domainType  ? column.domainType : column.type) + ":" + column.name) }
+                    heading={ i18n(kid.attrs.heading || (column.domainType ? column.domainType : column.type) + ":" + column.name) }
                     sort={ name }
-                    />
+                />
             );
 
         }
@@ -191,61 +201,58 @@ var DataGrid = React.createClass({
                 { headers }
             </tr>
         );
-    },
+    }
 
-    renderFilter: function ()
+    renderFilter()
     {
-        var colCount = 0;
-        var activeFilters = this.props.vars.filter || {};
+        const activeFilters = this.props.vars.filter || {};
+
+        let colCount = 0;
 
         return (
             <tr>
-            {
-                this.props.model.kids.map((kidModel) =>
                 {
-                    var name = kidModel.attrs.name;
-                    return (
-                        <FilterField
-                            key={ colCount++ }
-                            name={ name }
-                            valueLink={
-                                new ValueLink( activeFilters[name], (value) =>
-                                    {
-                                        this.setFilter({name: name, value: value});
-                                    }
-                                )
-                            }
-                        />
-                    );
-                })
+                    this.props.model.kids.map((kidModel) =>
+                    {
+                        const name = kidModel.attrs.name;
+                        return (
+                            <FilterField
+                                key={ colCount++ }
+                                name={ name }
+                                valueLink={
+                                    new ValueLink(activeFilters[name], (value) =>
+                                        {
+                                            this.setFilter({
+                                                name: name,
+                                                value: value
+                                            });
+                                        }
+                                    )
+                                }
+                            />
+                        );
+                    })
 
-            }
+                }
             </tr>
         );
-    },
+    }
 
+//     onChange: function (newList, path)
+//     {
+// //        console.log("ONCHANGE", newList, path);
+//     },
 
-    onChange: function (newList, path)
-    {
-//        console.log("ONCHANGE", newList, path);
-    },
-
-    cursorFromData: function(data)
+    static cursorFromData(data)
     {
         if (!data)
         {
             throw new Error("No data");
         }
 
-        var types = domainService.getDomainTypes();
-
-        if (DataGraph.prototype.isRawDataGraph(data))
+        if (validateDataGraph(data))
         {
-            return new DataGraph(
-                domainService.getDomainTypes(),
-                data,
-                this.onChange
-            );
+            return new DataCursor(domainService.getDomainTypes(), DataGraph(data), []);
         }
         else if (data instanceof DataCursor)
         {
@@ -255,29 +262,35 @@ var DataGrid = React.createClass({
         {
             console.error("Cannot handle data", data);
         }
-    },
+    }
 
-    render: function ()
+    render()
     {
-        //console.log("DATAGRID");
         //console.dir(this.props);
-        var resultList = this.cursorFromData(this.props.result);
+        const cursor = DataGrid.cursorFromData(this.props.result);
+        //console.log("DATAGRID", cursor);
 
-        var count = resultList.rootObject.length;
-        var rows;
+        let count = cursor.get().length;
+        let rows;
         if (!count)
         {
-            rows = <tr><td colSpan={ this.props.childCount }>{ i18n("No Rows") }</td></tr>
+            rows = <tr>
+                <td colSpan={ this.props.childCount }>{ i18n("No Rows") }</td>
+            </tr>
         }
         else
         {
             rows = [];
 
-            for (var i = 0; i < count; i++)
+            for (let i = 0; i < count; i++)
             {
+                const context = cursor.getCursor([i]);
+
+                //console.log("CONTEXT", context);
+
                 rows[i] = (
-                    <tr key = { i }>
-                        { this.props.renderChildren ? this.props.renderChildren( resultList.getCursor([i])) : this.props.children }
+                    <tr key={ i }>
+                        { renderWithContext(this.props.children, context) }
                     </tr>
                 )
             }
@@ -295,15 +308,13 @@ var DataGrid = React.createClass({
                     </tbody>
                 </table>
                 <PagingComponent
-                    offsetLink={ new ValueLink(this.props.vars.offset, this.setPagingOffset ) }
+                    offsetLink={ new ValueLink(this.props.vars.offset, this.setPagingOffset) }
                     limit={ this.props.vars.limit }
                     rowCount={ this.props.result.count }
-                    />
+                />
             </div>
         );
     }
-});
+}
 
-DataGrid.Column = Column;
-
-module.exports = DataGrid;
+export default DataGrid;

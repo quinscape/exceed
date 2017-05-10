@@ -10,7 +10,7 @@ var Footer = React.createClass({
         const login = security.getLogin();
 
         return (
-            <div className="container-fluid">
+            <div className="container-fluid page-decoration">
                 <hr/>
                 <div className="row">
                     <div className="col-md-8">

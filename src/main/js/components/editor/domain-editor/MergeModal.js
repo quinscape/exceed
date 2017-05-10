@@ -31,6 +31,12 @@ function getLocationName(location)
 }
 
 
+
+function convert(model)
+{
+    return JSON.stringify(model, filterVersion, 4);
+}
+
 /**
  * Converts the locations of a de.quinscape.exceed.runtime.action.MergeLocation into an the internal text format plus
  * flags
@@ -43,8 +49,8 @@ function convertLocationsToInternal(locations)
         {
             return ({
                 name: getLocationName(location),
-                ours: JSON.stringify(location.ours, filterVersion, 4),
-                theirs: JSON.stringify(location.theirs, filterVersion, 4),
+                ours: convert(location.ours),
+                theirs: convert(location.theirs),
                 error: false,
                 resolved: false
             });
@@ -86,11 +92,7 @@ var MergeModal = React.createClass({
         var location = this._mergeEditor.checkChanges();
 
         const detail = this.state.detail;
-
-        if (location !== this.state.locations[detail])
-        {
-            location.resolved = resolved;
-        }
+        location.resolved = resolved;
 
         this.setState({
             locations: update(this.state.locations, {
@@ -126,11 +128,24 @@ var MergeModal = React.createClass({
         const original = locationsLink.value;
 
         var external = this.state.locations.map( (location,idx) => {
-            var mergedType = JSON.parse(location.ours);
 
-            mergedType.versionGUID = original[idx].theirs.versionGUID;
+            if (location.ours === "null")
+            {
+                return {
+                    name : location.name,
+                    merged: null
+                };
+            }
+
+            var mergedType = JSON.parse(location.ours);
+            var theirs = original[idx].theirs;
+            if (theirs)
+            {
+                mergedType.versionGUID = theirs.versionGUID;
+            }
 
             return {
+                name : location.name,
                 merged: mergedType
             };
         });
@@ -161,6 +176,8 @@ var MergeModal = React.createClass({
             }
         );
 
+        var location = locationLink.value;
+
         return (
             <Modal show={ this.props.openLink.value } onHide={ this.close } dialogClassName="merge-modal">
                 <Modal.Header closeButton>
@@ -176,8 +193,8 @@ var MergeModal = React.createClass({
                             </div>
                             <div className="row">
                                 <div className="col-md-5 col-md-offset-1">
-                                    <Button text="Use current" onClick={ ev => this.markResolved(true) } disabled={ locationLink.value.error }/>
-                                    <Button text="Mark Unresolved" onClick={ ev => this.markResolved(false) } disabled={ !locationLink.value.resolved }/>
+                                    <Button text="Use current" onClick={ ev => this.markResolved(true) } disabled={ location.error }/>
+                                    <Button text="Mark Unresolved" onClick={ ev => this.markResolved(false) } disabled={ !location.resolved }/>
                                 </div>
                                 <div className="col-md-5 col-md-offset-1">
                                     <Button text="Use Theirs" onClick={ ev => this.useTheirs() }/>

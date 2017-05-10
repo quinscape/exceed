@@ -14,7 +14,7 @@
     },
     "states": {
         "main": {
-            "type": "process.ViewState",
+            "type": "xcd.process.ViewState",
             "transitions": {
                 "cancel": {
                     "to": "end",
@@ -35,7 +35,7 @@
             }
         },
         "end": {
-            "type": "process.ViewState"
+            "type": "xcd.process.ViewState"
         }
     }
 }

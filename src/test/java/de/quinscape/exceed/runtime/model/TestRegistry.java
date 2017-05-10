@@ -45,7 +45,7 @@ public class TestRegistry
 
         List<String> names = new ArrayList<>();
         Collections.addAll(names, componentNames);
-        names.add("common");
+        names.add("std/common");
 
         for (String componentName : names)
         {

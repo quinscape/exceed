@@ -478,7 +478,6 @@ public class ModelCompositionService
             // we should only overwrite the "root" content when the current view is no preview. the preview will
             // have a root that is the result of a former merge and which also might be edited.
             final boolean shouldOverwrite = !view.isSynthetic();
-
             if (shouldOverwrite)
             {
                 final ComponentModel layoutRoot = layout.getRoot();

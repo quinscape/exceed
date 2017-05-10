@@ -1,4 +1,8 @@
 //const ReactCSSTransitionGroup = require("react-addons-css-transition-group");
+//XXX: port 2 new version, only import fixed
+import DataGraph from "../../../domain/graph";
+import omit from "../../../util/omit";
+
 const React = require("react");
 const update = require("react-addons-update");
 const LinkedStateMixin = require("react-addons-linked-state-mixin");
@@ -20,17 +24,22 @@ const undoService = require("../../../service/undo");
 
 const Button = require("../../../ui/Button");
 const FilterField = require("../../../ui/FilterField");
+const AutoHeight = require("../../../ui/AutoHeight");
 
-const DataGraph = require("../../../util/data-graph");
 const Dialog = require("../../../util/dialog");
-const Event  = require("../../../util/event");
 const firstProp = require("../../../util/firstProp");
 const keys = require("../../../util/keys");
 const notify = require("../../../util/notify");
-const omit = require("../../../util/omit");
 const Settings = require("../../../util/settings");
 const ValueLink = require("../../../util/value-link");
 const values = require("../../../util/values");
+const Enum = require("../../../util/enum");
+
+const EditingType = new Enum({
+    NONE: true,
+    DOMAIN_TYPE: true,
+    ENUM_TYPE: true
+});
 
 const DEFAULT_VIEW_SETTING = Settings.create("def-domain-view", "Default");
 
@@ -90,22 +99,32 @@ function mapToName(type)
     return type.name;
 }
 
-function calculateHeight()
-{
-    return window ? window.innerHeight - 110 : 500;
-}
-
-
-var DomainEditor = React.createClass({
+var DomainEditor = AutoHeight(React.createClass({
 
     mixins: [LinkedStateMixin],
+
+    newUndoState: function (partial, cb)
+    {
+        this.undo.newState(
+            assign({}, this.state.undoState, partial),
+            cb
+        );
+    },
+
+    replaceUndoState: function (partial, cb)
+    {
+        this.undo.replaceState(
+            assign({}, this.state.undoState, partial),
+            cb
+        );
+    },
 
     getInitialState: function ()
     {
 
         const domainTypes = domainService.getDomainTypes();
 
-        var dataGraph = new DataGraph(domainTypes, {
+        const dataGraph = DataGraph(domainTypes, {
             type: "OBJECT",
             columns: {
                 domainTypes: {
@@ -138,37 +157,33 @@ var DomainEditor = React.createClass({
             });
         }
 
-        this.undo = undoService.create({
-                dataGraph: dataGraph,
-                domainEditorViews: domainEditorViews,
-                selectedView: selectedView
-            },
-            this.restoreState
-        );
+        var undoState = {
+            dataGraph: dataGraph,
+            removedDomainTypes: [],
+            domainEditorViews: domainEditorViews,
+            selectedView: selectedView
+        };
+
+        this.undo = undoService.create(undoState, this.restoreUndoState);
 
         return {
-            dataGraph: dataGraph,
-            editing: null,
-            editingType: null,
-            editingProp: 0,
-            height: calculateHeight(),
+
+            undoState: undoState,
+
             filter: "",
-            domainEditorViews: domainEditorViews,
-            selectedView: selectedView,
             mergeOpen: false,
-            mergeLocations: []
+            mergeLocations: [],
+
+            editing: null,
+            editingType: EditingType.NONE,
+            editingProp: null
         };
     },
 
-    restoreState: function (state, done)
+    restoreUndoState: function (undoState, done)
     {
         this.setState({
-            dataGraph: state.dataGraph,
-            domainEditorViews: state.domainEditorViews,
-            selectedView: state.selectedView,
-            editing: state.editing,
-            editingType: state.editingType,
-            editingProp: state.editingProp
+            undoState: undoState,
         }, done);
     },
 
@@ -177,9 +192,10 @@ var DomainEditor = React.createClass({
 
         const editing = this.state.editing;
         const editingType = this.state.editingType;
+
         var editingProp = this.state.editingProp;
 
-        if (editing && editingType == "DomainType")
+        if (editing && editingType === EditingType.DOMAIN_TYPE)
         {
             var currentPropsLength = newList.rootObject.domainTypes[editing].properties.length;
 
@@ -191,84 +207,65 @@ var DomainEditor = React.createClass({
             }
         }
 
-        this.undo.newState({
+        this.newUndoState({
             dataGraph: newList,
-            domainEditorViews: this.state.domainEditorViews,
-            selectedView: this.state.selectedView,
             editing: editing,
             editingType: editingType,
             editingProp: editingProp
         });
     },
 
-    componentDidMount: function ()
-    {
-        Event.add(window, "resize", this.onResize, false);
-    },
 
     componentWillUnmount: function ()
     {
         this.undo.destroy();
-        Event.remove(window, "resize", this.onResize, false);
-    },
-
-
-    onResize: function ()
-    {
-        //console.log("RESIZE");
-
-        this.setState({
-            height: calculateHeight()
-        })
     },
 
     toggleDomainType: function (domainType)
     {
-        var selectedView = this.state.selectedView;
-        this.undo.newState({
-            dataGraph: this.state.dataGraph,
-            domainEditorViews: update(this.state.domainEditorViews, {
+        var selectedView = this.state.undoState.selectedView;
+
+        this.newUndoState({
+            domainEditorViews: update(this.state.undoState.domainEditorViews, {
                 [selectedView] : {
                     visible: {
                         [ domainType ]: {$apply: negate}
                     }
                 }
-            }),
-            selectedView: selectedView,
-            editing: this.state.editing,
-            editingType: this.state.editingType,
-            editingProp: this.state.editingProp
+            })
         });
-
     },
 
-    editType: function (name)
+    editType: function (name, index)
     {
+        console.log("editType", name, index);
+
         this.setState({
             editing: name,
-            editingType: name ? "DomainType" : null,
-            editingProp: 0
+            editingType: name ? EditingType.DOMAIN_TYPE : EditingType.NONE,
+            editingProp: typeof index === "number" ? index: 0
         });
     },
 
     removeType: function (name)
     {
-        var dataGraph = this.state.dataGraph;
-        var newGraph = dataGraph.getCursor(['domainTypes'], false).set(null, omit(dataGraph.rootObject.domainTypes, name));
+        const undoState = this.state.undoState;
+        const dataGraph = undoState.dataGraph;
+        const cursor = dataGraph.getCursor(['domainTypes'], false);
+        const domainTypes = dataGraph.rootObject.domainTypes;
 
-        console.log("newGraph", newGraph);
+        const removedType = domainTypes[name];
 
-        this.undo.newState({
+        const remainingTypes = omit(domainTypes, name);
+        const newGraph = cursor.set(null, remainingTypes);
+
+        //console.log("newGraph", newGraph);
+
+        this.newUndoState({
             dataGraph: newGraph,
-            domainEditorViews: this.state.domainEditorViews,
-            selectedView: this.state.selectedView,
+            removedDomainTypes: update(undoState.removedDomainTypes, { $push: [ removedType ] }),
             editing: null,
-            editingType: null,
-            editingProp: 0
-        });
-        this.setState({
-            editing: null,
-            editingType: null,
+            editingType: EditingType.NONE,
             editingProp: 0
         });
     },
@@ -277,7 +274,7 @@ var DomainEditor = React.createClass({
     {
         this.setState({
             editing: name,
-            editingType: name ? "EnumType" : null,
+            editingType: name ? EditingType.ENUM_TYPE : EditingType.NONE,
             editingProp: 0
         });
     },
@@ -307,16 +304,16 @@ var DomainEditor = React.createClass({
             if (result.choice)
             {
                 var name = result.inputs.name;
-                if (this.state.dataGraph.rootObject.domainTypes.hasOwnProperty(name))
+                if (this.state.undoState.dataGraph.rootObject.domainTypes.hasOwnProperty(name))
                 {
                     notify(i18n("Domain Type '{0}' Name Already Exists", name));
                     return;
                 }
 
-                var newTypeCursor = this.state.dataGraph.getCursor(["domainTypes", name], false);
+                var newTypeCursor = this.state.undoState.dataGraph.getCursor(["domainTypes", name], false);
 
-                var selectedView = this.state.selectedView;
-                this.undo.newState({
+                var selectedView = this.state.undoState.selectedView;
+                this.newUndoState({
                     dataGraph: newTypeCursor.set(null, {
                         extension: result.inputs.extension,
                         name: name,
@@ -325,20 +322,17 @@ var DomainEditor = React.createClass({
                             type: "UUID"
                         }]
                     }),
-                    domainEditorViews: update(this.state.domainEditorViews, {
+                    domainEditorViews: update(this.state.undoState.domainEditorViews, {
                         [selectedView]: {
                             visible: {
                                 [ name ]: {$set: true}
                             }
                         }
                     }),
-                    selectedView: this.state.selectedView,
                     editing: name,
-                    editingType: name ? "DomainType" : null,
+                    editingType: name ? EditingType.DOMAIN_TYPE : null,
                     editingProp: 0
                 });
-
-                //this.editType(name);
             }
         }).catch(function (err)
         {
@@ -352,25 +346,20 @@ var DomainEditor = React.createClass({
         var name = prompt(i18n("Enter New Enum Type Name"));
         if (name)
         {
-            if (this.state.dataGraph.rootObject.enumTypes.hasOwnProperty(name))
+            if (this.state.undoState.dataGraph.rootObject.enumTypes.hasOwnProperty(name))
             {
                 notify(i18n("Enum Type '{0}' Name Already Exists", name));
                 return;
             }
 
-            var newEnum = this.state.dataGraph.getCursor(["enumTypes", name], false);
+            var enumTypesCursor = this.state.undoState.dataGraph.getCursor(["enumTypes"], false);
 
-            this.undo.newState({
-                dataGraph: newEnum.set(null, {
+            this.newUndoState({
+                dataGraph: enumTypesCursor.set([ name ], {
                     _type: "EnumType",
                     name: name,
                     values: ["New"]
-                }),
-                domainEditorViews: this.state.domainEditorViews,
-                selectedView: this.state.selectedView,
-                editing: this.state.editing,
-                editingType: this.state.editingType,
-                editingProp: this.state.editingProp
+                })
             });
 
             this.editEnum(name);
@@ -386,14 +375,13 @@ var DomainEditor = React.createClass({
         });
     },
 
-    save: function ()
+    createUpdateActionModel: function ()
     {
         const prevTypes = domainService.getDomainTypes();
-        const nextTypes = this.state.dataGraph.rootObject.domainTypes;
+        const nextTypes = this.state.undoState.dataGraph.rootObject.domainTypes;
 
         let newTypes = [];
         let changedTypes = [];
-        let removedTypes = [];
 
         for (let name in nextTypes)
         {
@@ -412,27 +400,36 @@ var DomainEditor = React.createClass({
             }
         }
 
-        for (let name in prevTypes)
-        {
-            if (prevTypes.hasOwnProperty(name))
-            {
-                if (!nextTypes[name])
-                {
-                    removedTypes.push(prevTypes[name]);
-                }
-            }
-        }
+        return {
+            action: "updateDomain",
+            newTypes: newTypes,
+            newTypeExtensions: newTypes.map(domainType => domainType.extension),
+            changedTypes: changedTypes,
+            removedTypes: this.state.undoState.removedDomainTypes
+        };
+    },
 
-        actionService.execute({
-                action: "updateDomain",
-                newTypes: newTypes,
-                newTypeExtensions: newTypes.map(domainType => domainType.extension),
-                changedTypes: changedTypes,
-                removedTypes: removedTypes
-            }).then((result) =>
+
+    save: function ()
+    {
+        var actionModel = this.createUpdateActionModel();
+
+        console.log("UPDATE DOMAIN", actionModel);
+
+        actionService.execute(actionModel).then((result) =>
             {
+                console.log("UPDATE DOMAIN RESULT", result);
+
                 if (result.ok)
                 {
+                    var dataGraph = this.state.undoState.dataGraph;
+                    this.replaceUndoState({
+                        dataGraph: dataGraph.copy(
+                            update(dataGraph.rootObject, {
+                                domainTypes: { $set: result.mergedDomainTypes }
+                            })
+                        )
+                    });
                     this.undo.markSaved();
                 }
                 else
@@ -451,54 +448,104 @@ var DomainEditor = React.createClass({
         var newViewName = prompt(i18n("Enter New Domain View Name"));
         if (newViewName)
         {
-            this.undo.newState({
-                dataGraph: this.state.dataGraph,
-                domainEditorViews: update(this.state.domainEditorViews, {
+            this.newUndoState({
+                domainEditorViews: update(this.state.undoState.domainEditorViews, {
                     [newViewName] : { $set: {
-                        visible: getDefaultVisible(this.state.dataGraph.rootObject.domainTypes),
+                        visible: getDefaultVisible(this.state.undoState.dataGraph.rootObject.domainTypes),
                         positions: false
                     }}
                 }),
-                selectedView: newViewName,
-                editing: this.state.editing,
-                editingType: this.state.editingType,
-                editingProp: this.state.editingProp
+                selectedView: newViewName
             });
         }
     },
 
     removeView: function (viewToRemove)
     {
-        const domainEditorViews = this.state.domainEditorViews;
+        const domainEditorViews = this.state.undoState.domainEditorViews;
 
-        this.undo.newState({
-            dataGraph: this.state.dataGraph,
+        this.newUndoState({
             domainEditorViews: omit(domainEditorViews, viewToRemove),
-            selectedView: firstProp(domainEditorViews),
-            editing: this.state.editing,
-            editingType: this.state.editingType,
-            editingProp: this.state.editingProp
+            selectedView: firstProp(domainEditorViews)
         });
     },
 
     setMergeOpen: function (isOpen, mergeLocations)
     {
-        console.log("SET MERGERESULT", mergeLocations);
+        mergeLocations = mergeLocations || this.state.mergeLocations;
+
+        console.log("OPEN", isOpen, "MERGE LOCATIONS", mergeLocations);
 
         this.setState({
             mergeOpen: isOpen,
-            mergeLocations: mergeLocations || this.state.mergeLocations
+            mergeLocations: mergeLocations
         })
+    },
+
+    updateGraphPositions: function (positions)
+    {
+        //console.log("UPDATE POSITIONS", JSON.stringify(positions, 0, 4));
+
+        var selectedView = this.state.undoState.selectedView;
+
+        this.newUndoState({
+            domainEditorViews: update(this.state.undoState.domainEditorViews, {
+                [selectedView] : {
+                    positions: { $set: positions }
+                }
+            })
+        });
+    },
+
+    selectDomainView: function (selectedView)
+    {
+        // since changes to the view will push their current view selection as part of their undo state, we do not
+        // need to create new undo states for simple view changes. The view will never the less follow the current
+        // view selection
+        this.setState({
+            selectedView: selectedView
+        });
+    },
+
+    performMerge: function(locations)
+    {
+        var cursor = this.state.undoState.dataGraph.getCursor(["domainTypes"], false);
+
+        var withUpdatedVersion = assign({}, cursor.get());
+
+        for (var i = 0; i < locations.length; i++)
+        {
+            var mergedType = locations[i].merged;
+            if (mergedType == null)
+            {
+                delete withUpdatedVersion[locations[i].name];
+            }
+            else
+            {
+                withUpdatedVersion[mergedType.name] = mergedType;
+            }
+        }
+
+        console.log("MERGED TYPES", withUpdatedVersion);
+
+        this.replaceUndoState({
+            dataGraph: cursor.set(null, withUpdatedVersion),
+            removedDomainTypes: [],
+            editing: null,
+            editingType: EditingType.NONE,
+            editingProp: 0
+        }, this.save);
     },
 
     render: function ()
     {
         //console.log("RENDER", this.props, this.state);
 
-        var domainTypesCursor = this.state.dataGraph.getCursor(["domainTypes"]);
+        var undoState = this.state.undoState;
+        var domainTypesCursor = undoState.dataGraph.getCursor(["domainTypes"]);
         var domainTypes = domainTypesCursor.value;
 
-        var enumTypesCursor = this.state.dataGraph.getCursor(["enumTypes"]);
+        var enumTypesCursor = undoState.dataGraph.getCursor(["enumTypes"]);
         var enumTypes = enumTypesCursor.value;
 
         var domainTypeNames = values(domainTypes).filter(filterSystem).map(mapToName);
@@ -507,51 +554,18 @@ var DomainEditor = React.createClass({
         var enumTypeNames = values(enumTypes).map(mapToName);
         enumTypeNames.sort();
 
-        var height = this.state.height;
+        var height = this.props.height;
         var editing = this.state.editing;
-        var selectedView = this.state.selectedView;
-        var positionsLink = new ValueLink(this.state.domainEditorViews[selectedView].positions, (positions) =>
-        {
-            this.undo.newState({
-                dataGraph: this.state.dataGraph,
-                domainEditorViews: update(this.state.domainEditorViews, {
-                    [selectedView] : {
-                        positions: { $set: positions }
-                    }
-                }),
-                selectedView: selectedView,
-                editing: this.state.editing,
-                editingType: this.state.editingType,
-                editingProp: this.state.editingProp
-            });
-        });
+        var selectedView = undoState.selectedView;
 
-        var selectedViewLink = new ValueLink(this.state.selectedView, (selectedView) => {
-
-            // since changes to the view will push their current view selection as part of their undo state, we do not
-            // need to create new undo states for simple view changes. The view will never the less follow the current
-            // view selection
-            this.setState({
-                selectedView: selectedView
-            });
-        });
-
-        var editingPropLink = new ValueLink(this.state.editingProp, (editingProp) => {
-            this.setState({
-                editingProp: editingProp
-            });
-        });
-
-        //console.log("DOMAIN-LAYOUT", positionsLink.value);
-
-        var domainViewNames = keys(this.state.domainEditorViews);
+        var domainViewNames = keys(undoState.domainEditorViews);
         domainViewNames.sort();
 
         var haveMultipleDomainViews = domainViewNames.length > 1;
 
         //console.log("domainViewNames", domainViewNames);
 
-        var visible = this.state.domainEditorViews[selectedView].visible;
+        var visible = undoState.domainEditorViews[selectedView].visible;
 
 
         return (
@@ -586,7 +600,7 @@ var DomainEditor = React.createClass({
                                 <SelectField
                                     label={ i18n("Domain View") }
                                     data={ domainViewNames }
-                                    value={ selectedViewLink }
+                                    value={ new ValueLink(undoState.selectedView, this.selectDomainView ) }
                                     propertyType={ {type: "PlainText"} }
                                     disabled={ !haveMultipleDomainViews }
                                 />
@@ -611,7 +625,7 @@ var DomainEditor = React.createClass({
                         />
                         <NamedSelector
                             title={ i18n('Domain Types') }
-                            editing={ this.state.editing }
+                            editing={ editing }
                             names={ domainTypeNames }
                             edit={ this.editType }
                             new={ this.newType }
@@ -624,7 +638,7 @@ var DomainEditor = React.createClass({
                         <hr/>
                         <NamedSelector
                             title={ i18n('Enum Types') }
-                            editing={ this.state.editing }
+                            editing={ editing }
                             names={ enumTypeNames }
                             edit={ this.editEnum }
                             new={ this.newEnum }
@@ -642,14 +656,14 @@ var DomainEditor = React.createClass({
                                 domainTypes={ domainTypes }
                                 visible={ visible }
                                 onInteraction={ this.editType }
-                                positionsLink={ positionsLink }
+                                positionsLink={ new ValueLink(undoState.domainEditorViews[selectedView].positions, this.updateGraphPositions ) }
                             />
                         </div>
                     </div>
                     <div className="col-md-9"
                          style={{ display: !editing && "none", zIndex: 10, position: "relative", background: "rgba(245,250,255,0.9)" }}>
                         {
-                            this.state.editingType == "DomainType" &&
+                            this.state.editingType === EditingType.DOMAIN_TYPE &&
                             <DomainTypeForm
                                 key={ editing }
                                 name={ editing }
@@ -660,11 +674,17 @@ var DomainEditor = React.createClass({
                                 storageOptions={ this.props.storageOptions }
                                 enumTypes={ enumTypeNames }
                                 cursor={ editing && domainTypesCursor.getCursor([editing]) }
-                                editingPropLink={ editingPropLink }
+                                editingPropLink={
+                                    new ValueLink(this.state.editingProp, (editingProp) => {
+                                        this.setState({
+                                            editingProp: editingProp
+                                        });
+                                    })
+                                }
                             />
                         }
                         {
-                            this.state.editingType == "EnumType" &&
+                            this.state.editingType === EditingType.ENUM_TYPE &&
                             <EnumTypeForm
                                 key={ editing }
                                 name={ editing }
@@ -678,34 +698,14 @@ var DomainEditor = React.createClass({
                 {
                     <MergeModal
                         openLink={ new ValueLink(this.state.mergeOpen, this.setMergeOpen) }
-                        locationsLink={ new ValueLink(this.state.mergeLocations, locations =>
-                        {
-
-                            var cursor = this.state.dataGraph.getCursor(["domainTypes"], false);
-
-                            var newTypes = assign({}, cursor.get());
-
-                            for (var i = 0; i < locations.length; i++)
-                            {
-                                var mergedType = locations[i].merged;
-                                newTypes[mergedType.name] = mergedType;
-                            }
-
-                            this.undo.replaceState({
-                                dataGraph: cursor.set(null, newTypes),
-                                domainEditorViews: this.state.domainEditorViews,
-                                selectedView: this.state.selectedView,
-                                editing: this.state.editing,
-                                editingType: this.state.editingType,
-                                editingProp: this.state.editingProp
-                            }, this.save);
-                        })}
+                        locationsLink={ new ValueLink(this.state.mergeLocations, this.performMerge)}
                     />
                 }
             </div>
         );
     }
-});
+}));
 
 
 module.exports = DomainEditor;
+

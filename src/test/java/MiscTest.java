@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.lang.reflect.Method;
+import java.security.SecureRandom;
 import java.util.UUID;
 
 public class MiscTest

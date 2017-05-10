@@ -16,7 +16,7 @@
     },
     "states": {
         "main": {
-            "type": "process.ViewState",
+            "type": "xcd.process.ViewState",
             "transitions": {
                 "inc": {
                     "to": "check",
@@ -25,7 +25,7 @@
             }
         },
         "check": {
-            "type": "process.DecisionState",
+            "type": "xcd.process.DecisionState",
             "decisions": [
                 {
                     "expression": "value >= limit",
@@ -41,7 +41,7 @@
             }
         },
         "end": {
-            "type": "process.ViewState"
+            "type": "xcd.process.ViewState"
         }
     }
 }

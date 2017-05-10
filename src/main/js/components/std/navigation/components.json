@@ -1,0 +1,14 @@
+{
+    "components": {
+        "Navbar": {
+            "classes" : [ "nav-child" ],
+
+            "propTypes" : {
+                "bsStyle" :  {
+                    "type" : "PLAINTEXT",
+                    "rule": "oneOf('default', 'inverse')"
+                }
+            }
+        }
+    }
+}

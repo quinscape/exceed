@@ -1,6 +1,5 @@
 package de.quinscape.exceed.model.component;
 
-import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.annotation.DocumentedMapKey;

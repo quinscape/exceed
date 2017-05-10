@@ -75,7 +75,7 @@ public class Java7NIOResourceWatcher
     @Override
     public void register(ResourceChangeListener listener)
     {
-        log.debug("Register {}", listener);
+        log.debug("{}: Register {}", this, listener);
 
         listeners.add(listener);
     }

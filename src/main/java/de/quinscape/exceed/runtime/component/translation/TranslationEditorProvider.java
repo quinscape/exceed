@@ -1,23 +1,23 @@
 package de.quinscape.exceed.runtime.component.translation;
 
 import com.google.common.collect.ImmutableMap;
-import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.domain.tables.pojos.AppTranslation;
 import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.meta.ModuleFunctionReferences;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataProvider;
-import de.quinscape.exceed.model.component.ModuleFunctionReferences;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.i18n.TranslationProvider;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
-import de.quinscape.exceed.runtime.service.rtinfo.TranslationReferenceVisitor;
+import de.quinscape.exceed.runtime.service.client.scope.TranslationReferenceVisitor;
 import de.quinscape.exceed.runtime.util.DomainUtil;
 import de.quinscape.exceed.runtime.view.DataProviderContext;
 

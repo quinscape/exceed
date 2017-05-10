@@ -15,6 +15,10 @@ import java.util.Map;
 
 public class DataGraph
 {
+    public static final String WILDCARD_SYMBOL = "*";
+
+    private final String qualifier;
+
     private Map<String, DomainProperty> columns;
 
     private DataGraphType type;
@@ -27,8 +31,19 @@ public class DataGraph
 
     public DataGraph(Map<String, DomainProperty> columns, Object rootObject, int count)
     {
+        this(columns, rootObject, count, null);
+    }
+
+    public DataGraph(Map<String, DomainProperty> columns, Object rootObject, int count, String qualifier)
+    {
+        if (columns == null)
+        {
+            throw new IllegalArgumentException("columns can't be null");
+        }
+
         this.columns = columns;
         this.rootObject = rootObject;
+        this.qualifier = qualifier;
 
         if (rootObject instanceof Collection)
         {
@@ -130,7 +145,7 @@ public class DataGraph
                 Object copy = copyObject(runtimeContext, o);
                 copiedRows.add(copy);
             }
-            return new DataGraph(columns, copiedRows, count);
+            return new DataGraph(columns, copiedRows, count, qualifier);
         }
         else if (rootObject instanceof Map)
         {
@@ -142,7 +157,7 @@ public class DataGraph
                 Object copy = copyObject(runtimeContext, o);
                 copied.put(e.getKey(), copy);
             }
-            return new DataGraph(columns, copied, count);
+            return new DataGraph(columns, copied, count, qualifier);
         }
         else
         {
@@ -179,5 +194,17 @@ public class DataGraph
     public DataGraphType getType()
     {
         return type;
+    }
+
+
+    public String getQualifier()
+    {
+        return qualifier;
+    }
+
+
+    public boolean isMap()
+    {
+        return type == DataGraphType.OBJECT && columns.size() ==1 && columns.get(WILDCARD_SYMBOL) != null;
     }
 }

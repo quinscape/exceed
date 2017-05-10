@@ -1,17 +1,36 @@
-module.exports = function (obj)
+if (typeof Object.values === "function")
 {
-    if (obj !== Object(obj))
+    /**
+     * Returns the keys of the given object
+     *
+     * @param o     object
+     * @returns {Array} keys
+     */
+    module.exports = Object.values;
+}
+else
+{
+    /**
+     * Returns the keys of the given object
+     *
+     * @param o     object
+     * @returns {Array} keys
+     */
+    module.exports = function (obj)
     {
-        throw new TypeError('Object.keys called on a non-object');
-    }
-
-    var values = [], name;
-    for (name in obj)
-    {
-        if (Object.prototype.hasOwnProperty.call(obj, name))
+        if (obj !== Object(obj))
         {
-            values.push(obj[name]);
+            throw new TypeError('Object.values called on a non-object');
         }
-    }
-    return values;
-};
+
+        const values = [];
+        for (let name in obj)
+        {
+            if (Object.prototype.hasOwnProperty.call(obj, name))
+            {
+                values.push(obj[name]);
+            }
+        }
+        return values;
+    }}
+

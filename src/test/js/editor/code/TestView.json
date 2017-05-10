@@ -1,71 +1,73 @@
 {
-    "type": "view.View",
-    "comments" : ["Head Comment", null, "Tail Comment"],
-    "root": {
-        "name": "Grid",
-        "attrs": {
-            "fluid": "{ true }"
-        },
-        "kids": [
-            {
-                "name": "Row",
-                "kids": [
-                    {
-                        "name": "Col",
-                        "attrs": {
-                            "md": "{ 12 }"
-                        },
-                        "kids": [
-                            {
-                                "name": "Heading",
-                                "attrs": {
-                                    "id": "myHeading",
-                                    "value": "{ 'Foo #1' }"
-                                }
+    "type": "xcd.view.View",
+    "comments": ["Head Comment", null, "Tail Comment"],
+    "content": {
+        "root": {
+            "name": "Grid",
+            "attrs": {
+                "fluid": "{ true }"
+            },
+            "kids": [
+                {
+                    "name": "Row",
+                    "kids": [
+                        {
+                            "name": "Col",
+                            "attrs": {
+                                "md": "{ 12 }"
                             },
-                            {
-                                "name": "DataGrid",
-                                "attrs": {
-                                    "id": "myDG",
-                                    "type": "{ AppUser }"
-                                },
-                                "kids": [
-                                    {
-                                        "name": "DataGrid.Column",
-                                        "attrs": {
-                                            "name": "id"
-                                        }
-                                    },
-                                    {
-                                        "name": "DataGrid.Column",
-                                        "attrs": {
-                                            "name": "login"
-                                        }
-                                    },
-                                    {
-                                        "name": "DataGrid.Column",
-                                        "attrs": {
-                                            "name": "created"
-                                        }
-                                    },
-                                    {
-                                        "name": "DataGrid.Column",
-                                        "attrs": {
-                                            "name": "roles"
-                                        }
+                            "kids": [
+                                {
+                                    "name": "Heading",
+                                    "attrs": {
+                                        "id": "myHeading",
+                                        "value": "{ 'Foo #1' }"
                                     }
-                                ]
-                            },
-                            {
-                                "name": "Counter",
-                                "attrs": {
-                                    "value": "{ 0 }"
+                                },
+                                {
+                                    "name": "DataGrid",
+                                    "attrs": {
+                                        "id": "myDG",
+                                        "type": "{ AppUser }"
+                                    },
+                                    "kids": [
+                                        {
+                                            "name": "DataGrid.Column",
+                                            "attrs": {
+                                                "name": "id"
+                                            }
+                                        },
+                                        {
+                                            "name": "DataGrid.Column",
+                                            "attrs": {
+                                                "name": "login"
+                                            }
+                                        },
+                                        {
+                                            "name": "DataGrid.Column",
+                                            "attrs": {
+                                                "name": "created"
+                                            }
+                                        },
+                                        {
+                                            "name": "DataGrid.Column",
+                                            "attrs": {
+                                                "name": "roles"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Counter",
+                                    "attrs": {
+                                        "value": "{ 0 }"
+                                    }
                                 }
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
     }
 }

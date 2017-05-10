@@ -1,28 +1,35 @@
-const React = require("react");
+import React from "react";
+import DataCursor from "../../../domain/cursor";
+import { validateDataGraph } from "../../../domain/graph";
+const FormElement = require("./FormElement");
 
-const FormElement =  require("./FormElement");
+const domainService = require("../../../service/domain");
 
-const DataGraph =  require("../../../util/data-graph");
-const DataCursor =  require("../../../util/data-cursor");
+const SelectField = FormElement(class {
 
+    static displayName = "SelectField";
 
-var SelectField = FormElement(React.createClass({
-
-    getInputField: function ()
+    getInputField()
     {
         return this._input;
-    },
+    }
 
-    options: function ()
+    options()
     {
-        var input = this.props.data;
-        var array;
-        if (DataGraph.prototype.isRawDataGraph(input))
+        const input = this.props.data;
+        let array;
+        if (validateDataGraph(input))
         {
             //console.log("RENDER DATA LIST OPTIONS");
-            array = input.rootObject;
-            var display = this.props.display;
-            var value = this.props.value;
+            array = new DataCursor(
+                    domainService.getDomainTypes(),
+                    input,
+                    []
+                )
+                .get();
+            
+            const display = this.props.display;
+            const value = this.props.value;
 
             return ( array.map(
                     display ?
@@ -47,8 +54,8 @@ var SelectField = FormElement(React.createClass({
         {
             //console.log("RENDER ARRAY");
 
-            var firstElement = array[0];
-            if (firstElement && typeof firstElement == "object")
+            let firstElement = array[0];
+            if (firstElement && typeof firstElement === "object")
             {
                 return (
                     array.map(
@@ -67,11 +74,11 @@ var SelectField = FormElement(React.createClass({
         }
 
         throw new Error("Unhandled input: " + input);
-    },
+    }
 
-    render: function ()
+    render()
     {
-        var value = this.props.valueLink.value;
+        const value = this.props.valueLink.value;
 
         //console.log("SELECT VALUE", value);
 
@@ -88,7 +95,7 @@ var SelectField = FormElement(React.createClass({
             </select>
         )
     }
-}));
+});
 
-module.exports = SelectField;
+export default SelectField;
 

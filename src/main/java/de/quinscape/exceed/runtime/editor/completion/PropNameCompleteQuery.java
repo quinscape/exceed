@@ -3,22 +3,21 @@ package de.quinscape.exceed.runtime.editor.completion;
 import de.quinscape.exceed.message.MessageMeta;
 import de.quinscape.exceed.message.Query;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.util.ComponentPath;
 import org.svenson.JSONParameter;
 import org.svenson.JSONTypeHint;
-
-import java.util.List;
 
 public class PropNameCompleteQuery
     extends Query
 {
-    private final List<Long> path;
 
     private final View viewModel;
 
+    private final ComponentPath path;
 
     public PropNameCompleteQuery(
         @JSONParameter("path")
-        List<Long> path,
+        ComponentPath path,
         @JSONParameter("viewModel")
         @JSONTypeHint(View.class)
         View viewModel,
@@ -33,7 +32,7 @@ public class PropNameCompleteQuery
     }
 
 
-    public List<Long> getPath()
+    public ComponentPath getPath()
     {
         return path;
     }
@@ -43,6 +42,7 @@ public class PropNameCompleteQuery
     {
         return viewModel;
     }
+
 
 
     @Override

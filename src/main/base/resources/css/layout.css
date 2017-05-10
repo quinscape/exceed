@@ -126,11 +126,13 @@ div.notification
 }
 
 .error-report {
-    color: #000;
+    color: #612929;
+    background: #ffeceb;
+    border: 2px solid #ff726b;
 }
 
 .error-report a {
-    color: #008;
+    color: #612929;
 }
 
 .error-messages
@@ -142,4 +144,21 @@ div.notification
 {
     color: $mix(#ff4136, #000, 0.5);
     border-bottom: 1px solid #ff4136;
+}
+
+.error-container
+{
+    position: relative;
+}
+.error-tag
+{
+    position: absolute;
+    top: 0;
+    left: 98%;
+
+}
+
+span.right
+{
+    float: right;
 }

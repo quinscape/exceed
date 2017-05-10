@@ -13,10 +13,12 @@ public class PropNameCompletionHandler
     @Autowired
     private CompletionService completionService;
 
+
     @Override
     public void handle(MessageContext context, PropNameCompleteQuery msg) throws Exception
     {
-        List<AceCompletion> completions = completionService.autocompletePropName(context.getRuntimeContext(), msg.getViewModel(), msg.getPath());
+        List<AceCompletion> completions = completionService.autocompletePropName(context.getRuntimeContext(), msg
+            .getViewModel(), msg.getPath().walk(msg.getViewModel()));
 
         context.reply(msg, completions);
     }

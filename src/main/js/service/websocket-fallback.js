@@ -11,7 +11,7 @@ var polling = false;
 var timeout = false;
 var lastActivity = 0;
 
-if (process.env.NODE_ENV !== "production")
+if (process.env.USE_EDITOR)
 {
     var pollChanges = function ()
     {
@@ -28,7 +28,7 @@ if (process.env.NODE_ENV !== "production")
             polling = false;
             //alert("CHANGE" + JSON.stringify(model));
 
-            if (model._type === "view.View")
+            if (model._type === "xcd.view.View")
             {
                 fetchView().then(function (data)
                     {
@@ -101,7 +101,7 @@ if (process.env.NODE_ENV !== "production")
 module.exports = {
     enablePolling: function ()
     {
-        if (process.env.NODE_ENV !== "production")
+        if (process.env.USE_EDITOR)
         {
             pollingEnabled = true;
 

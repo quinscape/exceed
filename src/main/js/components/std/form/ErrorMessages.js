@@ -1,6 +1,6 @@
+import FormContext from "../../../util/form-context";
 const React = require("react");
 
-const FormContext = require("../../../util/form-context");
 const keys = require("../../../util/keys");
 const i18n = require("../../../service/i18n");
 

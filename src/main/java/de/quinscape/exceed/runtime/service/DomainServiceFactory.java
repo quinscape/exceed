@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.service;
 
+import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.runtime.config.DefaultPropertyConverters;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.DomainServiceImpl;
@@ -21,8 +22,6 @@ public class DomainServiceFactory
 
     private final StorageConfigurationRepository storageConfigurationRepository;
 
-
-
     public DomainServiceFactory(DefaultPropertyConverters defaultPropertyConverters,
                                 StorageConfigurationRepository storageConfigurationRepository)
 
@@ -33,9 +32,9 @@ public class DomainServiceFactory
     }
 
 
-    public DomainService create()
+    public DomainService create(Map<Class<?>, DomainType> modelDomainTypes)
     {
-        return new DomainServiceImpl(converters, storageConfigurationRepository);
+        return new DomainServiceImpl(converters, storageConfigurationRepository, modelDomainTypes);
     }
 
 }

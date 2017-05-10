@@ -1,16 +1,15 @@
+/**
+ * Checkbox component
+ */
+import FormContext from "../../../util/form-context";
 var React = require("react");
 var cx = require("classnames");
 
 var i18n = require("../../../service/i18n");
 var domainService = require("../../../service/domain");
 
-var FormContext = require("../../../util/form-context");
-
 const FormElement =  require("./FormElement");
 
-/**
- * Checkbox component
- */
 var Checkbox = React.createClass({
 
     contextTypes: {

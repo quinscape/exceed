@@ -45,7 +45,7 @@ function revert(done)
     //console.log("REDO-PTR", this.ptr, this.states.length);
     if (!this.isSaved())
     {
-        this.ptr = this.saved;
+        this.ptr = this.clean;
         this.stateCallback(this.states[this.ptr], done || noOp)
     }
 }
@@ -61,7 +61,7 @@ function UndoHandler(initialState, stateCallback)
 {
     this.states = [initialState];
     this.ptr = 0;
-    this.saved = 0;
+    this.clean = 0;
 
     this.stateCallback = stateCallback;
 
@@ -103,12 +103,12 @@ UndoHandler.prototype.canRedo = function ()
 
 UndoHandler.prototype.isSaved = function ()
 {
-    return this.ptr === this.saved;
+    return this.ptr === this.clean;
 };
 
 UndoHandler.prototype.getSavedState = function ()
 {
-    return this.states[this.saved];
+    return this.states[this.clean];
 };
 
 UndoHandler.prototype.newState = function (state, done)
@@ -135,8 +135,8 @@ UndoHandler.prototype.replaceState = function (state, done)
 
 UndoHandler.prototype.markSaved = function (done)
 {
-    this.saved = this.ptr;
-    this.stateCallback(this.states[this.saved], done || noOp);
+    this.clean = this.ptr;
+    this.stateCallback(this.states[this.clean], done || noOp);
 };
 
 module.exports = {

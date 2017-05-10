@@ -10,7 +10,7 @@ import java.util.Map;
  * Implemented by classes that provide data for component instances at runtime.
  *
  *
- * @see ComponentDescriptor#getDataProviderName()
+ * @see ComponentDescriptor#getDataProvider()
  */
 public interface DataProvider
 {

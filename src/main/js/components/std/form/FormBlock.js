@@ -1,8 +1,7 @@
-var React = require("react");
+import FormContext from "../../../util/form-context";
+const React = require("react");
 
-var FormContext = require("../../../util/form-context");
-
-var FormBlock = React.createClass({
+const FormBlock = React.createClass({
 
     contextTypes: {
         formContext: React.PropTypes.instanceOf(FormContext)
@@ -14,15 +13,15 @@ var FormBlock = React.createClass({
         wrapperClass: React.PropTypes.string
     },
 
-
-    getChildContext: function()
+    getChildContext: function ()
     {
-        var ctx = this.context.formContext;
+        const ctx = this.context.formContext;
 
-        var newContext = new FormContext(
+        const newContext = new FormContext(
             this.props.horizontal || ctx.horizontal,
             this.props.labelClass || ctx.wrapperClass(),
-            this.props.wrapperClass || ctx.labelClass()
+            this.props.wrapperClass || ctx.labelClass(),
+            this.props.update || ctx.update
         );
 
         newContext.errors = ctx.errors;
@@ -40,7 +39,6 @@ var FormBlock = React.createClass({
             wrapperClass: "col-md-4"
         };
     },
-
 
     render: function ()
     {

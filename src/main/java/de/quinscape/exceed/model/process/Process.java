@@ -33,7 +33,7 @@ public class Process
 
     private Map<String, ProcessState> states;
 
-    private ContextModel context;
+    private ContextModel contextModel;
 
     private ApplicationModel applicationModel;
 

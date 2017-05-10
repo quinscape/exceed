@@ -1,10 +1,11 @@
 package de.quinscape.exceed.runtime.config;
 
 import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.model.meta.WebpackEntryPoint;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
-import de.quinscape.exceed.runtime.controller.ActionService;
-import de.quinscape.exceed.runtime.controller.TemplateVariables;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.ResourceChangeListener;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
@@ -13,30 +14,38 @@ import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.ModuleResourceEvent;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.template.BaseTemplate;
-import de.quinscape.exceed.runtime.util.AppAuthentication;
+import de.quinscape.exceed.runtime.template.TemplateVariables;
+import de.quinscape.exceed.runtime.template.TemplateVariablesProvider;
 import de.quinscape.exceed.runtime.util.ContentType;
 import de.quinscape.exceed.runtime.util.RequestUtil;
+import de.quinscape.exceed.runtime.util.Util;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
-import org.svenson.JSON;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * Resolves the react.js client side view identifiers to an {@link ExceedView}.
+ *
+ * The view name must be of the format "appName:bundleA,bundleB" to load the base template of the app "appName" with
+ * the webpack script bundles "bundleA" and "bundleB".
+ *
+ * We use {@link WebpackConfig#APP_BUNDLES} and {@link WebpackConfig#EDITOR_MAIN_MODULE} values inside the default application.
+ */
 public class ExceedViewResolver
     implements ViewResolver
 {
@@ -47,52 +56,23 @@ public class ExceedViewResolver
 
     private final ApplicationContext applicationContext;
 
+    private final Collection<TemplateVariablesProvider> templateVariablesProviders;
+
     private volatile ApplicationService applicationService;
-    private volatile ActionService actionService;
 
     private final ServletContext servletContext;
 
-    private ConcurrentMap<String, ExceedView> applicationViews = new ConcurrentHashMap<>();
+    private ConcurrentMap<ViewSpec, ExceedView> applicationViews = new ConcurrentHashMap<>();
 
 
-    public ExceedViewResolver(ApplicationContext applicationContext, ServletContext servletContext)
+    public ExceedViewResolver(ApplicationContext applicationContext, ServletContext servletContext, Collection
+        <TemplateVariablesProvider> templateVariablesProviders)
     {
         this.applicationContext = applicationContext;
         this.servletContext = servletContext;
-    }
-    private String systemInfo;
-
-    public String getSystemInfo()
-    {
-        if (systemInfo == null)
-        {
-            synchronized (this)
-            {
-                if (systemInfo == null)
-                {
-                    systemInfo = JSON.defaultJSON().forValue(createSystemInfo());
-                }
-            }
-        }
-
-        return systemInfo;
+        this.templateVariablesProviders = templateVariablesProviders;
     }
 
-
-    private Map<String, Object> createSystemInfo()
-    {
-        Map<String, Object> info = new HashMap<>();
-
-        info.put("actions", getServerSideActionsInSystem());
-        info.put("contextPath", servletContext.getContextPath());
-
-        return info;
-    }
-
-    private Set<String> getServerSideActionsInSystem()
-    {
-        return getActionService().getActionNames();
-    }
 
     private ApplicationService getApplicationService()
     {
@@ -110,37 +90,22 @@ public class ExceedViewResolver
         return applicationService;
     }
 
-    private ActionService getActionService()
-    {
-        if (actionService == null)
-        {
-            synchronized (this)
-            {
-                if (actionService == null)
-                {
-                    actionService = applicationContext.getBean(ActionService.class);
-                }
-            }
-        }
-        return actionService;
-    }
-
 
     @Override
     public View resolveViewName(String viewName, Locale locale) throws Exception
     {
-        String appName = resolveApp(viewName);
+        ViewSpec spec = new ViewSpec(viewName);
 
 
         final RuntimeApplication runtimeApplication = getApplicationService().getRuntimeApplication(servletContext,
-            appName);
+            spec.appName);
 
-        ExceedView holder = new ExceedView(runtimeApplication, getSystemInfo(), servletContext);
-        final ExceedView existing = applicationViews.putIfAbsent(appName, holder);
+        ExceedView holder = new ExceedView(runtimeApplication, servletContext, templateVariablesProviders, spec.bundles);
+        final ExceedView existing = applicationViews.putIfAbsent(spec, holder);
         if (existing == null)
         {
             // register for change events
-            final TemplateChangeListener listener = new TemplateChangeListener(appName);
+            final TemplateChangeListener listener = new TemplateChangeListener(spec.appName);
             for (ResourceRoot resourceRoot : runtimeApplication.getResourceLoader().getExtensions())
             {
                 final ResourceWatcher watcher = resourceRoot.getResourceWatcher();
@@ -159,35 +124,36 @@ public class ExceedViewResolver
     }
 
 
-    private String resolveApp(String viewName)
-    {
-        int pos = viewName.indexOf(":");
-        if (pos >= 0)
-        {
-            return viewName.substring(0, pos);
-        }
-        return getApplicationService().getDefaultApplication();
-    }
-
 
     private static class ExceedView
         implements View
     {
 
+        private final Collection<TemplateVariablesProvider> templateVariablesProviders;
+
         private volatile BaseTemplate template;
 
         private final RuntimeApplication runtimeApplication;
 
-        private final String systemInfo;
-
         private final ServletContext servletContext;
 
+        private final List<String> scriptBundles;
 
-        private ExceedView(RuntimeApplication runtimeApplication, String systemInfo, ServletContext servletContext)
+        private ExceedView(RuntimeApplication runtimeApplication, ServletContext servletContext,
+                           Collection<TemplateVariablesProvider> templateVariablesProviders, List<String> scriptBundles)
         {
             this.runtimeApplication = runtimeApplication;
-            this.systemInfo = systemInfo;
             this.servletContext = servletContext;
+            this.scriptBundles = scriptBundles;
+
+            if (templateVariablesProviders != null)
+            {
+                this.templateVariablesProviders = templateVariablesProviders;
+            }
+            else
+            {
+                this.templateVariablesProviders = Collections.emptyList();
+            }
         }
 
 
@@ -206,14 +172,10 @@ public class ExceedViewResolver
 
             final ApplicationModel appModel = runtimeApplication.getApplicationModel();
             final String appName = appModel.getName();
-            model.put(TemplateVariables.APP_NAME, appName);
-            model.put(TemplateVariables.LOCALE, appModel.matchLocale(request.getLocale()));
-
-            AppAuthentication auth = AppAuthentication.get();
-            model.put(TemplateVariables.USER_NAME, auth.getUserName());
-            model.put(TemplateVariables.USER_ROLES, auth.getRoles());
+            model.put(TemplateVariables.LOCALE, appModel.getConfigModel().matchLocale(request.getLocale()));
 
             final String contextPath = request.getContextPath();
+            model.put(TemplateVariables.APP_NAME, appName);
             model.put(TemplateVariables.CONTEXT_PATH, contextPath);
 
 
@@ -228,13 +190,44 @@ public class ExceedViewResolver
             }
             else
             {
-                final CsrfToken token = (CsrfToken) request.getAttribute("_csrf");
-                model.put(TemplateVariables.CSRF_TOKEN, token.getToken());
-                model.put(TemplateVariables.CSRF_HEADER_NAME, token.getHeaderName());
-                model.put(TemplateVariables.CSRF_PARAMETER_NAME, token.getParameterName());
 
-                model.put(TemplateVariables.SYSTEM_INFO, systemInfo);
-                model.put(TemplateVariables.SCRIPTS, "<script src=\"" + contextPath + "/res/" + appName + "/js/main.js\"></script>\n");
+                final List<WebpackEntryPoint> entries = appModel.getMetaData().getWebpackStats().getEntries();
+                StringBuilder scriptsBuilder = new StringBuilder();
+
+                for (String bundle : scriptBundles)
+                {
+                    boolean found = false;
+                    for (WebpackEntryPoint entryPoint : entries)
+                    {
+                        if (entryPoint.getChunkNames().contains(bundle))
+                        {
+                            scriptsBuilder.append("<script src=\"")
+                                .append(contextPath)
+                                .append("/res/")
+                                .append(appName)
+                                .append("/js/")
+                                .append(entryPoint.getName())
+                                .append("\"></script>\n");
+
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        throw new ExceedRuntimeException("Webpack script bundle '" + bundle + "' not found.");
+                    }
+                }
+
+                model.put(TemplateVariables.SCRIPTS, scriptsBuilder.toString());
+
+                if (templateVariablesProviders.size() > 0)
+                {
+                    final RuntimeContext runtimeContext = RuntimeContextHolder.get(request);
+
+                    templateVariablesProviders.forEach(provider -> provider.provide(runtimeContext, model));
+                }
             }
 
             //response.setContentLength(data.length);
@@ -303,6 +296,67 @@ public class ExceedViewResolver
 
                 applicationViews.get(appName).flush();
             }
+        }
+
+
+        @Override
+        public String toString()
+        {
+            return super.toString() + ": "
+                + "appName = '" + appName + '\''
+                ;
+        }
+    }
+
+    private final class ViewSpec
+    {
+        public final String appName;
+        public final List<String> bundles;
+
+        private ViewSpec(String viewName)
+        {
+            if (viewName == null)
+            {
+                throw new IllegalArgumentException("viewName can't be null");
+            }
+
+            int pos = viewName.indexOf(":");
+            if (pos < 0)
+            {
+                this.appName = getApplicationService().getDefaultApplication();
+                this.bundles = Util.splitAtComma(viewName);
+            }
+            else
+            {
+                this.appName = viewName.substring(0, pos);
+                this.bundles = Util.splitAtComma(viewName.substring(pos + 1));
+            }
+        }
+
+
+        @Override
+        public int hashCode()
+        {
+            return Util.hashcodeOver(appName, bundles);
+        }
+
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj)
+            {
+                return true;
+            }
+            
+            if (obj instanceof ViewSpec)
+            {
+                ViewSpec that = (ViewSpec) obj;
+
+                return this.appName.equals(that.appName) &&
+                    this.bundles.equals(that.bundles);
+            }
+            return false;
         }
     }
 }

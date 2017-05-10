@@ -2,7 +2,9 @@ package de.quinscape.exceed.runtime.controller;
 
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
+import de.quinscape.exceed.runtime.config.WebpackConfig;
 import de.quinscape.exceed.runtime.service.ApplicationService;
+import de.quinscape.exceed.runtime.template.TemplateVariables;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -15,14 +17,20 @@ import java.util.Collections;
 
 @Controller
 public class LoginController
-    implements TemplateVariables
 {
 
-    @Autowired
-    private ApplicationService applicationService;
+    private final ApplicationService applicationService;
+
+    private final ServletContext servletContext;
+
 
     @Autowired
-    private ServletContext servletContext;
+    public LoginController(ApplicationService applicationService, ServletContext servletContext)
+    {
+        this.applicationService = applicationService;
+        this.servletContext = servletContext;
+    }
+
 
     @RequestMapping("/login")
     public String showLogin(
@@ -30,8 +38,7 @@ public class LoginController
         HttpServletResponse response,
         ModelMap model)
     {
-        model.addAttribute(TITLE, "Login");
-        final String contextPath = request.getContextPath();
+        model.addAttribute(TemplateVariables.TITLE, "Login");
 
         final String defaultApp = applicationService.getDefaultApplication();
         final DefaultRuntimeApplication runtimeApplication = (DefaultRuntimeApplication) applicationService.getRuntimeApplication(servletContext, defaultApp);
@@ -39,7 +46,7 @@ public class LoginController
         try
         {
             runtimeApplication.processView(request, response, model, "/login", Collections.emptyMap(), "/login", "Login", null);
-            return  defaultApp + ":base";
+            return  defaultApp + ":" + WebpackConfig.APP_BUNDLES;
         }
         catch (Exception e)
         {

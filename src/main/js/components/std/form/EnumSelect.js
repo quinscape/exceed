@@ -1,14 +1,13 @@
+/**
+ * Internal enum select component used by Field
+ */
+import FormContext from "../../../util/form-context";
 var React = require("react");
 var cx = require("classnames");
 
 var i18n  = require("../../../service/i18n");
 var domainService  = require("../../../service/domain");
 
-var FormContext = require("../../../util/form-context");
-
-/**
- * Internal enum select component used by Field
- */
 var EnumSelect = React.createClass({
 
     contextTypes: {

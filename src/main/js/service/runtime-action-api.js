@@ -1,17 +1,9 @@
-var Promise = require("es6-promise-polyfill").Promise;
-var actionService = require("../service/action");
-var Throbber = require("../ui/throbber");
+import { Promise } from "es6-promise-polyfill"
+import actionService from "../service/action"
+import store from "../service/store"
+import Throbber from "../ui/throbber"
 
-var viewService;
-
-function getViewService()
-{
-    if (!viewService)
-    {
-        viewService = require("../service/view");
-    }
-    return viewService;
-}
+import { updateComponent } from "../actions/component"
 
 function defaultError(err)
 {
@@ -82,7 +74,12 @@ module.exports = {
 
     update : function (id, vars)
     {
-        getViewService().updateComponent(id, vars || {});
+        store.dispatch(
+            updateComponent(
+                id,
+                vars
+            )
+        );
     },
 
     uri: require("../util/uri")

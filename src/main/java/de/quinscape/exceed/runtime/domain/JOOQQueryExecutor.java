@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.domain;
 
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataGraph;
+import de.quinscape.exceed.runtime.component.DataGraphQualifier;
 import de.quinscape.exceed.runtime.component.QueryExecutor;
 import de.quinscape.exceed.runtime.expression.query.DataField;
 import de.quinscape.exceed.runtime.expression.query.JoinDefinition;
@@ -158,7 +159,8 @@ public class JOOQQueryExecutor
         return new DataGraph(
             queryDefinition.createColumnDescriptorMap(),
             rows,
-            rowCount
+            rowCount,
+            DataGraphQualifier.QUERY
         );
     }
 

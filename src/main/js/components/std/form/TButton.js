@@ -1,15 +1,14 @@
-    var React = require("react");
+/**
+ * Process transition executing button.
+ */
+import FormContext from "../../../util/form-context";
+var React = require("react");
 var cx = require("classnames");
 
 var i18n  = require("../../../service/i18n");
 
 var processService  = require("../../../service/process");
 
-var FormContext = require("../../../util/form-context");
-
-/**
- * Process transition executing button.
- */
 var TButton = React.createClass({
 
     propTypes: {

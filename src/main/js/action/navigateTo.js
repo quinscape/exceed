@@ -1,8 +1,12 @@
-var viewService = require("../service/view");
+
+import store from "../service/store"
+import { navigateView } from "../actions/view"
 
 module.exports = function (model)
 {
-    return viewService.navigateTo({
-        url: model.url
-    });
+    store.dispatch(
+        navigateView({
+            url: model.url
+        })
+    );
 };

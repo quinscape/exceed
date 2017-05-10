@@ -5,27 +5,26 @@ const cando = require("../cando");
 const Enum = require("./../util/enum");
 const CSFR = require("./csfr");
 
-var createXMLHTTPObject = require("./../util/xhr-factory");
+const createXMLHTTPObject = require("./../util/xhr-factory");
 
-
-var HttpMethod = new Enum({
+const HttpMethod = new Enum({
     GET: true,
     POST: true
 });
 
-var DataType = new Enum({
+const DataType = new Enum({
     JSON: true,
     TEXT: true,
     XHR: true
 });
 
-var defaultOpts = {
+const defaultOpts = {
     method: "get",
     dataType: DataType.JSON,
     headers: null
 };
 
-var contentType = {};
+const contentType = {};
 contentType[DataType.JSON] = "application/json";
 contentType[DataType.XHR] = "application/json";
 contentType[DataType.TEXT] = "text/plain";
@@ -34,8 +33,8 @@ contentType[DataType.TEXT] = "text/plain";
 
 function logError(opts, err)
 {
-    var l = [];
-    for (var name in err)
+    const l = [];
+    for (let name in err)
     {
         if (err.hasOwnProperty(name))
         {
@@ -47,9 +46,9 @@ function logError(opts, err)
 
 function serialize(data)
 {
-    var s = "";
+    let s = "";
 
-    for (var k in data)
+    for (let k in data)
     {
         if (data.hasOwnProperty(k))
         {
@@ -64,11 +63,11 @@ function serialize(data)
  * Requests an URL from the server via AJAX and returns a promise resolving to the returned data.
  *
  * @param opts              options
- * @param opts.url          [string} url
- * @param opts.method       HTTP method (default = "get")
+ * @param opts.url          {string} url
+ * @param opts.method       {string} HTTP method (default = "get")
  * @param opts.data         {string|object} POST data
  * @param opts.dataType     {string} expected data type of the resonse (default = "JSON")
- * @param opts.contentType  [string} POST content type. data should be a string in this case.
+ * @param opts.contentType  {string} POST content type. data should be a string in this case.
  *
  * @returns {Promise} resolving to the requested data in the type corresponding to the dataType option.
  */
@@ -77,7 +76,7 @@ module.exports = function(opts)
     opts = assign({}, defaultOpts, opts);
 
 
-    var promise = new Promise(function (resolve, reject)
+    const promise = new Promise(function (resolve, reject)
     {
         if (typeof opts.url !== "string")
         {
@@ -89,7 +88,7 @@ module.exports = function(opts)
             });
         }
 
-        var dataType = opts.dataType.toUpperCase();
+        const dataType = opts.dataType.toUpperCase();
         if (!DataType.isValid(dataType))
         {
             reject({
@@ -112,7 +111,7 @@ module.exports = function(opts)
             return;
         }
 
-        var method = opts.method.toUpperCase();
+        const method = opts.method.toUpperCase();
 
         if (method === "POST" && opts.data === undefined)
         {
@@ -125,7 +124,7 @@ module.exports = function(opts)
             return;
         }
 
-        var xhr = createXMLHTTPObject();
+        let xhr = createXMLHTTPObject();
         if (!xhr)
         {
             reject({
@@ -143,10 +142,10 @@ module.exports = function(opts)
         xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
         xhr.setRequestHeader("Accept", contentType[opts.dataType]);
 
-        var headers = opts.headers;
+        const headers = opts.headers;
         if (headers)
         {
-            for (var name in headers)
+            for (let name in headers)
             {
                 if (headers.hasOwnProperty(name))
                 {
@@ -155,7 +154,7 @@ module.exports = function(opts)
             }
         }
 
-        var data = null;
+        let data = null;
         if (method === "POST")
         {
             xhr.setRequestHeader(CSFR.tokenHeader(), CSFR.token());
@@ -178,10 +177,11 @@ module.exports = function(opts)
 
         xhr.onreadystatechange = function ()
         {
-            if (xhr.readyState != 4)
+            if (xhr.readyState !== 4)
             {
                 return;
             }
+            
             if (xhr.status !== 200 && xhr.status !== 304)
             {
 
@@ -197,16 +197,16 @@ module.exports = function(opts)
                 return;
             }
 
-            var responseText = xhr.responseText;
+            const responseText = xhr.responseText;
 
             if (dataType === DataType.JSON)
             {
                 try
                 {
-                    var data = JSON.parse(responseText);
-                    resolve( data );
+                    const data = JSON.parse(responseText);
+                    resolve(data);
                 }
-                catch(e)
+                catch (e)
                 {
                     reject({
                         opts: opts,
@@ -226,7 +226,7 @@ module.exports = function(opts)
             }
         };
 
-        if (xhr.readyState == 4)
+        if (xhr.readyState === 4)
         {
             return;
         }

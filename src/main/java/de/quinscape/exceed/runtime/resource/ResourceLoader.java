@@ -13,6 +13,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ *
+ */
 public class ResourceLoader
     implements ResourceChangeListener
 {
@@ -44,16 +47,34 @@ public class ResourceLoader
             {
                 String relative = resource.getRelativePath();
 
-                ResourceLocation location = resourceLocations.get(relative);
+                ResourceLocation location = getResourceLocation(relative);
                 if (location == null)
                 {
-                    location = new ResourceLocation(relative);
-                    resourceLocations.put(relative, location);
+                    location = register(resource);
                 }
-
                 location.addExtensionResource(resource);
             }
         }
+    }
+
+
+    /**
+     * Registers the given resource with a newly created ResourceLocation.
+     *
+     * In general, we only register new resources on two occasions: At startup we register all existing resources and
+     * if we do hot loading, we create new locations if we receive CREATED events about resources that did not exist
+     * before. In all other cases, we don't do anything and return <code>null</code>.
+     *
+     * @param resource
+     * @return
+     */
+    private ResourceLocation register(AppResource resource)
+    {
+        final String relativePath = resource.getRelativePath();
+        ResourceLocation location = new ResourceLocation(relativePath);
+        resourceLocations.put(relativePath, location);
+        location.addExtensionResource(resource);
+        return location;
     }
 
 
@@ -134,7 +155,12 @@ public class ResourceLoader
     public void onResourceChange(ModuleResourceEvent resourceEvent, FileResourceRoot root, String resourcePath)
     {
         ResourceLocation resourceLocation = getResourceLocation(resourcePath);
-        if (resourceLocation != null && resourceLocation.getHighestPriorityResource().getResourceRoot().equals(root))
+        if (resourceLocation == null)
+        {
+            resourceLocation = register(root.getResource(resourcePath));
+        }
+
+        if (resourceLocation.getHighestPriorityResource().getResourceRoot().equals(root))
         {
             log.debug("Refresh cache for {}:{}", root, resourcePath);
             if (resourceCache == null)

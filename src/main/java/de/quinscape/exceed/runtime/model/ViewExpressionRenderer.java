@@ -16,7 +16,6 @@ import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.model.component.PropType;
 import de.quinscape.exceed.model.context.ScopeDeclaration;
 import de.quinscape.exceed.model.context.ScopeDeclarations;
-import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.view.AttributeValue;
 import de.quinscape.exceed.model.view.AttributeValueType;
 import de.quinscape.exceed.model.view.ComponentModel;
@@ -46,7 +45,7 @@ public class ViewExpressionRenderer
 
     private final String componentId;
 
-    private final ComponentPath path;
+    private final ComponentRenderPath path;
 
     private final ComponentDescriptor componentDescriptor;
 
@@ -62,7 +61,7 @@ public class ViewExpressionRenderer
 
 
     public ViewExpressionRenderer(ApplicationModel applicationModel, View view, ComponentModel componentModel, String
-        attrName, ComponentPath path, ActionExpressionRenderer actionExpressionRenderer)
+        attrName, ComponentRenderPath path, ActionExpressionRenderer actionExpressionRenderer)
     {
         super(view, actionExpressionRenderer);
 
@@ -84,7 +83,7 @@ public class ViewExpressionRenderer
         {
             throw new IllegalArgumentException("path can't be null");
         }
-        AttributeValue attr = componentModel.getAttribute(DomainType.ID_PROPERTY);
+        AttributeValue attr = componentModel.getAttribute(ComponentModel.ID_ATTRIBUTE);
         this.componentId = attr != null ? attr.getValue() : null;
         this.path = path;
         this.componentModel = componentModel;

@@ -1,63 +1,53 @@
 package de.quinscape.exceed.runtime.controller;
 
-import de.quinscape.exceed.runtime.ExceedRuntimeException;
-import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.application.ApplicationNotFoundException;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.application.MappingNotFoundException;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.application.StateNotFoundException;
-import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
-import de.quinscape.exceed.runtime.security.Roles;
+import de.quinscape.exceed.runtime.config.WebpackConfig;
 import de.quinscape.exceed.runtime.service.ApplicationService;
-import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
 import de.quinscape.exceed.runtime.service.websocket.MessageHubRegistry;
-import de.quinscape.exceed.runtime.template.BaseTemplate;
-import de.quinscape.exceed.runtime.util.AppAuthentication;
+import de.quinscape.exceed.runtime.template.TemplateVariables;
 import de.quinscape.exceed.runtime.util.ContentType;
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import de.quinscape.exceed.runtime.util.RequestUtil;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.svenson.JSON;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 @Controller
 public class ApplicationController
-    implements TemplateVariables
 {
 
     private final static Logger log = LoggerFactory.getLogger(ApplicationController.class);
 
     public static final String BASE_TEMPLATE_RESOURCE = "/resources/template/template.html";
 
-    @Autowired
-    private ServletContext servletContext;
+    private final ServletContext servletContext;
+
+    private final ApplicationService applicationService;
+
+    private final MessageHubRegistry messageHubRegistry;
+
 
     @Autowired
-    private ApplicationService applicationService;
+    public ApplicationController(ServletContext servletContext, ApplicationService applicationService, MessageHubRegistry messageHubRegistry)
+    {
+        this.servletContext = servletContext;
+        this.applicationService = applicationService;
+        this.messageHubRegistry = messageHubRegistry;
+    }
 
-    @Autowired
-    private MessageHubRegistry messageHubRegistry;
 
     @RequestMapping("/app/{name}/**")
     public String showApplicationView(
@@ -78,21 +68,12 @@ public class ApplicationController
                 return null;
             }
 
-            model.addAttribute(TITLE, "\u2026");
+            model.addAttribute(TemplateVariables.TITLE, "\u2026");
 
             boolean done = runtimeApplication.route(request, response, model, inAppURI);
-
-            AppAuthentication auth = AppAuthentication.get();
-            if (auth.hasRole(Roles.EDITOR) && !RequestUtil.isAjaxRequest(request))
-            {
-                RuntimeContext runtimeContext = RuntimeContextHolder.get();
-                String connectionId = messageHubRegistry.registerConnection(request.getSession(), runtimeContext, auth);
-                model.addAttribute(CONNECTION_ID, connectionId);
-            }
-
             if (!done)
             {
-                return appName + ":base";
+                return appName + ":" + WebpackConfig.APP_BUNDLES;
             }
         }
         catch(MappingNotFoundException e)
@@ -124,7 +105,7 @@ public class ApplicationController
         if (RequestUtil.isAjaxRequest(request))
         {
             response.setContentType(ContentType.JSON);
-            RequestUtil.sendJSON(response, "{\"ok\":false,\"error\":" + JSON.defaultJSON().quote(message + ": " + e.getMessage()) + "}");
+            RequestUtil.sendJSON(response, JSONUtil.error(message + ": " + e.getMessage()));
         }
         else
         {

@@ -1,9 +1,9 @@
 package de.quinscape.exceed.runtime.editor.completion;
 
+import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.component.ComponentDescriptor;
 import de.quinscape.exceed.model.component.ComponentTemplate;
 import de.quinscape.exceed.model.component.PropDeclaration;
-import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.ComponentModelBuilder;
 import de.quinscape.exceed.model.view.View;
@@ -18,10 +18,10 @@ import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.svenson.JSONParser;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,7 +40,7 @@ public class CompletionService
 
     private final static Logger log = LoggerFactory.getLogger(CompletionService.class);
 
-    private static final PropDeclaration RENDERED_IF_DECLARATION = JSONParser.defaultJSONParser().parse(
+    private static final PropDeclaration RENDERED_IF_DECLARATION = JSONUtil.DEFAULT_PARSER.parse(
         PropDeclaration.class,
         "{ \"description\" : \"Expression that determines whether the component is rendered or not.\", \"type\" : \"FILTER_EXPRESSION\" }"
     );
@@ -154,9 +154,8 @@ public class CompletionService
     }
 
 
-    public List<AceCompletion> autocompleteProp(RuntimeContext runtimeContext, String propName, View viewModel, List<Long> path)
+    public List<AceCompletion> autocompleteProp(RuntimeContext runtimeContext, String propName, View viewModel, ComponentModel componentModel)
     {
-        ComponentModel componentModel = walkIndexPath(viewModel, path);
 
         ComponentUtil.updateComponentRegsAndParents(componentRegistry, viewModel, null);
 
@@ -178,10 +177,8 @@ public class CompletionService
         return env.evaluate(expressionService);
     }
 
-    public List<AceCompletion> autocompletePropName(RuntimeContext runtimeApplication, View viewModel, List<Long> path)
+    public List<AceCompletion> autocompletePropName(RuntimeContext runtimeApplication, View viewModel, ComponentModel componentModel)
     {
-        ComponentModel componentModel = walkIndexPath(viewModel, path);
-
         ComponentUtil.updateComponentRegsAndParents(componentRegistry, viewModel, null);
 
         ComponentDescriptor componentDescriptor = componentModel.getComponentRegistration().getDescriptor();
@@ -223,17 +220,5 @@ public class CompletionService
         unusedPropNames.removeAll(componentModel.getAttrs().getNames());
         return unusedPropNames;
     }
-
-
-    private ComponentModel walkIndexPath(View viewModel, List<Long> path)
-    {
-        ComponentModel componentModel = viewModel.getRoot();
-        for (Long index : path)
-        {
-            componentModel = componentModel.getKids().get(index.intValue());
-        }
-        return componentModel;
-    }
-
 
 }

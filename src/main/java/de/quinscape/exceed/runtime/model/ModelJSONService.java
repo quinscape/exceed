@@ -1,7 +1,8 @@
 package de.quinscape.exceed.runtime.model;
 
+import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.view.View;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
 
 /**
  * Converts model classes to JSON and back.
@@ -20,13 +21,15 @@ public interface ModelJSONService
     /**
      * Converts the given view model to JSON.
      *
-     * @param application   runtime application
-     * @param model         view model
-     * @param jsonFormat    JSON format for view
+     * @param applicationModel  application model
+     * @param model             view model
+     * @param jsonFormat        JSON format for view
      *
      * @return  JSON string
      */
-    String toJSON(RuntimeApplication application, View model, JSONFormat jsonFormat);
+    String toJSON(ApplicationModel applicationModel, View model, JSONFormat jsonFormat);
+
+    String toJSON(ApplicationModel applicationModel, DomainType model, JSONFormat jsonFormat);
 
     /**
      * Creates a model instance from the given JSON object

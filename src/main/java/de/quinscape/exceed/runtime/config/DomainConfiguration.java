@@ -3,15 +3,14 @@ package de.quinscape.exceed.runtime.config;
 import com.jolbox.bonecp.BoneCPDataSource;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.runtime.component.QueryDataProvider;
-import de.quinscape.exceed.runtime.component.domain.DomainEditorProvider;
-import de.quinscape.exceed.runtime.component.translation.TranslationEditorProvider;
+import de.quinscape.exceed.runtime.component.TestDataProvider;
 import de.quinscape.exceed.runtime.db.JOOQConfigFactory;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.JOOQDomainOperations;
 import de.quinscape.exceed.runtime.domain.JOOQQueryExecutor;
-import de.quinscape.exceed.runtime.domain.SystemStorageExecutor;
 import de.quinscape.exceed.runtime.domain.NeutralNamingStrategy;
 import de.quinscape.exceed.runtime.domain.PropertyDefaultOperations;
+import de.quinscape.exceed.runtime.domain.SystemStorageExecutor;
 import de.quinscape.exceed.runtime.domain.SystemStorageOperations;
 import de.quinscape.exceed.runtime.domain.property.BooleanConverter;
 import de.quinscape.exceed.runtime.domain.property.DateConverter;
@@ -35,7 +34,6 @@ import de.quinscape.exceed.runtime.schema.DefaultStorageConfigurationRepository;
 import de.quinscape.exceed.runtime.schema.InformationSchemaOperations;
 import de.quinscape.exceed.runtime.schema.StorageConfiguration;
 import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
-import de.quinscape.exceed.runtime.service.ApplicationService;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DataSourceConnectionProvider;
@@ -152,6 +150,13 @@ public class DomainConfiguration
     {
         return new QueryDataProvider(queryTransformer, storageConfigurationRepository);
     }
+
+    @Bean
+    public TestDataProvider testDataProvider()
+    {
+        return new TestDataProvider();
+    }
+
 
     @Bean
     public SystemStorageExecutor systemStorageExecutor()

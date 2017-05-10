@@ -2,6 +2,8 @@ var Vector = require("./vector");
 
 const TAU = Math.PI * 2;
 
+const STEP = TAU / 1.61803398875;
+
 const assign = require("object-assign");
 
 function ring(graph, visited, center, minArc, maxArc, depth)
@@ -188,7 +190,7 @@ Graph.prototype.ease = function()
     var nodes = this.nodes;
 
     var tension = 0;
-    var tensionCount = 0;
+    var tensionCount = 1;
     var force, i, n, d;
 
     var separationLimit = this.options.separationLimit;
@@ -211,7 +213,7 @@ Graph.prototype.ease = function()
 
             if (considerSize)
             {
-                separationLimit = (Math.max(n2.width, n2.height) + Math.max(n.width, n.height))/2 + 40;
+                separationLimit = (Math.max(n2.width, n2.height) + Math.max(n.width, n.height))/2 + this.options.separationLimit;
                 //console.log("separationLimit", separationLimit);
             }
 
@@ -291,6 +293,9 @@ Graph.prototype.ease = function()
     var current = tension / tensionCount;
     var result = (current + this.prevTension) / 2;
     this.prevTension = current;
+
+    //console.log("TENSION = ", result);
+
     return result;
 };
 
@@ -395,7 +400,6 @@ Graph.prototype.arrange = function(center)
 
     var angle = 0;
 
-    const STEP = Math.PI * 2 / 1.61803398875;
 
     var separationLimit = this.options.separationLimit * 2;
     for (i = 0; i < nodes.length; i++)

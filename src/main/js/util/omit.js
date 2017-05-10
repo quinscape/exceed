@@ -5,10 +5,10 @@
  * @param exclude       name of excluded property
  * @returns {{}}
  */
-module.exports = function (obj, exclude)
+export default function (obj, exclude)
 {
-    var newObject = {};
-    for (var name in obj)
+    const newObject = {};
+    for (let name in obj)
     {
         if (name !== exclude && obj.hasOwnProperty(name))
         {

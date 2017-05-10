@@ -1,17 +1,19 @@
-var uri = require("../util/uri");
-var viewService = require("./view");
-var Scope = require("./scope");
-var sys = require("../sys");
+import assign from "object-assign";
+import Scope from "./scope";
+import uri from "../util/uri";
+import sys from "../sys";
+import store from "./store"
 
-const assign = require("object-assign");
+import { executeTransition } from "../actions/view"
+import { getLocation } from "../reducers"
 
-var RTView = require("./runtime-view-api");
+import RTView from "./runtime-view-api";
 
 function renderURI(locInfo, transition)
 {
-    var params = {
+    const params = {
         stateId: locInfo.params.stateId,
-        _trans : transition
+        _trans: transition
     };
 
     return uri( "/app/" + sys.appName + locInfo.routingTemplate, params)
@@ -20,25 +22,26 @@ function renderURI(locInfo, transition)
 module.exports = {
     transition: function(name, data)
     {
-        var runtimeInfo = viewService.getRuntimeInfo();
-        var locInfo = runtimeInfo.location;
-        var scopeInfo = runtimeInfo.scopeInfo;
+        const state = store.getState();
 
-        var names = scopeInfo.queryRefs.concat(scopeInfo.transitionRefs[name].viewScopeRefs);
+        const locInfo = getLocation(state);
 
-        return viewService.navigateTo({
-            url: renderURI(locInfo, name),
-            data: {
-                objectContext: data,
-                contextUpdate: Scope.getScopeUpdate(names)
-            },
-            urlProvider: function (xhr, data)
-            {
-//                    console.log(data);
-                var locInfo = data.viewData._exceed.location;
-                return renderURI(locInfo);
-            }
-        });
+        //const names = getScopeQueryRefs(state).concat(getScopeViewRefs(state));
+
+        return store.dispatch(
+            executeTransition({
+                url: renderURI(locInfo, name),
+                data: {
+                    objectContext: data,
+                    contextUpdate: Scope.getScopeUpdate()
+                },
+                urlProvider: function (xhr, data)
+                {
+                    const locInfo = getLocation(data);
+                    return renderURI(locInfo);
+                }
+            })
+        );
     },
     scope: RTView.prototype.scope
 };

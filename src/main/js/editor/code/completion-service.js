@@ -1,10 +1,10 @@
-var sys = require("../../sys");
-var hub = require("../../service/hub");
+const sys = require("../../sys");
+const hub = require("../../service/hub");
 
 /**
  * In Code-Editor service for code completion and intentions. Handles server-side querying
  */
-module.exports = {
+export default {
     /**
      *
      * @param viewModel     current editor view model

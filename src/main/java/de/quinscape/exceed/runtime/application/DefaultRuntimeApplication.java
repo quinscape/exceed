@@ -12,6 +12,8 @@ import de.quinscape.exceed.model.change.Timeout;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.context.ScopeMetaModel;
 import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.meta.StaticFunctionReferences;
+import de.quinscape.exceed.model.meta.WebpackStats;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.routing.Mapping;
@@ -24,8 +26,6 @@ import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.component.DataProviderPreparationException;
-import de.quinscape.exceed.model.component.StaticFunctionReferences;
-import de.quinscape.exceed.runtime.controller.TemplateVariables;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.process.ProcessExecutionState;
@@ -108,6 +108,8 @@ public class DefaultRuntimeApplication
     private static final String SYSTEM_CONTEXT_PATH = "/sys";
 
     public static final String TRACK_USAGE_DATA_RESOURCE = "/resources/js/track-usage.json";
+
+    public static final String WEBPACK_STATS_RESOURCE = "/resources/js/webpack-stats.json";
 
     public static final String STATE_ID_PARAMETER = "stateId";
 
@@ -224,7 +226,13 @@ public class DefaultRuntimeApplication
 
         final ApplicationMetaData metaData = this.applicationModel.getMetaData();
 
+        final WebpackStats stats = load(
+            resourceLoader.getResourceLocation(WEBPACK_STATS_RESOURCE).getHighestPriorityResource(),
+            WebpackStats.class
+        );
+
         metaData.setStaticFunctionReferences(staticFnRefs);
+        metaData.setWebpackStats(stats);
     }
 
 
@@ -308,7 +316,7 @@ public class DefaultRuntimeApplication
                     , applicationModel.getMetaData().getScopeMetaModel(), null),
                 domainService);
 
-            RuntimeContextHolder.register(runtimeContext);
+            RuntimeContextHolder.register(runtimeContext, request);
             scopedContextFactory.initializeContext(runtimeContext, sessionContext);
 
 
@@ -757,8 +765,13 @@ public class DefaultRuntimeApplication
             }
             else if (modulePath.equals(TRACK_USAGE_DATA_RESOURCE))
             {
-                final StaticFunctionReferences staticFnRefs = loadUsageData(topResource);
+                final StaticFunctionReferences staticFnRefs = load(topResource, StaticFunctionReferences.class);
                 this.applicationModel.getMetaData().setStaticFunctionReferences(staticFnRefs);
+            }
+            else if (modulePath.equals(WEBPACK_STATS_RESOURCE))
+            {
+                final WebpackStats stats = load(topResource, WebpackStats.class);
+                this.applicationModel.getMetaData().setWebpackStats(stats);
             }
             else if (modulePath.endsWith(FileExtension.JSON))
             {

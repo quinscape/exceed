@@ -1,14 +1,13 @@
+/**
+ * Action executing button
+ */
+import FormContext from "../../../util/form-context";
 var React = require("react");
 var cx = require("classnames");
 
 var i18n  = require("../../../service/i18n");
 var actionService  = require("../../../service/action");
 
-var FormContext = require("../../../util/form-context");
-
-/**
- * Action executing button
- */
 var Button = React.createClass({
 
     propTypes: {

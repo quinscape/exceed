@@ -75,11 +75,7 @@
                     "type" : "CLASSES"
                 }
             },
-            "providesContext": "DataListCursor",
-            "viewContext": {
-                "propertyType" : "Integer",
-                "defaultValue"  : "0"
-            }
+            "providesContext": "DataListCursor"
         },
         "Field": {
             "classes": ["element", "field"],

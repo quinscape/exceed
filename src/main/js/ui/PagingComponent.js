@@ -12,8 +12,10 @@ var PagingLink = React.createClass({
         // check disabled class to make sure we're not executing a link in case the CSS pointer event rule
         // doesn't catch
         var classes = ev.target.className;
+
         if (!hasClass(classes, "disabled"))
         {
+            console.log("offsetLink", this.props.ctx.offsetLink);
             this.props.ctx.offsetLink.requestChange( this.props.newOffset );
         }
         ev.preventDefault();
@@ -98,7 +100,7 @@ var PagingComponent = React.createClass({
             rowCount: this.props.rowCount,
             offsetLink: this.props.offsetLink,
             maxOffset: max
-        } ;
+        };
 
         var links = [
             <PagingLink key={"first"} newOffset={0} label="|<" ctx={ ctx } />,

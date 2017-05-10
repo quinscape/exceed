@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.resource.file;
 
 import de.quinscape.exceed.runtime.resource.AppResource;
+import org.svenson.JSONProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,17 @@ public class ResourceLocation
 
     public void addExtensionResource(AppResource appResource)
     {
+        List<AppResource> appResources1 = this.appResources;
+        for (int i = 0; i < appResources1.size(); i++)
+        {
+            AppResource resource = appResources1.get(i);
+            if (resource.getResourceRoot().getExtensionIndex() == appResource.getResourceRoot().getExtensionIndex())
+            {
+                appResources.set(i, appResource);
+                return;
+            }
+        }
+        
         this.appResources.add(appResource);
     }
 
@@ -26,6 +38,7 @@ public class ResourceLocation
         return appResources;
     }
 
+    @JSONProperty(ignore = true)
     public AppResource getHighestPriorityResource()
     {
         return appResources.get(appResources.size() - 1);

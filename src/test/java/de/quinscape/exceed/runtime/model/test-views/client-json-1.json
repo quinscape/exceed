@@ -1,96 +1,94 @@
 {
-    "root": {
-        "name": "View",
-        "kids": [
-            {
-                "name": "Grid",
-                "attrs": {
-                    "fluid": "{ true }"
-                },
-                "kids": [
-                    {
-                        "name": "Row",
-                        "kids": [
-                            {
-                                "name": "Col",
-                                "attrs": {
-                                    "md": "{ 12 }"
-                                },
-                                "kids": [
-                                    {
-                                        "name": "Heading",
-                                        "attrs": {
-                                            "id": "myHeading",
-                                            "value": "{ 'Heading: ' + props.id }"
-                                        }
-                                    },
-                                    {
-                                        "name": "Provider",
-                                        "attrs": {
-                                            "var": "customContext"
-                                        },
-                                        "kids": [
-                                            {
-                                                "name": "Consumer"
-                                            },
-                                            {
-                                                "name": "Consumer",
-                                                "attrs": {
-                                                    "ctx": "explicitContext"
-                                                }
-                                            },
-                                            {
-                                                "name": "ComputedConsumer",
-                                                "attrs": {
-                                                    "name": "ccName"
-                                                }
-                                            },
-                                            {
-                                                "name": "ComputedConsumer",
-                                                "attrs": {
-                                                    "name": "ccName2",
-                                                    "ctx": "{ customContext.foo['ccName2'] }"
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "name": "Foo"
-                                    },
-                                    {
-                                        "name": "Provider",
-                                        "attrs": {
-                                            "var": "customContext"
-                                        },
-                                        "kids": [
-                                            {
-                                                "name": "AnotherProvider",
-                                                "attrs": {
-                                                    "var": "anotherContext"
-                                                },
-                                                "kids": [
-                                                    {
-                                                        "name": "Consumer"
-                                                    },
-                                                    {
-                                                        "name": "ComputedConsumer",
-                                                        "attrs": {
-                                                            "name": "ccName3"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "name": "DefaultProps"
+    "name" : "Test",
+    "content": {
+        "main": {
+            "name": "Grid",
+            "attrs": {
+                "fluid": "{ true }"
+            },
+            "kids": [
+                {
+                    "name": "Row",
+                    "kids": [
+                        {
+                            "name": "Col",
+                            "attrs": {
+                                "md": "{ 12 }"
+                            },
+                            "kids": [
+                                {
+                                    "name": "Heading",
+                                    "attrs": {
+                                        "id": "myHeading",
+                                        "value": "{ 'Heading: ' + props.id }"
                                     }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
+                                },
+                                {
+                                    "name": "Provider",
+                                    "attrs": {
+                                        "var": "customContext"
+                                    },
+                                    "kids": [
+                                        {
+                                            "name": "Consumer"
+                                        },
+                                        {
+                                            "name": "Consumer",
+                                            "attrs": {
+                                                "ctx": "explicitContext"
+                                            }
+                                        },
+                                        {
+                                            "name": "ComputedConsumer",
+                                            "attrs": {
+                                                "name": "ccName"
+                                            }
+                                        },
+                                        {
+                                            "name": "ComputedConsumer",
+                                            "attrs": {
+                                                "name": "ccName2",
+                                                "ctx": "{ customContext.foo['ccName2'] }"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Foo"
+                                },
+                                {
+                                    "name": "Provider",
+                                    "attrs": {
+                                        "var": "customContext"
+                                    },
+                                    "kids": [
+                                        {
+                                            "name": "AnotherProvider",
+                                            "attrs": {
+                                                "var": "anotherContext"
+                                            },
+                                            "kids": [
+                                                {
+                                                    "name": "Consumer"
+                                                },
+                                                {
+                                                    "name": "ComputedConsumer",
+                                                    "attrs": {
+                                                        "name": "ccName3"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "DefaultProps"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
     }
 }

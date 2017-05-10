@@ -39,7 +39,7 @@ public class ClassPathResourceRoot
     @Override
     public String getName()
     {
-        return "classpath:" + pathBase;
+        return pathBase;
     }
 
 }

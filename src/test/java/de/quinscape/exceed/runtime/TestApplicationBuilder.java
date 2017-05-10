@@ -8,6 +8,7 @@ import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.runtime.config.DefaultPropertyConverters;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.DomainServiceImpl;
+import de.quinscape.exceed.runtime.service.model.ModelSchemaService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FalseFileFilter;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
@@ -17,7 +18,6 @@ import org.svenson.tokenize.InputStreamSource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,6 +38,22 @@ public class TestApplicationBuilder
 
     private DomainService domainService;
 
+    private static ModelSchemaService modelSchemaService = create();
+
+
+    private static ModelSchemaService create()
+    {
+        try
+        {
+            modelSchemaService = new ModelSchemaService();
+            modelSchemaService.init();
+            return modelSchemaService;
+        }
+        catch (ClassNotFoundException e)
+        {
+            throw new ExceedRuntimeException(e);
+        }
+    }
 
     public TestApplicationBuilder withDomainType(String name, DomainType domainType)
     {
@@ -108,7 +124,8 @@ public class TestApplicationBuilder
 
         if (domainService == null)
         {
-            domainService = new DomainServiceImpl(new DefaultPropertyConverters().getConverters(), null);
+            domainService = new DomainServiceImpl(new DefaultPropertyConverters().getConverters(), null,
+                modelSchemaService.getModelDomainTypes());
         }
 
         return new TestApplication(applicationModel, domainService);

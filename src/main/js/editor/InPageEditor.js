@@ -1,124 +1,97 @@
-var React = require("react");
+/**
+ * The InPageEditor is only the outer markup shell around the actual editor that is loaded when the user activeates the
+ * toggle link.
+ */
+import React from "react";
+import classes from "classnames";
+import CodeEditor from "./code/CodeEditor";
+import assign from "object-assign";
 
-var classes = require("classnames");
-const assign = require("object-assign");
-var ValueLink = require("../util/value-link");
+const sys = require("../sys");
 
-var SVGLayout = require("../gfx/svg-layout");
+import { toggleEditor, EDITOR_ACTIVE_KEY } from "../actions/inpage"
+import { getViewModel } from "../reducers/meta"
+import { isInPageEditorActive, getViewEditorState, getCurrentViewDocument } from "../reducers/inpage"
 
-var CodeEditor = require("./code/CodeEditor");
+import ComponentSubscription from "../util/ComponentSubscription"
 
-const EDITOR_STORAGE_KEY = "InPageEditorState";
+/**
+ * The outer shell of the inpage code editor. This component just handles a bit of wrapping markup and a toggle link
+ * to activate/deactivate the editor.
+ *
+ * The actual editor contained in "./code/CodeEditor.js" is loaded dynamically to keep the ace editor classes out
+ * of the main bundle.
+ */
+const InPageEditor = ComponentSubscription(
+    class InPageEditor extends React.Component
+    {
+        static displayName = "InPageEditor";
 
-function Indicator(props)
-{
-    var mode = props.mode || "success";
-
-    return (
-        <span className={ classes("indicator",  "bg-" + mode,  "text-" + mode) }>
-            { props.text || "\u00a0" }
-        </span>
-    );
-}
-
-var editorTabs = {
-    "current" : React.createClass({
-        displayName: "CurrentModel",
-        render: function ()
+        componentDidMount()
         {
+            const {store} = this.props;
+
+            const active = isInPageEditorActive(store.getState());
+            const permActive = sessionStorage.getItem(EDITOR_ACTIVE_KEY) === "true";
+
+            if (permActive || active)
+            {
+                this.toggle();
+            }
+        }
+
+        toggle = (ev) =>
+        {
+            const {store} = this.props;
+
+            store.dispatch(
+                toggleEditor(
+                    getViewModel(store.getState())
+                )
+            );
+
+            ev && ev.preventDefault();
+        };
+
+        render()
+        {
+            const {store} = this.props;
+
+            const state = store.getState();
+            const active = isInPageEditorActive(state);
+            const document = getCurrentViewDocument(state);
+
+            //console.log({document,active});
 
             return (
-                <div style={{
-                    paddingLeft: "1px",
-                    paddingBottom: "1px"
-                }}>
-                    <CodeEditor model={ this.props.model } />
+                <div
+                    className={
+                        classes(
+                            "editor",
+                            active ? "active" : "inactive"
+                        )
+                    }
+                >
+                    <a
+                        className="editor-tab"
+                        onClick={ this.toggle }
+                        href="#toggle-editor"
+                        accessKey="e"
+                    >
+                        { "E" }
+                    </a>
+                    {
+                        <CodeEditor
+                            store={ store }
+                            document={ document }
+                        />
+                    }
                 </div>
             );
         }
-    })
-};
-
-function TabLink(props)
-{
-    var tabLink = props.tabLink;
-
-    var isCurrent = tabLink.value === props.tab;
-    return (
-
-        React.createElement(isCurrent ? "span" : "a", {
-            className: classes("btn", "btn-link", isCurrent && "disabled"),
-            'data-tab' : props.tab,
-            href: "#" + props.tab,
-            onClick: function (ev)
-            {
-                props.tabLink.requestChange(ev.target.dataset.tab);
-                ev.preventDefault();
-
-            }
-        }, props.text)
-
-    );
-}
-
-const DEFAULT_STATE = {
-    active: false,
-    tab: "current"
-};
-
-var InPageEditor = React.createClass({
-    getInitialState: function ()
-    {
-        var savedState = sessionStorage.getItem(EDITOR_STORAGE_KEY);
-
-        if (savedState)
-        {
-            return assign({}, DEFAULT_STATE,  JSON.parse(savedState));
-        }
-        else
-        {
-            return DEFAULT_STATE;
-        }
     },
-    componentWillUpdate: function (nextProps, nextState)
-    {
-        sessionStorage.setItem(EDITOR_STORAGE_KEY, JSON.stringify(nextState));
-    },
-    toggle: function (ev)
-    {
-        this.setState({
-            active: !this.state.active
-        });
 
-        ev.preventDefault();
-    },
-    changeTab: function (newValue)
-    {
-        this.setState({
-            tab: newValue
-        });
-
-    },
-    render: function ()
-    {
-        var tabLink = new ValueLink(this.state.tab, this.changeTab);
-
-        var Tab = editorTabs[this.state.tab];
-        return (
-                <div className={ classes("editor", this.state.active ? "active" : "inactive") }>
-                    <a className="editor-tab" onClick={ this.toggle } href="#toggle-editor" accessKey="e">E</a>
-                    { this.state.active &&
-                        <div className="editor-body">
-                            <div className="editor-toolbar toolbar">
-                                <TabLink tab="current" text="Current Model" tabLink={ tabLink } />
-                                <TabLink tab="domain" text="Domain" tabLink={ tabLink } />
-                            </div>
-                            <Tab {... this.props}/>
-                        </div>
-                    }
-                </div>
-        );
-    }
-});
+    (oldState, newState) => getViewEditorState(oldState) === getViewEditorState(newState)
+);
 
 module.exports = InPageEditor;

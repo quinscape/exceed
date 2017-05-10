@@ -29,6 +29,7 @@ public class SecurityConfiguration
         {
             "/index.jsp",
             "/error",
+            "/doc/**",
             "/res/*/style/**",
             "/res/*/fonts/**",
             "/res/*/js/**",

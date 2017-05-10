@@ -1,7 +1,9 @@
-var React = require("react");
+import sys from "../../../sys";
+import uri from "../../../util/uri";
+import React from "react";
 
-var uri = require("../../../util/uri");
-var sys = require("../../../sys");
+import { navigateView } from "../../../actions/view"
+import store from "../../../service/store"
 
 var Link = React.createClass({
     render: function ()
@@ -25,10 +27,20 @@ var Link = React.createClass({
                target={ this.props.target }
                className="btn btn-link"
                 onClick={function(ev) {
-                    var viewService = require("../../../service/view");
-                    viewService.navigateTo({
-                        url: ev.target.href
-                    });
+
+                    try
+                    {
+                        store.dispatch(
+                            navigateView({
+                                url: ev.target.href
+                            })
+                        );
+                    }
+                    catch(e)
+                    {
+                        console.error(e);
+                    }
+
                     ev.preventDefault();
                 }}>
                 { this.props.text }

@@ -17,7 +17,7 @@
     },
     "states": {
         "list": {
-            "type": "process.ViewState",
+            "type": "xcd.process.ViewState",
             "transitions": {
                 "detail": {
                     "to": "detail",
@@ -30,7 +30,7 @@
             }
         },
         "check": {
-            "type": "process.DecisionState",
+            "type": "xcd.process.DecisionState",
             "decisions": [
                 {
                     "expression": "value >= limit",
@@ -46,10 +46,10 @@
             }
         },
         "end": {
-            "type": "process.ViewState"
+            "type": "xcd.process.ViewState"
         },
         "detail": {
-            "type": "process.ViewState",
+            "type": "xcd.process.ViewState",
             "transitions": {
                 "cancel": {
                     "to": "list",

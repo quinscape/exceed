@@ -1,0 +1,15 @@
+{
+    "type": "OBJECT",
+    "columns": {
+        "*": {
+            "name": "name",
+            "type": "PlainText",
+            "data": 1
+        }
+    },
+    "rootObject": {
+        "A": "TestFoo #3",
+        "B": "TestFoo #4"
+    },
+    "count" : 2
+}

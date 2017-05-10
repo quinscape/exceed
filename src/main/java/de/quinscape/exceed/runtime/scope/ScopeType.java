@@ -27,5 +27,10 @@ public enum ScopeType
     /**
      * Application context defined by the application model's "applicationContext" property. Contains general application configuration.
      */
-    APPLICATION
+    APPLICATION,
+
+    /**
+     * Prototypic base scope for layout properties. Gets mixed into the the scope definitions for the views that use the layout.
+     */
+    LAYOUT
 }

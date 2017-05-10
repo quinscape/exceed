@@ -3,7 +3,6 @@ package de.quinscape.exceed.model.domain;
 import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.TopLevelModel;
-import de.quinscape.exceed.model.annotation.IncludeDocs;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.annotation.Internal;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;

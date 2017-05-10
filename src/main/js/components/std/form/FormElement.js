@@ -1,26 +1,3 @@
-const assign = require("object-assign");
-
-const immutableUpdate = require("react-addons-update");
-
-const React = require("react");
-
-const cx = require("classnames");
-
-const i18n = require("../../../service/i18n");
-
-const DataGraph = require("../../../util/data-graph");
-const DataCursor = require("../../../util/data-cursor");
-
-const FormContext = require("../../../util/form-context");
-
-const ValueLink = require("../../../util/value-link");
-
-const converter = require("../../../service/property-converter");
-
-function isValueLink(value)
-{
-    return value && typeof value.requestChange == "function";
-}
 /**
  * FormElement is a high order component for bootstrap form fields. It handles all the cursor logic and type analysis and
  * error checking.
@@ -29,39 +6,67 @@ function isValueLink(value)
  * @param [opts]        options
  * @returns {*}
  */
+import FormContext from "../../../util/form-context";
+import store from "../../../service/store";
+import DataCursor from "../../../domain/cursor";
+const assign = require("object-assign");
+
+const React = require("react");
+
+const cx = require("classnames");
+
+const i18n = require("../../../service/i18n");
+
+const ValueLink = require("../../../util/value-link");
+
+const converter = require("../../../service/property-converter");
+
+function isValueLink(value)
+{
+    return value && typeof value.requestChange === "function";
+}
 module.exports = function(FieldComponent, opts)
 {
     //console.log("Create FormElement: ", InputComponent.displayName);
 
-    return React.createClass({
+    return class FormElem extends React.Component {
 
-        displayName: "FormElem(" + (FieldComponent.displayName + ")" || "Unnamed"),
+        static displayName = "FormElem(" + ( FieldComponent.displayName || "Unnamed") + ")";
 
-        contextTypes: {
+        static contextTypes =  {
             formContext: React.PropTypes.instanceOf(FormContext)
-        },
+        };
 
-        cursorFromProps: function (props)
+        state = (() =>
         {
-            var value = props.value;
+            //console.log("getInitialState", FieldComponent.displayName);
+
+            const ctx = this.context.formContext;
+            const cursor = this.cursorFromProps(this.props);
+
+            const propertyType = cursor.getPropertyType();
+            const value = converter.toUser(cursor.get(), propertyType);
+
+            return {
+                propertyType: propertyType,
+                value : value.value,
+                id: ctx.nextId(),
+                errorLock: false
+            };
+        })();
+
+        cursorFromProps(props)
+        {
+            let value = props.value;
 
             //console.log("CURSOR-FROM-VALUE", value);
 
-            var propertyType = this.props.propertyType;
+            const propertyType = this.props.propertyType;
 
             if (value instanceof DataCursor)
             {
                 //console.log("cursorFromProps: CURSOR ", value);
                 return value;
-            }
-            else if ( propertyType && isValueLink(value))
-            {
-                // return pseudo cursor
-                return {
-                    getPropertyType: () => propertyType,
-                    value: value.value,
-                    requestChange : value.requestChange
-                };
             }
             else if (typeof value === "string")
             {
@@ -86,51 +91,33 @@ module.exports = function(FieldComponent, opts)
 
                 throw new Error("Invalid cursor value: " + value);
             }
-        },
+        }
 
-        getInitialState: function ()
+
+        componentWillUnmount()
         {
-            //console.log("getInitialState", FieldComponent.displayName);
-
-            var ctx = this.context.formContext;
-
-            var cursor = this.cursorFromProps(this.props);
-
-            var propertyType = cursor.getPropertyType();
-            var value = converter.toUser(cursor.value, propertyType);
-
-            return {
-                propertyType: propertyType,
-                value : value.value,
-                id: ctx.nextId(),
-                errorLock: false
-            };
-        },
-
-        componentWillUnmount: function ()
-        {
-            var ctx = this.context.formContext;
+            const ctx = this.context.formContext;
             ctx.deregister(this.state.id);
-        },
+        }
 
-        validate: function (value)
+        validate = (value) =>
         {
-            var id = this.state.id;
+            const id = this.state.id;
 
             //console.log("VALIDATE", value);
 
-            var result = converter.fromUser(value, this.state.propertyType);
-            var isOk = result.ok;
+            const result = converter.fromUser(value, this.state.propertyType);
+            let isOk = result.ok;
 
-            var ctx = this.context.formContext;
+            const ctx = this.context.formContext;
 
-            var localValidate = this.props.validate;
+            const localValidate = this.props.validate;
             if (isOk && localValidate)
             {
                 isOk = localValidate(ctx, id, value);
             }
 
-            var haveError = ctx.hasError(id);
+            let haveError = ctx.hasError(id);
 
             if (!isOk)
             {
@@ -165,46 +152,52 @@ module.exports = function(FieldComponent, opts)
             }
 
             return result;
-        },
+        };
 
-        onChange: function (value)
+        onChange = (value) =>
         {
-            var result = this.validate(value);
+            const result = this.validate(value);
+
+            console.log("validate", result);
 
             if (result.ok)
             {
-                var cursor = this.cursorFromProps(this.props);
-                if (cursor.value !== result.value)
+                const cursor = this.cursorFromProps(this.props);
+                const cursorValue = cursor.get();
+                if (cursorValue !== result.value)
                 {
-                    // we use the value link compat here to be able to use pseudo cursors providing only
-                    // a limited set of functionality
-                    cursor.requestChange(result.value);
-                    //cursor.set(null, result.value);
+                    store.dispatch(
+                        this.context.formContext.update(cursor, result.value)
+                    );
+                }
+                else
+                {
+                    console.log("Cursor value unchanged", cursorValue);
                 }
             }
-        },
+        };
 
-        getInputField: function ()
+        getInputField()
         {
             return this._input.getInputField();
-        },
+        }
 
-        componentWillReceiveProps: function (nextProps)
+        componentWillReceiveProps(nextProps)
         {
             //console.log("componentWillReceiveProps", JSON.stringify(nextProps));
-            var id = this.state.id;
-            var ctx = this.context.formContext;
+            const id = this.state.id;
+            const ctx = this.context.formContext;
 
             // if the field is in an error state, we cannot propagate the current erroneous value to the underlying DataGraph but instead keep it in local state only
             // in this state, we don't want props to overwrite our current state.
             if (!this.state.errorLock)
             {
-                var cursor = this.cursorFromProps(nextProps);
+                const cursor = this.cursorFromProps(nextProps);
 
-                var propertyType = cursor.getPropertyType();
+                const propertyType = cursor.getPropertyType();
 
-                var value = cursor.value;
-                var result = converter.toUser(value, propertyType);
+                const value = cursor.get();
+                const result = converter.toUser(value, propertyType);
 
                 //if (!result.ok)
                 //{
@@ -218,24 +211,24 @@ module.exports = function(FieldComponent, opts)
                     value: result.value
                 });
             }
-        },
+        }
 
-        render: function ()
+        render()
         {
 
-            var cursor = this.cursorFromProps(this.props);
+            const cursor = this.cursorFromProps(this.props);
 
-            var ctx = this.context.formContext;
-            var id = this.state.id;
+            const ctx = this.context.formContext;
+            const id = this.state.id;
 
-            var errorMessage = ctx.getErrorMessage(id);
+            const errorMessage = ctx.getErrorMessage(id);
 
-            var pt = cursor.getPropertyType();
+            const pt = cursor.getPropertyType();
 
 
-            var fieldComponent = (
+            let fieldComponent = (
                 <FieldComponent
-                    {... this.props}
+                    {...this.props}
                     id={ id }
                     ref={ component => this._input = component }
                     valueLink={ new ValueLink(this.state.value, this.validate) }
@@ -251,13 +244,13 @@ module.exports = function(FieldComponent, opts)
             }
 
 
-            var labelElement = (
+            const labelElement = (
                 <label className={ cx("control-label", ctx.labelClass(this)) } htmlFor={ id }>
                     { this.props.label || i18n(pt.parent + ":" + pt.name) }
                 </label>
             );
 
-            var helpBlock = false;
+            let helpBlock = false;
 
             if (errorMessage)
             {
@@ -286,5 +279,5 @@ module.exports = function(FieldComponent, opts)
                 </div>
             );
         }
-    });
+    }
 };
