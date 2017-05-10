@@ -4,6 +4,8 @@ import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
+import de.quinscape.exceed.model.annotation.DocumentedMapKey;
+import de.quinscape.exceed.model.annotation.DocumentedSubTypes;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.view.View;
 import org.slf4j.Logger;
@@ -39,7 +41,8 @@ public class Process
 
 
     /**
-     * Auto-generated version identifier.
+     * UUID uniquely indentifying the current version of the process. Doesn't need to be set, needs to be removed
+     * or changed if you change the process manually.
      *
      * @return
      */
@@ -57,9 +60,15 @@ public class Process
 
 
     /**
-     * Returns th
+     * Process states of the process.
+     *
      * @return
      */
+    @DocumentedMapKey("stateName")
+    @DocumentedSubTypes({
+        ViewState.class,
+        DecisionState.class
+    })
     public Map<String, ProcessState> getStates()
     {
         if (states == null)
@@ -78,7 +87,10 @@ public class Process
     }
 
 
-
+    /**
+     * Transition be executed when the process is entered.
+     *
+     */
     public Transition getStartTransition()
     {
         return startTransition;
@@ -127,17 +139,27 @@ public class Process
     }
 
 
-    public ContextModel getContext()
+    /**
+     * Process context. Each property in it will exist once per execution of the process. The server remembers past
+     * process contexts to continue work at this point when the user returns to another view with browser history
+     * navigation.
+     */
+    public ContextModel getContextModel()
     {
-        return context;
+        return contextModel;
     }
 
 
-    public void setContext(ContextModel context)
+    @JSONProperty("context")
+    public void setContextModel(ContextModel contextModel)
     {
-        this.context = context;
+        this.contextModel = contextModel;
     }
 
+
+    /**
+     * UUID uniquely identifying the process. Doesn't need to be defined but needs to remain unchanged if it exists.
+     */
     @Override
     public String getIdentityGUID()
     {

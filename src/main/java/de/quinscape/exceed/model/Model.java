@@ -1,6 +1,8 @@
 package de.quinscape.exceed.model;
 
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
+import de.quinscape.exceed.model.annotation.Internal;
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import org.svenson.JSONProperty;
 
 /**
@@ -22,6 +24,7 @@ public abstract class Model
      * @return
      */
     @JSONProperty(value = "type", readOnly = true, priority = 90)
+    @Internal
     public String getType()
     {
         return ModelJSONServiceImpl.getType(this.getClass());
@@ -35,6 +38,7 @@ public abstract class Model
      * @return
      */
     @JSONProperty(value = "_", ignoreIfNull = true, priority = 100)
+    @Internal
     public Object getAnnotation()
     {
         return annotation;

@@ -1,9 +1,8 @@
 package de.quinscape.exceed.model.domain;
 
 import de.quinscape.exceed.model.TopLevelModel;
-import org.svenson.JSONParameter;
-import org.svenson.JSONTypeHint;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
+import de.quinscape.exceed.model.annotation.Internal;
 
 import java.util.List;
 import java.util.Map;

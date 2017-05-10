@@ -3,7 +3,7 @@ package de.quinscape.exceed.model.domain;
 /**
  * Domain foreign key definition.
  *
- * Note that not all StorageConfiguration
+ * Note that not all StorageConfiguration might support foreign keys.
  */
 public class ForeignKeyDefinition
 {
@@ -11,7 +11,9 @@ public class ForeignKeyDefinition
 
     private String property = DomainType.ID_PROPERTY;
 
-
+    /**
+     * Target domain type name
+     */
     public String getType()
     {
         return type;
@@ -24,6 +26,9 @@ public class ForeignKeyDefinition
     }
 
 
+    /**
+     * Target property name. Default is <code>id</code>,
+     */
     public String getProperty()
     {
         return property;

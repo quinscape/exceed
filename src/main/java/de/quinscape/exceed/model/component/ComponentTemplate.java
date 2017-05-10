@@ -3,6 +3,10 @@ package de.quinscape.exceed.model.component;
 import de.quinscape.exceed.model.view.ComponentModel;
 import org.svenson.JSONParameter;
 
+/**
+ * A template model to create components of a certain type within the code editor.
+ * 
+ */
 public class ComponentTemplate
 {
     private final String description;
@@ -31,24 +35,37 @@ public class ComponentTemplate
         this.wizard = wizard;
     }
 
+
+    /**
+     * Description of this template
+     */
     public String getDescription()
     {
         return description;
     }
 
 
+    /**
+     * Component model for this template
+     */
     public ComponentModel getComponentModel()
     {
         return componentModel;
     }
 
 
+    /**
+     * Wizard component for this template.
+     */
     public String getWizard()
     {
         return wizard;
     }
 
 
+    /**
+     * Title for this template.
+     */
     public String getTitle()
     {
         return title;

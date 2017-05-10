@@ -5,6 +5,7 @@ import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.annotation.IncludeDocs;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
+import de.quinscape.exceed.model.annotation.Internal;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.model.JSONFormat;
@@ -93,7 +94,6 @@ public class DomainType
      *
      * @return
      */
-    @IncludeDocs
     @JSONProperty(priority = -40)
     public List<DomainProperty> getProperties()
     {
@@ -189,6 +189,9 @@ public class DomainType
     }
 
 
+    /**
+     * Configures the storage configuration to use for this domain type. Default is <code>"jooqDatabaseStorage"</code>.
+     */
     @JSONProperty(value = "storage", ignoreIfNull = true, priority = -20)
     public String getStorageConfiguration()
     {
@@ -203,6 +206,7 @@ public class DomainType
 
 
     @JSONProperty(priority = -30)
+    @Internal
     public boolean isSystem()
     {
         return system;
@@ -215,6 +219,11 @@ public class DomainType
     }
 
 
+    /**
+     * UUID uniquely indentifying the current version of the domain type. Doesn't need to be set, needs to be removed
+     * or changed if you change the domain type manually.
+     * @return
+     */
     @Override
     @JSONProperty(priority = 10, ignoreIfNull = true)
     public String getVersionGUID()
@@ -230,6 +239,11 @@ public class DomainType
     }
 
 
+    /**
+     * UUID uniquely identifying the domain type. Doesn't need to be defined but needs to remain unchanged if it exists.
+     *
+     * @return
+     */
     @Override
     public String getIdentityGUID()
     {

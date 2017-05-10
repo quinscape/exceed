@@ -3,6 +3,7 @@ package de.quinscape.exceed.model.component;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.model.annotation.DocumentedModelType;
 import de.quinscape.exceed.model.view.AttributeValue;
 import org.svenson.JSONParameter;
 import org.svenson.JSONProperty;
@@ -99,12 +100,21 @@ public class PropDeclaration
     }
 
 
+    /**
+     * <code>true</code> if this prop is visible to the client as a value. Some props are only needed for server
+     * operation and / or might contain expression types not available on the client per-se. Setting this to
+     * <code>false</code> will cause such an attribute to be only added as a comment.
+     */
     public boolean isClient()
     {
         return client;
     }
 
 
+    /**
+     * Contains a context expression for the value of this prop or null. <code>true</code> given in the the constructor
+     * will be converted into "context".
+     */
     @JSONProperty(ignoreIfNull = true)
     public String getContext()
     {
@@ -112,6 +122,9 @@ public class PropDeclaration
     }
 
 
+    /**
+     * Type of context this prop declaration is dependent on.
+     */
     @JSONProperty(ignoreIfNull = true)
     public String getContextType()
     {
@@ -119,18 +132,28 @@ public class PropDeclaration
     }
 
 
+    /**
+     * <code>true</code> if the prop is required for the component.
+     */
     public boolean isRequired()
     {
         return required != null && required;
     }
 
 
+    /**
+     * Proptype for for this prop.
+     */
     public PropType getType()
     {
         return type;
     }
 
 
+    /**
+     * Completion rule for this prop. Wizard dialogs can be specified by setting {@link ComponentDescriptor#componentPropWizards}
+     */
+    @DocumentedModelType("Expression")
     public String getRule()
     {
         return rule;
@@ -143,12 +166,19 @@ public class PropDeclaration
     }
 
 
+    /**
+     * Prop declaration description for autocomplete purposes.
+     */
     public String getDescription()
     {
         return description;
     }
 
 
+    /**
+     * Default value for this prop.
+     */
+    @DocumentedModelType("Expression")
     public AttributeValue getDefaultValue()
     {
         return defaultValue;

@@ -5,8 +5,12 @@ import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.util.ExpressionUtil;
+import de.quinscape.exceed.model.annotation.Internal;
 import org.svenson.JSONProperty;
 
+/**
+ * A transition within a process
+ */
 public class Transition
 {
     private String name;
@@ -17,12 +21,19 @@ public class Transition
 
     private String action;
 
+    private String description;
+
     private ASTExpression actionAST;
 
     private boolean discard = false;
 
     private boolean mergeContext = true;
 
+
+    /**
+     * Name of the transition. Is automatically set when the transition is added to its state.
+     */
+    @Internal
     public String getName()
     {
         return name;
@@ -41,6 +52,9 @@ public class Transition
     }
 
 
+    /**
+     * Source state of this transition. Is automatically set then the transition is added to its state.
+     */
     @JSONProperty(ignore = true)
     public String getFrom()
     {
@@ -48,6 +62,9 @@ public class Transition
     }
 
 
+    /**
+     * Target state for this transition.
+     */
     public String getTo()
     {
         return to;
@@ -60,6 +77,10 @@ public class Transition
     }
 
 
+    /**
+     * Action(s) to execute for this transition.
+     * @return
+     */
     @JSONProperty(ignoreIfNull = true)
     public String getAction()
     {
@@ -73,6 +94,9 @@ public class Transition
     }
 
 
+    /**
+     * True if the transition discards user input, e.g. a "Cancel" transition.
+     */
     public boolean isDiscard()
     {
         return discard;
@@ -98,6 +122,11 @@ public class Transition
     }
 
 
+    /**
+     * If set to <code>false</code>, the context transitioned with the executing transition is not merged
+     * with an existing entity with the same id. The default is <code>true</code> which means that the
+     * context object will be merged by default.
+     */
     public boolean isMergeContext()
     {
         return mergeContext;
@@ -107,6 +136,22 @@ public class Transition
     public void setMergeContext(boolean mergeContext)
     {
         this.mergeContext = mergeContext;
+    }
+
+
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
+
+
+    /**
+     * Description of the transition. 
+     * @return
+     */
+    public String getDescription()
+    {
+        return description;
     }
 
 

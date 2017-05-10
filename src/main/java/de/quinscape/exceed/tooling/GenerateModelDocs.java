@@ -1,72 +1,508 @@
 package de.quinscape.exceed.tooling;
 
 import com.github.javaparser.ParseException;
+import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.Model;
+import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.annotation.DocumentedMapKey;
+import de.quinscape.exceed.model.annotation.DocumentedModelType;
+import de.quinscape.exceed.model.annotation.DocumentedSubTypes;
+import de.quinscape.exceed.model.annotation.Internal;
+import de.quinscape.exceed.model.component.ComponentPackageDescriptor;
+import de.quinscape.exceed.model.context.ScopedPropertyModel;
+import de.quinscape.exceed.model.view.AttributeValueType;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
-import org.apache.commons.io.FileUtils;
+import de.quinscape.exceed.runtime.config.ModelConfiguration;
+import de.quinscape.exceed.runtime.model.ModelLocationRule;
+import de.quinscape.exceed.runtime.model.ModelLocationRules;
+import de.quinscape.exceed.runtime.util.JSONUtil;
+import de.quinscape.exceed.runtime.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
-import org.svenson.JSON;
-import org.svenson.info.JavaObjectSupport;
-import org.svenson.info.ObjectSupport;
+import org.svenson.info.JSONClassInfo;
+import org.svenson.info.JSONPropertyInfo;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
 
 /**
- * Generates a list of module resources packaged with the exceed library
+ * Autog-generates {@link ModelDocs} from the current model classes annotated with a few extra documentation annotations.
  *
- * @goal generatefilelist
- * @phase generate-resources
+ * @see DocumentedMapKey
+ * @see DocumentedModelType
+ * @see DocumentedSubTypes
+ * @see Internal
+ *
+ * @see de.quinscape.exceed.runtime.service.client.provider.docs.ModelDocsProvider
+ *
  */
 public class GenerateModelDocs
 {
     private final static Logger log = LoggerFactory.getLogger(GenerateModelDocs.class);
 
-    private final static ObjectSupport javaSupport = new JavaObjectSupport();
-
-    public static void main(String[] args) throws Exception
+    private final static String DEFAULT_KEY_NAME = "key";
+    private  final static Map<Class<?>, String> PROPERTY_TYPE_NAMES;
+    static
     {
-        new GenerateModelDocs().main();
+        final HashMap<Class<?>, String> map = new HashMap<>();
+
+        map.put(Boolean.class, "boolean");
+        map.put(Boolean.TYPE, "boolean");
+        map.put(Byte.class, "int");
+        map.put(Byte.TYPE, "int");
+        map.put(Short.class, "int");
+        map.put(Short.TYPE, "int");
+        map.put(Integer.class, "int");
+        map.put(Integer.TYPE, "int");
+        map.put(Long.class, "long");
+        map.put(Long.TYPE, "long");
+        map.put(String.class, "String");
+        map.put(Timestamp.class, "Timestamp");
+        map.put(Date.class, "Date");
+        map.put(Object.class, "Object");
+        map.put(ASTExpression.class, "Expression");
+        map.put(AttributeValueType.class, "AttributeValueType");
+
+        PROPERTY_TYPE_NAMES = Collections.unmodifiableMap(map);
     }
 
+
+    private ModelLocationRules modelLocationRules;
+
+    /**
+     * Maps model classes to {@link JavaDocs} instances
+     */
     private Map<Class<?>, JavaDocs> docsMap = new HashMap<>();
 
-    public void main() throws Exception
+    public ModelDocs getModelDocs()
     {
+        try
+        {
 
+            Set<Class<? extends TopLevelModel>> topLevelModels = readJavadocs();
+
+            // instantiate the spring model configuration just for the modelLocationRules configured in it.
+            modelLocationRules = new ModelConfiguration().modelLocationRules();
+
+            List<String> topLevelModelDocs = new ArrayList<>();
+
+            final HashMap<String, ModelDoc> modelDocs = new HashMap<>();
+            for (Class<? extends TopLevelModel> cls : topLevelModels)
+            {
+                final ModelDoc doc = createModelDoc(cls, modelDocs);
+                if (doc != null)
+                {
+                    topLevelModelDocs.add(doc.getType());
+                }
+            }
+            return new ModelDocs(topLevelModelDocs, modelDocs);
+        }
+        catch(Exception e)
+        {
+            throw new ExceedRuntimeException(e);
+        }
+    }
+
+
+    public Set<Class<? extends TopLevelModel>> readJavadocs() throws ClassNotFoundException, IOException
+    {
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(true);
-        provider.addIncludeFilter(new AssignableTypeFilter(Model.class));
-        Set<BeanDefinition> candidates = provider.findCandidateComponents("de.quinscape.exceed.model");
+        provider.addIncludeFilter(new AssignableTypeFilter(Object.class));
+        Set<BeanDefinition> candidates = provider.findCandidateComponents(Model.class.getPackage().getName());
+
+        Set<Class<? extends TopLevelModel>> topLevelModels = new TreeSet<>(new ClassComparator());
 
         for (BeanDefinition definition : candidates)
         {
             Class<?> cls = Class.forName(definition.getBeanClassName());
             do
             {
-                getDocs(cls);
-            } while ((cls = cls.getSuperclass()) != null && !cls.equals(Object.class));
+                if (TopLevelModel.class.isAssignableFrom(cls) && cls.getAnnotation(Internal.class) == null)
+                {
+                    topLevelModels.add((Class<? extends TopLevelModel>) cls);
+                }
+                collectJavadocs(cls);
+
+            } while ((cls = cls.getSuperclass()) != null && Model.class.isAssignableFrom(cls));
         }
 
-        File out = new File("./target/classes/de/quinscape/exceed/model/model-docs.json");
 
-        FileUtils.writeStringToFile(out, JSON.defaultJSON().forValue(docsMap), "UTF-8");
+        topLevelModels.remove(TopLevelModel.class);
+        return topLevelModels;
     }
 
 
-    private JavaDocs getDocs(Class<?> declaringClass) throws IOException
+    private ModelDoc createModelDoc(Class<?> cls, HashMap<String, ModelDoc> visited)
     {
-        JavaDocs javaDocs = docsMap.get(declaringClass);
+        try
+        {
+            final String modelType = Model.getType(cls);
+            final ModelDoc existing = visited.get(modelType);
+            if (existing != null)
+            {
+                return existing;
+            }
+            final ModelDoc modelDoc = new ModelDoc(modelType);
+            visited.put(modelType, modelDoc);
+
+            log.info("Analyze {}", cls);
+
+            final JSONClassInfo classInfo = JSONUtil.OBJECT_SUPPORT.createClassInfo(cls);
+
+            String classDescription = null;
+            String locationDescription;
+            final JavaDocs javaDocs = docsMap.get(cls);
+            if (javaDocs != null)
+            {
+                classDescription = javaDocs.getClassDoc();
+            }
+
+            if (!cls.equals(ComponentPackageDescriptor.class))
+            {
+                locationDescription = describeLocations((Class<? extends TopLevelModel>) cls);
+            }
+            else
+            {
+                locationDescription = "components.json declarations";
+            }
+
+            List<ModelPropertyDoc> propertyDocs = new ArrayList<>();
+
+            for (JSONPropertyInfo info : classInfo.getPropertyInfos())
+            {
+                if (info == null || info.isIgnore() || (findAnnotation(cls, info, Internal.class) != null))
+                {
+                    continue;
+                }
+
+                final Class<Object> type = info.getType();
+                final Class<Object> typeHint = info.getTypeHint();
+
+
+                final String propName = info.getJsonName();
+
+                String propertyDescription = cleanupDoc(findPropertyDoc(cls, info));
+
+                final DocumentedMapKey keyAnno = findAnnotation(cls, info, DocumentedMapKey.class);
+                final DocumentedModelType typeAnno = findAnnotation(cls, info, DocumentedModelType.class);
+                final DocumentedSubTypes subTypesAnno = findAnnotation(cls, info, DocumentedSubTypes.class);
+                String keyName = keyAnno != null ? keyAnno.value() : DEFAULT_KEY_NAME;
+
+
+                String propTypeDescription;
+
+                List<String> subTypeDocs = null;
+                if (Collection.class.isAssignableFrom(type))
+                {
+                    final String desc = getTypeDescription(typeHint);
+                    if (desc != null )
+                    {
+                        propTypeDescription = typeAnno != null ? typeAnno.value() : "Array of " + desc;
+                    }
+                    else
+                    {
+                        if (typeHint == null)
+                        {
+                            propTypeDescription = typeAnno != null ? typeAnno.value() : "Array";
+                        }
+                        else
+                        {
+                            propTypeDescription = typeAnno != null ? typeAnno.value() : "Array of " + typeHint.getSimpleName();
+                            subTypeDocs = Collections.singletonList(createModelDoc(typeHint, visited).getType());
+                        }
+                    }
+                }
+                else if (Map.class.isAssignableFrom(type))
+                {
+                    final String desc = getTypeDescription(typeHint);
+                    if (desc != null )
+                    {
+                        propTypeDescription = typeAnno != null ? typeAnno.value() : "Map " + keyName + " ->  " + desc;
+                    }
+                    else
+                    {
+                        if (typeHint == null)
+                        {
+                            propTypeDescription = typeAnno != null ? typeAnno.value() : "Map " + keyName + " ->  Object";
+                        }
+                        else
+                        {
+                            propTypeDescription = typeAnno != null ? typeAnno.value() : "Map " + keyName + " -> " + typeHint.getSimpleName();
+                            subTypeDocs = Collections.singletonList(createModelDoc(typeHint, visited).getType());
+                        }
+                    }
+                }
+                else if (Enum.class.isAssignableFrom(type))
+                {
+                    propTypeDescription = type.getSimpleName() + " Enum";
+                    propertyDescription += "<br/>Values: " + getEnumValues(type);
+                }
+                else
+                {
+                    propTypeDescription = typeAnno != null ? typeAnno.value() : getTypeDescription(type);
+                    if (propTypeDescription == null)
+                    {
+                        propTypeDescription = type.getSimpleName();
+                        subTypeDocs = Collections.singletonList(createModelDoc(type, visited).getType());
+                    }
+                }
+
+                if (subTypesAnno != null)
+                {
+                    subTypeDocs = Arrays.stream(subTypesAnno.value())
+                        .map(subTypeCls ->
+                        {
+                            return createModelDoc(subTypeCls, visited).getType();
+                        })
+                        .collect(Collectors.toList());
+                }
+
+                propertyDocs.add(new ModelPropertyDoc(propName, propTypeDescription, propertyDescription, subTypeDocs));
+            }
+
+            modelDoc.setClassDescription(classDescription);
+            modelDoc.setLocationDescription(locationDescription);
+            modelDoc.setPropertyDocs(propertyDocs);
+            return modelDoc;
+        }
+        catch (Exception e)
+        {
+            throw new ExceedRuntimeException(e);
+        }
+    }
+
+
+    private String cleanupDoc(String propertyDoc)
+    {
+        if (propertyDoc == null)
+        {
+            return null;
+        }
+
+        return propertyDoc
+            .replaceAll("@return.*?(\n|$)", "")
+            .replaceAll("\\{@link (.*?)}", "$1");
+    }
+
+
+    private String getEnumValues(Class<Object> type) throws Exception
+    {
+        StringBuilder sb = new StringBuilder();
+        Enum[] enums = (Enum[]) type.getMethod("values").invoke(null);
+
+        for (int i = 0; i < enums.length; i++)
+        {
+            Enum value = enums[i];
+            if (i > 0)
+            {
+                sb.append(", ");
+            }
+            sb.append(value.name());
+        }
+
+        return sb.toString();
+    }
+
+
+    private String findPropertyDoc(Class<?> cls, JSONPropertyInfo info)
+    {
+        final InfoMethods infoMethods = findMethodsForInfo(cls, info);
+
+        if (info.isReadable())
+        {
+            final JavaDocs javaDocs = docsMap.get(infoMethods.getGetter().getDeclaringClass());
+            if (javaDocs != null)
+            {
+                final String propDoc = javaDocs.getPropertyDocs().get(info.getJavaPropertyName());
+                if (propDoc != null)
+                {
+                    return propDoc;
+                }
+            }
+
+        }
+        if (info.isWriteable())
+        {
+            final JavaDocs javaDocs = docsMap.get(infoMethods.getSetter().getDeclaringClass());
+            if (javaDocs != null)
+            {
+                final String propDoc = javaDocs.getPropertyDocs().get(info.getJavaPropertyName());
+                if (propDoc != null)
+                {
+                    return propDoc;
+                }
+            }
+
+        }
+        return null;
+    }
+
+
+    private String getTypeDescription(Class<Object> typeHint)
+    {
+        if (typeHint == null)
+        {
+            return null;
+        }
+
+        final String name = PROPERTY_TYPE_NAMES.get(typeHint);
+        if (name != null)
+        {
+            return name;
+        }
+
+        return null;
+    }
+
+
+    private <T extends Annotation> T findAnnotation(Class<?> cls, JSONPropertyInfo info, Class<T > annoClass)
+    {
+        final InfoMethods infoMethods = findMethodsForInfo(cls, info);
+
+        final String javaPropertyName = info.getJavaPropertyName();
+
+        final String capitalized = javaPropertyName.substring(0, 1).toUpperCase() + javaPropertyName.substring(1);
+
+        if (info.isReadable())
+        {
+            final T getterAnno = infoMethods.getGetter().getAnnotation(annoClass);
+            if (getterAnno != null)
+            {
+                return getterAnno;
+            }
+        }
+
+        if (info.isWriteable())
+        {
+            final T setterAnno = infoMethods.getSetter().getAnnotation(annoClass);
+            if (setterAnno != null)
+            {
+                return setterAnno;
+            }
+        }
+        return null;
+    }
+
+    public InfoMethods findMethodsForInfo(Class<?> cls, JSONPropertyInfo info)
+    {
+        final String javaPropertyName = info.getJavaPropertyName();
+
+        final String capitalized = javaPropertyName.substring(0, 1).toUpperCase() + javaPropertyName.substring(1);
+
+        Method getter = null;
+        Method setter = null;
+        if (info.isReadable())
+        {
+            getter = findMethod(cls, "get" + capitalized,  null, info.getType());
+            if (getter == null && (info.getType().equals(Boolean.class) || info.getType().equals(Boolean.TYPE)))
+            {
+                getter = findMethod(cls, "is" + capitalized, null, info.getType());
+            }
+        }
+
+        if (info.isWriteable())
+        {
+            setter = findMethod(cls, "set" + capitalized, info.getType(), void.class);
+        }
+        return new InfoMethods(getter, setter);
+    }
+
+    private Method findMethod(Class<?> cls, String name, Class<?> param, Class<?> returnType)
+    {
+        for (Method method : cls.getMethods())
+        {
+            if (method.getName().equals(name) &&
+                (
+                    param == null ||
+                    (
+                        method.getParameterTypes().length == 1 &&
+                        method.getParameterTypes()[0].equals(param)
+                    )
+                ) &&
+                returnType.equals(method.getReturnType())
+            )
+            {
+                return method;
+            }
+        }
+        return null;
+    }
+
+
+    private void indent(StringBuilder sb, int depth)
+    {
+        for (int i=0; i < depth; i++)
+        {
+            sb.append("    ");
+        }
+    }
+
+    private String describeLocations(Class<? extends TopLevelModel> cls)
+    {
+        boolean first = true;
+
+        StringBuilder sb = new StringBuilder();
+        for (ModelLocationRule rule : modelLocationRules.getRules())
+        {
+            if (rule.getType().equals(Model.getType(cls)))
+            {
+                if (!first)
+                {
+                    sb.append(" or ");
+                }
+                first = false;
+
+                final String prefix = rule.getPrefix();
+                final String suffix = rule.getSuffix();
+
+                if (suffix == null)
+                {
+                    sb.append(prefix);
+                }
+                else
+                {
+                    sb.append(prefix).append('*').append(suffix);
+                }
+            }
+        }
+
+        return sb.toString();
+    }
+
+
+    private JavaDocs collectJavadocs(Class<?> cls) throws IOException
+    {
+        JavaDocs javaDocs = docsMap.get(cls);
         if (javaDocs == null)
         {
-            javaDocs = readJavadocs(new File("./src/main/java/".replace('/', File.separatorChar)),declaringClass);
-            docsMap.put(declaringClass, javaDocs);
+            if (cls.equals(ScopedPropertyModel.class))
+            {
+                log.debug("hit");
+            }
+
+            File sourceDir = Util.getExceedLibrarySource();
+
+            javaDocs = readJavadocs(new File(sourceDir, "./src/main/java/".replace('/', File.separatorChar)),cls);
+            docsMap.put(cls, javaDocs);
         }
 
         return javaDocs;
@@ -85,17 +521,32 @@ public class GenerateModelDocs
         {
             return new JavaDocs(source);
         }
-        catch (ParseException e)
+        catch (ParseException | IllegalAccessException | InstantiationException e)
         {
             throw new ExceedRuntimeException(e);
         }
-        catch (IllegalAccessException e)
+    }
+
+
+    private class ClassComparator
+        implements Comparator<Class<?>>
+    {
+        @Override
+        public int compare(Class<?> o1, Class<?> o2)
         {
-            throw new ExceedRuntimeException(e);
+            return getName(o1).compareTo(getName(o2));
         }
-        catch (InstantiationException e)
+
+
+        private String getName(Class<?> o2)
         {
-            throw new ExceedRuntimeException(e);
+            // sort the component package descriptor last
+            if (o2.equals(ComponentPackageDescriptor.class))
+            {
+                return "zzz";
+            }
+
+            return o2.getSimpleName();
         }
     }
 }

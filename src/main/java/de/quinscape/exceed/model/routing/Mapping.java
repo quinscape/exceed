@@ -6,6 +6,9 @@ import org.svenson.JSONProperty;
 
 import javax.annotation.PostConstruct;
 
+/**
+ * A single routing table mapping.
+ */
 public class Mapping
 {
     private String viewName;
@@ -15,6 +18,10 @@ public class Mapping
     private Boolean disabled;
 
 
+    /**
+     * <code>true</code> if the mapping is currently disabled.
+     * @return
+     */
     @JSONProperty(ignoreIfNull = true)
     public Boolean getDisabled()
     {
@@ -28,6 +35,9 @@ public class Mapping
     }
 
 
+    /**
+     * The view name mapped to this location. Mutually exclusive with <code>processName</code>.
+     */
     public String getViewName()
     {
         return viewName;
@@ -40,6 +50,9 @@ public class Mapping
     }
 
 
+    /**
+     * The process name mapped to this location. Mutually exclusive with <code>viewName</code>.
+     */
     public String getProcessName()
     {
         return processName;

@@ -1,11 +1,15 @@
 package de.quinscape.exceed.model.context;
 
+import de.quinscape.exceed.model.annotation.DocumentedMapKey;
 import de.quinscape.exceed.runtime.scope.ProcessContext;
 import org.svenson.JSONTypeHint;
 
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * Model for a scoped context (e.g. application context, session context, process context etc).
+ */
 public class ContextModel
 {
     private Map<String, ScopedPropertyModel> properties;
@@ -24,6 +28,11 @@ public class ContextModel
     }
 
 
+    /**
+     * List of properties for this context.
+     */
+    @JSONTypeHint(ScopedPropertyModel.class)
+    @DocumentedMapKey("propertyName")
     public Map<String, ScopedPropertyModel> getProperties()
     {
         if (properties == null)
@@ -34,7 +43,6 @@ public class ContextModel
     }
 
 
-    @JSONTypeHint(ScopedPropertyModel.class)
     public void setProperties(Map<String, ScopedPropertyModel> properties)
     {
         init(properties);

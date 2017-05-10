@@ -1,9 +1,14 @@
 package de.quinscape.exceed.model.context;
 
 import de.quinscape.exceed.expression.ASTExpression;
+import de.quinscape.exceed.model.annotation.DocumentedModelType;
+import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.view.AttributeValue;
 import org.svenson.JSONProperty;
 
+/**
+ * A single scoped property value within a scope.
+ */
 public class ScopedPropertyModel
 {
     private String name;
@@ -16,9 +21,9 @@ public class ScopedPropertyModel
 
     private AttributeValue defaultValue;
 
-    private boolean required;
-
     private int maxLength = -1;
+
+    private boolean fromLayout;
 
 
     public String getType()
@@ -33,6 +38,10 @@ public class ScopedPropertyModel
     }
 
 
+    /**
+     * The default value expression for this scoped property.
+     */
+    @DocumentedModelType("Expression")
     public String getDefaultValue()
     {
         return defaultValue != null ? defaultValue.getValue() : null;
@@ -51,6 +60,21 @@ public class ScopedPropertyModel
     }
 
 
+    /**
+     * Property type specific type parameter:
+     * <ul>
+     *     <li>
+     *          For the simple property types, this is <code>null</code>,
+     *     </li>
+     *     <li>
+     *          For the <code>DomainType</code> type this is the name of the property type.
+     *     </li>
+     *     <li>
+     *          For the <code>Map</code> and <code>List</code> types the type param is either
+     *          a domain type name or a property type name.
+     *     </li>
+     * </p>
+     */
     public Object getTypeParam()
     {
         return typeParam;
@@ -63,6 +87,11 @@ public class ScopedPropertyModel
     }
 
 
+    /**
+     * For <code>PlainText</code> and  <code>RichText</code> type, this defines the maximum number of characters.
+     * If it is less or equal to 0, the property is unbounded.
+     * @return
+     */
     public int getMaxLength()
     {
         return maxLength;
@@ -87,6 +116,10 @@ public class ScopedPropertyModel
     }
 
 
+    /**
+     * The name of the scoped property. Must be unique for all scope locations, i.e. within the combination of all
+     * applicable scopes the each context.
+     */
     public String getName()
     {
         return name;
@@ -99,6 +132,9 @@ public class ScopedPropertyModel
     }
 
 
+    /**
+     * Description of this scoped property
+     */
     public String getDescription()
     {
         return description;

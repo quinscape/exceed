@@ -1,6 +1,7 @@
 package de.quinscape.exceed.model.domain;
 
 import de.quinscape.exceed.expression.ASTExpression;
+import de.quinscape.exceed.model.annotation.Internal;
 import de.quinscape.exceed.model.view.AttributeValue;
 import org.svenson.JSONProperty;
 
@@ -190,6 +191,11 @@ public class DomainProperty
     }
 
 
+    /**
+     * Name of the domain type this property belongs to. Will be filled by the system automatically
+     * @return
+     */
+    @Internal
     @JSONProperty(ignoreIfNull = true)
     public String getDomainType()
     {
@@ -203,6 +209,9 @@ public class DomainProperty
     }
 
 
+    /**
+     * Foreign key definition for this property.
+     */
     @JSONProperty(ignoreIfNull = true, priority = 30)
     public ForeignKeyDefinition getForeignKey()
     {

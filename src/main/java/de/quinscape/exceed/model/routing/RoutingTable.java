@@ -4,6 +4,7 @@ package de.quinscape.exceed.model.routing;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.annotation.IncludeDocs;
+import de.quinscape.exceed.model.annotation.DocumentedMapKey;
 import de.quinscape.exceed.runtime.application.MappingNotFoundException;
 import de.quinscape.exceed.runtime.application.RoutingResult;
 import org.svenson.JSONProperty;
@@ -38,13 +39,18 @@ public class RoutingTable
     private TreeMap<String, Mapping> mappings;
 
 
-    @JSONProperty(priority = -10)
     public TreeMap<String, Mapping> getMappings()
     {
         return mappings;
     }
 
 
+    /**
+     * The mappings for this routing table. Maps a route template string with potential
+     * place holders to a mapping model.
+     */
+    @DocumentedMapKey("routeTemplate")
+    @JSONProperty(priority = -10)
     @JSONTypeHint(Mapping.class)
     public void setMappings(TreeMap<String, Mapping> mappings)
     {
@@ -148,7 +154,6 @@ public class RoutingTable
      *
      * @return
      */
-    @IncludeDocs
     public MappingNode getRootNode()
     {
         return rootNode;

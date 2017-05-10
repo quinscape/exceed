@@ -69,6 +69,9 @@ public class EnumType
     }
 
 
+    /**
+     * Description for the enum type.
+     */
     @JSONProperty(ignoreIfNull = true)
     public String getDescription()
     {

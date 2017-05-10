@@ -1,5 +1,6 @@
 package de.quinscape.exceed.model;
 
+import de.quinscape.exceed.model.annotation.Internal;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import org.svenson.JSONProperty;
 
@@ -49,6 +50,7 @@ public abstract class TopLevelModel
         return resource;
     }
 
+    @Internal
     public int getExtension()
     {
         return extensionIndex;

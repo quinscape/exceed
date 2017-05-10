@@ -1,9 +1,12 @@
 package de.quinscape.exceed.model;
 
+import de.quinscape.exceed.model.annotation.Internal;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+@Internal
 public class DomainEditorViews
     extends TopLevelModel
 {

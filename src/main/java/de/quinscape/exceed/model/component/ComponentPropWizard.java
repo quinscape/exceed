@@ -2,6 +2,10 @@ package de.quinscape.exceed.model.component;
 
 import org.svenson.JSONParameter;
 
+/**
+ * A wizard component definition for the component.
+ *
+ */
 public class ComponentPropWizard
 {
     private final String wizard;
@@ -25,18 +29,30 @@ public class ComponentPropWizard
     }
 
 
+    /**
+     * Wizard Component js name.
+     * @return
+     */
     public String getWizard()
     {
         return wizard;
     }
 
 
+    /**
+     * Title for the prop wizard component
+     * @return
+     */
     public String getTitle()
     {
         return title;
     }
 
 
+    /**
+     * Description for the prop wizard
+     * @return
+     */
     public String getDescription()
     {
         return description;

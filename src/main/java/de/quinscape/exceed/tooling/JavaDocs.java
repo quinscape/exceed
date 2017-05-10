@@ -13,15 +13,25 @@ import org.slf4j.LoggerFactory;
 import java.beans.Introspector;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Encapsulates the javadocs extracted from a java source.
+ */
 public class JavaDocs
 {
     private final static Logger log = LoggerFactory.getLogger(JavaDocs.class);
 
+    /**
+     * Javadoc for the class itself
+     */
     private final String classDoc;
 
+    /**
+     * Map of java property names to the javadoc for that property
+     */
     private final Map<String, String> propertyDocs;
 
 
@@ -86,10 +96,14 @@ public class JavaDocs
             {
                 String methodName = n.getName();
                 boolean getter = methodName.startsWith("get");
+                boolean setter = methodName.startsWith("set");
                 boolean isser = methodName.startsWith("is");
-                if (n.getParameters().size() == 0 && getter || isser)
+                if (
+                    (n.getParameters().size() == 0 && getter || isser) ||
+                    (n.getParameters().size() == 1 && setter)
+                )
                 {
-                    String propName = Introspector.decapitalize(methodName.substring(getter ? 3 : 2));
+                    String propName = Introspector.decapitalize(methodName.substring(isser ? 2 : 3));
                     javaDocTexts.put(propName, JavaSourceUtil.getJavaDocText(javadoc));
                 }
             }
@@ -106,6 +120,11 @@ public class JavaDocs
 
     public Map<String, String> getPropertyDocs()
     {
+        if (propertyDocs == null)
+        {
+            return Collections.emptyMap();
+        }
+
         return propertyDocs;
     }
 }
