@@ -33,15 +33,7 @@ contentType[DataType.TEXT] = "text/plain";
 
 function logError(opts, err)
 {
-    const l = [];
-    for (let name in err)
-    {
-        if (err.hasOwnProperty(name))
-        {
-            l.push(name + " = " + JSON.stringify(err[name]) );
-        }
-    }
-    console.error("AJAX ERROR", opts.url, " =>\n", l.join("\n"));
+    console.error("AJAX ERROR", opts.url, opts, err);
 }
 
 function serialize(data)
