@@ -3,7 +3,7 @@ package de.quinscape.exceed.runtime.resource.file;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
-import de.quinscape.exceed.runtime.resource.ResourceWatcher;
+import de.quinscape.exceed.runtime.util.Util;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -28,7 +28,7 @@ public class FileAppResource
     {
         this.root = root;
         this.file = file;
-        this.relative = relative;
+        this.relative = Util.toSystemPath(relative);
     }
 
 

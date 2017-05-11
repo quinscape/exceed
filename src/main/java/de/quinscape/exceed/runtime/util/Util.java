@@ -32,8 +32,26 @@ public final class Util
 
     }
 
+    public static String toSystemPath(String path)
+    {
+        char separatorChar = File.separatorChar;
+        if (separatorChar != '/')
+        {
+            return path.replace(separatorChar, '/');
+        }
+        return path;
 
-    public static String path(String path)
+    }
+
+
+    /**
+     * Converts normed pathes with / to their system-specific counter part containing
+     * {@link File#separatorChar} instead.
+     *
+     * @param path  path with /
+     * @return path with system dependent file separator
+     */
+    public static String toSlashPath(String path)
     {
         char separatorChar = File.separatorChar;
         if (separatorChar != '/')
@@ -126,7 +144,7 @@ public final class Util
 
     private static boolean isValidSourceDir(File sourceDir)
     {
-        return sourceDir.isDirectory() && new File(sourceDir, path
+        return sourceDir.isDirectory() && new File(sourceDir, toSlashPath
             ("src/main/java/de/quinscape/exceed/runtime/ExceedApplicationConfiguration.java")).isFile();
     }
 

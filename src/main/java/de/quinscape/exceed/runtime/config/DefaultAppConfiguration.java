@@ -63,7 +63,7 @@ public class DefaultAppConfiguration
         ResourceRoot baseComponentRoot;
         if (exceedLibrarySource != null)
         {
-            baseComponentRoot = new FileResourceRoot(new File(exceedLibrarySource, Util.path("src/main/js/components")), true);
+            baseComponentRoot = new FileResourceRoot(new File(exceedLibrarySource, Util.toSlashPath("src/main/js/components")), true);
         }
         else
         {

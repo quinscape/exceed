@@ -80,7 +80,7 @@ public class FileResourceRoot
     public AppResource getResource(String path)
     {
         int relativeFileNameStart = baseDirectory.getPath().length();
-        File file = new File(baseDirectory, Util.path(path));
+        File file = new File(baseDirectory, Util.toSlashPath(path));
         String relative = file.getPath().substring(relativeFileNameStart);
         return new FileAppResource(this, file, relative);
     }

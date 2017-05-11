@@ -5,6 +5,7 @@ import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.ModuleResourceEvent;
 import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
 import de.quinscape.exceed.runtime.service.CachedResource;
+import de.quinscape.exceed.runtime.util.Util;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.Charset;
@@ -106,7 +107,7 @@ public class ResourceLoader
 
     public ResourceLocation getResourceLocation(String relativePath)
     {
-        return resourceLocations.get(relativePath);
+        return resourceLocations.get(Util.toSystemPath(relativePath));
     }
 
 

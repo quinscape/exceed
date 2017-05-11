@@ -46,7 +46,7 @@ public class GenerateLibraryResourceLists
         for (File file : FileUtils.listFiles(baseModulesDirectory, fileFilter, TrueFileFilter
             .INSTANCE))
         {
-            sb.append(Util.path(file.getPath().substring(start))).append('\n');
+            sb.append(Util.toSystemPath(file.getPath().substring(start))).append('\n');
         }
 
         FileUtils.writeStringToFile(targetFile, sb.toString(), "UTF-8");
