@@ -1,9 +1,9 @@
 "use strict";
 
-import { updateComponent } from "../../../actions/component"
-import store from "../../../service/store"
+import { updateComponent } from "../../../actions/view";
+import store from "../../../service/store";
 
-import React from "react"
+import React from "react";
 import i18n from "../../../service/i18n";
 import ValueLink from "../../../util/value-link";
 import DataGraph, { validateDataGraph } from "../../../domain/graph";
@@ -11,7 +11,6 @@ import DataCursor from "../../../domain/cursor";
 import immutableUpdate from "react-addons-update";
 import domainService from "../../../service/domain";
 import converter from "../../../service/property-converter";
-import Enum from "../../../util/enum";
 import debounce from "../../../util/debounce";
 import PagingComponent from "../../../ui/PagingComponent";
 import renderWithContext from "../../../util/render-with-context";

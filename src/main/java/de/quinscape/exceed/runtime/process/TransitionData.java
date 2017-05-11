@@ -12,7 +12,6 @@ import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.util.DomainUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.svenson.JSONProperty;
 
 import java.util.Collections;
 import java.util.Map;
@@ -39,7 +38,7 @@ public class TransitionData
 
     private Map<String, Object> contextUpdate;
 
-    private Map<String, String> currentViewChanges;
+    private Map<String, String> changedViewModels;
 
     private String stateName;
 
@@ -189,16 +188,15 @@ public class TransitionData
     }
 
 
-    public Map<String, String> getCurrentViewChanges()
+    public Map<String, String> getChangedViewModels()
     {
-        return currentViewChanges;
+        return changedViewModels;
     }
 
 
-    @JSONProperty("currentEditorChanges")
-    public void setCurrentViewChanges(Map<String, String> currentViewChanges)
+    public void setChangedViewModels(Map<String, String> changedViewModels)
     {
-        this.currentViewChanges = currentViewChanges;
+        this.changedViewModels = changedViewModels;
     }
 
 
@@ -208,7 +206,7 @@ public class TransitionData
         return this.getClass().getSimpleName() + ": "
             + "objectContext = " + objectContext
             + ", contextUpdate = " + contextUpdate
-            + ", currentViewChanges = " + currentViewChanges;
+            + ", changedViewModels = " + changedViewModels;
 
     }
 }

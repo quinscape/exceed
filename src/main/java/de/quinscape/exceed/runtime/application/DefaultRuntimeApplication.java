@@ -326,6 +326,7 @@ public class DefaultRuntimeApplication
             View view;
             final boolean isAjaxRequest = RequestUtil.isAjaxRequest(request);
             final boolean isPreview = isAjaxRequest && isPreviewRequest(request);
+            final boolean isComponentUpdate = isAjaxRequest && isComponentUpdate(request);
 
             TransitionData transitionData = null;
 
@@ -417,12 +418,6 @@ public class DefaultRuntimeApplication
                 return true;
             }
 
-            if (isAjaxRequest && isVarsUpdate(request))
-            {
-                updateComponentVars(runtimeContext, request, response, state, view);
-                return true;
-            }
-
             // process service will have already initialized a view context unless a start state is redirect-after-posted to.
             if (runtimeContext.getScopedContextChain().getViewContext() == null)
             {
@@ -431,6 +426,13 @@ public class DefaultRuntimeApplication
                 runtimeContext.getScopedContextChain().update(viewContext, view.getName());
             }
 
+            Map<String,Object> postData = Collections.emptyMap();
+            if ( transitionData == null && (isPreview || isComponentUpdate))
+            {
+                postData = (Map<String, Object>) JSONUtil.DEFAULT_PARSER.parse(Map.class, RequestUtil.readRequestBody(request));
+            }
+
+
             if (isAjaxRequest)
             {
                 if (isPreview)
@@ -438,12 +440,11 @@ public class DefaultRuntimeApplication
                     Map<String,String> changes;
                     if (transitionData != null)
                     {
-                        changes = transitionData.getCurrentViewChanges();
+                        changes = transitionData.getChangedViewModels();
                     }
                     else
                     {
-                        String changesJSON = RequestUtil.readRequestBody(request);
-                        changes = (Map<String, String>) JSONUtil.DEFAULT_PARSER.parse(Map.class, changesJSON).get("currentEditorChanges");
+                        changes = (Map<String, String>) postData.get("changedViewModels");
                     }
 
                     // check if the current view is in the changed view set
@@ -478,6 +479,11 @@ public class DefaultRuntimeApplication
                 }
             }
 
+            if (isAjaxRequest && isComponentUpdate(request))
+            {
+                updateComponentVars(runtimeContext, request, response, state, view, postData);
+                return true;
+            }
 
             final String viewDataJSON;
             try
@@ -552,10 +558,10 @@ public class DefaultRuntimeApplication
 
 
 
-    private void updateComponentVars(RuntimeContext runtimeContext, HttpServletRequest request, HttpServletResponse response, ProcessExecutionState state, View view) throws IOException
+    private void updateComponentVars(RuntimeContext runtimeContext, HttpServletRequest request, HttpServletResponse response, ProcessExecutionState state, View view, Map<String, Object> postData) throws IOException
     {
-        String componentId = request.getParameter(UPDATE_ID_PARAM);
-        String varsJSON = request.getParameter(UPDATE_VARS_PARAM);
+        String componentId = (String) postData.get(UPDATE_ID_PARAM);
+        String varsJSON = (String) postData.get(UPDATE_VARS_PARAM);
 
         if (componentId == null)
         {
@@ -599,7 +605,7 @@ public class DefaultRuntimeApplication
          return request.getMethod().equals("POST") && "true".equals(request.getHeader(PREVIEW_HEADER_NAME));
     }
 
-    private static boolean isVarsUpdate(HttpServletRequest request)
+    private static boolean isComponentUpdate(HttpServletRequest request)
     {
          return "true".equals(request.getHeader(UPDATE_HEADER_NAME));
     }
