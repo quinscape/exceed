@@ -580,6 +580,12 @@ public class DefaultRuntimeApplication
             return value != null && componentId.equals(value.getValue());
         });
 
+        if (componentModel == null)
+        {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Component '" + componentId + "' not found");
+            return;
+        }
+
         ComponentData componentData = viewDataService.prepareComponent(runtimeContext, view, componentModel,
             vars, state);
 
