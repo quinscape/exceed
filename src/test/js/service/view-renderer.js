@@ -122,7 +122,7 @@ var simpleView = {
     }
 };
 
-describe("View Components", function ()
+describe.skip("View Components", function ()
 {
 
     it("render a component tree", function ()
