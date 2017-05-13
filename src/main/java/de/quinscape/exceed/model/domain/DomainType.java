@@ -68,6 +68,8 @@ public class DomainType
 
     private String identityGUID;
 
+    private String description;
+
 
     @Override
     public void setName(String name)
@@ -255,5 +257,17 @@ public class DomainType
     public void setIdentityGUID(String identity)
     {
         this.identityGUID = identity;
+    }
+
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+
+    public void setDescription(String description)
+    {
+        this.description = description;
     }
 }
