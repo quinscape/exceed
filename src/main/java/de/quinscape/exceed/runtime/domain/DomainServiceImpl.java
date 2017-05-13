@@ -79,7 +79,7 @@ public class DomainServiceImpl
 
         this.domainTypes = domainTypes;
 
-        this.dataGraphService = new DataGraphService(this, domainTypes, converters);
+        this.dataGraphService = new DataGraphService(this, converters);
     }
 
 

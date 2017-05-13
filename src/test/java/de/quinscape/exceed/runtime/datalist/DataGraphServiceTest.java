@@ -52,7 +52,6 @@ public class DataGraphServiceTest
 
     private DataGraphService dataGraphService = new DataGraphService(
         domainService,
-        domainService.getDomainTypes(),
         propertyConverters
     );
 

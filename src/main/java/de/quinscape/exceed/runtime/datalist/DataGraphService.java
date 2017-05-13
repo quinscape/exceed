@@ -34,25 +34,19 @@ public class DataGraphService
 
     private final DomainService domainService;
 
-    private final Map<String, DomainType> domainTypes;
-
     private JSON generator = JSON.defaultJSON();
 
     private final static JSONBeanUtil util = JSONBeanUtil.defaultUtil();
 
-    public DataGraphService(DomainService domainService, Map<String, DomainType> domainTypes, Map<String, PropertyConverter> propertyConverters)
-
-
+    public DataGraphService(DomainService domainService, Map<String, PropertyConverter> propertyConverters)
     {
         this.domainService = domainService;
-        this.domainTypes = domainTypes;
         this.propertyConverters = propertyConverters;
 
         generator = new JSON();
         jsonifier = new DataGraphJSONifier();
         generator.registerJSONifier(DataGraph.class, jsonifier);
     }
-
     
 
     public String toJSON(Object domainObject)
@@ -77,9 +71,6 @@ public class DataGraphService
     private class DataGraphJSONifier
         implements SinkAwareJSONifier
     {
-
-        private static final String PROPERTY_COMPLEX_NAME = "value";
-
 
         @Override
         public String toJSON(Object o)
