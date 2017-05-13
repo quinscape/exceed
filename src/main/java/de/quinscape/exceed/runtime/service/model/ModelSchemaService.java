@@ -146,7 +146,8 @@ public class ModelSchemaService
                         break;
                 }
 
-                properties.add(new DomainProperty(propName, type, null, false, typeParam, -1, domainTypeName));
+                properties.add(DomainProperty.builder().withName(propName).withType(type).withTypeParam(typeParam)
+                    .withDomainType(domainTypeName).build());
             }
         };
 
@@ -175,7 +176,8 @@ public class ModelSchemaService
     private <T extends TopLevelModel> Map<String, DomainProperty> getMapColumns(Class<T> cls)
     {
         Map<String, DomainProperty> map = new HashMap<>();
-        map.put(DataGraph.WILDCARD_SYMBOL, new DomainProperty("*", DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE, null, false, "", -1, null));
+        map.put(DataGraph.WILDCARD_SYMBOL, DomainProperty.builder().withName("*").withType(DomainProperty
+            .DOMAIN_TYPE_PROPERTY_TYPE).withTypeParam("").build());
         return map;
     }
 

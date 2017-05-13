@@ -112,15 +112,11 @@ public class EditorDataProvider
         {
             columns.put(
                 name,
-                new DomainProperty(
-                    name,
-                    propertyType,
-                    null,
-                    false,
-                    Model.getType(cls),
-                    -1,
-                    null
-                )
+                DomainProperty.builder()
+                    .withName(name)
+                    .withType(propertyType)
+                    .withTypeParam(Model.getType(cls))
+                    .build()
             );
         }
     }

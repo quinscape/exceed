@@ -82,8 +82,8 @@ public class ScopeDataProvider
                 String name = reference.getName();
 
                 final ScopedPropertyModel model = scopedContextChain.getModel(name);
-                final DomainProperty property = new DomainProperty(name, model.getType(), null, false,
-                    model.getTypeParam(), model.getMaxLength(), null);
+                final DomainProperty property = DomainProperty.builder().withName(name).withType(model.getType())
+                    .withTypeParam(model.getTypeParam()).withMaxLength(model.getMaxLength()).build();
 
                 property.setData(new ScopePropertyData(reference.getScopeType()));
                 columns.put(name, property);

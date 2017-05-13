@@ -61,8 +61,10 @@ public class DataGraphServiceTest
     {
         DataGraph dataGraph = new DataGraph(
             ImmutableMap.of(
-                "name", new DomainProperty("name", "PlainText", null, false, null, -1, "Foo"),
-                "created", new DomainProperty("created", "Date", null, false, null, -1, "Foo")
+                "name", DomainProperty.builder().withName("name").withType("PlainText")
+                    .withDomainType("Foo").build(),
+                "created", DomainProperty.builder().withName("created").withType("Date")
+                    .withDomainType("Foo").build()
             ),
             ImmutableList.of(
                 ImmutableMap.of(
@@ -85,9 +87,10 @@ public class DataGraphServiceTest
     {
         DataGraph dataGraph = new DataGraph(
             ImmutableMap.of(
-                "name", new DomainProperty("name", "PlainText", null, false, null, -1, "Foo"),
-                "created", new DomainProperty("created", "Date", null, false, null, -1, "Foo"),
-                "barCreated", new DomainProperty("createdWithADifferentName", "Timestamp", null, false, null, -1, "Bar")
+                "name", DomainProperty.builder().withName("name").withType("PlainText").withDomainType("Foo").build(),
+                "created", DomainProperty.builder().withName("created").withType("Date").withDomainType("Foo").build(),
+                "barCreated", DomainProperty.builder().withName("createdWithADifferentName").withType("Timestamp")
+                    .withDomainType("Bar").build()
             ),
             ImmutableList.of(
                 ImmutableMap.of(
@@ -113,9 +116,10 @@ public class DataGraphServiceTest
     {
         DataGraph dataGraph = new DataGraph(
             ImmutableMap.of(
-                "name", new DomainProperty("name", "PlainText", null, false, null, -1, "CContainer"),
-                "created", new DomainProperty("created", "Date", null, false, null, -1, "CContainer"),
-                "bazes", new DomainProperty("bazes", DomainProperty.LIST_PROPERTY_TYPE, null, false, "Baz", -1, "CContainer")
+                "name", DomainProperty.builder().withName("name").withType("PlainText").withDomainType("CContainer").build(),
+                "created", DomainProperty.builder().withName("created").withType("Date").withDomainType("CContainer").build(),
+                "bazes", DomainProperty.builder().withName("bazes").withType(DomainProperty.LIST_PROPERTY_TYPE)
+                    .withTypeParam("Baz").withDomainType("CContainer").build()
             ),
             ImmutableList.of(
                 ImmutableMap.of(
@@ -160,9 +164,11 @@ public class DataGraphServiceTest
     {
         DataGraph dataGraph = new DataGraph(
             ImmutableMap.of(
-                "name", new DomainProperty("name", "PlainText", null, false, null, -1, "PLContainer"),
-                "created", new DomainProperty("created", "Date", null, false, null, -1, "PLContainer"),
-                "dates", new DomainProperty("dates", DomainProperty.LIST_PROPERTY_TYPE, null, false, "Date", -1, "PLContainer")
+                "name", DomainProperty.builder().withName("name").withType("PlainText")
+                    .withDomainType("PLContainer").build(),
+                "created", DomainProperty.builder().withName("created").withType("Date")
+                    .withDomainType("PLContainer").build(),
+                "dates", DomainProperty.builder().withName("dates").withType(DomainProperty.LIST_PROPERTY_TYPE).withTypeParam("Date").withDomainType("PLContainer").build()
             ),
             ImmutableList.of(
                 ImmutableMap.of(
@@ -192,9 +198,11 @@ public class DataGraphServiceTest
     {
         DataGraph dataGraph = new DataGraph(
             ImmutableMap.of(
-                "name", new DomainProperty("name", "PlainText", null, false, null, -1, "MapContainer"),
-                "created", new DomainProperty("created", "Date", null, false, null, -1, "MapContainer"),
-                "bazes", new DomainProperty("bazes", DomainProperty.MAP_PROPERTY_TYPE, null, false, "Baz", -1, "MapContainer")
+                "name", DomainProperty.builder().withName("name").withType("PlainText")
+                    .withDomainType("MapContainer").build(),
+                "created", DomainProperty.builder().withName("created").withType("Date")
+                    .withDomainType("MapContainer").build(),
+                "bazes", DomainProperty.builder().withName("bazes").withType(DomainProperty.MAP_PROPERTY_TYPE).withTypeParam("Baz").withDomainType("MapContainer").build()
             ),
             ImmutableList.of(
                 ImmutableMap.of(
@@ -229,9 +237,11 @@ public class DataGraphServiceTest
     {
         DataGraph dataGraph = new DataGraph(
             ImmutableMap.of(
-                "name", new DomainProperty("name", "PlainText", null, false, null, -1, "PropMapContainer"),
-                "created", new DomainProperty("created", "Date", null, false, null, -1, "PropMapContainer"),
-                "dates", new DomainProperty("dates", DomainProperty.MAP_PROPERTY_TYPE, null, false, "Date", -1, "PropMapContainer")
+                "name", DomainProperty.builder().withName("name").withType("PlainText")
+                    .withDomainType("PropMapContainer").build(),
+                "created", DomainProperty.builder().withName("created").withType("Date")
+                    .withDomainType("PropMapContainer").build(),
+                "dates", DomainProperty.builder().withName("dates").withType(DomainProperty.MAP_PROPERTY_TYPE).withTypeParam("Date").withDomainType("PropMapContainer").build()
             ),
             ImmutableList.of(
                 ImmutableMap.of(
@@ -262,8 +272,9 @@ public class DataGraphServiceTest
     {
         DataGraph dataGraph = new DataGraph(
             ImmutableMap.of(
-                "name", new DomainProperty("name", "PlainText", null, false, null, -1, "PropMapContainer"),
-                "created", new DomainProperty("created", "Date", null, false, null, -1, "PropMapContainer")
+                "name", DomainProperty.builder().withName("name").withType("PlainText")
+                    .withDomainType("PropMapContainer").build(),
+                "created", DomainProperty.builder().withName("created").withType("Date").withDomainType("PropMapContainer").build()
             ),
             ImmutableMap.of(
                 "name", "MyFoo",
@@ -286,7 +297,7 @@ public class DataGraphServiceTest
     {
         DataGraph dataGraph = new DataGraph(
             ImmutableMap.of(
-                "*", new DomainProperty("created", "Date", null, false, null, -1, null)
+                "*", DomainProperty.builder().withName("created").withType("Date").build()
             ),
             ImmutableMap.of(
                 "A", new Date(TimeUnit.DAYS.toMillis(1)),
@@ -315,7 +326,7 @@ public class DataGraphServiceTest
 
         DataGraph dataGraph = new DataGraph(
             ImmutableMap.of(
-                "root", new DomainProperty("root", DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE, null, false, "Recursive", -1, null)
+                "root", DomainProperty.builder().withName("root").withType(DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE).withTypeParam("Recursive").build()
             ),
             ImmutableMap.of(
                 "root", root
@@ -358,38 +369,49 @@ public class DataGraphServiceTest
         private Map<String,DomainType> domainTypes =
             domainTypeMap(
             createDomainType("Foo", ImmutableList.of(
-                new DomainProperty("name", "PlainText", null, false),
-                new DomainProperty("created", "Date", null, false)
+                DomainProperty.builder().withName("name").withType("PlainText").build(),
+                DomainProperty.builder().withName("created").withType("Date").build()
             )),
             createDomainType("CContainer", ImmutableList.of(
-                new DomainProperty("name", "PlainText", null, false, null, -1, "CContainer"),
-                new DomainProperty("created", "Date", null, false, null, -1, "CContainer"),
-                new DomainProperty("bazes", DomainProperty.LIST_PROPERTY_TYPE, null, false, "Baz", -1, "CContainer")
+                DomainProperty.builder().withName("name").withType("PlainText").withDomainType
+                    ("CContainer").build(),
+                DomainProperty.builder().withName("created").withType("Date").withDomainType("CContainer").build(),
+                DomainProperty.builder().withName("bazes").withType(DomainProperty.LIST_PROPERTY_TYPE)
+                    .withTypeParam("Baz").withDomainType("CContainer").build()
             )),
             createDomainType("PLContainer", ImmutableList.of(
-                new DomainProperty("name", "PlainText", null, false, null, -1, "PLContainer"),
-                new DomainProperty("created", "Date", null, false, null, -1, "PLContainer"),
-                new DomainProperty("dates", DomainProperty.LIST_PROPERTY_TYPE, null, false, "Date", -1, "PLContainer")
+                DomainProperty.builder().withName("name").withType("PlainText").withDomainType
+                    ("PLContainer").build(),
+                DomainProperty.builder().withName("created").withType("Date").withDomainType("PLContainer").build(),
+                DomainProperty.builder().withName("dates").withType(DomainProperty.LIST_PROPERTY_TYPE)
+                    .withTypeParam("Date").withDomainType("PLContainer").build()
             )),
             createDomainType("MapContainer", ImmutableList.of(
-                new DomainProperty("name", "PlainText", null, false, null, -1, "MapContainer"),
-                new DomainProperty("created", "Date", null, false, null, -1, "MapContainer"),
-                new DomainProperty("bazes", DomainProperty.MAP_PROPERTY_TYPE, null, false, "Baz", -1, "MapContainer")
+                DomainProperty.builder().withName("name").withType("PlainText").withDomainType
+                    ("MapContainer").build(),
+                DomainProperty.builder().withName("created").withType("Date").withDomainType
+                    ("MapContainer").build(),
+                DomainProperty.builder().withName("bazes").withType(DomainProperty.MAP_PROPERTY_TYPE)
+                    .withTypeParam("Baz").withDomainType("MapContainer").build()
             )),
             createDomainType("PropMapContainer", ImmutableList.of(
-                new DomainProperty("name", "PlainText", null, false, null, -1, "PropMapContainer"),
-                new DomainProperty("created", "Date", null, false, null, -1, "PropMapContainer"),
-                new DomainProperty("dates", DomainProperty.MAP_PROPERTY_TYPE, null, false, "Date", -1, "PropMapContainer")
+                DomainProperty.builder().withName("name").withType("PlainText").withDomainType
+                    ("PropMapContainer").build(),
+                DomainProperty.builder().withName("created").withType("Date").withDomainType
+                    ("PropMapContainer").build(),
+                DomainProperty.builder().withName("dates").withType(DomainProperty.MAP_PROPERTY_TYPE)
+                    .withTypeParam("Date").withDomainType("PropMapContainer").build()
             )),
             createDomainType("Bar", ImmutableList.of(
-                new DomainProperty("createdWithADifferentName", "Timestamp", null, false)
+                DomainProperty.builder().withName("createdWithADifferentName").withType("Timestamp")
+                    .build()
             )),
             createDomainType("Baz", ImmutableList.of(
-                new DomainProperty("created", "Timestamp", null, false)
+                DomainProperty.builder().withName("created").withType("Timestamp").build()
             )),
             createDomainType("Recursive", ImmutableList.of(
-                new DomainProperty("created", "Date", null, false),
-                new DomainProperty("kids", "List", null, false, "Recursive", -1, null)
+                DomainProperty.builder().withName("created").withType("Date").build(),
+                DomainProperty.builder().withName("kids").withType("List").withTypeParam("Recursive").build()
             ))
         );
 

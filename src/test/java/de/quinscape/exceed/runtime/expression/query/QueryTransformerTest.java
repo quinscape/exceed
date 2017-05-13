@@ -139,8 +139,8 @@ public class QueryTransformerTest
             domainType.setStorageConfiguration("testStorage");
 
             domainType.setProperties(Arrays.asList(
-                new DomainProperty("value", "PlainText", null, false),
-                new DomainProperty(name.toLowerCase(), "PlainText", null, false)
+                DomainProperty.builder().withName("value").withType("PlainText").build(),
+                DomainProperty.builder().withName(name.toLowerCase()).withType("PlainText").build()
             ));
             return domainType;
         }

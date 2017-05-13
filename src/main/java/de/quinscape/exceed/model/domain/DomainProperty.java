@@ -249,4 +249,9 @@ public class DomainProperty
     {
         return domainType + ":" + name;
     }
+
+    public static DomainPropertyBuilder builder()
+    {
+        return new DomainPropertyBuilder();
+    }
 }

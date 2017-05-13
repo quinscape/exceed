@@ -112,13 +112,14 @@ public class PropCompleteEnvironmentTest
             domainType.setName(name);
             domainType.setAnnotation("Test domain type " + name);
 
-            DomainProperty enumProp = new DomainProperty("type", "Enum", "0", false);
+            DomainProperty enumProp = DomainProperty.builder().withName("type").withType("Enum").withDefaultValue
+                ("0").build();
             enumProp.setTypeParam("MyEnum");
             domainType.setProperties(Arrays.asList(
-                new DomainProperty("value", "PlainText", null, false),
-                new DomainProperty(name.toLowerCase(), "PlainText", null, false),
+                DomainProperty.builder().withName("value").withType("PlainText").build(),
+                DomainProperty.builder().withName(name.toLowerCase()).withType("PlainText").build(),
                 enumProp,
-                new DomainProperty("num", "Integer", "0", false)
+                DomainProperty.builder().withName("num").withType("Integer").withDefaultValue("0").build()
             ));
             return domainType;
         }
