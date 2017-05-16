@@ -11,6 +11,12 @@ function format(tag, arg)
     });
 }
 
+/**
+ * Returns a translation of the given translation key with additional optional arguments
+ * @param s         {string} translation tag/key
+ * @param arg       {*...} varargs
+ * @returns {*}
+ */
 module.exports = function(s, arg)
 {
     const result = getTranslationTemplate( store.getState(), s);
