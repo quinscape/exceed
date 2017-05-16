@@ -10,6 +10,7 @@ import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.JSON;
@@ -36,7 +37,7 @@ public class DataGraphService
 
     private JSON generator = JSON.defaultJSON();
 
-    private final static JSONBeanUtil util = JSONBeanUtil.defaultUtil();
+    private final static JSONBeanUtil util = JSONUtil.DEFAULT_UTIL;
 
     public DataGraphService(DomainService domainService, Map<String, PropertyConverter> propertyConverters)
     {

@@ -30,6 +30,7 @@ import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.Operator;
 import de.quinscape.exceed.expression.SimpleNode;
 import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.util.JSONBeanUtil;
@@ -127,7 +128,7 @@ public abstract class ExpressionEnvironment
             {
                 throw new IllegalStateException("Cannot access property '" + name + "' of null");
             }
-            chainObject = JSONBeanUtil.defaultUtil().getProperty(chainObject, name);
+            chainObject = JSONUtil.DEFAULT_UTIL.getProperty(chainObject, name);
         }
         if (kid instanceof ASTFunction)
         {
@@ -893,7 +894,7 @@ public abstract class ExpressionEnvironment
             kid = node.jjtGetChild(i);
             Object key = kid.jjtAccept(this, chainObject);
 
-            chainObject = JSONBeanUtil.defaultUtil().getProperty(chainObject, key.toString());
+            chainObject = JSONUtil.DEFAULT_UTIL.getProperty(chainObject, key.toString());
         }
         return chainObject;
     }

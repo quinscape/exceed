@@ -19,6 +19,7 @@ import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
 import de.quinscape.exceed.runtime.expression.annotation.Operation;
 import de.quinscape.exceed.runtime.model.ExpressionRenderer;
 import de.quinscape.exceed.runtime.scope.ScopedResolver;
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.svenson.util.JSONBeanUtil;
 
 /**
@@ -90,7 +91,7 @@ public class ActionExecutionEnvironment
 
             Class cls = action.getActionModelClass();
 
-            JSONBeanUtil util = JSONBeanUtil.defaultUtil();
+            JSONBeanUtil util = JSONUtil.DEFAULT_UTIL;
 
             ActionModel actionModel;
             if (action instanceof ServerActionConverter)

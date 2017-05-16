@@ -4,6 +4,7 @@ import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.util.DomainUtil;
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.svenson.JSONProperty;
 import org.svenson.util.JSONBeanUtil;
 
@@ -53,7 +54,7 @@ public class DataGraph
         else
         {
             type = DataGraphType.OBJECT;
-            this.count = JSONBeanUtil.defaultUtil().getAllPropertyNames(rootObject).size();
+            this.count = JSONUtil.DEFAULT_UTIL.getAllPropertyNames(rootObject).size();
         }
     }
 

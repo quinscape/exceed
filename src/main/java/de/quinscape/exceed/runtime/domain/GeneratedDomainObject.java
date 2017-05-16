@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.domain;
 
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.svenson.JSONProperty;
 import org.svenson.util.JSONBeanUtil;
 
@@ -11,7 +12,7 @@ import java.util.Set;
 public abstract class GeneratedDomainObject
     extends DomainObjectBase
 {
-    private final static JSONBeanUtil util = JSONBeanUtil.defaultUtil();
+    private final static JSONBeanUtil util = JSONUtil.DEFAULT_UTIL;
 
     public void setDomainType(String type)
     {

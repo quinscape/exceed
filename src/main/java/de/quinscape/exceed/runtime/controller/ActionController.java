@@ -305,7 +305,7 @@ public class ActionController
                 log.debug("Convert {}.{}", model.getAction(), name);
             }
 
-            DomainObject value = (DomainObject) JSONBeanUtil.defaultUtil().getProperty(model, name);
+            DomainObject value = (DomainObject) JSONUtil.DEFAULT_UTIL.getProperty(model, name);
             if (value == null)
             {
                 return;
@@ -348,7 +348,7 @@ public class ActionController
                 log.debug("Convert {}.{}", model.getAction(), name);
             }
 
-            Object value = JSONBeanUtil.defaultUtil().getProperty(model, name);
+            Object value = JSONUtil.DEFAULT_UTIL.getProperty(model, name);
             if (value == null)
             {
                 return;
@@ -391,7 +391,7 @@ public class ActionController
                 log.debug("Convert {}.{}", model.getAction(), name);
             }
 
-            Object value = JSONBeanUtil.defaultUtil().getProperty(model, name);
+            Object value = JSONUtil.DEFAULT_UTIL.getProperty(model, name);
             if (value == null)
             {
                 return;
