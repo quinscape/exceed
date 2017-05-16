@@ -79,7 +79,7 @@ class NavigationHistory
         }
         else
         {
-            this.opts.onRestore(entry);
+            this.opts.onRestore(null);
         }
     };
     
