@@ -3,9 +3,11 @@ package de.quinscape.exceed.runtime.service.model;
 
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.annotation.ExceedPropertyType;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.runtime.component.DataGraph;
+import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +58,7 @@ public class ModelSchemaService
         map.put(Timestamp.class, "Timestamp");
         map.put(Date.class, "Date");
         map.put(Object.class, "Object");
+        map.put(DomainObject.class, DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE);
 
         MODEL_CLASS_TO_PROPERTY = Collections.unmodifiableMap(map);
     }
@@ -106,54 +109,72 @@ public class ModelSchemaService
         List<DomainProperty> properties = new ArrayList<>();
         for (JSONPropertyInfo info : classInfo.getPropertyInfos())
         {
-            if (info.isIgnore())
+            final String propName = info.getJsonName();
+
+            // we ignore all ignored and unreadable properties and also the "type" property because we use the
+            // domain type "_type" for the model domain object view.
+            if (info.isIgnore() || !info.isReadable() || propName.equals("type"))
             {
                 continue;
             }
 
-            final String propName = info.getJsonName();
             final Class<Object> propType = info.getType();
             final Class<Object> typeHint = info.getTypeHint();
 
-            String type = exceedTypeFromPropertyType(propType);
-            if (type != null)
+            final ExceedPropertyType typeAnno = JSONUtil.findAnnotation(cls, info, ExceedPropertyType.class);
+
+            String type;
+            if (typeAnno != null)
             {
-                String typeParam = null;
-                switch (type)
+                properties.add(
+                    DomainProperty.builder()
+                        .withName(propName)
+                        .withType(typeAnno.type())
+                        .withTypeParam(typeAnno.typeParam().length() > 0 ? typeAnno.typeParam() : null)
+                        .withDomainType(domainTypeName)
+                        .build()
+                );
+            }
+            else
+            {
+                type = exceedTypeFromPropertyType(propType);
+                if (type != null)
                 {
-                    case DomainProperty.MAP_PROPERTY_TYPE:
-                    case DomainProperty.LIST_PROPERTY_TYPE:
-                        if (typeHint != null)
-                        {
-                            if (isInModelPackage(typeHint))
+                    String typeParam = null;
+                    switch (type)
+                    {
+                        case DomainProperty.MAP_PROPERTY_TYPE:
+                        case DomainProperty.LIST_PROPERTY_TYPE:
+                            if (typeHint != null)
                             {
-                                typeParam = Model.getType(typeHint);
-                                analyze(typeHint);
+                                if (isInModelPackage(typeHint))
+                                {
+                                    typeParam = Model.getType(typeHint);
+                                    analyze(typeHint);
+                                }
+                                else
+                                {
+                                    typeParam = exceedTypeFromPropertyType(typeHint);
+                                }
                             }
                             else
                             {
-                                typeParam = exceedTypeFromPropertyType(typeHint);
+                                typeParam = "Object";
                             }
-                        }
-                        else
-                        {
-                            typeParam = "Object";
-                        }
-                        break;
-                    case DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE:
-                        typeParam = Model.getType(propType);
-                        analyze(propType);
-                        break;
+                            break;
+                        case DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE:
+                            typeParam = Model.getType(propType);
+                            analyze(propType);
+                            break;
+                    }
+
+                    properties.add(DomainProperty.builder().withName(propName).withType(type).withTypeParam(typeParam)
+                        .withDomainType(domainTypeName).build());
                 }
-
-                properties.add(DomainProperty.builder().withName(propName).withType(type).withTypeParam(typeParam)
-                    .withDomainType(domainTypeName).build());
             }
+
         };
-
         domainType.setProperties(properties);
-
-
     }
 
 
