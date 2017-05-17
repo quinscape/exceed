@@ -31,11 +31,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.svenson.JSON;
-import org.svenson.TypeAnalyzer;
 import org.svenson.info.JSONClassInfo;
 import org.svenson.info.JSONPropertyInfo;
-import org.svenson.info.JavaObjectSupport;
-import org.svenson.util.JSONBeanUtil;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
@@ -222,16 +219,12 @@ public class ActionController
 
         log.info("CONVERSIONS: {}", conversionLookup);
     }
-
-
-    private JavaObjectSupport objectSupport = new JavaObjectSupport();
-
-
+    
     private Set<Conversion> analyze(Class<? extends ActionModel> modelClass)
     {
         Set<Conversion> conversions = new HashSet<>();
 
-        JSONClassInfo info = TypeAnalyzer.getClassInfo(objectSupport, modelClass);
+        JSONClassInfo info = JSONUtil.getClassInfo(modelClass);
         for (JSONPropertyInfo propertyInfo : info.getPropertyInfos())
         {
             if (DomainObject.class.isAssignableFrom(propertyInfo.getType()))

@@ -101,7 +101,7 @@ public class ModelSchemaService
 
         modelDomainTypes.put(cls, domainType);
 
-        final JSONClassInfo classInfo = JSONUtil.OBJECT_SUPPORT.createClassInfo(cls);
+        final JSONClassInfo classInfo = JSONUtil.getClassInfo(cls);
 
         List<DomainProperty> properties = new ArrayList<>();
         for (JSONPropertyInfo info : classInfo.getPropertyInfos())

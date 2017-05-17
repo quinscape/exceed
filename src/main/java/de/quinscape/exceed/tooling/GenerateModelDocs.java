@@ -24,11 +24,10 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.svenson.info.JSONClassInfo;
 import org.svenson.info.JSONPropertyInfo;
+import org.svenson.info.JavaObjectPropertyInfo;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -166,7 +165,7 @@ public class GenerateModelDocs
 
             log.info("Analyze {}", cls);
 
-            final JSONClassInfo classInfo = JSONUtil.OBJECT_SUPPORT.createClassInfo(cls);
+            final JSONClassInfo classInfo = JSONUtil.getClassInfo(cls);
 
             String classDescription = null;
             String locationDescription;
@@ -189,7 +188,7 @@ public class GenerateModelDocs
 
             for (JSONPropertyInfo info : classInfo.getPropertyInfos())
             {
-                if (info == null || info.isIgnore() || (findAnnotation(cls, info, Internal.class) != null))
+                if (info == null || info.isIgnore() || (JSONUtil.findAnnotation(cls, info, Internal.class) != null))
                 {
                     continue;
                 }
@@ -200,11 +199,11 @@ public class GenerateModelDocs
 
                 final String propName = info.getJsonName();
 
-                String propertyDescription = cleanupDoc(findPropertyDoc(cls, info));
+                String propertyDescription = cleanupDoc(findPropertyDoc(cls, (JavaObjectPropertyInfo) info));
 
-                final DocumentedMapKey keyAnno = findAnnotation(cls, info, DocumentedMapKey.class);
-                final DocumentedModelType typeAnno = findAnnotation(cls, info, DocumentedModelType.class);
-                final DocumentedSubTypes subTypesAnno = findAnnotation(cls, info, DocumentedSubTypes.class);
+                final DocumentedMapKey keyAnno = JSONUtil.findAnnotation(cls, info, DocumentedMapKey.class);
+                final DocumentedModelType typeAnno = JSONUtil.findAnnotation(cls, info, DocumentedModelType.class);
+                final DocumentedSubTypes subTypesAnno = JSONUtil.findAnnotation(cls, info, DocumentedSubTypes.class);
                 String keyName = keyAnno != null ? keyAnno.value() : DEFAULT_KEY_NAME;
 
 
@@ -323,13 +322,11 @@ public class GenerateModelDocs
     }
 
 
-    private String findPropertyDoc(Class<?> cls, JSONPropertyInfo info)
+    private String findPropertyDoc(Class<?> cls, JavaObjectPropertyInfo info)
     {
-        final InfoMethods infoMethods = findMethodsForInfo(cls, info);
-
         if (info.isReadable())
         {
-            final JavaDocs javaDocs = docsMap.get(infoMethods.getGetter().getDeclaringClass());
+            final JavaDocs javaDocs = docsMap.get(info.getGetterMethod().getDeclaringClass());
             if (javaDocs != null)
             {
                 final String propDoc = javaDocs.getPropertyDocs().get(info.getJavaPropertyName());
@@ -342,7 +339,7 @@ public class GenerateModelDocs
         }
         if (info.isWriteable())
         {
-            final JavaDocs javaDocs = docsMap.get(infoMethods.getSetter().getDeclaringClass());
+            final JavaDocs javaDocs = docsMap.get(info.getSetterMethod().getDeclaringClass());
             if (javaDocs != null)
             {
                 final String propDoc = javaDocs.getPropertyDocs().get(info.getJavaPropertyName());
@@ -374,78 +371,6 @@ public class GenerateModelDocs
     }
 
 
-    private <T extends Annotation> T findAnnotation(Class<?> cls, JSONPropertyInfo info, Class<T > annoClass)
-    {
-        final InfoMethods infoMethods = findMethodsForInfo(cls, info);
-
-        final String javaPropertyName = info.getJavaPropertyName();
-
-        final String capitalized = javaPropertyName.substring(0, 1).toUpperCase() + javaPropertyName.substring(1);
-
-        if (info.isReadable())
-        {
-            final T getterAnno = infoMethods.getGetter().getAnnotation(annoClass);
-            if (getterAnno != null)
-            {
-                return getterAnno;
-            }
-        }
-
-        if (info.isWriteable())
-        {
-            final T setterAnno = infoMethods.getSetter().getAnnotation(annoClass);
-            if (setterAnno != null)
-            {
-                return setterAnno;
-            }
-        }
-        return null;
-    }
-
-    public InfoMethods findMethodsForInfo(Class<?> cls, JSONPropertyInfo info)
-    {
-        final String javaPropertyName = info.getJavaPropertyName();
-
-        final String capitalized = javaPropertyName.substring(0, 1).toUpperCase() + javaPropertyName.substring(1);
-
-        Method getter = null;
-        Method setter = null;
-        if (info.isReadable())
-        {
-            getter = findMethod(cls, "get" + capitalized,  null, info.getType());
-            if (getter == null && (info.getType().equals(Boolean.class) || info.getType().equals(Boolean.TYPE)))
-            {
-                getter = findMethod(cls, "is" + capitalized, null, info.getType());
-            }
-        }
-
-        if (info.isWriteable())
-        {
-            setter = findMethod(cls, "set" + capitalized, info.getType(), void.class);
-        }
-        return new InfoMethods(getter, setter);
-    }
-
-    private Method findMethod(Class<?> cls, String name, Class<?> param, Class<?> returnType)
-    {
-        for (Method method : cls.getMethods())
-        {
-            if (method.getName().equals(name) &&
-                (
-                    param == null ||
-                    (
-                        method.getParameterTypes().length == 1 &&
-                        method.getParameterTypes()[0].equals(param)
-                    )
-                ) &&
-                returnType.equals(method.getReturnType())
-            )
-            {
-                return method;
-            }
-        }
-        return null;
-    }
 
 
     private void indent(StringBuilder sb, int depth)

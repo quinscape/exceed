@@ -2,9 +2,15 @@ package de.quinscape.exceed.runtime.util;
 
 import org.svenson.JSON;
 import org.svenson.JSONParser;
+import org.svenson.TypeAnalyzer;
+import org.svenson.info.JSONClassInfo;
+import org.svenson.info.JSONPropertyInfo;
+import org.svenson.info.JavaObjectPropertyInfo;
 import org.svenson.info.JavaObjectSupport;
 import org.svenson.util.JSONBeanUtil;
 import org.svenson.util.JSONBuilder;
+
+import java.lang.annotation.Annotation;
 
 /**
  * JSON helper utils methods.
@@ -53,5 +59,41 @@ public class JSONUtil
             .property("error", message)
             .propertyUnlessNull("detail", payload)
             .output();
+    }
+
+
+    public static <T extends Annotation> T findAnnotation(Class<?> cls, JSONPropertyInfo propertyInfo, Class<T > annoClass)
+    {
+        if (!(propertyInfo instanceof JavaObjectPropertyInfo))
+        {
+            throw new IllegalArgumentException("Invalid property info type: " + propertyInfo + ", must be " + JavaObjectPropertyInfo.class.getName());
+        }
+
+        final JavaObjectPropertyInfo info = (JavaObjectPropertyInfo) propertyInfo;
+
+        if (propertyInfo.isReadable())
+        {
+            final T getterAnno = info.getGetterMethod().getAnnotation(annoClass);
+            if (getterAnno != null)
+            {
+                return getterAnno;
+            }
+        }
+
+        if (propertyInfo.isWriteable())
+        {
+            final T setterAnno = info.getSetterMethod().getAnnotation(annoClass);
+            if (setterAnno != null)
+            {
+                return setterAnno;
+            }
+        }
+        
+        return null;
+    }
+
+    public static JSONClassInfo getClassInfo(Class<?> cls)
+    {
+        return TypeAnalyzer.getClassInfo(JSONUtil.OBJECT_SUPPORT,cls);
     }
 }
