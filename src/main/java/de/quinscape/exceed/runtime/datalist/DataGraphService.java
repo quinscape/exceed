@@ -100,6 +100,8 @@ public class DataGraphService
 
             if (rootObject instanceof Collection)
             {
+                log.debug("Convert collection");
+
                 builder.arrayProperty("rootObject");
                 for (Object row : ((Collection) rootObject))
                 {
@@ -111,6 +113,8 @@ public class DataGraphService
             }
             else if (rootObject instanceof Map)
             {
+                log.debug("Convert map");
+
                 Map<String,Object> map = (Map<String,Object>) rootObject;
 
                 final DomainProperty property = dataGraph.getColumns().get(DataGraph.WILDCARD_SYMBOL);
@@ -167,6 +171,8 @@ public class DataGraphService
 
         private void convertValue(JSONBuilder b, RuntimeContext runtimeContext, String localName, String domainPropertyType, Object domainPropertyTypeName, Object value)
         {
+            log.debug("Convert '{}' ( {}/{} ): value = {}", localName, domainPropertyType, domainPropertyTypeName, value);
+
             if (value == null)
             {
                 if (localName != null)
@@ -177,9 +183,8 @@ public class DataGraphService
                 {
                     b.includeElement("null");
                 }
-                return;
             }
-            if (isComplexType(domainPropertyType))
+            else if (isComplexType(domainPropertyType))
             {
                 switch (domainPropertyType)
                 {
@@ -297,7 +302,7 @@ public class DataGraphService
 
                 if (converter == null)
                 {
-                    throw new ExceedRuntimeException("No converter '" + converterName + "'" );
+                    throw new ExceedRuntimeException("Could not find converter for property type '" + domainPropertyType+ "'." );
                 }
 
                 Object converted = converter.convertToJSON(runtimeContext, value);
