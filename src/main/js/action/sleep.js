@@ -1,6 +1,6 @@
 var Promise = require("es6-promise-polyfill").Promise;
 
-module.exports = function (model)
+export default function (model)
 {
     return new Promise(function (resolve, reject)
     {
@@ -8,4 +8,4 @@ module.exports = function (model)
 
         window.setTimeout(resolve, (model.time || 3) * 1000);
     })
-};
+}

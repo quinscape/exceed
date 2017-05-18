@@ -1,6 +1,6 @@
 "use strict";
 
-var cando = require("../cando");
+import cando from "../cando"
 
 const MAP_KEY = "warnOnce:warnings";
 
@@ -10,7 +10,7 @@ const MAP_KEY = "warnOnce:warnings";
  * @param name      {string?} key for this message
  * @param message   {string} message
  */
-module.exports = function(name, message)
+export default function(name, message)
 {
     if (cando.sessionStorage)
     {

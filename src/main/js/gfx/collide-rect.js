@@ -1,4 +1,4 @@
-const quadraticBezier = require("./bezier");
+import quadraticBezier from "./bezier"
 
 function collideCurveWithRect(x0,y0,x1,y1, x2, y2, w, h)
 {
@@ -80,4 +80,4 @@ function collideCurveWithRect(x0,y0,x1,y1, x2, y2, w, h)
     return {pos: pt, t: mid};
 }
 
-module.exports = collideCurveWithRect();
+export default collideCurveWithRect();

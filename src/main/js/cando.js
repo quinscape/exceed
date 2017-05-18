@@ -1,6 +1,6 @@
 const assign = require("object-assign");
-const createXMLHTTPObject = require("./util/xhr-factory");
-const xmlParser = require("./util/parseXML");
+import createXMLHTTPObject from "./util/xhr-factory";
+import xmlParser from "./util/parseXML"
 
 /**
  * Runs feature detections and stores the result for future use.
@@ -83,7 +83,7 @@ run();
  */
 Features.rerunFeatureTests = run;
 
-module.exports = Features;
+export default Features
 
 
 

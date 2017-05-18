@@ -1,4 +1,4 @@
-var Vector = require("./vector");
+import Vector from "./vector"
 
 const TAU = Math.PI * 2;
 
@@ -473,4 +473,4 @@ Graph.prototype.getAABB = function()
 };
 
 
-module.exports = Graph;
+export default Graph

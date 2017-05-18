@@ -4,7 +4,7 @@
  * @param value         potential array
  * @returns {boolean} true if array
  */
-module.exports = function(value)
+export default function(value)
 {
     return value && typeof value === "object" && typeof value.length === "number";
-};
+}

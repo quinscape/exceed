@@ -1,16 +1,10 @@
+import React from "react";
 
-var React = require("react");
+class Counter extends React.Component
+{
+    state = { count: this.props.value || 0 };
 
-var Counter = React.createClass({
-
-    getInitialState: function ()
-    {
-        return {
-            count: this.props.value || 0
-        }
-    },
-
-    render: function ()
+    render ()
     {
         return (
             <div className="counter">
@@ -23,6 +17,6 @@ var Counter = React.createClass({
             </div>
         );
     }
-});
+};
 
-module.exports = Counter;
+export default Counter

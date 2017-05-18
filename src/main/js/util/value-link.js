@@ -1,4 +1,3 @@
-"use strict";
 
 function ValueLink(value, requestChange)
 {
@@ -6,4 +5,4 @@ function ValueLink(value, requestChange)
     this.requestChange = requestChange;
 }
 
-module.exports = ValueLink;
+export default ValueLink

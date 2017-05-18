@@ -1,4 +1,4 @@
-const cando = require("../cando");
+import cando from "../cando"
 
 const NAME_PREFIX = "exceed_setting.";
 
@@ -44,7 +44,7 @@ var settingNames = {};
  *
  * @type {{flush: function, create: function, NAME_PREFIX: string}}
  */
-module.exports = {
+export default {
     /**
      * Flushes the internal cache to reread values from localStorage.
      *
@@ -92,4 +92,4 @@ module.exports = {
     },
 
     NAME_PREFIX: NAME_PREFIX
-};
+}

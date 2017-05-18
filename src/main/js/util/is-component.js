@@ -4,7 +4,7 @@
  * @param value         potential component
  * @returns {boolean}
  */
-module.exports = function(value)
+export default function(value)
 {
     return typeof value == "function" && typeof value.prototype.render == "function";
-};
+}

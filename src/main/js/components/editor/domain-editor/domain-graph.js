@@ -12,9 +12,9 @@ const GOLDEN_CUBED = GOLDEN * GOLDEN * GOLDEN;
 
 const DomainLayout = require("./domain-layout");
 
-const Graph = require("../../../gfx/graph");
+import Graph from "../../../gfx/graph"
 
-const Enum = require("../../../util/enum");
+import Enum from "../../../util/enum";
 
 const NodeType = new Enum({
     ENTITY: true,

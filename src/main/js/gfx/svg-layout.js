@@ -1,7 +1,7 @@
 var React = require("react");
 var ReactDOM = require("react-dom");
 var Promise = require("es6-promise-polyfill").Promise;
-var Enum = require("./../util/enum");
+import Enum from "./../util/enum";
 
 const TEST_PHRASE = "THEqUICKbROWNFOXjUMpSOVERTHELAZydOg";
 
@@ -46,7 +46,7 @@ var probeElems = {};
  *
  * @type {{TextSize: TextSize, getExampleTextSizes: function, getFontSize: function, init: function}}
  */
-module.exports = {
+export default {
     TextSize: TextSize,
     getExampleTextSizes: function()
     {
@@ -139,5 +139,5 @@ module.exports = {
         //console.log("svgLayout init");
         return initPromise;
     }
-};
+}
 

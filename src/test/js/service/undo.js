@@ -5,7 +5,7 @@ const proxyquire = require("proxyquire");
 const sys = require("../../../main/js/sys");
 sys.init("/test-context", "TestApp");
 
-const undoService = require("../../../main/js/service/undo");
+import undoService from "../../../main/js/service/undo"
 
 describe("Undo", function(){
     let state = {

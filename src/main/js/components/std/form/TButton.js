@@ -2,16 +2,16 @@
  * Process transition executing button.
  */
 import FormContext from "../../../util/form-context";
-var React = require("react");
-var cx = require("classnames");
+import processService from "../../../service/process";
+import i18n from "../../../service/i18n";
+import cx from "classnames";
+import React from "react";
 
-var i18n  = require("../../../service/i18n");
 
-var processService  = require("../../../service/process");
+class TButton extends React.Component
+{
 
-var TButton = React.createClass({
-
-    propTypes: {
+    static propTypes = {
         /** transition to execute */
         transition: React.PropTypes.string.isRequired,
         /** true if the transition execution discards all user changes / does not depend on field validation */
@@ -22,19 +22,19 @@ var TButton = React.createClass({
         text: React.PropTypes.string.isRequired,
         /** Domain type to extract as context for the transition. Can be undefined if the context is unambiguous */
         domainType: React.PropTypes.string
-    },
+    }
 
-    contextTypes: {
+    static contextTypes = {
         formContext: React.PropTypes.instanceOf(FormContext)
-    },
+    }
 
-    isDisabled: function ()
+    isDisabled ()
     {
         return !this.props.discard && this.context.formContext && this.context.formContext.hasError()
 
-    },
+    }
 
-    render: function ()
+    render ()
     {
 //        console.log("RENDER TBUTTON", this.props.context && this.props.context.graph.id);
 
@@ -73,6 +73,6 @@ var TButton = React.createClass({
                 } }/>
         );
     }
-});
+};
 
-module.exports = TButton;
+export default TButton

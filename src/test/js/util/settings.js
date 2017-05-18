@@ -1,4 +1,4 @@
-var cando = require("../../../../src/main/js/cando");
+import cando from "../../../../src/main/js/cando"
 
 var assert = require("power-assert");
 
@@ -23,7 +23,7 @@ global.window = {
 
 cando.rerunFeatureTests();
 
-var Settings = require("../../../../src/main/js/util/settings");
+import Settings from "../../../../src/main/js/util/settings";
 
 describe("Settings", function ()
 {

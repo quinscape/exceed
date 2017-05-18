@@ -1,6 +1,6 @@
 const React = require("react");
 
-const i18n = require("../service/i18n");
+import i18n from "../service/i18n";
 
 /**
  * Internal editor filter field working with value links, not cursors.
@@ -32,4 +32,4 @@ var FilterField = function (props)
         );
 };
 
-module.exports = FilterField;
+export default FilterField

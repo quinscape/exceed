@@ -2,7 +2,7 @@ import React from "react"
 
 import sys from "../sys"
 import ScopeEditor from "./code/ScopeEditor";
-const i18n = require("../service/i18n");
+import i18n from "../service/i18n";
 
 
 import { getEditorData } from "../reducers/editor"

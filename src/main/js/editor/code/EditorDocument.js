@@ -6,7 +6,7 @@ import keys from "../../util/keys"
 
 import update from "react-addons-update"
 
-const i18n = require("../../service/i18n");
+import i18n from "../../service/i18n"
 
 
 export const CONTENT_NAMES = Memoizer((root) => keys(EditorViewDocument.findContentRefs(root, [])).sort());

@@ -1,4 +1,4 @@
-const Vector = require("./vector");
+import Vector from "./vector"
 
 var bzv0 = new Vector();
 var bzv1 = new Vector();
@@ -35,4 +35,4 @@ function quadraticBezier(x0,y0,x1,y1,x2,y2, current)
     return bezierPointV(new Vector(), a, b, current);
 }
 
-module.exports = quadraticBezier;
+export default quadraticBezier;

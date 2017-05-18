@@ -1,6 +1,6 @@
 "use strict";
 
-const sys = require("../sys");
+import sys from "../sys";
 const assign = require("object-assign");
 
 const url = require("url");
@@ -69,4 +69,4 @@ function uri(location, params, containsContextPath)
     return result;
 }
 
-module.exports = uri;
+export default uri

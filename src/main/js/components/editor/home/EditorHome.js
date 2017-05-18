@@ -1,19 +1,18 @@
-const React = require("react");
-const GUIContainer = require("../../../editor/gui/GUIContainer");
-const SymbolElement = require("../../../editor/gui/SymbolElement");
+import Link from "../../../ui/Link";
+import appUri from "../../../util/app-uri";
+import i18n from "../../../service/i18n";
+import AutoHeight from "../../../ui/AutoHeight";
+import SymbolElement from "../../../editor/gui/SymbolElement";
+import GUIContainer from "../../../editor/gui/GUIContainer";
+import React from "react";
 
 const editorSymbols = require("../../../../svg/editor.svg");
 
-const AutoHeight = require("../../../ui/AutoHeight");
-
-const i18n = require("../../../service/i18n");
-const appUri = require("../../../util/app-uri");
-const Link = require("../../../ui/Link");
 
 import { navigateView } from "../../../actions/view"
 
-var EditorHome = AutoHeight( React.createClass({
-    render: function ()
+var EditorHome = AutoHeight( class extends React.Component {
+    render()
     {
         return (
             <div className="editor-home">
@@ -58,6 +57,6 @@ var EditorHome = AutoHeight( React.createClass({
             </div>
         );
     }
-}));
+});
 
-module.exports = EditorHome;
+export default EditorHome

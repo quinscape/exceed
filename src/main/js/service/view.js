@@ -5,7 +5,7 @@ import { render } from "react-dom"
 import { Promise } from "es6-promise-polyfill"
 import security from "./security"
 import store from "./store"
-import componentService from "./component"
+var componentService = require("./component");
 
 import { setScopeValue } from "../actions/scope"
 import { getViewModel, getScopeGraph, getComponentData } from "../reducers"
@@ -14,7 +14,7 @@ import { getViewModel, getScopeGraph, getComponentData } from "../reducers"
 let InPageEditor = false;
 if (process.env.USE_EDITOR)
 {
-   InPageEditor = require("../editor/InPageEditor");
+    InPageEditor = require("../editor/InPageEditor");
 }
 
 import { ThrobberComponent } from "../ui/throbber"

@@ -1,6 +1,6 @@
 import React from "react"
 
-const AutoHeight = require("../ui/AutoHeight")
+import AutoHeight from "../ui/AutoHeight"
 
 import ModelLink from "./ModelLink"
 import NamedGroup from "./NamedGroup"
@@ -9,7 +9,7 @@ import sys from "../sys"
 import uri from "../util/uri"
 import debounce from "../util/debounce"
 
-const i18n = require("../service/i18n");
+import i18n from "../service/i18n";
 import Icon from "../ui/Icon";
 
 import { searchModel, setFilter } from "../actions/editor";

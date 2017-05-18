@@ -4,7 +4,7 @@
  * @param ctx       local "this"
  * @param name      prototype function to be bound to that "this"
  */
-module.exports = function (ctx, name)
+export default function(ctx, name)
 {
     var fn = ctx[name];
     if (typeof fn !== "function")
@@ -12,4 +12,4 @@ module.exports = function (ctx, name)
         throw new Error("Cannot bind non-function " + fn);
     }
     ctx[name] = fn.bind(ctx);
-};
+}

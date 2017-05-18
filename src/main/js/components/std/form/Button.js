@@ -2,48 +2,46 @@
  * Action executing button
  */
 import FormContext from "../../../util/form-context";
-var React = require("react");
-var cx = require("classnames");
+import actionService from "../../../service/action";
+import i18n from "../../../service/i18n";
+import cx from "classnames";
+import React from "react";
 
-var i18n  = require("../../../service/i18n");
-var actionService  = require("../../../service/action");
 
-var Button = React.createClass({
+class Button extends React.Component
+{
 
-    propTypes: {
+    static propTypes = {
         action: React.PropTypes.func.isRequired,
         discard: React.PropTypes.bool,
         className: React.PropTypes.string,
         text: React.PropTypes.string.isRequired
-    },
+    };
 
-    contextTypes: {
+    static contextTypes = {
         formContext: React.PropTypes.instanceOf(FormContext)
-    },
+    };
 
-    getInitialState: function ()
+    constructor(props, context)
     {
-        var ctx = this.context.formContext;
+        super(props, context);
+        const ctx = this.context.formContext;
+        this.state = { id: ctx.nextId() };
+    }
 
-        return {
-            id: ctx.nextId()
-        };
-    },
-
-    componentWillUnmount: function ()
+    componentWillUnmount ()
     {
         var ctx = this.context.formContext;
         ctx.deregister(this.state.id);
-    },
+    }
 
 
-    isDisabled: function ()
+    isDisabled ()
     {
         return !this.props.discard && this.context.formContext.hasError()
+    }
 
-    },
-
-    render: function ()
+    render ()
     {
         var formContext = this.context.formContext;
         var id = this.state.id;
@@ -67,6 +65,6 @@ var Button = React.createClass({
                 } }/>
         );
     }
-});
+};
 
-module.exports = Button;
+export default Button;

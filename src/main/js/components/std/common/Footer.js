@@ -1,11 +1,11 @@
-const React = require("react");
-const security = require("../../../service/security");
-const CSFR = require("../../../service/csfr");
-const i18n = require("../../../service/i18n");
-const uri = require("../../../util/uri");
+import React from "react";
+import security from "../../../service/security";
+import CSFR from "../../../service/csfr";
+import i18n from "../../../service/i18n";
+import uri from "../../../util/uri";
 
-var Footer = React.createClass({
-    render: function ()
+class Footer extends React.Component {
+    render ()
     {
         const login = security.getLogin();
 
@@ -32,6 +32,6 @@ var Footer = React.createClass({
             </div>
         );
     }
-});
+};
 
-module.exports = Footer;
+export default Footer

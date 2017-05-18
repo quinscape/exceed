@@ -3,8 +3,8 @@
 //
 //noinspection JSUnusedLocalSymbols
 import aceLoader from "./editor/ace-loader"
-const MouseTrap = require("./util/global-undo");
-const Event = require("./util/event");
+import MouseTrap from "./util/global-undo";
+import Event from "./util/event";
 import { Promise } from "es6-promise-polyfill"
 import { getEditorView } from "./reducers/editor/editorView"
 
@@ -42,14 +42,14 @@ security.init(auth.userName, auth.roles);
 
 const Editor = require("./editor/Editor").default;
 
-const sys = require("./sys");
+import sys from "./sys";
 
-const domainService = require("./service/domain");
+import domainService from "./service/domain"
 const hub = require("./service/hub");
-const i18n = require("./service/i18n");
+import i18n from "./service/i18n"
 const editorNavHistory = require("./editor/nav-history").default;
 
-const svgLayout = require("./gfx/svg-layout");
+import svgLayout from "./gfx/svg-layout"
 
 
 domready(function ()
@@ -63,7 +63,7 @@ domready(function ()
 
     // set correct public path for dynamic module loading.
     const scriptResourcePath = sys.contextPath + "/res/" + sys.appName + "/js/";
-    __webpack_public_path__ = scriptResourcePath;
+    var __webpack_public_path__ = scriptResourcePath;
 
     // async setup
     Promise.all([
@@ -119,4 +119,4 @@ domready(function ()
 });
 
 
-module.exports = Services;
+export default Services;

@@ -1,12 +1,9 @@
-var React = require("react");
+import React from "react";
+import cx from "classnames";
+import Modal from "react-bootstrap/lib/Modal";
+import i18n from "../../../service/i18n";
+import GlyphButton from "../common/GlyphButton";
 
-var cx = require("classnames");
-
-var Modal = require("react-bootstrap/lib/Modal");
-
-var i18n = require("../../../service/i18n");
-
-var GlyphButton = require("../common/GlyphButton");
 
 // Tabelle mit den Anfangswochentag eines Monats relativ zum AnfangsWochentag des Jahres
 var relDay4Month=[-2, 0, 3, 3,  6, 1, 4,  6, 2, 5,  0, 3, 5];
@@ -88,14 +85,22 @@ function internalDate(day, month,year)
 /**
  * Internal calendar widget component used by Field
  */
-var CalendarField = React.createClass({
+class CalendarField extends React.Component
+{
+    state = {
+        opened: false,
+        current: internalDate(),
+        selected: internalDate()
+    };
 
-    getInputField: function ()
+    getInputField ()
     {
         return this._input;
-    },
+    }
 
-    getInitialState: function ()
+
+/*
+    getInitialState ()
     {
         return {
             opened: false,
@@ -103,8 +108,8 @@ var CalendarField = React.createClass({
             selected: internalDate()
         };
     },
-
-    calendarRows: function ()
+*/
+    calendarRows ()
     {
         var current = this.state.current;
         var selected = this.state.selected;
@@ -185,9 +190,9 @@ var CalendarField = React.createClass({
         } while (currentDay <= days);
 
         return rows;
-    },
+    }
 
-    onClickDay: function (ev)
+    onClickDay (ev)
     {
         var clickedDay = +ev.target.dataset.day;
 
@@ -199,9 +204,9 @@ var CalendarField = React.createClass({
         this.setState({
             selected: internalDate( clickedDay, current.month, current.year)
         })
-    },
+    }
 
-    open: function ()
+    open ()
     {
         var date = new Date(this.props.valueLink.value);
 
@@ -220,14 +225,14 @@ var CalendarField = React.createClass({
             selected: internalDate(selectedDay,selectedMonth,selectedYear),
             opened: true
         });
-    },
+    }
 
-    close: function ()
+    close ()
     {
         this.setState(this.getInitialState());
-    },
+    }
 
-    renderCalendar: function ()
+    renderCalendar ()
     {
         if (!this.state.opened)
         {
@@ -246,8 +251,9 @@ var CalendarField = React.createClass({
                 </tbody>
             </table>
         )
-    },
-    moveCurrent: function(monthDelta, yearDelta)
+    }
+
+    moveCurrent(monthDelta, yearDelta)
     {
         var current = this.state.current;
 
@@ -270,9 +276,9 @@ var CalendarField = React.createClass({
         this.setState({
             current: internalDate(null, month, year)
         });
-    },
+    }
 
-    renderControls: function ()
+    renderControls ()
     {
         var current = this.state.current;
         return (
@@ -286,9 +292,9 @@ var CalendarField = React.createClass({
                     <GlyphButton glyphicon="fast-forward" glyphOnly={ true } text={ i18n("Next Year") } onClick={ (ev) => { this.moveCurrent(0, 1);} }/>
                 </div>
         )
-    },
+    }
 
-    select: function ()
+    select ()
     {
         var date = new Date(this.props.valueLink.value);
 
@@ -302,11 +308,10 @@ var CalendarField = React.createClass({
 
         this.props.onChange( date.toISOString() );
 
-    },
+    }
 
-    render: function ()
+    render ()
     {
-
         var opened = this.state.opened;
         return (
             <div className="input-group">
@@ -338,6 +343,6 @@ var CalendarField = React.createClass({
             </div>
         );
     }
-});
+};
 
-module.exports = CalendarField;
+export default CalendarField

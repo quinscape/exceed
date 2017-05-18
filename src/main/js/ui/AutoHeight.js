@@ -20,30 +20,28 @@ function calculateHeight(customFn)
  * @param Component
  * @returns {*}
  */
-module.exports = function (Component)
+export default function (Component)
 {
-    return React.createClass({
+    return (class AutoHeight extends React.Component {
 
-        getInitialState: function ()
+        constructor(props)
         {
+            super(props);
             this.timerId = null;
+            this.state.height = calculateHeight(Component.calculateHeight)
+        }
 
-            return {
-                height: calculateHeight(Component.calculateHeight)
-            };
-        },
-
-        componentDidMount: function ()
+        componentDidMount()
         {
             window && Event.add(window, "resize", this.onResize, false);
-        },
+        }
 
-        componentWillUnmount: function ()
+        componentWillUnmount()
         {
             window && Event.remove(window, "resize", this.onResize, false);
-        },
+        }
 
-        onResize: function ()
+        onResize()
         {
             if (this.timerId)
             {
@@ -62,10 +60,10 @@ module.exports = function (Component)
                 100
             );
             //console.log("RESIZE");
-        },
+        }
 
 
-        render: function ()
+        render()
         {
             return (
                 <Component
@@ -75,5 +73,5 @@ module.exports = function (Component)
             );
         }
     });
-};
+}
 

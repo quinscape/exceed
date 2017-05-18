@@ -9,7 +9,7 @@ const DEFAULT_OPTS = {
     onRestore: null
 };
 
-const Event  = require("./event");
+import Event from "./event";
 
 function newEntry(id, state)
 {

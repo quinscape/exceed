@@ -25,4 +25,4 @@ Mousetrap.prototype.stopCallback = function(e, element, combo, sequence) {
 Mousetrap.init();
 
 
-module.exports = Mousetrap;
+export default Mousetrap

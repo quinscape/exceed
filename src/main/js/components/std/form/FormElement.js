@@ -9,23 +9,19 @@
 import FormContext from "../../../util/form-context";
 import store from "../../../service/store";
 import DataCursor from "../../../domain/cursor";
-const assign = require("object-assign");
+import converter from "../../../service/property-converter";
+import ValueLink from "../../../util/value-link";
+import i18n from "../../../service/i18n";
+import cx from "classnames";
+import React from "react";
+import assign from "object-assign";
 
-const React = require("react");
-
-const cx = require("classnames");
-
-const i18n = require("../../../service/i18n");
-
-const ValueLink = require("../../../util/value-link");
-
-const converter = require("../../../service/property-converter");
 
 function isValueLink(value)
 {
     return value && typeof value.requestChange === "function";
 }
-module.exports = function(FieldComponent, opts)
+export default function(FieldComponent, opts)
 {
     //console.log("Create FormElement: ", InputComponent.displayName);
 

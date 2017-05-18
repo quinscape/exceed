@@ -1,6 +1,6 @@
 let login , roles;
 
-module.exports = {
+export default {
     init: function (_login, rolesArray)
     {
         if (!rolesArray || !rolesArray.length)
@@ -24,4 +24,4 @@ module.exports = {
     {
         return roles.hasOwnProperty(role) && !!roles[role];
     }
-};
+}

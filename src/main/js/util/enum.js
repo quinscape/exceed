@@ -63,4 +63,4 @@ Enum.prototype.equals = function(a, b)
 
 
 
-module.exports = Enum;
+export default Enum

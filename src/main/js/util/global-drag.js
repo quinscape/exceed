@@ -1,5 +1,5 @@
 
-const Event = require("./event");
+import Event from "./event";
 
 var activeDragObject;
 
@@ -76,4 +76,4 @@ var GlobalDrag = {
 
 };
 
-module.exports = GlobalDrag;
+export default GlobalDrag

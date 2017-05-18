@@ -1,4 +1,4 @@
-var Enum = require("./../../util/enum");
+import Enum from "./../../util/enum";
 
 /**
  *
@@ -11,4 +11,4 @@ var DragState = new Enum({
 });
 
 
-module.exports = DragState;
+export default DragState

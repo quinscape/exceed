@@ -8,7 +8,7 @@ const update = require("react-addons-update");
 const LinkedStateMixin = require("react-addons-linked-state-mixin");
 const assign = require("object-assign");
 
-const DomainEditorGraph = require("./DomainEditorGraph");
+import DomainEditorGraph from "./DomainEditorGraph";
 const DomainTypeForm = require("./DomainTypeForm");
 const EnumTypeForm = require("./EnumTypeForm");
 const NamedSelector = require("./NamedSelector");
@@ -17,23 +17,23 @@ const MergeModal = require("./MergeModal");
 const SelectField = require("../../std/form/SelectField");
 const Toolbar = require("../../std/form/Toolbar");
 
-const actionService = require("../../../service/action");
-const domainService = require("../../../service/domain");
-const i18n = require("../../../service/i18n");
-const undoService = require("../../../service/undo");
+import actionService from "../../../service/action"
+import domainService from "../../../service/domain"
+import i18n from "../../../service/i18n"
+import undoService from "../../../service/undo"
 
-const Button = require("../../../ui/Button");
-const FilterField = require("../../../ui/FilterField");
-const AutoHeight = require("../../../ui/AutoHeight");
+import Button from "../../../ui/Button"
+import FilterField from "../../../ui/FilterField"
+import AutoHeight from "../../../ui/AutoHeight"
 
-const Dialog = require("../../../util/dialog");
-const firstProp = require("../../../util/firstProp");
+import Dialog from "../../../util/dialog";
+import firstProp from "../../../util/firstProp"
 const keys = require("../../../util/keys");
-const notify = require("../../../util/notify");
-const Settings = require("../../../util/settings");
-const ValueLink = require("../../../util/value-link");
+import notify from "../../../util/notify"
+import Settings from "../../../util/settings"
+import ValueLink from "../../../util/value-link"
 const values = require("../../../util/values");
-const Enum = require("../../../util/enum");
+import Enum from "../../../util/enum";
 
 const EditingType = new Enum({
     NONE: true,
@@ -99,29 +99,29 @@ function mapToName(type)
     return type.name;
 }
 
-var DomainEditor = AutoHeight(React.createClass({
+var DomainEditor = AutoHeight(class DomainEditor extends React.Component {
 
-    mixins: [LinkedStateMixin],
+    static mixins = [LinkedStateMixin];
 
-    newUndoState: function (partial, cb)
+    newUndoState(partial, cb)
     {
         this.undo.newState(
             assign({}, this.state.undoState, partial),
             cb
         );
-    },
+    }
 
-    replaceUndoState: function (partial, cb)
+    replaceUndoState(partial, cb)
     {
         this.undo.replaceState(
             assign({}, this.state.undoState, partial),
             cb
         );
-    },
+    }
 
-    getInitialState: function ()
+    constructor(props)
     {
-
+        super(props);
         const domainTypes = domainService.getDomainTypes();
 
         const dataGraph = DataGraph(domainTypes, {
@@ -178,16 +178,16 @@ var DomainEditor = AutoHeight(React.createClass({
             editingType: EditingType.NONE,
             editingProp: null
         };
-    },
+    }
 
-    restoreUndoState: function (undoState, done)
+    restoreUndoState(undoState, done)
     {
         this.setState({
             undoState: undoState,
         }, done);
-    },
+    }
 
-    onChange: function (newList, path)
+    onChange(newList, path)
     {
 
         const editing = this.state.editing;
@@ -213,15 +213,15 @@ var DomainEditor = AutoHeight(React.createClass({
             editingType: editingType,
             editingProp: editingProp
         });
-    },
+    }
 
 
-    componentWillUnmount: function ()
+    componentWillUnmount()
     {
         this.undo.destroy();
-    },
+    }
 
-    toggleDomainType: function (domainType)
+    toggleDomainType(domainType)
     {
         var selectedView = this.state.undoState.selectedView;
 
@@ -234,9 +234,9 @@ var DomainEditor = AutoHeight(React.createClass({
                 }
             })
         });
-    },
+    }
 
-    editType: function (name, index)
+    editType(name, index)
     {
         console.log("editType", name, index);
 
@@ -245,9 +245,9 @@ var DomainEditor = AutoHeight(React.createClass({
             editingType: name ? EditingType.DOMAIN_TYPE : EditingType.NONE,
             editingProp: typeof index === "number" ? index: 0
         });
-    },
+    }
 
-    removeType: function (name)
+    removeType(name)
     {
         const undoState = this.state.undoState;
         const dataGraph = undoState.dataGraph;
@@ -268,18 +268,18 @@ var DomainEditor = AutoHeight(React.createClass({
             editingType: EditingType.NONE,
             editingProp: 0
         });
-    },
+    }
 
-    editEnum: function (name)
+    editEnum(name)
     {
         this.setState({
             editing: name,
             editingType: name ? EditingType.ENUM_TYPE : EditingType.NONE,
             editingProp: 0
         });
-    },
+    }
 
-    newType: function ()
+    newType()
     {
         Dialog.prompt({
             title: i18n("Enter New Domain Type Name"),
@@ -339,9 +339,9 @@ var DomainEditor = AutoHeight(React.createClass({
             console.error(err);
         });
 
-    },
+    }
 
-    newEnum: function ()
+    newEnum()
     {
         var name = prompt(i18n("Enter New Enum Type Name"));
         if (name)
@@ -366,16 +366,16 @@ var DomainEditor = AutoHeight(React.createClass({
             //console.log("NEW TYPE", name);
         }
 
-    },
+    }
 
-    setFilter: function (filter)
+    setFilter(filter)
     {
         this.setState({
             filter: filter || ""
         });
-    },
+    }
 
-    createUpdateActionModel: function ()
+    createUpdateActionModel()
     {
         const prevTypes = domainService.getDomainTypes();
         const nextTypes = this.state.undoState.dataGraph.rootObject.domainTypes;
@@ -407,10 +407,10 @@ var DomainEditor = AutoHeight(React.createClass({
             changedTypes: changedTypes,
             removedTypes: this.state.undoState.removedDomainTypes
         };
-    },
+    }
 
 
-    save: function ()
+    save()
     {
         var actionModel = this.createUpdateActionModel();
 
@@ -441,9 +441,9 @@ var DomainEditor = AutoHeight(React.createClass({
             {
                 console.error(err);
             });
-    },
+    }
 
-    addView: function ()
+    addView()
     {
         var newViewName = prompt(i18n("Enter New Domain View Name"));
         if (newViewName)
@@ -458,9 +458,9 @@ var DomainEditor = AutoHeight(React.createClass({
                 selectedView: newViewName
             });
         }
-    },
+    }
 
-    removeView: function (viewToRemove)
+    removeView(viewToRemove)
     {
         const domainEditorViews = this.state.undoState.domainEditorViews;
 
@@ -468,9 +468,9 @@ var DomainEditor = AutoHeight(React.createClass({
             domainEditorViews: omit(domainEditorViews, viewToRemove),
             selectedView: firstProp(domainEditorViews)
         });
-    },
+    }
 
-    setMergeOpen: function (isOpen, mergeLocations)
+    setMergeOpen(isOpen, mergeLocations)
     {
         mergeLocations = mergeLocations || this.state.mergeLocations;
 
@@ -480,9 +480,9 @@ var DomainEditor = AutoHeight(React.createClass({
             mergeOpen: isOpen,
             mergeLocations: mergeLocations
         })
-    },
+    }
 
-    updateGraphPositions: function (positions)
+    updateGraphPositions(positions)
     {
         //console.log("UPDATE POSITIONS", JSON.stringify(positions, 0, 4));
 
@@ -495,9 +495,9 @@ var DomainEditor = AutoHeight(React.createClass({
                 }
             })
         });
-    },
+    }
 
-    selectDomainView: function (selectedView)
+    selectDomainView(selectedView)
     {
         // since changes to the view will push their current view selection as part of their undo state, we do not
         // need to create new undo states for simple view changes. The view will never the less follow the current
@@ -505,9 +505,9 @@ var DomainEditor = AutoHeight(React.createClass({
         this.setState({
             selectedView: selectedView
         });
-    },
+    }
 
-    performMerge: function(locations)
+    performMerge(locations)
     {
         var cursor = this.state.undoState.dataGraph.getCursor(["domainTypes"], false);
 
@@ -535,9 +535,9 @@ var DomainEditor = AutoHeight(React.createClass({
             editingType: EditingType.NONE,
             editingProp: 0
         }, this.save);
-    },
+    }
 
-    render: function ()
+    render()
     {
         //console.log("RENDER", this.props, this.state);
 
@@ -704,8 +704,8 @@ var DomainEditor = AutoHeight(React.createClass({
             </div>
         );
     }
-}));
+});
 
 
-module.exports = DomainEditor;
+export default DomainEditor;
 

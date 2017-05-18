@@ -1,6 +1,6 @@
 var assert = require("power-assert");
 
-var posInDocument = require("../../../../src/main/js/util/posInDocument");
+import posInDocument from "../../../../src/main/js/util/posInDocument"
 
 describe("posInDocument", function(){
 

@@ -1,11 +1,12 @@
-const React = require("react");
-const Link = require("../../../ui/Link");
-const Button = require("../../../ui/Button");
+import React from "react";
+import Link from "../../../ui/Link";
+import Button from "../../../ui/Button";
+import i18n from "../../../service/i18n";
 
-const i18n = require("../../../service/i18n");
 
-var NamedSelector = React.createClass({
-    render: function ()
+class NamedSelector extends React.Component
+{
+    render ()
     {
         const editing = this.props.editing;
 
@@ -77,6 +78,6 @@ var NamedSelector = React.createClass({
         );
 
     }
-});
+};
 
-module.exports = NamedSelector;
+export default NamedSelector

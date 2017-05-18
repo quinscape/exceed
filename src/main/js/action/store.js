@@ -1,7 +1,7 @@
 import DataCursor from "../domain/cursor";
-const actionService = require("../service/action");
+import actionService from "../service/action"
 
-module.exports = function (model)
+export default function (model)
 {
 //    console.log("STORE", model);
 
@@ -31,4 +31,4 @@ module.exports = function (model)
     }
 
     return actionService.execute(model, true);
-};
+}

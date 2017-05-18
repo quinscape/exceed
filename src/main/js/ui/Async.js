@@ -11,17 +11,14 @@ var ErrorReport = require("./ErrorReport.es5");
  */
 function Async(Component)
 {
-    return React.createClass({
+    return (class Async extends React.Component
+    {
+         state = {
+                    data: null,
+                    rejected: false
+                 }
 
-        getInitialState: function ()
-        {
-            return {
-                data: null,
-                rejected: false
-            }
-        },
-
-        componentDidMount: function ()
+        componentDidMount()
         {
             Component.fetch().then((data) =>
                 {
@@ -36,8 +33,9 @@ function Async(Component)
                         rejected: true
                     });
                 });
-        },
-        render: function ()
+        }
+
+        render()
         {
             var asyncData = this.state.data;
 
@@ -61,4 +59,4 @@ function Async(Component)
     });
 }
 
-module.exports = Async;
+export default Async

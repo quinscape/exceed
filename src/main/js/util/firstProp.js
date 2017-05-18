@@ -4,7 +4,7 @@
  * @param obj
  * @returns {?string}    property name or null
  */
-module.exports = function (obj)
+export default function (obj)
 {
     for (var name in obj)
     {
@@ -14,4 +14,4 @@ module.exports = function (obj)
         }
     }
     return null;
-};
+}

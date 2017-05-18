@@ -99,7 +99,6 @@ export function loadEditorView(viewModel)
         }
 
         return aceLoader.load().then(ace => {
-
             const document = new EditorViewDocument(ace, viewModel);
 
             dispatch({

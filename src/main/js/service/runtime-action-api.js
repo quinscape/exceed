@@ -22,7 +22,7 @@ function throbberError(e)
  * transforms the expression language action expressions to promise chains targeting this API.
  * @type {{action: module.exports.action, observe: module.exports.observe, uri: (uri|exports|module.exports)}}
  */
-module.exports = {
+export default {
 
     /**
      * Returns a promise for the given action execution if the optional name is set, it will be copied to
@@ -83,6 +83,6 @@ module.exports = {
     },
 
     uri: require("../util/uri")
-};
+}
 
 

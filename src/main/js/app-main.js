@@ -2,7 +2,7 @@
 // load our global-undo to patch MouseTrap
 //
 //noinspection JSUnusedLocalSymbols
-const MouseTrap = require("./util/global-undo");
+import MouseTrap from "./util/global-undo";
 import { Promise } from "es6-promise-polyfill"
 import { evaluateEmbedded, findBundles } from "./util/startup"
 
@@ -38,9 +38,9 @@ const domainService = require("./service/domain");
 const hub = require("./service/hub");
 const appNavHistory = require("./service/app-history").default;
 
-const svgLayout = require("./gfx/svg-layout");
+import svgLayout from "./gfx/svg-layout"
 
-const hotReload = require("./service/hotreload");
+import hotReload from "./service/hotreload"
 
 import rootReducer from "./reducers"
 
@@ -69,7 +69,7 @@ domready(function ()
     // set correct public path for dynamic module loading.
     const scriptResourcePath = sys.contextPath + "/res/" + sys.appName + "/js/";
     __webpack_public_path__ = scriptResourcePath;
-    
+
     // async setup
     Promise.all([
         svgLayout.init(),
@@ -80,12 +80,12 @@ domready(function ()
         appNavHistory.update(store.getState());
         return viewService.render(store);
     })
-    .then(function ()
-    {
-        const scripts = findBundles(scriptResourcePath);
+        .then(function ()
+        {
+            const scripts = findBundles(scriptResourcePath);
 
-        console.info("READY: Loaded " + scripts.join(", "), "( "+ new Date().toISOString() +" )");
-    })
+            console.info("READY: Loaded " + scripts.join(", "), "( "+ new Date().toISOString() +" )");
+        })
     // .catch(function (e)
     // {
     //     console.error(e);
@@ -93,4 +93,4 @@ domready(function ()
 });
 
 
-module.exports = Services;
+export default Services

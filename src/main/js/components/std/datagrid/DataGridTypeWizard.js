@@ -1,12 +1,13 @@
-var React = require("react");
+import React from "react";
 
-var DataGridTypeWizard = React.createClass({
-    render: function ()
+class DataGridTypeWizard extends React.Component
+{
+    render ()
     {
         return (
             <div>DataGridTypeWizard</div>
         );
     }
-});
+};
 
-module.exports = DataGridTypeWizard;
+export default DataGridTypeWizard

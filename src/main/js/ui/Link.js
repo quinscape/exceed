@@ -1,22 +1,24 @@
-const React = require("react");
+import React from "react";
+import ActionComponent from "./ActionComponent";
 
-const ActionComponent = require("./ActionComponent");
 
-var Link = React.createClass({
+class Link extends React.Component
+{
 
-    propTypes: {
+    static propTypes = {
         text: React.PropTypes.string,
         icon: React.PropTypes.string,
         href: React.PropTypes.string,
         onClick: React.PropTypes.func,
         progressive: React.PropTypes.bool
-    },
+    }
 
-    render: function ()
+    render()
     {
         return (
             <ActionComponent {... this.props} defaultClass="btn-link" />
         );
     }
-});
-module.exports = Link;
+}
+
+export default Link

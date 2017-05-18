@@ -1,10 +1,10 @@
-var React = require("react");
+import React from "react";
+import FormElement from "./FormElement";
 
-var FormElement = require("./FormElement");
 
-var StaticText = FormElement(
-    React.createClass({
-        render: function ()
+var StaticText = FormElement(class StaticText extends
+    React.Component{
+        render ()
         {
             return (
                 <p id={ this.props.id } className="form-control-static">
@@ -13,6 +13,6 @@ var StaticText = FormElement(
             );
         }
     }
-));
+);
 
-module.exports = StaticText;
+export default StaticText

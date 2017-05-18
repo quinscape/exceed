@@ -5,14 +5,15 @@ import React from "react";
 import { navigateView } from "../../../actions/view"
 import store from "../../../service/store"
 
-var Link = React.createClass({
-    render: function ()
+class Link extends React.Component
+{
+    render ()
     {
         var params = {};
 
         React.Children.forEach(this.props.children, function (kid)
         {
-            if (kid.type === LinkParam)
+            if (kid.type === Param)
             {
                 params[kid.props.name] = kid.props.value;
             }
@@ -47,14 +48,11 @@ var Link = React.createClass({
             </a>
         );
     }
-});
-
-var LinkParam = function(props)
-{
-
 };
 
-Link.Param = LinkParam;
+export function Param(props)
+{
 
+}
 
-module.exports = Link;
+export default Link;

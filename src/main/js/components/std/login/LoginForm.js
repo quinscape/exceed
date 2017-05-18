@@ -1,15 +1,16 @@
-const React = require("react");
-const uri = require("../../../util/uri");
-const CSFR = require("../../../service/csfr");
-
 /**
  * Special form to be used in login views.
  *
  * Renders the spring security login check URI as action and provides the correct
  * CSFR-token via hidden field.
  */
-var LoginForm = React.createClass({
-    render: function ()
+import React from "react";
+import uri from "../../../util/uri";
+import CSFR from "../../../service/csfr";
+
+class LoginForm extends React.Component
+{
+    render ()
     {
         return (
             <form action={ uri("/login_check")} method="POST">
@@ -18,6 +19,6 @@ var LoginForm = React.createClass({
             </form>
         );
     }
-});
+};
 
-module.exports = LoginForm;
+export default LoginForm

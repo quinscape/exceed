@@ -1,11 +1,11 @@
 const Promise = require("es6-promise-polyfill").Promise;
 const assign = require("object-assign");
-const cando = require("../cando");
+import cando from "../cando"
 
-const Enum = require("./../util/enum");
-const CSFR = require("./csfr");
+import Enum from "./../util/enum";
+import CSFR from "./csfr"
 
-const createXMLHTTPObject = require("./../util/xhr-factory");
+import createXMLHTTPObject from "./../util/xhr-factory";
 
 const HttpMethod = new Enum({
     GET: true,
@@ -63,7 +63,7 @@ function serialize(data)
  *
  * @returns {Promise} resolving to the requested data in the type corresponding to the dataType option.
  */
-module.exports = function(opts)
+export default function(opts)
 {
     opts = assign({}, defaultOpts, opts);
 

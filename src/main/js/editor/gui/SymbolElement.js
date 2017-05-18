@@ -1,11 +1,11 @@
 const React = require("react");
 
-var UIState = require("./ui-state");
-const GUIElement = require("./GUIElement");
+import UIState from "./ui-state";
+import GUIElement from "./GUIElement"
 const Symbol = require("../../ui/Symbol");
-const ValueLink = require("../../util/value-link");
+import ValueLink from "../../util/value-link"
 
-const GUIContext = require("../../editor/gui/gui-context");
+import GUIContext from "../../editor/gui/gui-context"
 
 /**
  * SVG symbol as GUIElement. Supports drag and drop and handles mouse/focus activity by optionally setting classes on
@@ -17,9 +17,10 @@ const GUIContext = require("../../editor/gui/gui-context");
  *
  *  These classes can be define CSS animation rules. The symbol element will set it's transform-origin onto the symbol position.
  */
-var SymbolElement = React.createClass({
+class SymbolElement extends React.Component
+{
 
-    propTypes: {
+    static propTypes = {
         /**
          * Unique GUIElement id
          */
@@ -60,9 +61,9 @@ var SymbolElement = React.createClass({
          * If true, set CSS animation classes on symbol group element.
          */
         animated: React.PropTypes.bool
-    },
+    }
 
-    getDefaultProps: function ()
+    getDefaultProps()
     {
         return {
             x: 0,
@@ -70,35 +71,33 @@ var SymbolElement = React.createClass({
             draggable: true,
             animated: true
         };
-    },
+    }
 
-    getInitialState: function ()
+    state =
     {
-        return {
-            focused: null
-        };
-    },
+        focused: null
+    }
 
-    onUpdate: function ()
+    onUpdate()
     {
         this.forceUpdate();
-    },
+    }
 
-    onMouseOver: function ()
+    onMouseOver()
     {
         this.setState({
             focused: true
         });
-    },
+    }
 
-    onMouseOut: function ()
+    onMouseOut()
     {
         this.setState({
             focused: false
         });
-    },
+    }
 
-    render: function ()
+    render()
     {
         var elementId = this.props.id;
 
@@ -154,6 +153,6 @@ var SymbolElement = React.createClass({
             </GUIElement>
         );
     }
-});
+};
 
-module.exports = SymbolElement;
+export default SymbolElement

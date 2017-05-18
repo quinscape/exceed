@@ -10,8 +10,8 @@
  *                      can also be used to qualify multiple interceptor calls in a single module
  * @returns passed through data or a new object.
  */
-module.exports = function (data)
+export default function (data)
 {
     return data || {}
-};
+}
 

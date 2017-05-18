@@ -2,24 +2,25 @@
  * Internal enum select component used by Field
  */
 import FormContext from "../../../util/form-context";
-var React = require("react");
-var cx = require("classnames");
+import domainService from "../../../service/domain";
+import i18n from "../../../service/i18n";
+import cx from "classnames";
+import React from "react";
 
-var i18n  = require("../../../service/i18n");
-var domainService  = require("../../../service/domain");
 
-var EnumSelect = React.createClass({
+class EnumSelect extends React.Component
+{
 
-    contextTypes: {
+    static contextTypes = {
         formContext: React.PropTypes.instanceOf(FormContext)
-    },
+    }
 
-    getInputField: function ()
+    getInputField ()
     {
         return this._input;
-    },
+    }
 
-    render: function ()
+    render ()
     {
         var enumModel = domainService.getEnum(this.props.propertyType.typeParam);
 
@@ -42,6 +43,6 @@ var EnumSelect = React.createClass({
             </select>
         );
     }
-});
+};
 
-module.exports = EnumSelect;
+export default EnumSelect

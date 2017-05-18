@@ -2,15 +2,15 @@ const React = require("react");
 const immutableUpdate = require("react-addons-update");
 const assign = require("object-assign");
 
-const sys = require("../../../sys");
+import sys from "../../../sys";
 
 const ValueLink = require("../../../util/value-link");
 const hub = require("../../../service/hub");
 
-const GUIContext = require("../../../editor/gui/gui-context");
-const GUIContainer = require("../../../editor/gui/GUIContainer");
-const GUIElement = require("../../../editor/gui/GUIElement");
-const UIState = require("../../../editor/gui/ui-state");
+import GUIContext from "../../../editor/gui/gui-context"
+import GUIContainer from "../../../editor/gui/GUIContainer"
+import GUIElement from "../../../editor/gui/GUIElement"
+import UIState from "../../../editor/gui/ui-state";
 
 const values = require("../../../util/values");
 
@@ -20,20 +20,20 @@ const MIN_EASE_UPDATE = 20;
 const PROP_NAME_COLOR = "#338";
 
 const ArrowComponent = require("../../../gfx/arrow");
-const Handle = require("../../../gfx/Handle");
+import Handle from "../../../gfx/Handle";
 
 const DomainLayout = require("./domain-layout");
 const DomainGraph = require("./domain-graph");
 const NodeType = DomainGraph.NodeType;
 
-var Entity = React.createClass({
-
-    onUpdate: function ()
+class Entity extends React.Component
+{
+    onUpdate()
     {
         this.forceUpdate();
-    },
+    }
 
-    onInteraction: function (pos)
+    onInteraction(pos)
     {
         var layout = this.props.position;
 
@@ -50,17 +50,17 @@ var Entity = React.createClass({
         //console.log("INTERACT", line);
         GUIContext.focus(this.props.model.name);
         this.props.onInteraction && this.props.onInteraction.call(null, this.props.model.name, line);
-    },
+    }
 
-    shouldComponentUpdate: function(nextProps, nextState)
+    shouldComponentUpdate(nextProps, nextState)
     {
         return (
             this.props.position !== nextProps.position ||
             this.props.model !== nextProps.model
         );
-    },
+    }
 
-    render: function ()
+    render()
     {
         try
         {
@@ -163,13 +163,14 @@ var Entity = React.createClass({
             console.error("Error rendering Entity", e);
         }
     }
-});
+};
 
 
-var DomainEditorGraph = React.createClass({
-
-    getInitialState: function ()
+class DomainEditorGraph extends React.Component
+{
+    constructor(props)
     {
+        super(props);
         var positions = this.props.positionsLink.value;
 
         var graph = DomainGraph.create(
@@ -181,16 +182,16 @@ var DomainEditorGraph = React.createClass({
 
         var aabb = graph.getAABB();
 
-        return {
+        this.state =  {
             graph: graph,
             centerX: (aabb.minX + aabb.maxX) / 2,
             centerY: (aabb.minY + aabb.maxY) / 2,
             positions: positions
         };
 
-    },
+    }
 
-    componentWillReceiveProps: function (nextProps)
+    componentWillReceiveProps(nextProps)
     {
         if (
             this.props.domainTypes !== nextProps.domainTypes ||
@@ -214,9 +215,9 @@ var DomainEditorGraph = React.createClass({
                 positions: positions
             });
         }
-    },
+    }
 
-    shouldComponentUpdate: function (nextProps, nextState)
+    shouldComponentUpdate(nextProps, nextState)
     {
         return (
             this.state.graph !== nextState.graph ||
@@ -225,9 +226,9 @@ var DomainEditorGraph = React.createClass({
             this.props.visible !== nextProps.visible ||
             this.props.positionsLink.value !== nextProps.positionsLink.value
         );
-    },
+    }
 
-    onLayoutChange: function (layout, permanent)
+    onLayoutChange(layout, permanent)
     {
         var graph = this.state.graph;
 
@@ -326,9 +327,9 @@ var DomainEditorGraph = React.createClass({
                 link.requestChange( immutableUpdate(link.value, spec));
             }
         }
-    },
+    }
 
-    render: function ()
+    render()
     {
         var domainTypes = this.props.domainTypes;
         var nodes = this.state.graph.nodes;
@@ -393,6 +394,6 @@ var DomainEditorGraph = React.createClass({
             </GUIContainer>
         );
     }
-});
+};
 
-module.exports = DomainEditorGraph;
+export default DomainEditorGraph

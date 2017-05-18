@@ -1,27 +1,28 @@
 import FormContext from "../../../util/form-context";
-const React = require("react");
+import i18n from "../../../service/i18n";
+import keys from "../../../util/keys";
+import React from "react";
 
-const keys = require("../../../util/keys");
-const i18n = require("../../../service/i18n");
 
-var ErrorMessages = React.createClass({
-    contextTypes: {
+class ErrorMessages extends React.Component
+{
+    static contextTypes = {
         formContext: React.PropTypes.instanceOf(FormContext)
-    },
+    }
 
-    componentDidMount: function ()
+    componentDidMount ()
     {
         var ctx = this.context.formContext;
         ctx._errorMessages = this;
-    },
+    }
 
-    componentWillUnmount: function ()
+    componentWillUnmount ()
     {
         var ctx = this.context.formContext;
         ctx._errorMessages = null;
-    },
+    }
 
-    render: function ()
+    render ()
     {
         var ctx = this.context.formContext;
         if (!ctx.hasError())
@@ -55,6 +56,6 @@ var ErrorMessages = React.createClass({
             </div>
         );
     }
-});
+};
 
-module.exports = ErrorMessages;
+export default ErrorMessages

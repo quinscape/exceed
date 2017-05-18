@@ -1,9 +1,9 @@
-var cando = require("../cando");
+import cando from "../cando"
 
 var Promise = require("es6-promise-polyfill").Promise;
 
-var security = require("./security");
-var sys = require("../sys");
+import security from "./security"
+import sys from "../sys";
 
 var Hub;
 

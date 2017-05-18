@@ -1,33 +1,30 @@
-const assign = require("object-assign");
+import Modal from "react-bootstrap/lib/Modal";
+import Link from "../../../ui/Link";
+import Options from "../../std/form/Options";
+import ErrorMessages from "../../std/form/ErrorMessages";
+import StaticText from "../../std/form/StaticText";
+import SelectField from "../../std/form/SelectField";
+import Field from "../../std/form/Field";
+import Form from "../../std/form/Form";
+import ReactDOM from "react-dom";
+import React from "react";
+import keys from "../../../util/keys";
+import converter from "../../../service/property-converter";
+import i18n from "../../../service/i18n";
+import assign from "object-assign";
 
-const i18n = require("../../../service/i18n");
-const converter = require("../../../service/property-converter");
-const keys = require("../../../util/keys");
-
-const React = require("react");
-const ReactDOM = require("react-dom");
-
-const Form = require("../../std/form/Form");
-const Field = require("../../std/form/Field");
-const SelectField = require("../../std/form/SelectField");
-const StaticText = require("../../std/form/StaticText");
-const ErrorMessages = require("../../std/form/ErrorMessages");
-const Options = require("../../std/form/Options");
-
-const Link = require("../../../ui/Link");
-
-const Modal = require("react-bootstrap/lib/Modal");
 
 import DataCursor from "../../../domain/cursor"
 
-var EnumTypeForm = React.createClass({
+class EnumTypeForm extends React.Component
+{
 
-    propTypes: {
+    static propTypes = {
         cursor: React.PropTypes.instanceOf(DataCursor)
-    },
+    }
 
 
-    componentWillReceiveProps: function (nextProps)
+    componentWillReceiveProps(nextProps)
     {
         if (this.props.name !== nextProps.name)
         {
@@ -35,10 +32,10 @@ var EnumTypeForm = React.createClass({
                 editing: 0
             })
         }
-    },
+    }
 
 
-    moveUp: function (idx)
+    moveUp(idx)
     {
         this.props.cursor.apply(["values"], (values) => {
             var h = values[idx-1];
@@ -47,9 +44,9 @@ var EnumTypeForm = React.createClass({
 
             return values;
         });
-    },
+    }
 
-    moveDown: function (idx)
+    moveDown(idx)
     {
         this.props.cursor.apply(["values"], (values) => {
             var h = values[idx + 1];
@@ -58,20 +55,20 @@ var EnumTypeForm = React.createClass({
 
             return values;
         });
-    },
+    }
 
-    remove: function (idx)
+    remove(idx)
     {
         this.props.cursor.splice(["values"], [[idx,1]]);
 
-    },
+    }
 
-    newValue: function ()
+    newValue()
     {
         this.props.cursor.push(["values"], ["New"]);
-    },
+    }
 
-    render: function ()
+    render()
     {
         const enumTypeName = this.props.name;
         if (!enumTypeName)
@@ -149,6 +146,6 @@ var EnumTypeForm = React.createClass({
             </div>
         );
     }
-});
+}
 
-module.exports = EnumTypeForm;
+export default EnumTypeForm

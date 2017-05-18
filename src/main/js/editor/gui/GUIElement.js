@@ -1,31 +1,31 @@
 var React = require("react");
 
-const ContainerContext = require("./container-context");
+import ContainerContext from "./container-context";
 
-var GUIContext = require("./gui-context");
-var UIState = require("./ui-state");
+import GUIContext from "./gui-context"
+import UIState from "./ui-state";
 
 const assign = require("object-assign");
 
-var GlobalDrag = require("../../util/global-drag");
+import GlobalDrag from "../../util/global-drag"
 
 /**
  * SVGElement is a helper element for implementing SVG based user interface elements that can be interacted with by mouse and keyboard.
  *
  * It acts as a grouping wrapper for the graphical elements given as children and has no graphical representation of its own.
  */
-var GUIElement = React.createClass({
-
-    getDefaultProps: function ()
+class GUIElement extends React.Component
+{
+    getDefaultProps()
     {
         return {
             uiState: UIState.NORMAL,
             dragThreshold: 2,
             draggable: true
         };
-    },
+    }
 
-    propTypes: {
+    static propTypes = {
         id: React.PropTypes.string.isRequired,
         className: React.PropTypes.string,
         style: React.PropTypes.object,
@@ -34,14 +34,14 @@ var GUIElement = React.createClass({
         onUpdate: React.PropTypes.func.isRequired,
         draggable: React.PropTypes.bool,
         dragThreshold: React.PropTypes.number
-    },
+    }
 
-    contextTypes: {
+    static contextTypes = {
         containerContext: React.PropTypes.instanceOf(ContainerContext)
-    },
+    }
 
 
-    componentDidMount: function ()
+    componentDidMount()
     {
         GUIContext._register(this);
         // we use a global move listener, so that our dragged object doesn't act strange when the user managed to
@@ -50,26 +50,26 @@ var GUIElement = React.createClass({
         {
             GlobalDrag.init();
         }
-    },
+    }
 
-    componentWillUnmount: function ()
+    componentWillUnmount()
     {
         GUIContext._deregister(this);
         if (this.props.draggable)
         {
             GlobalDrag.destroy();
         }
-    },
+    }
 
-    componentWillUpdate: function (nextProps, nextState)
+    componentWillUpdate(nextProps, nextState)
     {
         if (nextProps.uiState !== this.props.uiState)
         {
             GUIContext._setElementState(this.props.id, nextProps.uiState, true);
         }
-    },
+    }
 
-    onMouseDown: function (ev)
+    onMouseDown(ev)
     {
         var layout = this.props.position;
 
@@ -88,9 +88,9 @@ var GUIElement = React.createClass({
 
         ev.preventDefault();
         return false;
-    },
+    }
 
-    onMouseMove: function (x, y)
+    onMouseMove(x, y)
     {
         if (GlobalDrag.isActiveDrag(this))
         {
@@ -120,7 +120,7 @@ var GUIElement = React.createClass({
                 this.props.updatePosition(copy, false);
             }
         }
-    },
+    }
 
     /**
      * Called by GlobalDrag for every update in position for this GUIElement by dragging.
@@ -128,7 +128,7 @@ var GUIElement = React.createClass({
      * @param screenX     x-coordinate in screen space
      * @param screenY     y-coordinate in screen space
      */
-    onMouseUp: function (screenX, screenY)
+    onMouseUp(screenX, screenY)
     {
         if (GlobalDrag.isActiveDrag(this))
         {
@@ -168,9 +168,9 @@ var GUIElement = React.createClass({
                 this.props.updatePosition(copy, true);
             }
         }
-    },
+    }
 
-    render: function ()
+    render()
     {
         //console.log("Render GUI element " + this.props.id);
         return (
@@ -185,6 +185,6 @@ var GUIElement = React.createClass({
             </g>
         );
     }
-});
+}
 
-module.exports = GUIElement;
+export default GUIElement

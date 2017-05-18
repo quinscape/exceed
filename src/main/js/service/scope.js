@@ -1,5 +1,5 @@
 import store from "../service/store"
-import * as domainService from "../service/domain"
+import domainService from "../service/domain"
 import { getScopeGraph, getScopeDirty, getDomainTypes } from "../reducers"
 
 import { DataGraph, getColumnType } from "../domain/graph"
@@ -48,7 +48,7 @@ const Scope = {
         const values = {};
 
         const scope = getScopeGraph(state);
-        const domainTypes = getDomainTypes(state);                                      
+        const domainTypes = getDomainTypes(state);
 
         for (let i = 0; i < names.length; i++)
         {
@@ -57,6 +57,6 @@ const Scope = {
         }
         return values;
     }
-};
+}
 
-export default Scope;
+export default Scope

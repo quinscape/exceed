@@ -1,20 +1,21 @@
-const React = require("react");
+import React from "react";
+import ActionComponent from "./ActionComponent";
 
-const ActionComponent = require("./ActionComponent");
 
-var Button = React.createClass({
-
-    propTypes: {
+class Button extends React.Component
+{
+    static propTypes = {
         text: React.PropTypes.string,
         icon: React.PropTypes.string,
         onClick: React.PropTypes.func
-    },
+    }
 
-    render: function ()
+    render()
     {
         return (
             <ActionComponent {... this.props} defaultClass="btn-default" />
         );
     }
-});
-module.exports = Button;
+}
+
+export default Button

@@ -1,16 +1,11 @@
-const React = require("react");
-
-const assign = require("object-assign");
-
-const values = require("../../../util/values");
-
-const Link = require("../../../ui/Link");
-const i18n = require("../../../service/i18n");
-
-const Form = require("../../std/form/Form");
-const Field = require("../../std/form/Field");
-
-const Modal = require("react-bootstrap/lib/Modal");
+import React from "react";
+import assign from "object-assign";
+import values from "../../../util/values";
+import Link from "../../../ui/Link";
+import i18n from "../../../service/i18n";
+import Form from "../../std/form/Form";
+import Field from "../../std/form/Field";
+import Modal from "react-bootstrap/lib/Modal";
 
 
 function describeLocation(processName, viewName)
@@ -39,8 +34,9 @@ function describeLocation(processName, viewName)
     }
 }
 
-var TranslationEditorDetails = React.createClass({
-    render: function ()
+class TranslationEditorDetails extends React.Component
+{
+    render()
     {
         const detailCursor = this.props.detailCursor;
 
@@ -179,6 +175,6 @@ var TranslationEditorDetails = React.createClass({
             </Modal>
         );
     }
-});
+};
 
-module.exports = TranslationEditorDetails;
+export default TranslationEditorDetails

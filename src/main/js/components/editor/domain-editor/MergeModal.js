@@ -1,22 +1,19 @@
-const React = require("react");
-const update = require("react-addons-update");
-const Modal = require("react-bootstrap/lib/Modal");
-const cx = require("classnames");
-
-const i18n = require("../../../service/i18n");
-const ValueLink = require("../../../util/value-link");
-
-const MergeEditor = require("../../../ui/MergeEditor");
-
-const Button = require("../../../ui/Button");
-
-const Toolbar = require("../../std/form/Toolbar");
-
 /**
  * The version properties of our location models will always be different, otherwise there'd be no merge.
  *
  * So we filter out all properties with the name "versionGUID".
  */
+import React from "react";
+import update from "react-addons-update";
+import Modal from "react-bootstrap/lib/Modal";
+import cx from "classnames";
+import i18n from "../../../service/i18n";
+import ValueLink from "../../../util/value-link";
+import MergeEditor from "../../../ui/MergeEditor";
+import Button from "../../../ui/Button";
+import Toolbar from "../../std/form/Toolbar";
+
+
 function filterVersion(name, val)
 {
     return name !== "versionGUID" ? val : undefined;
@@ -57,25 +54,24 @@ function convertLocationsToInternal(locations)
         });
 }
 
-var MergeModal = React.createClass({
+class MergeModal extends React.Component
+{
 
-    getInitialState: function ()
+    state =
     {
-        return {
             locations: convertLocationsToInternal(this.props.locationsLink.value),
             mergeResult: [],
             detail: 0
-        };
-    },
+    }
 
-    setDetail: function (detail)
+    setDetail(detail)
     {
         this.setState({
             detail: detail
         });
-    },
+    }
 
-    componentWillReceiveProps: function (nextProps)
+    componentWillReceiveProps(nextProps)
     {
         if (!this.props.openLink.value && nextProps.openLink.value)
         {
@@ -85,9 +81,9 @@ var MergeModal = React.createClass({
                 locations: convertLocationsToInternal(newLocations)
             });
         }
-    },
+    }
 
-    markResolved: function (resolved)
+    markResolved(resolved)
     {
         var location = this._mergeEditor.checkChanges();
 
@@ -99,9 +95,9 @@ var MergeModal = React.createClass({
                 [detail]: { $set: location }
             })
         });
-    },
+    }
 
-    useTheirs: function ()
+    useTheirs()
     {
         const detail = this.state.detail;
         const location = this.state.locations[detail];
@@ -114,14 +110,14 @@ var MergeModal = React.createClass({
                 }
             })
         });
-    },
+    }
 
-    close: function ()
+    close()
     {
         this.props.openLink.requestChange(false)
-    },
+    }
 
-    saveMerged: function ()
+    saveMerged()
     {
 
         const locationsLink = this.props.locationsLink;
@@ -152,9 +148,9 @@ var MergeModal = React.createClass({
         locationsLink.requestChange(external);
 
         this.close();
-    },
+    }
 
-    render: function ()
+    render()
     {
         //console.log("MergeModal", this.props, this.state);
 
@@ -266,6 +262,6 @@ var MergeModal = React.createClass({
             </Modal>
         );
     }
-});
+};
 
-module.exports = MergeModal;
+export default MergeModal

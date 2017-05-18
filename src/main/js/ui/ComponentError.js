@@ -1,6 +1,6 @@
 import React from "react"
 import store from "../service/store"
-const i18n = require("../service/i18n");
+import i18n from "../service/i18n";
 
 const Modal = require("react-bootstrap/lib/Modal");
 

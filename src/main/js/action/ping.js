@@ -10,4 +10,4 @@ exports.catch = function(e, actionModel, data)
     return Promise.resolve({value: -100});
 };
 
-module.exports = exports;
+export default exports

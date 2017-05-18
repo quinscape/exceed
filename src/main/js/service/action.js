@@ -1,8 +1,9 @@
 const Promise = require("es6-promise-polyfill").Promise;
 
-const ajax = require("./ajax");
-const uri = require("../util/uri");
-const sys = require("../sys");
+import ajax from "./ajax"
+import uri from "../util/uri";
+import isES2015 from "../util/is-es2015";
+import sys from "../sys";
 
 const  MODULE_NAME_REGEXP = /^.\/(.*)\.js/;
 
@@ -20,15 +21,16 @@ const ActionService = {
         for (let i = 0; i < modules.length; i++)
         {
             const moduleName = modules[i];
-            const module = ctx(moduleName);
+            const moduleExport = ctx(moduleName);
+            const actionFn = isES2015(moduleExport) ? moduleExport.default : moduleExport;
 
-            if (typeof module !== "function")
+            if (typeof actionFn !== "function")
             {
                 throw new Error("Action module '" + moduleName + "' does not export a function");
             }
 
             const actionName = moduleName.replace(MODULE_NAME_REGEXP, "$1");
-            ActionService.register(actionName, module, module.catch);
+            ActionService.register(actionName, actionFn, actionFn.catch);
         }
     },
 

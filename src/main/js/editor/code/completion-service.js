@@ -1,4 +1,4 @@
-const sys = require("../../sys");
+import sys from "../../sys";
 const hub = require("../../service/hub");
 
 /**

@@ -21,7 +21,7 @@ const XMLHttpFactories = [
 
 var startAt = 0;
 
-module.exports = function()
+export default function()
 {
     var xmlhttp = false;
     for (var i = startAt; i < XMLHttpFactories.length; i++)
@@ -39,4 +39,4 @@ module.exports = function()
         break;
     }
     return xmlhttp;
-};
+}

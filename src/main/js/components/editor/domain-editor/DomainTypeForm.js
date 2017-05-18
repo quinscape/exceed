@@ -1,25 +1,20 @@
-const assign = require("object-assign");
+import Modal from "react-bootstrap/lib/Modal";
+import Button from "../../../ui/Button";
+import Link from "../../../ui/Link";
+import Options from "../../std/form/Options";
+import ErrorMessages from "../../std/form/ErrorMessages";
+import StaticText from "../../std/form/StaticText";
+import SelectField from "../../std/form/SelectField";
+import Field from "../../std/form/Field";
+import Form from "../../std/form/Form";
+import ReactDOM from "react-dom";
+import React from "react";
+import keys from "../../../util/keys";
+import converter from "../../../service/property-converter";
+import i18n from "../../../service/i18n";
+import cx from "classnames";
+import assign from "object-assign";
 
-const cx = require("classnames");
-
-const i18n = require("../../../service/i18n");
-const converter = require("../../../service/property-converter");
-const keys = require("../../../util/keys");
-
-const React = require("react");
-const ReactDOM = require("react-dom");
-
-const Form = require("../../std/form/Form");
-const Field = require("../../std/form/Field");
-const SelectField = require("../../std/form/SelectField");
-const StaticText = require("../../std/form/StaticText");
-const ErrorMessages = require("../../std/form/ErrorMessages");
-const Options = require("../../std/form/Options");
-
-const Link = require("../../../ui/Link");
-const Button = require("../../../ui/Button");
-
-const Modal = require("react-bootstrap/lib/Modal");
 
 import DataCursor from "../../../domain/cursor"
 
@@ -53,18 +48,19 @@ function findPropertyWithName(type, name)
     return type.properties[idx];
 }
 
-var DomainTypeForm = React.createClass({
+class DomainTypeForm extends React.Component
+{
 
-    propTypes: {
+    static propTypes = {
         cursor: React.PropTypes.instanceOf(DataCursor)
-    },
+    }
 
-    edit: function (index)
+    edit(index)
     {
         this.props.editingPropLink.requestChange(index);
-    },
+    }
 
-    moveUp: function (idx)
+    moveUp(idx)
     {
         this.props.cursor.apply(["properties"], (props) => {
             var h = props[idx-1];
@@ -73,8 +69,9 @@ var DomainTypeForm = React.createClass({
 
             return props;
         });
-    },
-    moveDown: function (idx)
+    }
+
+    moveDown(idx)
     {
         this.props.cursor.apply(["properties"], (props) => {
             var h = props[idx + 1];
@@ -83,9 +80,9 @@ var DomainTypeForm = React.createClass({
 
             return props;
         });
-    },
+    }
 
-    newProperty: function (fk)
+    newProperty(fk)
     {
 
         var newProp = {
@@ -119,9 +116,9 @@ var DomainTypeForm = React.createClass({
         {
             this._propNameField.getInputField().focus();
         }
-    },
+    }
 
-    validateDomainPropertyName: function (ctx, id, name)
+    validateDomainPropertyName(ctx, id, name)
     {
         var currentType = this.props.cursor.value;
         var idx = findPropertyIndexWithName(currentType, name);
@@ -131,15 +128,15 @@ var DomainTypeForm = React.createClass({
             return false;
         }
         return true;
-    },
+    }
 
-    removeProperty: function (index)
+    removeProperty(index)
     {
         //console.log("REMOVE", currentProps, index);
         this.props.cursor.splice(["properties"], [[index, 1]]);
-    },
+    }
 
-    render: function ()
+    render()
     {
         const domainTypeName = this.props.name;
         const domainTypeCursor = this.props.cursor;
@@ -296,6 +293,6 @@ var DomainTypeForm = React.createClass({
             </div>
         );
     }
-});
+}
 
-module.exports = DomainTypeForm;
+export default DomainTypeForm

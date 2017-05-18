@@ -1,21 +1,22 @@
-var React = require("react");
-var cx = require("classnames");
+import React from "react";
+import cx from "classnames";
+import i18n from "../../../service/i18n";
 
-var i18n = require("../../../service/i18n");
 
-var GlyphButton = React.createClass({
+class GlyphButton extends React.Component
+{
 
-    propTypes: {
+    static propTypes = {
         glyphicon: React.PropTypes.string.isRequired,
         text: React.PropTypes.string.isRequired,
         glyphOnly: React.PropTypes.bool
-    },
+    }
 
-    render: function ()
+    render()
     {
-        var glyphicon = this.props.glyphicon;
-        var text = this.props.text || i18n(this.props.glyphicon);
-        var glyphOnly = this.props.glyphOnly;
+        const glyphicon = this.props.glyphicon;
+        const text = this.props.text || i18n(this.props.glyphicon);
+        const glyphOnly = this.props.glyphOnly;
 
         return (
             <button type="button" {...this.props} className={ cx("btn", this.props.className || "btn-default") } title={ glyphOnly && text }>
@@ -23,6 +24,7 @@ var GlyphButton = React.createClass({
                 { glyphOnly ? <span className="sr-only">{ text }</span> : text }
             </button> );
     }
-});
+};
 
-module.exports = GlyphButton;
+
+export default GlyphButton

@@ -1,10 +1,9 @@
-const React = require("react");
+import React from "react";
+import FormElement from "./FormElement";
+import Checkbox from "./Checkbox";
+import CalendarField from "./CalendarField";
+import EnumSelect from "./EnumSelect";
 
-const FormElement =  require("./FormElement");
-const Checkbox =  require("./Checkbox");
-
-const CalendarField = require("./CalendarField");
-const EnumSelect = require("./EnumSelect");
 
 const Field = FormElement(class Field extends React.Component
 {
@@ -72,4 +71,4 @@ const Field = FormElement(class Field extends React.Component
     }
 });
 
-module.exports = Field;
+export default Field

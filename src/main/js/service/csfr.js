@@ -2,7 +2,7 @@ import store from "./store";
 
 import { getTokenInfo } from "../reducers"
 
-module.exports = {
+export default {
     token: function ()
     {
         return getTokenInfo(store.getState()).value;
@@ -16,4 +16,4 @@ module.exports = {
 
         return getTokenInfo(store.getState()).param;
     }
-};
+}

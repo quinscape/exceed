@@ -1,8 +1,8 @@
 "use strict";
 
-var ajax = require("./../service/ajax");
-var cando = require("../cando");
-var parseXML = require("./../util/parseXML");
+import ajax from "./../service/ajax"
+import cando from "../cando"
+import parseXML from "./../util/parseXML"
 
 var Promise = require("es6-promise-polyfill").Promise;
 
@@ -93,7 +93,7 @@ function cleanUp(doc)
     return doc;
 }
 
-module.exports = function(url)
+export default function(url)
 {
     if (!cando.ajax || !cando.parseXML)
     {

@@ -1,7 +1,7 @@
 export const PROCESS_TYPE = "xcd.process.Process";
 export const VIEW_TYPE = "xcd.view.View";
 
-const componentService = require("../service/component");
+import componentService from "../service/component"
 
 function componentHasInjection(component)
 {

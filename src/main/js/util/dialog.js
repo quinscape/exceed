@@ -1,6 +1,6 @@
 import FormContext from "./form-context";
 const Promise = require("es6-promise-polyfill").Promise;
-const i18n = require("../service/i18n");
+import i18n from "../service/i18n"
 const ValueLink = require("./value-link");
 const Field = require("../components/std/form/Field");
 const SelectField = require("../components/std/form/SelectField");
@@ -28,23 +28,22 @@ const DEFAULT_OPTS = {
 
 var dialogComponentInstance;
 
-var DialogComponent = React.createClass({
+class DialogComponent extends React.Component
+{
 
-    getInitialState: function ()
-    {
-        return {
+        state = {
             opts: null,
             inputs: null,
             resolve: null,
             modalOpen: false
-        };
-    },
+        }
 
-    childContextTypes: {
+
+    static childContextTypes = {
         formContext: React.PropTypes.instanceOf(FormContext)
-    },
+    }
 
-    getChildContext: function ()
+    getChildContext()
     {
         return {
             formContext: new FormContext(
@@ -54,14 +53,14 @@ var DialogComponent = React.createClass({
                 this.props.update
             )
         };
-    },
+    }
 
-    componentDidMount: function()
+    componentDidMount()
     {
         this._buttons = [];
-    },
+    }
 
-    prompt: function (opts)
+    prompt(opts)
     {
         return new Promise((resolve, reject) =>
         {
@@ -89,14 +88,14 @@ var DialogComponent = React.createClass({
                 modalOpen: true
             });
         });
-    },
+    }
 
-    close: function ()
+    close()
     {
         this.choose(this.state.opts.closeChoice);
-    },
+    }
 
-    submit: function (ev)
+    submit(ev)
     {
         try
         {
@@ -118,9 +117,9 @@ var DialogComponent = React.createClass({
             console.error(e);
         }
         ev.preventDefault();
-    },
+    }
 
-    getPrimaryChoice: function ()
+    getPrimaryChoice()
     {
         var primaryChoice = this.state.opts.primaryChoice;
         if (primaryChoice < 0)
@@ -128,9 +127,9 @@ var DialogComponent = React.createClass({
             return this.state.opts.choices.length + primaryChoice;
         }
         return primaryChoice;
-    },
+    }
 
-    choose: function (idx)
+    choose(idx)
     {
         this.state.resolve({
             choice: idx,
@@ -142,9 +141,9 @@ var DialogComponent = React.createClass({
             inputs: null,
             modalOpen: false
         });
-    },
+    }
 
-    render: function ()
+    render()
     {
         var opts = this.state.opts;
         if (!opts)
@@ -217,7 +216,7 @@ var DialogComponent = React.createClass({
             </Modal>
         );
     }
-});
+};
 
 /**
  * Helper function for easiy creation of simple value input dialogs.
@@ -226,7 +225,7 @@ var DialogComponent = React.createClass({
  * @param properties    array of domainProperties with addition selectValues property for <SelectField/> fields.
  * @returns {Promise} resolves when the user enters something
  */
-module.exports = {
+export default {
     /**
      * Prompts for user input with the given dialog options.
      *
@@ -266,4 +265,4 @@ module.exports = {
             }}/>
         )
     }
-};
+}

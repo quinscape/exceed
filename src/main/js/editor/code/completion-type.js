@@ -1,4 +1,4 @@
-var Enum = require("../../util/enum");
+import Enum from "../../util/enum";
 
 /**
  *
@@ -10,4 +10,4 @@ var CompletionType = new Enum({
     PROP_NAME : true
 });
 
-module.exports = CompletionType;
+export default CompletionType

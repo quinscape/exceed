@@ -1,18 +1,17 @@
 const React = require("react");
 
-const GUIElement = require("../editor/gui/GUIElement");
-const UIState = require("../editor/gui/ui-state");
+import GUIElement from "../editor/gui/GUIElement"
+import UIState from "../editor/gui/ui-state";
 
 /**
  * Drag and Drop control handle for graph arrows bezier curves.
  */
-var Handle = React.createClass({
-
-
-    onUpdate: function ()
+class Handle extends React.Component
+{
+    onUpdate()
     {
         this.forceUpdate();
-    },
+    }
 
     //shouldComponentUpdate: function (nextProps)
     //{
@@ -22,7 +21,7 @@ var Handle = React.createClass({
     //    );
     //},
 
-    render: function ()
+    render()
     {
         var pos = this.props.position;
 
@@ -39,6 +38,6 @@ var Handle = React.createClass({
             </GUIElement>
         );
     }
-});
+}
 
-module.exports = Handle;
+export default Handle

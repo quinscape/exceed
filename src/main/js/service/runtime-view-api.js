@@ -96,4 +96,4 @@ RTView.prototype.scope = Scope.property;
 
 RTView.prototype.scopeCursor = Scope.propertyCursor;
 
-module.exports = RTView;
+export default RTView

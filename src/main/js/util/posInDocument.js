@@ -34,4 +34,4 @@ function posInDocument(doc, sub, skip)
     };
 }
 
-module.exports = posInDocument;
+export default posInDocument

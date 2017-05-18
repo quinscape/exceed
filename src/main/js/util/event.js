@@ -171,4 +171,4 @@ else
 
 //window.ExceedEvent = Event;
 
-module.exports = Event;
+export default Event

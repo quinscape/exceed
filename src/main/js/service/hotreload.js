@@ -1,10 +1,10 @@
-var sys = require("../sys");
+import sys from "../sys";
 
 var pollingEnabled = false;
 
 const ACTIVITY_TIMEOUT = 60000;
 
-var ajax = require("./ajax");
+import ajax from "./ajax"
 var viewService = require("./view");
 
 // are we currently waiting for a poll response?
@@ -113,7 +113,7 @@ if (process.env.USE_EDITOR)
 
 }
 
-module.exports = {
+export default {
     enablePolling: function ()
     {
         if (process.env.USE_EDITOR)
@@ -126,4 +126,4 @@ module.exports = {
             pollChanges();
         }
     }
-};
+}

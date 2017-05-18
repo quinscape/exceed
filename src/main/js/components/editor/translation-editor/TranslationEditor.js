@@ -11,12 +11,12 @@ const DataGraph = require("../../../domain/graph");
 const ValueLink = require("../../../util/value-link");
 const Link = require("../../../ui/Link");
 const Button = require("../../../ui/Button");
-const FilterField = require("../../../ui/FilterField");
+import FilterField from "../../../ui/FilterField"
 const PagingComponent = require("../../../ui/PagingComponent");
-const i18n = require("../../../service/i18n");
-const undoService = require("../../../service/undo");
-const domainService = require("../../../service/domain");
-const actionService = require("../../../service/action");
+import i18n from "../../../service/i18n"
+import undoService from "../../../service/undo"
+import domainService from "../../../service/domain"
+import actionService from "../../../service/action"
 
 const Form = require("../../std/form/Form");
 const Field = require("../../std/form/Field");
@@ -795,12 +795,12 @@ var TranslationEditor = React.createClass({
                     </div>
                     {
                         refFilterHelpText &&
-                            <div className="row">
-                                <div className="col-md-10 col-md-push-1">
-                                    <h4><span className="glyphicon glyphicon-info-sign text-info"/> Filtered by Type: { this.state.refFilter } </h4>
-                                    <p> { refFilterHelpText } </p>
-                                </div>
+                        <div className="row">
+                            <div className="col-md-10 col-md-push-1">
+                                <h4><span className="glyphicon glyphicon-info-sign text-info"/> Filtered by Type: { this.state.refFilter } </h4>
+                                <p> { refFilterHelpText } </p>
                             </div>
+                        </div>
                     }
                     <div className="row">
                         <div className="col-md-12">
@@ -850,10 +850,10 @@ var TranslationEditor = React.createClass({
                                                 }
                                                 <td>
                                                     <Button className={ dataView.marked[name] && "bg-info"  } icon="edit"
-                                                          text={ "Detail (" + dataGraph.rootObject[name].localTranslations.length + ")" }
-                                                          onClick={ e => this.editDetail(name) }/>
+                                                            text={ "Detail (" + dataGraph.rootObject[name].localTranslations.length + ")" }
+                                                            onClick={ e => this.editDetail(name) }/>
                                                     <Button icon="erase" text={ "Remove" }
-                                                          onClick={ e => this.removeEntry(name, dataView.hasRefs[name]) }/>
+                                                            onClick={ e => this.removeEntry(name, dataView.hasRefs[name]) }/>
                                                 </td>
                                             </tr>
                                         )

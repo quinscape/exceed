@@ -19,7 +19,7 @@ function renderURI(locInfo, transition)
     return uri( "/app/" + sys.appName + locInfo.routingTemplate, params)
 }
 
-module.exports = {
+export default {
     transition: function(name, data)
     {
         const state = store.getState();
@@ -44,4 +44,4 @@ module.exports = {
         );
     },
     scope: RTView.prototype.scope
-};
+}

@@ -4,7 +4,7 @@ import DataCursor from "../../../domain/cursor"
 import DataGraph, { validateDataGraph } from "../../../domain/graph"
 
 import Scope from "../../../service/scope";
-const domainService = require("../../../service/domain");
+import domainService from "../../../service/domain"
 import FormContext from "../../../util/form-context";
 import LinkedStateMixin from "react-addons-linked-state-mixin";
 

@@ -1,8 +1,10 @@
-var React = require("react");
+import React from "react";
 
-var Alert = React.createClass({
-    propTypes: React.PropTypes.string.isRequired,
-    render: function ()
+class Alert extends React.Component
+{
+    static propTypes =  React.PropTypes.string.isRequired;
+
+    render()
     {
         return (
             <div className="bg-danger">
@@ -10,6 +12,6 @@ var Alert = React.createClass({
             </div>
         );
     }
-});
+}
 
-module.exports = Alert;
+export default Alert

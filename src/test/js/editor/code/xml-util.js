@@ -18,7 +18,7 @@ describe("XML Util", function ()
 
     it.skip("converts JSON view models to XML notation", function ()
     {
-        var xmlDoc = xmlUtil.viewToXml({
+        var xmlDoc = xmlUtil.toXml({
             type: "xcd.view.View",
             root: {
                 name: "Tag",
@@ -38,7 +38,7 @@ describe("XML Util", function ()
 
         assert(xmlDoc === "<Tag value=\"foo\">\r\n    Hello World\r\n</Tag>");
 
-        xmlDoc = xmlUtil.viewToXml({
+        xmlDoc = xmlUtil.toXml({
             type: "xcd.view.View",
             root: {
                 name: "Tag",

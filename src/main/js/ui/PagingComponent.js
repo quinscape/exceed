@@ -1,13 +1,12 @@
+import React from "react";
+import hasClass from "../util/has-class";
+import classnames from "classnames";
 "use strict";
 
-var React = require("react");
 
-var hasClass = require("../util/has-class");
-
-var classnames = require("classnames");
-
-var PagingLink = React.createClass({
-    onClick: function (ev)
+class PagingLink extends React.Component
+{
+    onClick(ev)
     {
         // check disabled class to make sure we're not executing a link in case the CSS pointer event rule
         // doesn't catch
@@ -19,8 +18,9 @@ var PagingLink = React.createClass({
             this.props.ctx.offsetLink.requestChange( this.props.newOffset );
         }
         ev.preventDefault();
-    },
-    render: function ()
+    }
+
+    render()
     {
 
         var newOffset = this.props.newOffset;
@@ -66,7 +66,7 @@ var PagingLink = React.createClass({
 
         return (
             <a
-                onClick={ this.onClick }
+                onClick={ (e) => this.onClick(e) }
                 href={ "#jump-to-" + newOffset }
                 className={ classnames({
                     "btn": true,
@@ -76,12 +76,13 @@ var PagingLink = React.createClass({
             </a>
         );
     }
-});
+};
 
 
-var PagingComponent = React.createClass({
+class PagingComponent extends React.Component
+{
 
-    render: function ()
+    render()
     {
         var rowCount = this.props.rowCount;
         var limit = this.props.limit;
@@ -132,6 +133,6 @@ var PagingComponent = React.createClass({
             </div>
         );
     }
-});
+}
 
-module.exports = PagingComponent;
+export default PagingComponent

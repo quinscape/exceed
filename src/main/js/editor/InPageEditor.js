@@ -7,7 +7,7 @@ import classes from "classnames";
 import CodeEditor from "./code/CodeEditor";
 import assign from "object-assign";
 
-const sys = require("../sys");
+import sys from "../sys";
 
 import { toggleEditor, EDITOR_ACTIVE_KEY } from "../actions/inpage"
 import { getViewModel } from "../reducers/meta"

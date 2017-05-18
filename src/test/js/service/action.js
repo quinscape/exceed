@@ -18,7 +18,9 @@ function initData()
 
 
 
-var actionService = proxyquire("../../../../src/main/js/service/action", {
+var actionService = proxyquire
+    .noCallThru() // XXX: Why does this work?
+    .load("../../../../src/main/js/service/action", {
     "./ajax" : function(opts)
     {
         //console.log("AJAX OPTS", opts);
@@ -144,6 +146,7 @@ describe("Action Service", function(){
     it ("can handle wrapped server function failure", function ()
     {
         initData();
+        console.log(actionService);
         return actionService.execute(
             {
                 action: "serverWrap"

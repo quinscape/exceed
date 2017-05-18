@@ -3,7 +3,7 @@ import cx from "classnames"
 import Memoizer from "../../util/memoizer"
 import { getScopeDeclarations } from "../../reducers/scope"
 
-const i18n = require("../../service/i18n");
+import i18n from "../../service/i18n";
 
 function sortDeclarations(a,b)
 {

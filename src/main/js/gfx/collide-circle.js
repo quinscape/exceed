@@ -1,4 +1,4 @@
-const quadraticBezier = require("./bezier");
+import quadraticBezier from "./bezier"
 
 /**
  * Collision check between a quadratic bezier curve and a circle where the circle center is also the end point of the curve.
@@ -45,4 +45,4 @@ function collideCurveWithCircle(x0,y0,x1,y1,cx, cy, r)
     return {pos: pt, t: mid};
 }
 
-module.exports = collideCurveWithCircle;
+export default collideCurveWithCircle;

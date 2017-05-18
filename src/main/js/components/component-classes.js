@@ -4,10 +4,10 @@
  * MODULE IS AUTO-GENERATED. DO NOT EDIT. 
  * ( Edit de.quinscape.exceed.model.component.ComponentClasses instead )
  */
-module.exports = {
+export default {
     /**
     If set, the js component will receive "model" and "viewModel" props pointing to its own model and the view model
       respectively.
     */
     MODEL_AWARE: "model-aware"
-};
+}

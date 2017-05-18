@@ -17,7 +17,7 @@ function format(tag, arg)
  * @param arg       {*...} varargs
  * @returns {*}
  */
-module.exports = function(s, arg)
+export default function(s, arg)
 {
     const result = getTranslationTemplate( store.getState(), s);
     if (result !== undefined)

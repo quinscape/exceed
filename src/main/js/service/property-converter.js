@@ -1,8 +1,8 @@
 const assign = require("object-assign");
 
-const domainService = require("./domain");
+import domainService from "./domain"
 
-const i18n = require("./i18n");
+import i18n from "./i18n";
 
 const keys = require("../util/keys");
 

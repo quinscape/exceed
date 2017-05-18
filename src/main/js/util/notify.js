@@ -2,7 +2,7 @@
 var pos = 10;
 var count = 0;
 
-module.exports = function (message)
+export default function (message)
 {
 
     var div = document.createElement("div");

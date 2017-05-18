@@ -95,4 +95,4 @@ class FormContext {
 
 }
 
-module.exports = FormContext;
+export default FormContext

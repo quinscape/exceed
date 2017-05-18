@@ -78,4 +78,4 @@ var match = {
     }
 };
 
-module.exports = match;
+export default match

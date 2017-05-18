@@ -1,4 +1,4 @@
-const svgLayout = require("../../../gfx/svg-layout");
+import svgLayout from "../../../gfx/svg-layout"
 const TextSize = svgLayout.TextSize;
 
 // initialized delayed

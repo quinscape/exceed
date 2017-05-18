@@ -2,8 +2,8 @@ import React from "react"
 import cx from "classnames"
 import store from "../service/store";
 
-const uri = require("../util/uri");
-const sys = require("../sys");
+import uri from "../util/uri";
+import sys from "../sys";
 
 import { navigateEditor } from "../actions/editor/editorView"
 
@@ -12,7 +12,7 @@ class ModelLink extends React.Component {
     navigate = (ev) => {
 
         ev.preventDefault();
-        
+
         try
         {
             const { type, name, params} = this.props;
@@ -67,12 +67,12 @@ class ModelLink extends React.Component {
 
         const haveName = !!name;
         return uri("/editor/{app}/{type}{name}", {
-            app: sys.appName,
-            type: type,
-            name: haveName ? "/" + name : "",
-            detail: params && JSON.stringify(params.detail),
-            resultType: params && params.resultType,
-        }) + (hash ? "#" + hash : "");
+                app: sys.appName,
+                type: type,
+                name: haveName ? "/" + name : "",
+                detail: params && JSON.stringify(params.detail),
+                resultType: params && params.resultType,
+            }) + (hash ? "#" + hash : "");
     }
 }
 

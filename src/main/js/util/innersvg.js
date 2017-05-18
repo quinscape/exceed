@@ -11,7 +11,7 @@
  * I haven't decided on the best name for this property - thus the duplication.
  */
 
-module.exports = (function ()
+export default (function ()
 {
     if (typeof SVGElement === "undefined")
     {

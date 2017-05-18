@@ -1,6 +1,6 @@
 const haveWindow = typeof window !== "undefined" && typeof window.addEventListener === "function";
 var Mousetrap;
-var Event = require("../util/event");
+import Event from "../util/event";
 if (haveWindow)
 {
     Mousetrap = require("mousetrap");
@@ -139,7 +139,7 @@ UndoHandler.prototype.markSaved = function (done)
     this.stateCallback(this.states[this.clean], done || noOp);
 };
 
-module.exports = {
+export default {
     UndoHandler: UndoHandler,
     /**
      * Creates a new undo handler
@@ -153,4 +153,4 @@ module.exports = {
     {
         return new UndoHandler(initialState, stateCallback);
     }
-};
+}

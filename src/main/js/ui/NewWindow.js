@@ -4,7 +4,7 @@ import { render } from "react-dom"
 import Icon from "./Icon"
 
 import uri from "../util/uri"
-const sys = require("../sys");
+import sys from "../sys";
 
 class NewWindow extends React.Component {
 

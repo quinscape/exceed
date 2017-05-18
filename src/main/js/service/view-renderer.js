@@ -10,7 +10,7 @@
 let catchErrors;
 let ErrorReport;
 
-const sys = require("../sys");
+import sys from "../sys";
 
 // we repeat this full expression so that uglify is clever enough to really strip the code when inactive
 // if (__DEV && !process.env.NO_CATCH_ERRORS)
@@ -21,11 +21,11 @@ const sys = require("../sys");
 
 const React = require("react");
 
-const rtViewAPI = require("./runtime-view-api");
-const rtActionAPI = require("./runtime-action-api");
-const ViewWrapper = require("../ui/ViewWrapper");
-const i18n = require("./i18n");
-const ComponentClasses = require("../components/component-classes");
+import rtViewAPI from "./runtime-view-api"
+import rtActionAPI from "./runtime-action-api"
+import ViewWrapper from "../ui/ViewWrapper";
+import i18n from "./i18n";
+import ComponentClasses from "../components/component-classes"
 
 import ComponentError from "../ui/ComponentError"
 
@@ -362,7 +362,7 @@ function renderViewComponentSource(viewModel, components)
     return buf.join("");
 }
 
-module.exports = {
+export default {
     createRenderFunction : function(viewModel, components)
     {
         const code = renderViewComponentSource(viewModel, components);

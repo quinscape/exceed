@@ -1,5 +1,5 @@
-const React = require("react");
-const assign = require("object-assign");
+import React from "react";
+import assign from "object-assign";
 
 function stylesEqual(a, b)
 {
@@ -17,18 +17,19 @@ function stylesEqual(a, b)
 }
 
 
-var SymbolLayer = React.createClass({
+class SymbolLayer extends React.Component
+{
 
-    shouldComponentUpdate: function (nextProps)
+    shouldComponentUpdate(nextProps)
     {
         return (
             this.props.transform !== nextProps.transform ||
             !stylesEqual(this.props.style, nextProps.style) ||
             this.props.content !== nextProps.content
         );
-    },
+    }
 
-    render: function ()
+    render()
     {
         return (
             <g
@@ -40,11 +41,11 @@ var SymbolLayer = React.createClass({
             />
         )
     }
-});
+};
 
-var Symbol = React.createClass({
-
-    propTypes: {
+class Symbol extends React.Component
+{
+    static propTypes = {
         symbols: React.PropTypes.object.isRequired,
         name: React.PropTypes.string.isRequired,
         layer: React.PropTypes.string,
@@ -52,9 +53,9 @@ var Symbol = React.createClass({
         y: React.PropTypes.number.isRequired,
         transform: React.PropTypes.string,
         style: React.PropTypes.object
-    },
+    }
 
-    shouldComponentUpdate: function (nextProps)
+    shouldComponentUpdate(nextProps)
     {
         return (
             this.props.x !== nextProps.x ||
@@ -65,9 +66,9 @@ var Symbol = React.createClass({
             this.props.symbols !== nextProps.symbols ||
             this.props.style !== nextProps.style
         );
-    },
+    }
 
-    render: function ()
+    render()
     {
         const symbolName = this.props.name;
         const symbol = this.props.symbols[symbolName];
@@ -112,7 +113,7 @@ var Symbol = React.createClass({
             </g>
         );
     }
-});
+}
 
-module.exports = Symbol;
+export default Symbol
 

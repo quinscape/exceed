@@ -1,19 +1,20 @@
 import FormContext from "../../../util/form-context";
-const React = require("react");
+import React from "react";
 
-const FormBlock = React.createClass({
+class FormBlock extends React.Component
+{
 
-    contextTypes: {
+    static contextTypes = {
         formContext: React.PropTypes.instanceOf(FormContext)
-    },
+    }
 
-    propTypes: {
+    static propTypes = {
         horizontal: React.PropTypes.bool,
         labelClass: React.PropTypes.string,
         wrapperClass: React.PropTypes.string
-    },
+    }
 
-    getChildContext: function ()
+    getChildContext ()
     {
         const ctx = this.context.formContext;
 
@@ -29,18 +30,18 @@ const FormBlock = React.createClass({
         return {
             formContext: newContext
         };
-    },
+    }
 
-    getDefaultProps: function ()
+    getDefaultProps ()
     {
         return {
             horizontal: false,
             labelClass: "col-md-2",
             wrapperClass: "col-md-4"
         };
-    },
+    }
 
-    render: function ()
+    render ()
     {
         return (
             <div className="form-block">
@@ -48,6 +49,6 @@ const FormBlock = React.createClass({
             </div>
         );
     }
-});
+};
 
-module.exports = FormBlock;
+export default FormBlock

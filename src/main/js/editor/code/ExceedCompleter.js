@@ -3,9 +3,9 @@ import Tokens from "./tokens"
 
 import completionService from "./completion-service";
 
-const CompletionType = require("./completion-type");
+import CompletionType from "./completion-type";
 const isComponent = require("../../util/is-component");
-const componentService = require("../../service/component");
+import componentService from "../../service/component"
 
 import { getCurrentViewDocument } from "../../reducers/inpage"
 
@@ -288,7 +288,7 @@ class ExceedCompleter
 
         const componentName = componentModel.name;
         console.log("loc", loc, loc.parentPath[0].model.name, componentName);
-        
+
         const propName = loc.attr;
 
         if (loc.attrValue)
@@ -307,10 +307,10 @@ class ExceedCompleter
         completionPromise.then( (completions) => {
             callback(null, this.prepareCompletions(editor, session, componentName, propName, pos, prefix, componentModel, completions));
         })
-        .catch(function (err)
-        {
-            console.error(err);
-        });
+            .catch(function (err)
+            {
+                console.error(err);
+            });
     }
 }
 

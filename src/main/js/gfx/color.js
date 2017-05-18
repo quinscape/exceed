@@ -57,8 +57,8 @@ function alpha(color, opacity)
     return "rgba(" + col.r + ", " + col.g + ", " + col.b + ", " + opacity + ")";
 }
 
-module.exports = {
+export default {
     rgb: rgb,
     alpha: alpha,
     mix: mix
-};
+}

@@ -4,7 +4,7 @@ import endsWith from "../../src/main/js/util/endsWith";
 import Icon from "../../src/main/js/ui/Icon";
 import cx from "classnames";
 
-import React from "react";
+import React from "react"
 
 function sortByName(a,b)
 {
@@ -129,7 +129,7 @@ function Navigation(props)
     const { modelLocations } = props;
 
     return (
-        <ul id="top" className="model-locations no-bullet">
+        <ul id="top" className="model-locations">
             {
                 modelLocations.map( (loc,idx) =>
                     <li key={ idx }>
@@ -137,11 +137,9 @@ function Navigation(props)
                             <Icon className="glyphicon-folder-open text-info" />
                             <span className="location">
                                     {
-                                        " " + (
-                                            loc.suffix ?
+                                        loc.suffix ?
                                             loc.prefix + "*" + loc.suffix :
                                             loc.prefix + (endsWith(loc.prefix, ".json") ? "" : "*")
-                                        )
                                     }
                                     </span>
                         </a>
@@ -157,9 +155,9 @@ class ModelDocs extends React.Component {
 
     render()
     {
-        const { locations, modelDocs } = this.props;
+        const { locations, model } = this.props;
 
-        const docs = modelDocs.docs;
+        const docs = model.docs;
 
         return (
             <div className="model-docs">
@@ -179,7 +177,7 @@ class ModelDocs extends React.Component {
                 <hr/>
 
                 {
-                    modelDocs.topLevelTypes.map(type => Section(type, docs) )
+                    model.topLevelTypes.map(type => Section(type, docs) )
                 }
 
             </div>

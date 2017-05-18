@@ -120,4 +120,4 @@ assign(AABB.prototype, {
     }
 });
 
-module.exports = AABB;
+export default AABB

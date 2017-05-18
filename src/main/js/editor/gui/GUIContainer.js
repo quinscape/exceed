@@ -1,8 +1,8 @@
 const React = require("react");
-const GUIContext = require("./gui-context");
-const ContainerContext = require("./container-context");
-const Event = require("../../util/event");
-const GlobalDrag = require("../../util/global-drag");
+import GUIContext from "./gui-context"
+import ContainerContext from "./container-context";
+import Event from "../../util/event";
+import GlobalDrag from "../../util/global-drag"
 
 const requestAnimationFrame = require("raf");
 
@@ -35,9 +35,9 @@ ViewBox.prototype.render = function ()
  * Contains SVG based GUIElement and provides a GUIContext context object to GUIElement instances to manage SVG
  * component focus and keyboard interaction via focus proxy elements.
  */
-var GUIContainer = React.createClass({
-
-    propTypes:  {
+class GUIContainer extends React.Component
+{
+    static propTypes =  {
         centerX : React.PropTypes.number,
         centerY : React.PropTypes.number,
         width: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string]),
@@ -45,13 +45,13 @@ var GUIContainer = React.createClass({
         style: React.PropTypes.object,
         zoom: React.PropTypes.bool,
         onInteraction: React.PropTypes.func
-    },
+    }
 
-    childContextTypes: {
+    static childContextTypes = {
         containerContext: React.PropTypes.instanceOf(ContainerContext)
-    },
+    }
 
-    getDefaultProps : function ()
+    getDefaultProps()
     {
         return {
             centerX : 0,
@@ -63,9 +63,9 @@ var GUIContainer = React.createClass({
             onInteraction: null
         };
 
-    },
+    }
 
-    getChildContext: function()
+    getChildContext()
     {
         //console.log("GUIContainer.getChildContext");
 
@@ -74,9 +74,9 @@ var GUIContainer = React.createClass({
         return {
             containerContext: this.ctx
         };
-    },
+    }
 
-    componentDidMount: function ()
+    componentDidMount()
     {
         console.log("GUIContainer mount");
 
@@ -94,8 +94,9 @@ var GUIContainer = React.createClass({
         }
 
         GlobalDrag.init();
-    },
-    componentWillUnmount: function ()
+    }
+
+    componentWillUnmount()
     {
         if (this.props.zoom && this.ctx.svgElem)
         {
@@ -103,9 +104,9 @@ var GUIContainer = React.createClass({
         }
 
         GlobalDrag.destroy();
-    },
+    }
 
-    animateZoom: function ()
+    animateZoom()
     {
         const now = Date.now();
         var finished = false;
@@ -166,17 +167,17 @@ var GUIContainer = React.createClass({
 
         this.updateViewBox();
 
-    },
+    }
 
-    updateViewBox: function ()
+    updateViewBox()
     {
         if (this.ctx.svgElem)
         {
             this.ctx.svgElem.setAttribute("viewBox", new ViewBox(this.centerX, this.centerY, this.props.height).render())
         }
-    },
+    }
 
-    onMouseWheel: function (ev)
+    onMouseWheel(ev)
     {
         if (GlobalDrag.isActiveDrag(this))
         {
@@ -208,9 +209,9 @@ var GUIContainer = React.createClass({
         }
 
         return Event.preventDefault(ev);
-    },
+    }
 
-    onMouseDown: function (ev)
+    onMouseDown(ev)
     {
         this.dragLocked = true;
 
@@ -223,9 +224,9 @@ var GUIContainer = React.createClass({
         GlobalDrag.setActiveDrag(this);
 
         return Event.preventDefault(ev);
-    },
+    }
 
-    onMouseMove: function (x, y)
+    onMouseMove(x, y)
     {
         if (GlobalDrag.isActiveDrag(this))
         {
@@ -259,9 +260,9 @@ var GUIContainer = React.createClass({
                 this.updateViewBox();
             }
         }
-    },
+    }
 
-    onMouseUp: function (x, y)
+    onMouseUp(x, y)
     {
         if (GlobalDrag.isActiveDrag(this))
         {
@@ -283,9 +284,9 @@ var GUIContainer = React.createClass({
                 this.updateViewBox();
             }
         }
-    },
+    }
 
-    render: function ()
+    render()
     {
         var viewBox;
         var width = this.props.width;
@@ -330,6 +331,6 @@ var GUIContainer = React.createClass({
             </div>
         );
     }
-});
+}
 
-module.exports = GUIContainer;
+export default GUIContainer

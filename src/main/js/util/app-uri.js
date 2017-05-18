@@ -1,7 +1,7 @@
-const uri = require("./uri");
-const sys = require("../sys");
+import uri from "./uri";
+import sys from "../sys";
 
-module.exports = function (href, params)
+export default function (href, params)
 {
     return uri( "/app/" + sys.appName + href, params, false);
-};
+}

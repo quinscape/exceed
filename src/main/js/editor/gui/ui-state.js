@@ -1,4 +1,4 @@
-const Enum = require("../../util/enum");
+import Enum from "../../util/enum";
 
 /**
  * @type UIState
@@ -9,4 +9,4 @@ var UIState = new Enum({
         FOCUSED : 1
     });
 
-module.exports = UIState;
+export default UIState

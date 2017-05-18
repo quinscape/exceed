@@ -1,11 +1,10 @@
+import React from "react";
 
-var React = require("react");
-
-var Heading = React.createClass({
-
-    render: function ()
+class Heading extends React.Component
+{
+    render()
     {
-        var icon = this.props.icon;
+        const icon = this.props.icon;
 
         return (
             <h2>
@@ -14,6 +13,6 @@ var Heading = React.createClass({
             </h2>
         )
     }
-});
+};
 
-module.exports = Heading;
+export default Heading

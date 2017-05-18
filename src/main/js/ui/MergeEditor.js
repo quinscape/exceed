@@ -9,13 +9,13 @@ const DIFF_EDITOR_OPTIONS = {
     showLineNumbers: false
 };
 
-const i18n = require("../service/i18n");
+import i18n from "../service/i18n";
 
 const MODEL_DELETED = JSON.stringify(i18n("Model deleted"));
 
-var MergeEditor = React.createClass({
-
-    componentWillReceiveProps : function (nextProps)
+class MergeEditor extends React.Component
+{
+    componentWillReceiveProps(nextProps)
     {
         var location = nextProps.locationLink.value;
         if (location !== this.props.locationLink.value)
@@ -25,9 +25,9 @@ var MergeEditor = React.createClass({
             editors.left.setValue(location.ours, 1);
             editors.right.setValue(location.theirs, 1);
         }
-    },
+    }
 
-    componentDidMount: function ()
+    componentDidMount()
     {
         aceLoader.load().then(ace => {
             const AceDiff = require("brace-diff");
@@ -58,10 +58,10 @@ var MergeEditor = React.createClass({
 
             editors.left.on("blur", this.checkChanges);
         });
-    },
+    }
 
 
-    checkChanges: function ()
+    checkChanges()
     {
         var locationLink = this.props.locationLink;
         var location = locationLink.value;
@@ -98,9 +98,9 @@ var MergeEditor = React.createClass({
             return newLocation;
         }
         return location;
-    },
+    }
 
-    render: function ()
+    render()
     {
         return (
             <div className="merge-editor">
@@ -110,6 +110,6 @@ var MergeEditor = React.createClass({
             </div>
         );
     }
-});
+}
 
-module.exports = MergeEditor;
+export default MergeEditor

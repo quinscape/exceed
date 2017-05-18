@@ -564,7 +564,7 @@ TreeLayout.prototype.layout = function (pApexNode)
     }
 };
 
-module.exports = {
+export default {
     Layout: TreeLayout,
     Node: Node
-};
+}

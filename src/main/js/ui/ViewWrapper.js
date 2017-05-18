@@ -8,27 +8,28 @@ import React from "react"
  *
  * Currently handles updating the window title.
  */
-const ViewWrapper = React.createClass({
+class ViewWrapper extends React.Component
+{
 
-    updateTitle: function ()
+    updateTitle()
     {
         document.getElementsByTagName("title")[0].innerHTML = this.props.title || "";
-    },
+    }
 
-    componentDidMount: function ()
+    componentDidMount()
     {
         this.updateTitle();
-    },
+    }
 
-    componentDidUpdate : function (prevProps, prevState)
+    componentDidUpdate(prevProps, prevState)
     {
         if (prevProps.title !== this.props.title)
         {
             this.updateTitle();
         }
-    },
+    }
 
-    render: function ()
+    render()
     {
         return (
             <div>
@@ -36,6 +37,6 @@ const ViewWrapper = React.createClass({
             </div>
         );
     }
-});
+}
 
-module.exports = ViewWrapper;
+export default ViewWrapper

@@ -2,7 +2,7 @@ const assign = require("object-assign");
 const React = require("react");
 const ReactDOM = require("react-dom");
 
-const UIState = require("./ui-state");
+import UIState from "./ui-state";
 
 const elements = {};
 
@@ -14,24 +14,25 @@ var zoom = ZOOM_FACTOR;
 var updateTimerId;
 var proxyContainer;
 
-var FocusProxies = React.createClass({
-    onFocus: function (ev)
+class FocusProxies extends React.Component
+{
+    onFocus(ev)
     {
         var id = ev.target.dataset.id;
         GUIContext._setElementState(id, UIState.FOCUSED);
-    },
-    onBlur: function (ev)
+    }
+    onBlur(ev)
     {
         var id = ev.target.dataset.id;
         GUIContext._setElementState(id, UIState.NORMAL);
-    },
+    }
 
-    onUpdate: function ()
+    onUpdate()
     {
         this.forceUpdate();
-    },
+    }
 
-    render: function ()
+    render()
     {
         //console.log("render proxies", this.props.elements);
         var proxies = [];
@@ -64,7 +65,7 @@ var FocusProxies = React.createClass({
             </div>
         );
     }
-});
+}
 
 function getProxyContainer()
 {
@@ -202,4 +203,4 @@ var GUIContext = {
 
 };
 
-module.exports = GUIContext;
+export default GUIContext

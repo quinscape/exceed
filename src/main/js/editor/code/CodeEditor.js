@@ -5,10 +5,10 @@ const XMLEditor = require("./XMLEditor").default;
 const Tokens = require("./tokens").default;
 
 const Modal = require("react-bootstrap/lib/Modal");
-const i18n = require("../../service/i18n");
+import i18n from "../../service/i18n";
 
-const sys = require("../../sys");
-const uri = require("../../util/uri");
+import sys from "../../sys";
+import uri from "../../util/uri";
 
 import Icon from "../../ui/Icon"
 
@@ -84,7 +84,7 @@ class CodeEditor extends React.Component
 
         // get updated document from store
         const updatedDoc = getCurrentViewDocument(store.getState());
-        
+
         store.dispatch(
             saveViewModels([ updatedDoc.model ])
         );
@@ -114,7 +114,7 @@ class CodeEditor extends React.Component
             selectEditorContentModel(newContentName)
         );
     };
-    
+
     changeDocument = (ev) =>
     {
         const  { store } = this.props;

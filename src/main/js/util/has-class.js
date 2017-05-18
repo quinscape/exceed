@@ -1,4 +1,4 @@
-module.exports = function(classes,cls)
+export default function(classes,cls)
 {
     var classesLen = classes.length, classLen = cls.length, pos;
 
@@ -16,4 +16,4 @@ module.exports = function(classes,cls)
         }
     }
     return false;
-};
+}

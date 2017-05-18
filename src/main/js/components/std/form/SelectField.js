@@ -1,9 +1,9 @@
 import React from "react";
 import DataCursor from "../../../domain/cursor";
 import { validateDataGraph } from "../../../domain/graph";
-const FormElement = require("./FormElement");
+import domainService from "../../../service/domain";
+import FormElement from "./FormElement";
 
-const domainService = require("../../../service/domain");
 
 const SelectField = FormElement(class {
 
@@ -97,5 +97,5 @@ const SelectField = FormElement(class {
     }
 });
 
-export default SelectField;
+export default SelectField
 

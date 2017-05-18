@@ -1,7 +1,7 @@
 const React = require("react");
 
-const Vector = require("./vector");
-const bezier = require("./bezier");
+import Vector from "./vector"
+import bezier from "./bezier"
 
 function mapToNumber(s)
 {
@@ -21,18 +21,18 @@ function calculateControlPoint(x0, y0, x1, y1, x2, y2)
     return new Vector(x1, y1);
 }
 
-var ArrowComponent = React.createClass({
-
-    getDefaultProps: function ()
+class ArrowComponent extends React.Component
+{
+    getDefaultProps()
     {
         return {
             color: "#999",
             tipColor: "#777",
             width: 4
         };
-    },
+    }
 
-    shouldComponentUpdate: function (nextProps)
+    shouldComponentUpdate(nextProps)
     {
         var curProps = this.props;
         return (
@@ -43,9 +43,9 @@ var ArrowComponent = React.createClass({
             curProps.x2 !== nextProps.x2 ||
             curProps.y2 !== nextProps.y2
         );
-    },
+    }
 
-    render: function ()
+    render()
     {
         var x0 = this.props.x0;
         var y0 = this.props.y0;
@@ -160,6 +160,6 @@ var ArrowComponent = React.createClass({
             </g>
         );
     }
-});
+}
 
-module.exports = ArrowComponent;
+export default ArrowComponent;

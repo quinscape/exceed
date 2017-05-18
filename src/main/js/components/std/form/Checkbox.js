@@ -2,26 +2,26 @@
  * Checkbox component
  */
 import FormContext from "../../../util/form-context";
-var React = require("react");
-var cx = require("classnames");
+import FormElement from "./FormElement";
+import domainService from "../../../service/domain";
+import i18n from "../../../service/i18n";
+import cx from "classnames";
+import React from "react";
 
-var i18n = require("../../../service/i18n");
-var domainService = require("../../../service/domain");
 
-const FormElement =  require("./FormElement");
+class Checkbox extends React.Component
+{
 
-var Checkbox = React.createClass({
-
-    contextTypes: {
+    static contextTypes = {
         formContext: React.PropTypes.instanceOf(FormContext)
-    },
+    }
 
-    getInputField: function ()
+    getInputField()
     {
         return this._input;
-    },
+    }
 
-    render: function ()
+    render()
     {
         var ctx = this.context.formContext;
         var pt = this.props.propertyType;
@@ -40,6 +40,6 @@ var Checkbox = React.createClass({
             </div>
         );
     }
-});
+};
 
-module.exports = Checkbox;
+export default Checkbox

@@ -39,7 +39,7 @@ function findSymbols(symbols, elem)
     }
 }
 
-module.exports = function (xmlDoc)
+export default function (xmlDoc)
 {
     var symbols = {
 
@@ -48,4 +48,4 @@ module.exports = function (xmlDoc)
     findSymbols(symbols, xmlDoc.documentElement);
 
     return symbols;
-};
+}

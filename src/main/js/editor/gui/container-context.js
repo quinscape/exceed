@@ -26,4 +26,4 @@ ContainerContext.prototype.toObjectCoordinates = function (x, y)
     };
 };
 
-module.exports = ContainerContext;
+export default ContainerContext

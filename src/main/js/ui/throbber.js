@@ -9,31 +9,26 @@ var haveWindow = typeof window !== "undefined";
 var component = null;
 
 
-var ThrobberComponent = React.createClass({
+export class ThrobberComponent extends React.Component
+{
+    state = { active : false };
 
-    getInitialState: function ()
-    {
-        return {
-            active: false
-        }
-    },
-
-    componentDidMount: function ()
+    componentDidMount()
     {
         component = this;
-    },
+    }
 
-    componentWillUnmount: function ()
+    componentWillUnmount()
     {
         component = null;
-    },
+    }
 
-    shouldComponentUpdate: function (nextProps, nextState)
+    shouldComponentUpdate(nextProps, nextState)
     {
         return this.state.active != nextState.active;
-    },
+    }
 
-    render: function ()
+    render()
     {
         return (
             <Modal
@@ -47,9 +42,9 @@ var ThrobberComponent = React.createClass({
             </Modal>
         )
     }
-});
+};
 
-module.exports = {
+export default {
     enable: function ()
     {
         if (haveWindow && !timerId)
@@ -81,4 +76,4 @@ module.exports = {
         }
     },
     ThrobberComponent: ThrobberComponent
-};
+}
