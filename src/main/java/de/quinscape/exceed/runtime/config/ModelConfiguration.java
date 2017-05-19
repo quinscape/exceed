@@ -143,22 +143,7 @@ public class ModelConfiguration
     @Bean
     public ModelLocationRules modelLocationRules()
     {
-        return new ModelLocationRules(
-            Arrays.asList(
-                new ModelLocationRule(CONFIG_MODEL_NAME, Model.getType(ApplicationConfig.class)),
-                new ModelLocationRule(ROUTING_MODEL_NAME, Model.getType(RoutingTable.class)),
-                new ModelLocationRule(DOMAIN_VERSION_PREFIX, Model.getType(DomainVersion.class)),
-                new ModelLocationRule(DOMAIN_PROPERTY_MODEL_PREFIX, Model.getType(PropertyType.class)),
-                new ModelLocationRule(ENUM_MODEL_PREFIX, Model.getType(EnumType.class)),
-                new ModelLocationRule(SYSTEM_MODEL_PREFIX, Model.getType(DomainType.class)),
-                new ModelLocationRule(DOMAIN_MODEL_PREFIX, Model.getType(DomainType.class)),
-                new ModelLocationRule(VIEW_MODEL_PREFIX, Model.getType(View.class)),
-                new ModelLocationRule(LAYOUT_MODEL_PREFIX, Model.getType(LayoutModel.class)),
-                new ModelLocationRule(PROCESS_VIEW_MODEL_PATTERN, Model.getType(View.class)),
-                new ModelLocationRule(PROCESS_MODEL_PREFIX, Model.getType(Process.class)),
-                new ModelLocationRule(DOMAIN_LAYOUT_NAME, Model.getType(DomainEditorViews.class))
-            )
-        );
+        return new ModelLocationRules();
     }
 
     @Bean

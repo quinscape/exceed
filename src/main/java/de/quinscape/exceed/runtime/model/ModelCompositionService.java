@@ -44,28 +44,6 @@ public class ModelCompositionService
 {
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
-    public static final String CONFIG_MODEL_NAME = "/models/config.json";
-
-    public static final String ROUTING_MODEL_NAME = "/models/routing.json";
-
-    public static final String DOMAIN_MODEL_PREFIX = "/models/domain/";
-
-    public static final String DOMAIN_PROPERTY_MODEL_PREFIX = "/models/domain/property/";
-
-    public static final String ENUM_MODEL_PREFIX = "/models/domain/enum/";
-
-    public static final String DOMAIN_VERSION_PREFIX = "/models/domain/version/";
-
-    public static final String SYSTEM_MODEL_PREFIX = "/models/domain/system/";
-
-    public static final String LAYOUT_MODEL_PREFIX = "/models/layout/";
-    public static final String VIEW_MODEL_PREFIX = "/models/view/";
-
-    public static final String PROCESS_MODEL_PREFIX = "/models/process/";
-
-    public static final String PROCESS_VIEW_MODEL_PATTERN = "/models/process/*/view";
-
-    public static final String DOMAIN_LAYOUT_NAME = "/layout/domain.json";
 
     private final static Logger log = LoggerFactory.getLogger(ModelCompositionService.class);
 
@@ -207,7 +185,7 @@ public class ModelCompositionService
                 @Override
                 public TopLevelModel visit(Process process, Object o)
                 {
-                    int nameStart = PROCESS_MODEL_PREFIX.length();
+                    int nameStart = ModelLocationRules.PROCESS_MODEL_PREFIX.length();
                     String processName = path.substring(nameStart, path.indexOf('/', nameStart));
                     process.setName(processName);
                     applicationModel.addProcess( process.getName(), process);
@@ -218,9 +196,9 @@ public class ModelCompositionService
                 @Override
                 public TopLevelModel visit(View view, Object o)
                 {
-                    if (path.startsWith(PROCESS_MODEL_PREFIX))
+                    if (path.startsWith(ModelLocationRules.PROCESS_MODEL_PREFIX))
                     {
-                        view.setProcessName(path.substring(PROCESS_MODEL_PREFIX.length(), path.indexOf("/view/")));
+                        view.setProcessName(path.substring(ModelLocationRules.PROCESS_MODEL_PREFIX.length(), path.indexOf("/view/")));
                         applicationModel.addView(view.getName(), view);
                         return view;
                     }
@@ -235,7 +213,7 @@ public class ModelCompositionService
                 {
                     domainType.setDomainService(domainService);
 
-                    if (path.startsWith(SYSTEM_MODEL_PREFIX))
+                    if (path.startsWith(ModelLocationRules.SYSTEM_MODEL_PREFIX))
                     {
                         domainType.setSystem(true);
 

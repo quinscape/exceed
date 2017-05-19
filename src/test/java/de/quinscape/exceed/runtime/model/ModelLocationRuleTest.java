@@ -11,11 +11,11 @@ public class ModelLocationRuleTest
     @Test
     public void thatRulesWork() throws Exception
     {
-        assertThat(match(ModelCompositionService.VIEW_MODEL_PREFIX,"/models/view/test.json"), is(true));
-        assertThat(match(ModelCompositionService.VIEW_MODEL_PREFIX, "/models/config.json"), is(false));
-        assertThat(match(ModelCompositionService.CONFIG_MODEL_NAME, "/models/config.json"), is(true));
-        assertThat(match(ModelCompositionService.PROCESS_VIEW_MODEL_PATTERN,"/models/view/test.json"), is(false));
-        assertThat(match(ModelCompositionService.PROCESS_VIEW_MODEL_PATTERN,"/models/process/test/view/list.json"), is(true));
+        assertThat(match(ModelLocationRules.VIEW_MODEL_PREFIX,"/models/view/test.json"), is(true));
+        assertThat(match(ModelLocationRules.VIEW_MODEL_PREFIX, "/models/config.json"), is(false));
+        assertThat(match(ModelLocationRules.CONFIG_MODEL_NAME, "/models/config.json"), is(true));
+        assertThat(match(ModelLocationRules.PROCESS_VIEW_MODEL_PATTERN,"/models/view/test.json"), is(false));
+        assertThat(match(ModelLocationRules.PROCESS_VIEW_MODEL_PATTERN,"/models/process/test/view/list.json"), is(true));
     }
 
 
