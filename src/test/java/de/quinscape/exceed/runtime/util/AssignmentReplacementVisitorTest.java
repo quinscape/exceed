@@ -26,17 +26,17 @@ public class AssignmentReplacementVisitorTest
     @Test
     public void testReplacement() throws Exception
     {
-        assertThat(replace("propName = 1"), is("(set({name: 'propName', value: 1, path: null}))"));
-        assertThat(replace("objName = a"), is("(set({name: 'objName', value: a, path: null}))"));
-        assertThat(replace("listName = b"), is("(set({name: 'listName', value: b, path: null}))"));
+        assertThat(replace("propName = 1"), is("set({name: 'propName', value: 1, path: null})"));
+        assertThat(replace("objName = a"), is("set({name: 'objName', value: a, path: null})"));
+        assertThat(replace("listName = b"), is("set({name: 'listName', value: b, path: null})"));
 
     }
 
     @Test
     public void testPath() throws Exception
     {
-        assertThat(replace("objName.val = 1"), is("(set({name: 'objName', value: 1, path: 'val'}))"));
-        assertThat(replace("objName.val.sub = 2"), is("(set({name: 'objName', value: 2, path: 'val.sub'}))"));
+        assertThat(replace("objName.val = 1"), is("set({name: 'objName', value: 1, path: 'val'})"));
+        assertThat(replace("objName.val.sub = 2"), is("set({name: 'objName', value: 2, path: 'val.sub'})"));
 
     }
 
@@ -44,7 +44,7 @@ public class AssignmentReplacementVisitorTest
     public void testNested() throws Exception
     {
         // nested doesn't work, is not transformed => runs into Assignment errors
-        assertThat(replace("propName = (propName = 1)"), is("(set({name: 'propName', value: (propName = 1), path: null}))"));
+        assertThat(replace("propName = (propName = 1)"), is("set({name: 'propName', value: (propName = 1), path: null})"));
     }
 
 
@@ -57,7 +57,7 @@ public class AssignmentReplacementVisitorTest
     @Test(expected = AssignmentReplacementException.class)
     public void testError2() throws Exception
     {
-        log.info(replace("a = b"));
+        replace("a = b");
     }
 
 

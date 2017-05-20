@@ -54,9 +54,19 @@ public class ExpressionRenderer
     @Override
     public Object visit(ASTExpression node, Object data)
     {
-        buf.append('(');
+        boolean isNestedExpression = node.jjtGetParent() != null;
+
+        if (isNestedExpression)
+        {
+            buf.append('(');
+        }
+
         node.childrenAccept(this, data);
-        buf.append(')');
+
+        if (isNestedExpression)
+        {
+            buf.append(')');
+        }
         return data;
     }
 
