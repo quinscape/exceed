@@ -7,8 +7,8 @@ import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.process.Transition;
 import de.quinscape.exceed.model.process.ViewState;
-import de.quinscape.exceed.model.view.AttributeValue;
-import de.quinscape.exceed.model.view.Attributes;
+import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.expression.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
@@ -232,7 +232,7 @@ public class ScopeReferenceService
                             {
                                 final PropDeclaration propDeclaration = descriptor.getPropTypes().get(propName);
 
-                                AttributeValue attr = componentModel.getAttribute(propName);
+                                ExpressionValue attr = componentModel.getAttribute(propName);
                                 if (attr == null)
                                 {
                                     attr = propDeclaration.getDefaultValue();

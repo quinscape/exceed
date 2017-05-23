@@ -1,5 +1,7 @@
 package de.quinscape.exceed.model.view;
 
+import de.quinscape.exceed.model.expression.Attributes;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

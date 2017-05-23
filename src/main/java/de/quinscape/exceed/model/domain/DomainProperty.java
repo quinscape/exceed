@@ -2,7 +2,7 @@ package de.quinscape.exceed.model.domain;
 
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.annotation.Internal;
-import de.quinscape.exceed.model.view.AttributeValue;
+import de.quinscape.exceed.model.expression.ExpressionValue;
 import org.svenson.JSONProperty;
 
 public class DomainProperty
@@ -23,7 +23,7 @@ public class DomainProperty
 
     private Object typeParam;
 
-    private AttributeValue defaultValue;
+    private ExpressionValue defaultValue;
 
     private boolean required;
 
@@ -164,7 +164,7 @@ public class DomainProperty
 
     public void setDefaultValue(String defaultValue)
     {
-        this.defaultValue = AttributeValue.forValue(defaultValue, true);
+        this.defaultValue = ExpressionValue.forValue(defaultValue, true);
     }
 
 

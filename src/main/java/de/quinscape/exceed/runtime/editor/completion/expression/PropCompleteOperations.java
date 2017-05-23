@@ -11,8 +11,8 @@ import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.model.routing.Mapping;
 import de.quinscape.exceed.model.routing.MappingNode;
-import de.quinscape.exceed.model.view.AttributeValue;
-import de.quinscape.exceed.model.view.Attributes;
+import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.expression.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.ComponentModelBuilder;
 import de.quinscape.exceed.model.view.View;
@@ -262,7 +262,7 @@ public class PropCompleteOperations
         {
             componentModel = env.getComponentModel();
         }
-        AttributeValue attribute = componentModel.getAttribute(name);
+        ExpressionValue attribute = componentModel.getAttribute(name);
         if (attribute == null)
         {
             return null;
@@ -343,7 +343,7 @@ public class PropCompleteOperations
             if (component.getName().equals(componentModel.getName()) && component != componentModel)
             {
                 // we get the same attribute we're completing for currently
-                AttributeValue attribute = component.getAttribute(ctx.getEnv().getPropName());
+                ExpressionValue attribute = component.getAttribute(ctx.getEnv().getPropName());
                 if (attribute != null)
                 {
                     ASTExpression astExpression = attribute.getAstExpression();

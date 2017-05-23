@@ -4,7 +4,7 @@ import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.annotation.DocumentedModelType;
-import de.quinscape.exceed.model.view.AttributeValue;
+import de.quinscape.exceed.model.expression.ExpressionValue;
 import org.svenson.JSONParameter;
 import org.svenson.JSONProperty;
 
@@ -59,7 +59,7 @@ public class PropDeclaration
     /**
      * Default value for this prop.
      */
-    private final AttributeValue defaultValue;
+    private final ExpressionValue defaultValue;
 
     public PropDeclaration(
         @JSONParameter("client")
@@ -81,7 +81,7 @@ public class PropDeclaration
     {
         this.rule = rule;
         this.description = description;
-        this.defaultValue = AttributeValue.forValue(defaultValue, true);
+        this.defaultValue = ExpressionValue.forValue(defaultValue, true);
         this.ruleExpression = ExpressionParser.parse(rule);
         this.type = type != null ? type :  PropType.PLAINTEXT;
 
@@ -179,7 +179,7 @@ public class PropDeclaration
      * Default value for this prop.
      */
     @DocumentedModelType("Expression")
-    public AttributeValue getDefaultValue()
+    public ExpressionValue getDefaultValue()
     {
         return defaultValue;
     }

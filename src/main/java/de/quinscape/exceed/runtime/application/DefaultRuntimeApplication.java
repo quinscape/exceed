@@ -17,9 +17,9 @@ import de.quinscape.exceed.model.meta.WebpackStats;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.routing.Mapping;
-import de.quinscape.exceed.model.view.AttributeValue;
-import de.quinscape.exceed.model.view.AttributeValueType;
-import de.quinscape.exceed.model.view.Attributes;
+import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.expression.ExpressionValueType;
+import de.quinscape.exceed.model.expression.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
@@ -576,7 +576,7 @@ public class DefaultRuntimeApplication
         Map<String,Object> vars = parseVars(varsJSON);
 
         ComponentModel componentModel = view.find((m) -> {
-            AttributeValue value = m.getAttribute(DomainType.ID_PROPERTY);
+            ExpressionValue value = m.getAttribute(DomainType.ID_PROPERTY);
             return value != null && componentId.equals(value.getValue());
         });
 
@@ -623,8 +623,8 @@ public class DefaultRuntimeApplication
         {
             for (String name : attrs.getNames())
             {
-                AttributeValue attributeValue = attrs.getAttribute(name);
-                if (attributeValue.getType() == AttributeValueType.EXPRESSION_ERROR)
+                ExpressionValue attributeValue = attrs.getAttribute(name);
+                if (attributeValue.getType() == ExpressionValueType.EXPRESSION_ERROR)
                 {
                     errors.add(new ComponentError(contentName, attributeValue.getValue(), attributeValue.getExpressionError(), id, name));
                 }

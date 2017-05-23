@@ -4,7 +4,7 @@ import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.component.ComponentDescriptor;
 import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.model.component.PropType;
-import de.quinscape.exceed.model.view.Attributes;
+import de.quinscape.exceed.model.expression.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.editor.search.SearchResultType;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;

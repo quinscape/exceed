@@ -12,7 +12,7 @@ import de.quinscape.exceed.expression.ASTRelational;
 import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.SimpleNode;
-import de.quinscape.exceed.model.view.AttributeValue;
+import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
@@ -60,7 +60,7 @@ public class QueryTransformerOperations
     public Object prop(ExpressionContext<QueryTransformerEnvironment> ctx, String name)
     {
         QueryTransformerEnvironment env = ctx.getEnv();
-        AttributeValue attribute = env.getComponentModel().getAttribute(name);
+        ExpressionValue attribute = env.getComponentModel().getAttribute(name);
         if (attribute == null)
         {
             return null;
@@ -83,7 +83,7 @@ public class QueryTransformerOperations
         List<String> names = new ArrayList<>();
         for (ComponentModel kid : env.getComponentModel().children())
         {
-            AttributeValue attrVal = kid.getAttribute("name");
+            ExpressionValue attrVal = kid.getAttribute("name");
             if (attrVal != null)
             {
                 names.add(attrVal.getValue());
@@ -121,7 +121,7 @@ public class QueryTransformerOperations
         {
             if (componentRegistration.getDescriptor().getClasses().contains(cls))
             {
-                AttributeValue attribute = componentModel.getAttribute(attr);
+                ExpressionValue attribute = componentModel.getAttribute(attr);
                 if (attribute != null)
                 {
                     values.add(attribute.getValue());

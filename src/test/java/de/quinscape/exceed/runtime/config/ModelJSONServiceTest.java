@@ -2,8 +2,8 @@ package de.quinscape.exceed.runtime.config;
 
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.routing.RoutingTable;
-import de.quinscape.exceed.model.view.AttributeValue;
-import de.quinscape.exceed.model.view.AttributeValueType;
+import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.expression.ExpressionValueType;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
@@ -48,9 +48,9 @@ public class ModelJSONServiceTest
         assertThat(view,is(notNullValue()));
         assertThat(view.getContent(View.MAIN).getKids().size(),is(1));
         ComponentModel strModel = view.getContent(View.MAIN).getKids().get(0);
-        AttributeValue valueAttr = strModel.getAttribute("value");
+        ExpressionValue valueAttr = strModel.getAttribute("value");
         assertThat(strModel.getName(),is("[String]"));
-        assertThat(valueAttr.getType(),is(AttributeValueType.STRING));
+        assertThat(valueAttr.getType(),is(ExpressionValueType.STRING));
         assertThat(valueAttr.getValue(),is("String child"));
 
     }

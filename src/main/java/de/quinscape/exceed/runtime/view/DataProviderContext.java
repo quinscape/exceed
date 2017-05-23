@@ -6,7 +6,7 @@ import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.view.AttributeValue;
+import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
@@ -289,7 +289,7 @@ public final class DataProviderContext
                 if (result instanceof String)
                 {
                     String propName = (String) result;
-                    AttributeValue attribute = componentModel.getAttribute(propName);
+                    ExpressionValue attribute = componentModel.getAttribute(propName);
                     if (attribute == null)
                     {
                         return null;

@@ -5,17 +5,12 @@ import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.TestDomainServiceBase;
 import de.quinscape.exceed.model.domain.DomainProperty;
 import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.domain.EnumType;
-import de.quinscape.exceed.model.view.AttributeValue;
+import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.TestApplication;
 import de.quinscape.exceed.runtime.TestApplicationBuilder;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
-import de.quinscape.exceed.runtime.domain.DomainObject;
-import de.quinscape.exceed.runtime.domain.DomainService;
-import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.editor.completion.expression.PropCompleteEnvironment;
 import de.quinscape.exceed.runtime.editor.completion.expression.PropCompleteOperations;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
@@ -26,7 +21,6 @@ import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
 import de.quinscape.exceed.runtime.model.TestRegistry;
 import de.quinscape.exceed.runtime.schema.DefaultStorageConfiguration;
 import de.quinscape.exceed.runtime.schema.DefaultStorageConfigurationRepository;
-import de.quinscape.exceed.runtime.schema.StorageConfiguration;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
@@ -36,7 +30,6 @@ import org.svenson.JSON;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -60,7 +53,7 @@ public class PropCompleteEnvironmentTest
         // external view json
         View viewModel = modelJSONService.toModel(View.class, json);
         ComponentModel componentModel = viewModel.find(m -> {
-            AttributeValue attrValue = m.getAttribute("name");
+            ExpressionValue attrValue = m.getAttribute("name");
             return attrValue != null && attrValue.getValue().equals("xxx");
         });
 

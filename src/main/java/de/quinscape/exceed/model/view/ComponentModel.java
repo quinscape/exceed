@@ -2,7 +2,9 @@ package de.quinscape.exceed.model.view;
 
 import de.quinscape.exceed.model.annotation.DocumentedMapKey;
 import de.quinscape.exceed.model.annotation.DocumentedModelType;
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.expression.Attributes;
+import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.expression.ExpressionValueType;
 import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.util.Util;
 import org.svenson.JSON;
@@ -125,12 +127,12 @@ public class ComponentModel
         {
             return null;
         }
-        AttributeValue value = attrs.getAttribute(ID_ATTRIBUTE);
+        ExpressionValue value = attrs.getAttribute(ID_ATTRIBUTE);
         return value != null ? value.getValue() : null;
     }
 
 
-    public AttributeValue getAttribute(String key)
+    public ExpressionValue getAttribute(String key)
     {
         if (attrs == null)
         {
@@ -162,10 +164,10 @@ public class ComponentModel
                 sb.append(name);
                 sb.append("=");
 
-                AttributeValue attribute = attrs.getAttribute(name);
-                AttributeValueType type = attribute.getType();
+                ExpressionValue attribute = attrs.getAttribute(name);
+                ExpressionValueType type = attribute.getType();
                 Object value = attribute.getValue();
-                if (type == AttributeValueType.STRING)
+                if (type == ExpressionValueType.STRING)
                 {
                     JSON.defaultJSON().quote(sb, (String) value);
                 }

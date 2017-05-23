@@ -2,8 +2,8 @@ package de.quinscape.exceed.runtime.service.client.provider;
 
 import de.quinscape.exceed.model.component.ComponentDescriptor;
 import de.quinscape.exceed.model.component.PropDeclaration;
-import de.quinscape.exceed.model.view.AttributeValue;
-import de.quinscape.exceed.model.view.Attributes;
+import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.expression.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
@@ -129,23 +129,10 @@ public class RuntimeTranslationProvider
                 String propName = entry.getKey();
                 PropDeclaration propDeclaration = entry.getValue();
 
-                final AttributeValue value = attrs != null ? attrs.getAttribute(propName) : null;
-                if (value != null)
-                {
-                    if (value.getAstExpression() != null)
-                    {
-                        value.getAstExpression().jjtAccept(visitor, null);
-                    }
-                }
-                else
-                {
-                    // collect default value expression references
-                    final AttributeValue defaultValue = propDeclaration.getDefaultValue();
-                    if (defaultValue != null && defaultValue.getAstExpression() != null)
-                    {
-                        defaultValue.getAstExpression().jjtAccept(visitor, null);
-                    }
-                }
+                final ExpressionValue value = attrs != null ? attrs.getAttribute(propName) : null;
+                visitor.visit(value);
+                // collect default value expression references
+                visitor.visit(propDeclaration.getDefaultValue());
             }
         }
         else

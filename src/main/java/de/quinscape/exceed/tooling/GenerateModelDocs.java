@@ -10,7 +10,7 @@ import de.quinscape.exceed.model.annotation.DocumentedSubTypes;
 import de.quinscape.exceed.model.annotation.Internal;
 import de.quinscape.exceed.model.component.ComponentPackageDescriptor;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
-import de.quinscape.exceed.model.view.AttributeValueType;
+import de.quinscape.exceed.model.expression.ExpressionValueType;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.config.ModelConfiguration;
 import de.quinscape.exceed.runtime.model.ModelLocationRule;
@@ -79,7 +79,7 @@ public class GenerateModelDocs
         map.put(Date.class, "Date");
         map.put(Object.class, "Object");
         map.put(ASTExpression.class, "Expression");
-        map.put(AttributeValueType.class, "AttributeValueType");
+        map.put(ExpressionValueType.class, "AttributeValueType");
 
         PROPERTY_TYPE_NAMES = Collections.unmodifiableMap(map);
     }

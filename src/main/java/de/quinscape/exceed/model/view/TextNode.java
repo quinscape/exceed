@@ -1,5 +1,7 @@
 package de.quinscape.exceed.model.view;
 
+import de.quinscape.exceed.model.expression.Attributes;
+
 public class TextNode
     extends ComponentModel
 {

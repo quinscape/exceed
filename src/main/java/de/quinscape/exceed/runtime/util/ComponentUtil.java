@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.util;
 
-import de.quinscape.exceed.model.view.AttributeValue;
-import de.quinscape.exceed.model.view.Attributes;
+import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.expression.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
@@ -49,7 +49,7 @@ public class ComponentUtil
                 if (!c.getName().equals(LayoutModel.CONTENT))
                     return false;
 
-                final AttributeValue attr = c.getAttribute("name");
+                final ExpressionValue attr = c.getAttribute("name");
                 if (attr == null)
                 {
                     return name.equals(View.MAIN);

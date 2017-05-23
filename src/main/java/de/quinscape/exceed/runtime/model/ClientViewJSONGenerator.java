@@ -14,9 +14,9 @@ import de.quinscape.exceed.model.component.ComponentClasses;
 import de.quinscape.exceed.model.component.ComponentDescriptor;
 import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.model.component.PropType;
-import de.quinscape.exceed.model.view.AttributeValue;
-import de.quinscape.exceed.model.view.AttributeValueType;
-import de.quinscape.exceed.model.view.Attributes;
+import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.expression.ExpressionValueType;
+import de.quinscape.exceed.model.expression.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
@@ -130,7 +130,7 @@ public class ClientViewJSONGenerator
             String providedContext = componentRegistration.getDescriptor().getProvidesContext();
             if (providedContext != null)
             {
-                AttributeValue varAttr = componentModel.getAttribute("var");
+                ExpressionValue varAttr = componentModel.getAttribute("var");
                 String contextName;
                 if (varAttr == null)
                 {
@@ -189,7 +189,7 @@ public class ClientViewJSONGenerator
             {
                 for (String attrName : attrNames)
                 {
-                    AttributeValue attribute = attrs.getAttribute(attrName);
+                    ExpressionValue attribute = attrs.getAttribute(attrName);
                     ASTExpression expression = attribute.getAstExpression();
 
                     // find prop declaration for prop if such we have a registration / descriptor
@@ -252,7 +252,7 @@ public class ClientViewJSONGenerator
 
                 if (name.equals(ComponentModel.STRING_MODEL_NAME))
                 {
-                    AttributeValue value = kid.getAttribute("value");
+                    ExpressionValue value = kid.getAttribute("value");
                     ASTExpression astExpression = value.getAstExpression();
 
                     builder.objectElement();
@@ -290,7 +290,7 @@ public class ClientViewJSONGenerator
         for (String name : defaultAttrs)
         {
             PropDeclaration propDecl = propTypes.get(name);
-            AttributeValue defaultValue = propDecl.getDefaultValue();
+            ExpressionValue defaultValue = propDecl.getDefaultValue();
             if ((defaultValue.getAstExpression() != null) == isExpression)
             {
                 if (isExpression)
@@ -299,7 +299,7 @@ public class ClientViewJSONGenerator
                 }
                 else
                 {
-                    if (defaultValue.getType() == AttributeValueType.EXPRESSION_ERROR)
+                    if (defaultValue.getType() == ExpressionValueType.EXPRESSION_ERROR)
                     {
                         builder.property(name, "[ERROR:" + defaultValue.getExpressionError() + "]");
                     }
@@ -334,7 +334,7 @@ public class ClientViewJSONGenerator
                     ASTExpression contextAST = ExpressionParser.parse(contextExpr);
 
                     // we look if the context attribute has been set
-                    AttributeValue contextAttr = componentModel.getAttribute(propName);
+                    ExpressionValue contextAttr = componentModel.getAttribute(propName);
                     String contextName;
                     if (contextAttr != null)
                     {
@@ -342,7 +342,7 @@ public class ClientViewJSONGenerator
                         ASTExpression contextAttrAST = contextAttr.getAstExpression();
                         if (contextAttrAST == null)
                         {
-                            if (contextAttr.getType() == AttributeValueType.EXPRESSION_ERROR)
+                            if (contextAttr.getType() == ExpressionValueType.EXPRESSION_ERROR)
                             {
                                 throw new InconsistentModelException("Context expression contains errors", contextAttr.getExpressionError());
                             }

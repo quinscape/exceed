@@ -4,7 +4,7 @@ import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.Node;
-import de.quinscape.exceed.model.view.AttributeValue;
+import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
@@ -34,11 +34,11 @@ public class QueryFilterOperations
         QueryTransformerEnvironment tEnv = ctx.getEnv().getTransformerEnvironment();
 
         ComponentModel componentModel = tEnv.getComponentModel();
-        AttributeValue attributeValue = componentModel.getAttribute(name);
+        ExpressionValue attributeValue = componentModel.getAttribute(name);
 
         if (attributeValue == null)
         {
-            AttributeValue defaultValue = componentModel.getComponentRegistration().getDescriptor().getPropTypes()
+            ExpressionValue defaultValue = componentModel.getComponentRegistration().getDescriptor().getPropTypes()
                 .get(name).getDefaultValue();
 
             ASTExpression astExpression;
@@ -159,7 +159,7 @@ public class QueryFilterOperations
     private Condition getFilter(ExpressionContext<QueryFilterEnvironment> ctx, ComponentModel kid)
     {
         Node expr = null;
-        AttributeValue attrVal = kid.getAttribute("filterTemplate");
+        ExpressionValue attrVal = kid.getAttribute("filterTemplate");
         if (attrVal == null)
         {
             PropDeclaration filterTemplateProp = kid.getComponentRegistration().getDescriptor().getPropTypes().get
@@ -167,7 +167,7 @@ public class QueryFilterOperations
 
             if (filterTemplateProp != null)
             {
-                AttributeValue defaultValue = filterTemplateProp.getDefaultValue();
+                ExpressionValue defaultValue = filterTemplateProp.getDefaultValue();
 
                 if (defaultValue != null)
                 {

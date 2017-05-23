@@ -8,6 +8,7 @@ import de.quinscape.exceed.model.annotation.DocumentedMapKey;
 import de.quinscape.exceed.model.annotation.DocumentedModelType;
 import de.quinscape.exceed.model.annotation.Internal;
 import de.quinscape.exceed.model.context.ContextModel;
+import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.model.JSONFormat;
@@ -68,7 +69,7 @@ public class View
 
     private String layout;
 
-    private AttributeValue title;
+    private ExpressionValue title;
 
     public View()
     {
@@ -298,14 +299,14 @@ public class View
     }
 
     @JSONProperty(ignore = true)
-    public AttributeValue getTitleAttribute()
+    public ExpressionValue getTitleAttribute()
     {
         return title;
     }
 
     public void setTitle(String title)
     {
-        this.title = AttributeValue.forValue(title, false);
+        this.title = ExpressionValue.forValue(title, false);
     }
 
 

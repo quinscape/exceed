@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.editor.completion.expression;
 
-import de.quinscape.exceed.model.view.Attributes;
+import de.quinscape.exceed.model.expression.Attributes;
 import org.svenson.JSONParameter;
 import org.svenson.JSONTypeHint;
 

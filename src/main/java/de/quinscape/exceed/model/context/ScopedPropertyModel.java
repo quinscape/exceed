@@ -3,7 +3,7 @@ package de.quinscape.exceed.model.context;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.annotation.DocumentedModelType;
 import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.view.AttributeValue;
+import de.quinscape.exceed.model.expression.ExpressionValue;
 import org.svenson.JSONProperty;
 
 /**
@@ -19,7 +19,7 @@ public class ScopedPropertyModel
 
     private Object typeParam;
 
-    private AttributeValue defaultValue;
+    private ExpressionValue defaultValue;
 
     private int maxLength = -1;
 
@@ -65,7 +65,7 @@ public class ScopedPropertyModel
 
     public void setDefaultValue(String defaultValue)
     {
-        this.defaultValue = AttributeValue.forValue(defaultValue, true);
+        this.defaultValue = ExpressionValue.forValue(defaultValue, true);
     }
 
 

@@ -1,13 +1,13 @@
 package de.quinscape.exceed.model.component;
 
-import de.quinscape.exceed.model.view.AttributeValue;
+import de.quinscape.exceed.model.expression.ExpressionValue;
 import org.svenson.JSONParameter;
 
 public class ComponentViewContext
 {
     private final String propertyType;
 
-    private final AttributeValue defaultValue;
+    private final ExpressionValue defaultValue;
 
 
     public ComponentViewContext(
@@ -22,7 +22,7 @@ public class ComponentViewContext
         }
 
         this.propertyType = propertyType;
-        this.defaultValue = AttributeValue.forValue(defaultValue, true);
+        this.defaultValue = ExpressionValue.forValue(defaultValue, true);
     }
 
 
@@ -38,7 +38,7 @@ public class ComponentViewContext
     }
 
 
-    public AttributeValue getDefaultAttributeValue()
+    public ExpressionValue getDefaultAttributeValue()
     {
         return defaultValue;
     }
