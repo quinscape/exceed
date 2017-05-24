@@ -212,17 +212,6 @@ public class ModelCompositionService
                 public TopLevelModel visit(DomainType domainType, Object o)
                 {
                     domainType.setDomainService(domainService);
-
-                    if (path.startsWith(ModelLocationRules.SYSTEM_MODEL_PREFIX))
-                    {
-                        domainType.setSystem(true);
-
-                        if (domainType.getStorageConfiguration() == null)
-                        {
-                            domainType.setStorageConfiguration(DomainType.SYSTEM_STORAGE);
-                        }
-                    }
-
                     applicationModel.addDomainType(domainType.getName(), domainType);
                     return domainType;
                 }
