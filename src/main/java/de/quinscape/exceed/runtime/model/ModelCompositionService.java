@@ -177,7 +177,7 @@ public class ModelCompositionService
                 @Override
                 public TopLevelModel visit(PropertyType propertyType, Object o)
                 {
-                    applicationModel.addPropertyType(propertyType.getName(), propertyType);
+                    applicationModel.addPropertyType(propertyType);
                     return propertyType;
                 }
 
@@ -188,7 +188,7 @@ public class ModelCompositionService
                     int nameStart = ModelLocationRules.PROCESS_MODEL_PREFIX.length();
                     String processName = path.substring(nameStart, path.indexOf('/', nameStart));
                     process.setName(processName);
-                    applicationModel.addProcess( process.getName(), process);
+                    applicationModel.addProcess( process);
                     return process;
                 }
 
@@ -199,11 +199,11 @@ public class ModelCompositionService
                     if (path.startsWith(ModelLocationRules.PROCESS_MODEL_PREFIX))
                     {
                         view.setProcessName(path.substring(ModelLocationRules.PROCESS_MODEL_PREFIX.length(), path.indexOf("/view/")));
-                        applicationModel.addView(view.getName(), view);
+                        applicationModel.addView(view);
                         return view;
                     }
 
-                    applicationModel.addView(view.getName(), view);
+                    applicationModel.addView(view);
                     return view;
                 }
 
@@ -212,7 +212,7 @@ public class ModelCompositionService
                 public TopLevelModel visit(DomainType domainType, Object o)
                 {
                     domainType.setDomainService(domainService);
-                    applicationModel.addDomainType(domainType.getName(), domainType);
+                    applicationModel.addDomainType(domainType);
                     return domainType;
                 }
 
@@ -220,7 +220,7 @@ public class ModelCompositionService
                 @Override
                 public TopLevelModel visit(DomainVersion domainVersion, Object o)
                 {
-                    applicationModel.addDomainVersion(domainVersion.getName(), domainVersion);
+                    applicationModel.addDomainVersion(domainVersion);
                     return domainVersion;
                 }
 
@@ -228,7 +228,7 @@ public class ModelCompositionService
                 @Override
                 public TopLevelModel visit(EnumType enumType, Object o)
                 {
-                    applicationModel.addEnum(enumType.getName(), enumType);
+                    applicationModel.addEnum(enumType);
                     return enumType;
                 }
 
@@ -236,7 +236,7 @@ public class ModelCompositionService
                 @Override
                 public TopLevelModel visit(LayoutModel layoutModel, Object o)
                 {
-                    applicationModel.addLayout(layoutModel.getName(), layoutModel);
+                    applicationModel.addLayout(layoutModel);
                     return layoutModel;
                 }
 

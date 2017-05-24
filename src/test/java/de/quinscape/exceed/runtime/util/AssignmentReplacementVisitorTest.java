@@ -91,6 +91,7 @@ public class AssignmentReplacementVisitorTest
             "listName", scopedListModel
         ));
 
+        process.setName("testProcess");
         process.setContextModel(processContext);
 
         process.setStates(ImmutableMap.of("testView", new ViewState()));
@@ -99,8 +100,8 @@ public class AssignmentReplacementVisitorTest
         view.setName("testProcess/testView");
         view.setContextModel(viewContext);
 
-        applicationModel.addProcess("testProcess", process);
-        applicationModel.addView("testProcess/testView", view);
+        applicationModel.addProcess(process);
+        applicationModel.addView(view);
 
         applicationModel.getMetaData().getScopeMetaModel().addDeclarations(view);
         applicationModel.getMetaData().getScopeMetaModel().addDeclarations(view);

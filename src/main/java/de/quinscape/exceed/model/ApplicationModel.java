@@ -253,45 +253,45 @@ public class ApplicationModel
     }
 
 
-    public void addDomainType(String name, DomainType domainType)
+    public void addDomainType(DomainType domainType)
     {
-        domainTypes.put(name, domainType);
+        domainTypes.put(domainType.getName(), domainType);
     }
 
 
-    public void addDomainVersion(String name, DomainVersion domainVersion)
+    public void addDomainVersion(DomainVersion domainVersion)
     {
-        domainVersions.put(name, domainVersion);
+        domainVersions.put(domainVersion.getName(), domainVersion);
     }
 
 
-    public void addEnum(String name, EnumType enumType)
+    public void addEnum(EnumType enumType)
     {
-        enums.put(name, enumType);
+        enums.put(enumType.getName(), enumType);
     }
 
 
-    public void addView(String name, View view)
+    public void addView(View view)
     {
-        views.put(name, view);
+        views.put(view.getName(), view);
     }
 
 
-    public void addProcess(String name, Process process)
+    public void addProcess(Process process)
     {
-        processes.put(name, process);
+        processes.put(process.getName(), process);
     }
 
 
-    public void addLayout(String name, LayoutModel layout)
+    public void addLayout(LayoutModel layout)
     {
-        layouts.put(name, layout);
+        layouts.put(layout.getName(), layout);
     }
 
 
-    public void addPropertyType(String name, PropertyType propertyType)
+    public void addPropertyType(PropertyType propertyType)
     {
-        propertyTypes.put(name, propertyType);
+        propertyTypes.put(propertyType.getName(), propertyType);
     }
 
 

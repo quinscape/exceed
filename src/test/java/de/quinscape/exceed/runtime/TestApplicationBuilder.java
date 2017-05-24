@@ -102,19 +102,20 @@ public class TestApplicationBuilder
         ApplicationModel applicationModel = new ApplicationModel();
         applicationModel.setName(name);
 
-        for (Map.Entry<String, DomainType> e : domainTypes.entrySet())
+        for (DomainType domainType : domainTypes.values())
         {
-            applicationModel.addDomainType(e.getKey(), e.getValue());
+            applicationModel.addDomainType(domainType);
         }
 
-        for (Map.Entry<String, EnumType> e : enums.entrySet())
+        for (EnumType enumType : enums.values())
         {
-            applicationModel.addEnum(e.getKey(), e.getValue());
+            applicationModel.addEnum(enumType);
         }
 
-        for (Map.Entry<String, PropertyType> e : propertyTypes.entrySet())
+        for (PropertyType propertyType : propertyTypes.values())
         {
-            applicationModel.addPropertyType(e.getKey(), e.getValue());
+            applicationModel.addPropertyType(propertyType);
+
         }
 
         if (registerBaseProperties)
