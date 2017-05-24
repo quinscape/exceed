@@ -78,7 +78,7 @@ public class AssignmentReplacementVisitor
                 ", value: null" +
                 ", path: " + (path != null ? generator.quote(path) : "null") + "})";
 
-            log.info("ACTION SOURCE: {}", actionSource);
+            log.debug("ACTION SOURCE: {}", actionSource);
 
             ASTFunction action = (ASTFunction) ExpressionParser.parse(actionSource).jjtGetChild(0);
 
