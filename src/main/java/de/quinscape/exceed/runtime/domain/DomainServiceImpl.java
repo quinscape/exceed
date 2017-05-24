@@ -3,11 +3,13 @@ package de.quinscape.exceed.runtime.domain;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.EnumType;
+import de.quinscape.exceed.model.domain.PropertyType;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.datalist.DataGraphService;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.schema.StorageConfiguration;
 import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.JSONParser;
@@ -52,6 +54,7 @@ public class DomainServiceImpl
         this.modelDomainTypes = modelDomainTypes;
 
         parser = new JSONParser();
+        parser.setObjectSupport(JSONUtil.OBJECT_SUPPORT);
         parser.addObjectFactory(new DomainFactory(this));
         Map<Class, Class> mappings = new HashMap<>();
 
@@ -79,7 +82,7 @@ public class DomainServiceImpl
 
         this.domainTypes = domainTypes;
 
-        this.dataGraphService = new DataGraphService(this, converters);
+        this.dataGraphService = new DataGraphService(this);
     }
 
 
@@ -240,15 +243,16 @@ public class DomainServiceImpl
     @Override
     public PropertyConverter getPropertyConverter(String propertyType)
     {
-        String converterName = propertyType + "Converter";
-        PropertyConverter propertyConverter = converters.get(converterName);
-
+        final String converterName = runtimeApplication.getApplicationModel().getPropertyType(propertyType).getConverter();
+        final PropertyConverter propertyConverter = converters.get(converterName);
         if (propertyConverter == null)
         {
             throw new IllegalStateException("No converter '" + converterName + "' for type '" + propertyType + "'");
         }
         return propertyConverter;
     }
+
+
 
 
     @Override

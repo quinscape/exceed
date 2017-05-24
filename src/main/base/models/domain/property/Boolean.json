@@ -1,4 +1,4 @@
 {
   "name" : "Boolean",
-  "converter": "de.quinscape.exceed.runtime.domain.property.BooleanConverter"
+  "converter": "BooleanConverter"
 }

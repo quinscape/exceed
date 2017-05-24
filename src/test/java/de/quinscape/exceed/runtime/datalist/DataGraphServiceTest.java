@@ -47,7 +47,6 @@ public class DataGraphServiceTest
 
     private ModelSchemaService modelSchemaService = createSchemaService();
 
-    private TestDomainService domainService = new TestDomainService(modelSchemaService);
 
     private ModelSchemaService createSchemaService()
     {
@@ -75,9 +74,10 @@ public class DataGraphServiceTest
         propertyConverters.put("MapConverter", new MapConverter());
     };
 
+    private TestDomainService domainService = new TestDomainService(modelSchemaService, propertyConverters);
+
     private DataGraphService dataGraphService = new DataGraphService(
-        domainService,
-        propertyConverters
+        domainService
     );
 
     @Test
@@ -460,11 +460,16 @@ public class DataGraphServiceTest
 
         private final ModelSchemaService modelSchemaService;
 
+        private final Map<String, PropertyConverter> propertyConverters;
+
         private Map<String,DomainType> domainTypes;
 
 
-        public TestDomainService(ModelSchemaService modelSchemaService)
+        public TestDomainService(ModelSchemaService modelSchemaService, Map<String, PropertyConverter>
+            propertyConverters)
         {
+
+            this.propertyConverters = propertyConverters;
             this.modelSchemaService = modelSchemaService;
             domainTypes = domainTypeMap(
                 createDomainType("Foo", ImmutableList.of(

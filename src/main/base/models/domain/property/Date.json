@@ -1,4 +1,4 @@
 {
   "name" : "Date",
-  "converter": "de.quinscape.exceed.runtime.domain.property.DateConverter"
+  "converter": "DateConverter"
 }

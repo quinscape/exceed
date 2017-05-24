@@ -1,4 +1,4 @@
 {
-  "name":"RichText",
-  "converter":"RichTextConverter"
+  "name":"Object",
+  "converter":"ObjectConverter"
 }

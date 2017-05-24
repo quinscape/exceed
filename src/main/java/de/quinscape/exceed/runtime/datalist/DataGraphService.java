@@ -28,9 +28,6 @@ public class DataGraphService
 {
     private final static Logger log = LoggerFactory.getLogger(DataGraphService.class);
 
-
-    private final Map<String, PropertyConverter> propertyConverters;
-
     private final DataGraphJSONifier jsonifier;
 
     private final DomainService domainService;
@@ -39,10 +36,9 @@ public class DataGraphService
 
     private final static JSONBeanUtil util = JSONUtil.DEFAULT_UTIL;
 
-    public DataGraphService(DomainService domainService, Map<String, PropertyConverter> propertyConverters)
+    public DataGraphService(DomainService domainService)
     {
         this.domainService = domainService;
-        this.propertyConverters = propertyConverters;
 
         generator = new JSON();
         jsonifier = new DataGraphJSONifier();
@@ -297,8 +293,7 @@ public class DataGraphService
             }
             else
             {
-                final String converterName = getConverterName(domainPropertyType);
-                final PropertyConverter converter = propertyConverters.get(converterName);
+                final PropertyConverter converter = domainService.getPropertyConverter(domainPropertyType);
 
                 if (converter == null)
                 {
@@ -317,13 +312,6 @@ public class DataGraphService
             }
         }
     }
-
-
-    private String getConverterName(String type)
-    {
-        return type + "Converter";
-    }
-
 
     private boolean isComplexType(String type)
     {
