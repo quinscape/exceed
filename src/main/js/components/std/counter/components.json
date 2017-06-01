@@ -1,9 +1,14 @@
 {
     "components": {
         "Counter": {
+
+            "description" : "Simple test component offering a counter based on local component state",
+
             "classes": ["element"],
             "propTypes": {
                 "value": {
+                    "description" : "Initial value",
+                    "type" : "INTEGER",
                     "rule": "integer()"
                 }
             }

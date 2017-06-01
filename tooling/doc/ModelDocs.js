@@ -1,11 +1,10 @@
-const i18n = require("../service/i18n");
-import Memoizer from "../util/memoizer"
-import endsWith from "../util/endsWith"
-import Icon from "../ui/Icon"
-import NewWindow from "../ui/NewWindow"
-import cx from "classnames"
+const i18n = require("../../src/main/js/service/i18n");
+import Memoizer from "../../src/main/js/util/memoizer";
+import endsWith from "../../src/main/js/util/endsWith";
+import Icon from "../../src/main/js/ui/Icon";
+import cx from "classnames";
 
-import React from "react"
+import React from "react";
 
 function sortByName(a,b)
 {
@@ -130,7 +129,7 @@ function Navigation(props)
     const { modelLocations } = props;
 
     return (
-        <ul id="top" className="model-locations">
+        <ul id="top" className="model-locations no-bullet">
             {
                 modelLocations.map( (loc,idx) =>
                     <li key={ idx }>
@@ -138,9 +137,11 @@ function Navigation(props)
                             <Icon className="glyphicon-folder-open text-info" />
                             <span className="location">
                                     {
-                                        loc.suffix ?
+                                        " " + (
+                                            loc.suffix ?
                                             loc.prefix + "*" + loc.suffix :
                                             loc.prefix + (endsWith(loc.prefix, ".json") ? "" : "*")
+                                        )
                                     }
                                     </span>
                         </a>
@@ -156,9 +157,9 @@ class ModelDocs extends React.Component {
 
     render()
     {
-        const { locations, model } = this.props;
+        const { locations, modelDocs } = this.props;
 
-        const docs = model.docs;
+        const docs = modelDocs.docs;
 
         return (
             <div className="model-docs">
@@ -178,7 +179,7 @@ class ModelDocs extends React.Component {
                 <hr/>
 
                 {
-                    model.topLevelTypes.map(type => Section(type, docs) )
+                    modelDocs.topLevelTypes.map(type => Section(type, docs) )
                 }
 
             </div>

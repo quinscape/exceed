@@ -24,8 +24,6 @@ public class StaticFunctionReferences
 
     private final Set<String> editorTranslations;
 
-    private final Set<String> docsTranslations;
-
 
     public StaticFunctionReferences(
         @JSONParameter("usages")
@@ -39,15 +37,6 @@ public class StaticFunctionReferences
         this.editorTranslations = ImmutableSet.copyOf(
             collectReferencesFromModule(
             WebpackConfig.EDITOR_MAIN_MODULE,
-            Translator.I18N_CALL_NAME,
-            new HashSet<>(),
-            new HashSet<>()
-        ));
-
-        // determine the editor translation tag references for the current version
-        this.docsTranslations = ImmutableSet.copyOf(
-            collectReferencesFromModule(
-            WebpackConfig.DOCS_MAIN_MODULE,
             Translator.I18N_CALL_NAME,
             new HashSet<>(),
             new HashSet<>()
@@ -121,11 +110,5 @@ public class StaticFunctionReferences
     public Set<String> getEditorTranslations()
     {
         return editorTranslations;
-    }
-
-
-    public Set<String> getDocsTranslations()
-    {
-        return docsTranslations;
     }
 }

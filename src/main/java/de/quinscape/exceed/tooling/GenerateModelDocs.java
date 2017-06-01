@@ -17,6 +17,7 @@ import de.quinscape.exceed.runtime.model.ModelLocationRule;
 import de.quinscape.exceed.runtime.model.ModelLocationRules;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import de.quinscape.exceed.runtime.util.Util;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -25,6 +26,7 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.svenson.info.JSONClassInfo;
 import org.svenson.info.JSONPropertyInfo;
 import org.svenson.info.JavaObjectPropertyInfo;
+import org.svenson.util.JSONBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +46,7 @@ import java.util.stream.Collectors;
 
 
 /**
- * Autog-generates {@link ModelDocs} from the current model classes annotated with a few extra documentation annotations.
+ * Auto-generates {@link ModelDocs} from the current model classes annotated with a few extra documentation annotations.
  *
  * @see DocumentedMapKey
  * @see DocumentedModelType
@@ -85,12 +87,13 @@ public class GenerateModelDocs
     }
 
 
-    private ModelLocationRules modelLocationRules;
-
     /**
      * Maps model classes to {@link JavaDocs} instances
      */
     private Map<Class<?>, JavaDocs> docsMap = new HashMap<>();
+
+    private ModelLocationRules modelLocationRules;
+
 
     public ModelDocs getModelDocs()
     {
@@ -98,9 +101,6 @@ public class GenerateModelDocs
         {
 
             Set<Class<? extends TopLevelModel>> topLevelModels = readJavadocs();
-
-            // instantiate the spring model configuration just for the modelLocationRules configured in it.
-            modelLocationRules = new ModelConfiguration().modelLocationRules();
 
             List<String> topLevelModelDocs = new ArrayList<>();
 
@@ -386,7 +386,7 @@ public class GenerateModelDocs
         boolean first = true;
 
         StringBuilder sb = new StringBuilder();
-        for (ModelLocationRule rule : modelLocationRules.getRules())
+        for (ModelLocationRule rule : getModelLocationRules().getRules())
         {
             if (rule.getType().equals(Model.getType(cls)))
             {
@@ -434,6 +434,16 @@ public class GenerateModelDocs
     }
 
 
+    public ModelLocationRules getModelLocationRules()
+    {
+        if (modelLocationRules == null)
+        {
+            modelLocationRules = new ModelConfiguration().modelLocationRules();
+        }
+        return modelLocationRules;
+    }
+
+
     public static JavaDocs readJavadocs(File base, Class<?> declaringClass) throws IOException
     {
         File source =  JavaSourceUtil.sourceFile(base, declaringClass);
@@ -473,5 +483,24 @@ public class GenerateModelDocs
 
             return o2.getSimpleName();
         }
+    }
+
+
+    public static void main(String[] args) throws IOException
+    {
+        if (args.length != 1)
+        {
+            System.err.println("Usage: GenerateModelDocs <json-file-path>");
+            System.exit(1);
+        }
+
+        final GenerateModelDocs generator = new GenerateModelDocs();
+
+        final String json = JSONBuilder.buildObject()
+            .property("locations", generator.getModelLocationRules().getRules())
+            .property("modelDocs", generator.getModelDocs())
+            .output();
+
+        FileUtils.writeStringToFile(new File(args[0]), json, "UTF-8");
     }
 }

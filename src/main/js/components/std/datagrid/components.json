@@ -1,6 +1,7 @@
 {
     "components": {
         "DataGrid": {
+            "description" : "Datagrid element",
 
             "classes" : [ "element", "iterative-context", "model-aware"],
 
@@ -15,19 +16,27 @@
             },
             "propTypes": {
                 "type": {
+                    "description" : "Type expression. Usually just a type identifier '{ MyType }'",
+
                     "client": false,
                     "type" : "QUERY_EXPRESSION",
                     "rule" : "domainType()"
                 },
                 "orderBy": {
+                    "description" : "Field name to order the datagrid by default.",
+
                     "client": false,
                     "rule": "fieldListOf(query(prop('type')))"
                 },
                 "filter": {
+                    "description" : "Filter expression",
+
+                    "type" : "FILTER_EXPRESSION",
                     "client": false,
                     "rule": "filterExpr(query(prop('type')))"
                 },
                 "limit": {
+                    "description" : "Maximum number of rows to display per page.",
                     "client": false,
                     "type": "INTEGER"
                 }
@@ -47,15 +56,21 @@
             "providesContext" : "DataGrid.Field",
             "propTypes": {
                 "name": {
+                    "description" : "Field name for this column",
+
                     "rule": "fieldOf(parent.prop('type'))",
                     "required" : true
                 },
                 "filterTemplate": {
+                    "description" : "Filter template to use for the user-defined filtering. <code>field()</code> is the current field value, <code>filterValue()</code> the current user input into the filter field.",
+
                     "type": "FILTER_EXPRESSION",
                     "defaultValue" : "field().contains(filterValue())",
                     "client" : false
                 },
                 "heading": {
+                    "description" : "Heading to use for this column. Default is something like <code>{ i18n('MyType.myField') }</code>",
+
                     "type": "PLAINTEXT"
                 },
 

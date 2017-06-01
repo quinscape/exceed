@@ -12,6 +12,8 @@ const CleanObsoleteChunks = require('webpack-clean-obsolete-chunks');
 
 const TrackUsagePlugin = require("babel-plugin-track-usage/webpack/track-usage-plugin");
 
+const WatchTimePlugin = require("webpack-watch-time-plugin");
+
 // load .babelrc config but change turn off import handling because webpack does that
 // the .babelrc is used as-is for the tests (for which it is converted to commonjs)
 const babelConfig =(
@@ -93,8 +95,7 @@ module.exports = {
     context: path.resolve(__dirname, "src/main/js"),
     entry: {
         app: "./app-main.js",
-        editor: "./editor-main.js",
-        docs: "./docs-main.js"
+        editor: "./editor-main.js"
     },
 
     output: {
@@ -126,7 +127,8 @@ module.exports = {
             output: path.join(__dirname, "src/main/base/resources/js/track-usage.json")
         }),
         WebpackStatsPlugin(path.join(__dirname, "src/main/base/resources/js/webpack-stats.json")),
-        new CleanObsoleteChunks()
+        new CleanObsoleteChunks(),
+        WatchTimePlugin
     ],
 
     module: {

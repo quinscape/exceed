@@ -1,6 +1,9 @@
 {
     "components": {
         "Grid": {
+            "description" : "React-bootstrap Grid component. See <a href=\"https://react-bootstrap.github.io/components.html#grid\">react-bootstrap documentation</a>",
+
+
             "classes" : [ "view-child" ],
 
             "childRule": "component('Row')",
@@ -30,9 +33,14 @@
             ]
         },
         "Row": {
+            "description" : "React-bootstrap Row component. See <a href=\"https://react-bootstrap.github.io/components.html#grid\">react-bootstrap documentation</a>",
+
+
             "childRule": "component('Col')"
         },
         "Col": {
+            "description" : "React-bootstrap Col component. See <a href=\"https://react-bootstrap.github.io/components.html#grid\">react-bootstrap documentation</a>",
+
             "childRule": "hasClass('element')"
         }
     }

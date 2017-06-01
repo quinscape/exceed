@@ -27,7 +27,4 @@ public final class WebpackConfig
      * Bundle set for the exceed editor
      */
     public final static String EDITOR_BUNDLES = "common,editor";
-    public final static String DOCS_BUNDLES = "common,docs";
-
-    public static final String DOCS_MAIN_MODULE = "./docs-main";
 }

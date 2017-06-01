@@ -1,36 +1,48 @@
 {
     "components": {
         "Form": {
+
+            "description" : "Object form. Can either query a filtered list or work based off a cursor expression like '{ current }'.",
+
             "classes": ["element"],
             "queries": {
                 "data": "query( prop('type').fields(childAttributes('field', 'value'))).filter( prop('filter') )"
             },
             "propTypes": {
                 "data": {
+                    "description" : "Cursor expression to provide data and disable the query.",
                     "type": "CURSOR_EXPRESSION"
                 },
                 "type": {
+                    "description" : "Type to query (Query only)",
+
                     "client": false,
                     "type": "QUERY_EXPRESSION",
                     "rule": "domainType()",
                     "required" : true
                 },
                 "filter": {
+                    "description" : "Filter expression (Query only)",
+
                     "client": false,
                     "type" : "FILTER_EXPRESSION",
                     "rule": "filterExpr(query(prop('type')))",
                     "required" : true
                 },
                 "horizontal": {
+                    "description" : "Horizontal form mode",
+
                     "type": "BOOLEAN"
                 },
                 "labelClass": {
-                    "type": "CLASSES",
-                    "description" : "HTML classes to apply to the label element"
+                    "description" : "HTML classes to apply to the label element",
+
+                    "type": "CLASSES"
                 },
                 "wrapperClass": {
-                    "type": "CLASSES",
-                    "description" : "HTML classes to apply to the field wrapper element in horizontal mode"
+                    "description" : "HTML classes to apply to the field wrapper element in horizontal mode",
+
+                    "type": "CLASSES"
                 }
             },
             "providesContext": "DataListCursor",
@@ -38,6 +50,8 @@
             "parentRule": "!parentHasClass('iterative-context')"
         },
         "FormBlock": {
+            "description" : "Block of form elements",
+
             "classes": ["element"],
             "propTypes": {
                 "horizontal": {
@@ -57,6 +71,8 @@
             "parentRule": "!parentHasClass('iterative-context')"
         },
         "StaticText": {
+            "description" : "Static text field that formats its output to fit in with other form elements.",
+
             "classes": ["field", "element"],
             "propTypes": {
                 "context" : {
@@ -78,6 +94,8 @@
             "providesContext": "DataListCursor"
         },
         "Field": {
+            "description" : "General purpose form field adapting to the property type of its target where possible",
+
             "classes": ["element", "field"],
             "propTypes": {
                 "context" : {
@@ -85,19 +103,27 @@
                     "contextType" : "DataListCursor"
                 },
                 "value": {
+                    "description" : "Field name or relative cursor expression",
+
                     "rule": "fieldOf(parent.prop('type'))",
                     "type": "CURSOR_EXPRESSION",
                     "required" : true
                 },
                 "wrapperClass" : {
+                    "description" : "HTML classes for the field wrapper.",
+
                     "type" : "CLASSES"
                 },
                 "labelClass" : {
+                    "description" : "HTML classes for the label element.",
+
                     "type" : "CLASSES"
                 }
             }
         },
         "SelectField": {
+            "description" : "Select element whose options are based on a query. WIP",
+
             "classes": ["element", "field"],
             "queries": {
                 "data": "query( prop('type') )"
@@ -112,18 +138,27 @@
                 },
 
                 "value": {
+                    "description" : "Field name or relative cursor expression",
+
                     "rule": "fieldOf(parent.prop('type'))",
                     "type": "CURSOR_EXPRESSION",
                     "required" : true
                 },
 
                 "wrapperClass" : {
+                    "description" : "HTML classes for the field wrapper.",
+
                     "type" : "CLASSES"
                 },
                 "labelClass" : {
+                    "description" : "HTML classes for the label element.",
+
                     "type" : "CLASSES"
                 },
+
                 "type": {
+                    "description" : "Type to query for the select field contents",
+
                     "client": false,
                     "type": "QUERY_EXPRESSION",
                     "rule": "domainType()",
@@ -131,21 +166,25 @@
                 },
 
                 "optionDisplay": {
+                    "description" : "Cursor expression to resolve the display value for an option. If not given only optionValue is used.",
+
                     "rule": "fieldOf(prop('type'))",
-                    "type": "CURSOR_EXPRESSION",
-                    "description" : "Cursor expression to resolve the display value for an option. If not given only optionValue is used."
+                    "type": "CURSOR_EXPRESSION"
 
                 },
                 "optionValue": {
+                    "description" : "Cursor expression to resolve the value for an option",
+                    
                     "rule": "fieldOf(prop('type'))",
                     "type": "CURSOR_EXPRESSION",
-                    "required" : true,
-                    "description" : "Cursor expression to resolve the value for an option"
+                    "required" : true
                 }
             }
         },
 
         "Button": {
+            "description" : "Button to execute actions in standalone-views",
+
             "classes": ["element", "field", "toolbar-child"],
             "parentRule" : "!viewInProcess()",
             "propTypes": {
@@ -154,16 +193,22 @@
                     "contextType" : "DataListCursor"
                 },
                 "action" : {
+                    "description" : "Action (sequence)",
+
                     "type" : "ACTION_EXPRESSION",
                     "required" : true
                 },
                 "text" : {
+                    "description" : "Button text",
+
                     "required" : true,
                     "type" : "PLAINTEXT"
                 }
             }
         },
         "TButton": {
+            "description" : "Button to execute process transitions",
+
             "classes": ["element", "field", "toolbar-child"],
             "parentRule" : "viewInProcess()",
             "propTypes": {
@@ -180,25 +225,33 @@
                 },
                 "domainType" : {
                     "description" : "Defines the domain type to use for this button when it is ambiguous",
-                    "rule": "",
-                    "type" : "TRANSITION",
+                    "type" : "DOMAIN_TYPE_REFERENCE",
                     "required" : true
                 },
                 "discard" : {
+                    "description" : "Allows user input to be discarded if true. (Think 'cancel' transition)",
+
                     "type" : "BOOLEAN",
                     "defaultValue" : "transition(props.transition).discard"
                 },
                 "text" : {
+                    "description" : "Button text",
+
                     "required" : true,
                     "type" : "PLAINTEXT"
                 }
             }
         },
         "Toolbar": {
+            "description" : "Toolbar grouping multiple toolbar-child classified elements, providing the necessary padding rules",
+
             "classes": ["element"],
             "childRule": "hasClass('toolbar-child')"
         },
         "Toolbar.Separator" : {
+
+            "description" : "Separator in a toolbar",
+
             "classes": ["toolbar-child"]
         }
     }
