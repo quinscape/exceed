@@ -2,10 +2,7 @@
     "title": "Test",
     "content": {
         "main": {
-            "name": "Test",
-            "attrs": {
-                "value": "var default"
-            },
+            "name": "div",
             "kids" : [
                 {
                     "name": "em",
