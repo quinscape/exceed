@@ -15,6 +15,8 @@ public enum PropType
     /** transition name */
     TRANSITION,
 
+    DOMAIN_TYPE_REFERENCE,
+
     QUERY_EXPRESSION,
     CURSOR_EXPRESSION,
     FILTER_EXPRESSION,
