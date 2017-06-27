@@ -59,6 +59,21 @@
                     "required": true
                 }
             }
+        },
+        "Content": {
+            "description" : "Component used in templates to import content areas from the view using that template.",
+
+            "classes": ["element"],
+            "propTypes": {
+                "name": {
+                    "description" : "Name of the content area to import.",
+
+                    "type": "PLAINTEXT",
+                    "required": true,
+
+                    "defaultValue" : "'main'"
+                }
+            }
         }
     }
 }
