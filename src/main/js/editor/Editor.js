@@ -4,7 +4,6 @@ import UndoManager from "../editor/UndoManager";
 
 import ModelSelector from "./ModelSelector";
 import ConfigEditor from "./ConfigEditor";
-import ModelDocs from "./ModelDocs";
 import AutoHeight from "../ui/AutoHeight";
 import ButtonToolbar from "react-bootstrap/lib/ButtonToolbar";
 import ButtonGroup from "react-bootstrap/lib/ButtonGroup";
@@ -139,9 +138,7 @@ const Editor = ComponentSubscription(
 );
 
 const MODEL_EDITORS = {
-    "config" : ConfigEditor,
-    "model-docs" : ModelDocs
-
+    "config" : ConfigEditor
 };
 
 export default Editor
