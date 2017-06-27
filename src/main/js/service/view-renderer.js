@@ -135,11 +135,13 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
 
     if (name === "Content")
     {
-        const contentRoot = ctx.contentMap[attrs ? attrs.name : "main"];
-        if (contentRoot)
+        const contentName = (attrs && attrs.name) || "main";
+        const contentRoot = ctx.contentMap[contentName];
+        if (!contentRoot)
         {
-            renderRecursively(ctx, contentRoot, depth, childIndex);
+            throw new Error("No content '" + contentName + "' found");
         }
+        renderRecursively(ctx, contentRoot, depth, childIndex);
         return;
     }
 
