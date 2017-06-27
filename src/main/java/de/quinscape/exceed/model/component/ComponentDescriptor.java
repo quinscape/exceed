@@ -57,39 +57,44 @@ public class ComponentDescriptor
 
     private final Map<String,ComponentPropWizard> componentPropWizards;
 
+    private final String description;
+
     public ComponentDescriptor(
         @JSONParameter("vars")
-        Map<String, String> vars,
+            Map<String, String> vars,
 
         @JSONParameter("queries")
-        Map<String, Object> queries,
+            Map<String, Object> queries,
 
         @JSONParameter("propTypes")
         @JSONTypeHint(PropDeclaration.class)
-        Map<String, PropDeclaration> propTypes,
+            Map<String, PropDeclaration> propTypes,
 
         @JSONParameter("templates")
         @JSONTypeHint(ComponentTemplate.class)
-        List<ComponentTemplate> templates,
+            List<ComponentTemplate> templates,
 
         @JSONParameter("propWizards")
         @JSONTypeHint(ComponentPropWizard.class)
-        Map<String,ComponentPropWizard> componentPropWizards,
+            Map<String, ComponentPropWizard> componentPropWizards,
 
         @JSONParameter("classes")
-        List<String> classes,
+            List<String> classes,
 
         @JSONParameter("dataProvider")
-        String dataProvider,
+            String dataProvider,
 
         @JSONParameter("childRule")
-        String childRule,
+            String childRule,
 
         @JSONParameter("providesContext")
-        String providesContext,
+            String providesContext,
 
         @JSONParameter("parentRule")
-        String parentRule
+            String parentRule,
+
+        @JSONParameter("description")
+        String description
     ) throws ParseException
 
     {
@@ -107,6 +112,7 @@ public class ComponentDescriptor
         parentRuleExpression = ExpressionParser.parse(parentRule);
         this.componentPropWizards = Util.immutableMap(componentPropWizards);
 
+        this.description = description;
     }
 
     /**

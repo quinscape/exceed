@@ -16,8 +16,8 @@ import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.model.component.PropType;
 import de.quinscape.exceed.model.context.ScopeDeclaration;
 import de.quinscape.exceed.model.context.ScopeDeclarations;
-import de.quinscape.exceed.model.view.AttributeValue;
-import de.quinscape.exceed.model.view.AttributeValueType;
+import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.expression.ExpressionValueType;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.service.ActionExpressionRenderer;
@@ -83,7 +83,7 @@ public class ViewExpressionRenderer
         {
             throw new IllegalArgumentException("path can't be null");
         }
-        AttributeValue attr = componentModel.getAttribute(ComponentModel.ID_ATTRIBUTE);
+        ExpressionValue attr = componentModel.getAttribute(ComponentModel.ID_ATTRIBUTE);
         this.componentId = attr != null ? attr.getValue() : null;
         this.path = path;
         this.componentModel = componentModel;
@@ -163,11 +163,11 @@ public class ViewExpressionRenderer
     }
 
 
-    private boolean renderInlinedConstant(AttributeValue attribute)
+    private boolean renderInlinedConstant(ExpressionValue attribute)
     {
         StringBuilder buf = getBuffer();
-        AttributeValueType type = attribute.getType();
-        if (type == AttributeValueType.STRING)
+        ExpressionValueType type = attribute.getType();
+        if (type == ExpressionValueType.STRING)
         {
             String str = attribute.getValue();
             // only inline shortish strings
@@ -177,7 +177,7 @@ public class ViewExpressionRenderer
                 return true;
             }
         }
-        else if (type == AttributeValueType.EXPRESSION)
+        else if (type == ExpressionValueType.EXPRESSION)
         {
             ASTExpression astExpression = attribute.getAstExpression();
             if (astExpression.jjtGetNumChildren() == 1)
@@ -244,7 +244,7 @@ public class ViewExpressionRenderer
                 Node second = node.jjtGetChild(1);
                 if (second instanceof ASTString)
                 {
-                    AttributeValue attribute = componentModel.getAttribute(((ASTString) second).getValue());
+                    ExpressionValue attribute = componentModel.getAttribute(((ASTString) second).getValue());
                     if (attribute != null)
                     {
                         if (renderInlinedConstant(attribute))
@@ -326,7 +326,7 @@ public class ViewExpressionRenderer
             Node second = node.jjtGetChild(1);
             if (second instanceof ASTIdentifier)
             {
-                AttributeValue attribute = componentModel.getAttribute(((ASTIdentifier) second).getName());
+                ExpressionValue attribute = componentModel.getAttribute(((ASTIdentifier) second).getName());
                 if (attribute != null)
                 {
                     if (renderInlinedConstant(attribute))

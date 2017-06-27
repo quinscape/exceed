@@ -3,13 +3,19 @@ package de.quinscape.exceed.model.context;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.annotation.DocumentedModelType;
 import de.quinscape.exceed.model.domain.DomainProperty;
+import de.quinscape.exceed.model.domain.PropertyModel;
 import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import org.svenson.JSONProperty;
+
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * A single scoped property value within a scope.
  */
 public class ScopedPropertyModel
+    implements PropertyModel
 {
     private String name;
 

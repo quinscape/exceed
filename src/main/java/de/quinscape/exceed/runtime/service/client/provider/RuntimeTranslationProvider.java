@@ -142,11 +142,8 @@ public class RuntimeTranslationProvider
             {
                 for (String name : attrs.getNames())
                 {
-                    final AttributeValue value = attrs.getAttribute(name);
-                    if (value.getAstExpression() != null)
-                    {
-                        value.getAstExpression().jjtAccept(visitor, null);
-                    }
+                    final ExpressionValue value = attrs.getAttribute(name);
+                    visitor.visit(value);
                 }
             }
         }

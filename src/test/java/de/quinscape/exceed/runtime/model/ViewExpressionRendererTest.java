@@ -112,7 +112,7 @@ public class ViewExpressionRendererTest
 
         View view = new View();
         view.setName("testView");
-        applicationModel.addView(view.getName(), view);
+        applicationModel.addView(view);
         applicationModel.getMetaData().getScopeMetaModel().addDeclarations(view);
 
         ActionExpressionBaseRenderer renderer = new ViewExpressionRenderer(applicationModel, view, componentModel, "test", path, null);

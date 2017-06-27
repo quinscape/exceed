@@ -6,6 +6,7 @@ import de.quinscape.exceed.model.expression.ExpressionValue;
 import org.svenson.JSONProperty;
 
 public class DomainProperty
+    implements PropertyModel
 {
     public final static String DATA_LIST_ROOT_PROPERTY_TYPE = "DataListRoot";
 
@@ -34,6 +35,8 @@ public class DomainProperty
     private ForeignKeyDefinition foreignKey;
 
     private Object data;
+
+    private String description;
 
     public DomainProperty()
     {
@@ -69,6 +72,13 @@ public class DomainProperty
     public String getName()
     {
         return name;
+    }
+
+
+    @Override
+    public String getDescription()
+    {
+        return description;
     }
 
 
