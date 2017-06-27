@@ -15,14 +15,5 @@ describe("Doc-Template", function(){
 
         const out2 = template.render({});
         assert(out2 === "[,]");
-
-
-        const template = new Template("[$A,$B]");
-
-        const out = template.render({
-            A: "aaa",
-            B: "bbb"
-        });
-
     });
 });
