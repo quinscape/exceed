@@ -86,32 +86,34 @@ function AnnotatedExpression(props)
     const { value } = props;
 
     return (
-        <Annotate value={ value }>
-            <Rule regexp="Class\('(.*?)'\)">
-                {
-                    (value, cls) =>
-                        <span>
-                            Class(<a
-                                href={ "class-index.html#Class-" + cls }
+        <code>
+            <Annotate value={ value }>
+                <Rule regexp="Class\('(.*?)'\)">
+                    {
+                        (value, cls) =>
+                            <span>
+                                Class(<a
+                                    href={ "class-index.html#Class-" + cls }
+                                >
+                                    '{ cls }'
+                                </a>)
+                            </span>
+                    }
+                </Rule>
+                <Rule regexp="component\('(.*?)'\)">
+                    {
+                        (value, name) =>
+                            <span>
+                                component(<a
+                                href={ "component.html#Component-" + name }
                             >
-                                '{ cls }'
-                            </a>)
-                        </span>
-                }
-            </Rule>
-            <Rule regexp="component\('(.*?)'\)">
-                {
-                    (value, name) =>
-                        <span>
-                            component(<a
-                            href={ "component.html#Component-" + name }
-                        >
-                            '{ name }'
-                            </a>)
-                        </span>
-                }
-            </Rule>
-        </Annotate>
+                                '{ name }'
+                                </a>)
+                            </span>
+                    }
+                </Rule>
+            </Annotate>
+        </code>
     )
 }
 
@@ -151,6 +153,15 @@ function ComponentDoc(props)
                                 </td>
                                 <td>
                                     <RichDescription value={ propType.description }/>
+                                    {
+                                        propType.defaultValue &&
+                                            <p>
+                                                <strong>
+                                                    Default Value:
+                                                </strong>
+                                                <code>{ propType.defaultValue }</code>
+                                            </p>
+                                    }
                                 </td>
                             </tr>
                         )

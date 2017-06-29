@@ -1,4 +1,4 @@
-const i18n = require("../../src/main/js/service/i18n");
+import i18n from "../../src/main/js/service/i18n"
 import Memoizer from "../../src/main/js/util/memoizer";
 import endsWith from "../../src/main/js/util/endsWith";
 import Icon from "../../src/main/js/ui/Icon";
@@ -153,11 +153,16 @@ function Navigation(props)
 
 class ModelDocs extends React.Component {
 
+    static propTypes = {
+        locations: React.PropTypes.array.isRequired,
+        modelDocs: React.PropTypes.object.isRequired
+    };
+
     render()
     {
-        const { locations, model } = this.props;
+        const { locations, modelDocs } = this.props;
 
-        const docs = model.docs;
+        const docs = modelDocs.docs;
 
         return (
             <div className="model-docs">
@@ -177,7 +182,7 @@ class ModelDocs extends React.Component {
                 <hr/>
 
                 {
-                    model.topLevelTypes.map(type => Section(type, docs) )
+                    modelDocs.topLevelTypes.map(type => Section(type, docs) )
                 }
 
             </div>

@@ -155,6 +155,11 @@ public class GenerateModelDocs
         try
         {
             final String modelType = Model.getType(cls);
+            if (modelType == null)
+            {
+                return null;
+            }
+            
             final ModelDoc existing = visited.get(modelType);
             if (existing != null)
             {
@@ -188,7 +193,7 @@ public class GenerateModelDocs
 
             for (JSONPropertyInfo info : classInfo.getPropertyInfos())
             {
-                if (info == null || info.isIgnore() || (JSONUtil.findAnnotation(cls, info, Internal.class) != null))
+                if (info == null || info.isIgnore() || (JSONUtil.findAnnotation(info, Internal.class) != null))
                 {
                     continue;
                 }
@@ -201,9 +206,9 @@ public class GenerateModelDocs
 
                 String propertyDescription = cleanupDoc(findPropertyDoc(cls, (JavaObjectPropertyInfo) info));
 
-                final DocumentedMapKey keyAnno = JSONUtil.findAnnotation(cls, info, DocumentedMapKey.class);
-                final DocumentedModelType typeAnno = JSONUtil.findAnnotation(cls, info, DocumentedModelType.class);
-                final DocumentedSubTypes subTypesAnno = JSONUtil.findAnnotation(cls, info, DocumentedSubTypes.class);
+                final DocumentedMapKey keyAnno = JSONUtil.findAnnotation(info, DocumentedMapKey.class);
+                final DocumentedModelType typeAnno = JSONUtil.findAnnotation(info, DocumentedModelType.class);
+                final DocumentedSubTypes subTypesAnno = JSONUtil.findAnnotation(info, DocumentedSubTypes.class);
                 String keyName = keyAnno != null ? keyAnno.value() : DEFAULT_KEY_NAME;
 
 
@@ -226,7 +231,7 @@ public class GenerateModelDocs
                         else
                         {
                             propTypeDescription = typeAnno != null ? typeAnno.value() : "Array of " + typeHint.getSimpleName();
-                            subTypeDocs = Collections.singletonList(createModelDoc(typeHint, visited).getType());
+                            subTypeDocs = toSingletonTypeList(createModelDoc(typeHint, visited));
                         }
                     }
                 }
@@ -246,7 +251,7 @@ public class GenerateModelDocs
                         else
                         {
                             propTypeDescription = typeAnno != null ? typeAnno.value() : "Map " + keyName + " -> " + typeHint.getSimpleName();
-                            subTypeDocs = Collections.singletonList(createModelDoc(typeHint, visited).getType());
+                            subTypeDocs = toSingletonTypeList(createModelDoc(typeHint, visited));
                         }
                     }
                 }
@@ -261,7 +266,7 @@ public class GenerateModelDocs
                     if (propTypeDescription == null)
                     {
                         propTypeDescription = type.getSimpleName();
-                        subTypeDocs = Collections.singletonList(createModelDoc(type, visited).getType());
+                        subTypeDocs = toSingletonTypeList(createModelDoc(type, visited));
                     }
                 }
 
@@ -286,6 +291,19 @@ public class GenerateModelDocs
         catch (Exception e)
         {
             throw new ExceedRuntimeException(e);
+        }
+    }
+
+
+    private List<String> toSingletonTypeList(ModelDoc doc)
+    {
+        if (doc == null)
+        {
+            return null;
+        }
+        else
+        {
+            return Collections.singletonList(doc.getType());
         }
     }
 
