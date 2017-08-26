@@ -3,7 +3,7 @@
 package de.quinscape.exceed.expression;
 
 public
-class ASTAdd extends OperatorNode {
+class ASTAdd extends ArithmeticOperatorNode {
   public ASTAdd(int id) {
     super(id);
     setOperator(Operator.ADD);

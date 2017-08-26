@@ -17,6 +17,8 @@ import java.io.StringReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
+
 /**
  * Parses the exceed expression language in a tree of AST nodes.
  *
@@ -78,11 +80,11 @@ TOKEN : /* LITERALS */
 |
   < #DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])* >
 |
-  < FLOATING_POINT_LITERAL:
-    (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])?
-    | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])?
-    | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])?
-    | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]
+  < FRACTIONAL_LITERAL:
+    (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)?
+    | "." (["0"-"9"])+ (<EXPONENT>)?
+    | (["0"-"9"])+ <EXPONENT>
+    | (["0"-"9"])+ (<EXPONENT>)?
     >
 |
   < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
@@ -292,27 +294,35 @@ void NegateExpression() :
     Token op = null;
 }
 {
-    (( op = "-" )? ComputedPropertyChainExpression() ) #Negate(op != null)
+    (( op = "-" )? PropertyChainExpression() ) #Negate(op != null)
 }
-
-/** A Property Access. */
-void ComputedPropertyChainExpression() : {}
-{
-    (
-        // property access and methods
-        PropertyChainExpression() ( "[" Expr() "]" )*
-    ) #ComputedPropertyChain(>1)
-}
-
 
 /** A Property Access. */
 void PropertyChainExpression() : {}
 {
     (
         // property access and methods
-        ValueExpression() ("." PropertyAccessor() )*
+        ValueExpression() ( PropertyChainDot() | PropertyChainSquare() )*
     ) #PropertyChain(>1)
 }
+
+/** A Property Access. */
+void PropertyChainDot() : {}
+{
+    (
+        "." PropertyAccessor()
+    ) #PropertyChainDot
+}
+
+
+/** A Property Access. */
+void PropertyChainSquare() : {}
+{
+    (
+        "[" Expr() "]"
+    ) #PropertyChainSquare
+}
+
 
 void PropertyAccessor() : {}
 {
@@ -330,7 +340,7 @@ void ValueExpression() : {}
     String() |
     Map() |
     Array() |
-    Float() |
+    Decimal() |
     Integer() |
     Bool() |
     Null()
@@ -411,16 +421,16 @@ void MapEntry() #MapEntry:
     ( String() | Identifier() ) ":" Expr()
 }
 
-/** An Floating point number literal. */
-void Float() #Float :
+/** An decimal number literal with fractional digits. */
+void Decimal() #Decimal :
 {
     Token t;
 }
 {
-    t = <FLOATING_POINT_LITERAL>
+    t = <FRACTIONAL_LITERAL>
 
     {
-        jjtThis.setValue(Double.valueOf(t.image));
+        jjtThis.setValue(new BigDecimal(t.image));
     }
 }
 

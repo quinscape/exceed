@@ -252,7 +252,20 @@ public class ExpressionDumpVisitor
 
 
     @Override
-    public Object visit(ASTComputedPropertyChain node, Object data)
+    public Object visit(ASTPropertyChainDot node, Object data)
+    {
+        indent();
+        buf.append(node);
+        ++indent;
+        node.childrenAccept(this, data);
+        --indent;
+
+        return data;
+    }
+
+
+    @Override
+    public Object visit(ASTPropertyChainSquare node, Object data)
     {
         indent();
         buf.append(node);
@@ -355,7 +368,7 @@ public class ExpressionDumpVisitor
 
 
     @Override
-    public Object visit(ASTFloat node, Object data)
+    public Object visit(ASTDecimal node, Object data)
     {
         indent();
         buf.append(node).append(node.getValue());

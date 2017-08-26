@@ -5,21 +5,23 @@ import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
-import de.quinscape.exceed.runtime.expression.ExpressionContext;
-import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
 import de.quinscape.exceed.runtime.expression.annotation.Identifier;
 import de.quinscape.exceed.runtime.expression.annotation.Operation;
+import de.quinscape.exceed.runtime.util.ExpressionUtil;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 public class ExpressionEnvironmentTest
 {
+    private final static Logger log = LoggerFactory.getLogger(ExpressionEnvironmentTest.class);
 
     @Test
     public void testLogical() throws Exception
@@ -110,12 +112,12 @@ public class ExpressionEnvironmentTest
     {
 
         {
-            Double result = (Double) transform("1.0 + 2.0");
-            assertThat(result, is(3.0));
+            BigDecimal result = (BigDecimal) transform("1.0 + 2.0");
+            assertThat(result, is(new BigDecimal("3.0")));
         }
         {
-            Double result = (Double) transform("1 + 1.0");
-            assertThat(result, is(2.0));
+            BigDecimal result = (BigDecimal) transform("1 + 1.0");
+            assertThat(result, is(new BigDecimal("2.0")));
         }
         {
             Integer result = (Integer) transform("11 + 12");
@@ -132,12 +134,12 @@ public class ExpressionEnvironmentTest
     {
 
         {
-            Double result = (Double) transform("2.0 - 1.0");
-            assertThat(result, is(1.0));
+            BigDecimal result = (BigDecimal) transform("2.0 - 1.0");
+            assertThat(result, is(new BigDecimal("1.0")));
         }
         {
-            Double result = (Double) transform("10 - 1.0");
-            assertThat(result, is(9.0));
+            BigDecimal result = (BigDecimal) transform("10 - 1.0");
+            assertThat(result, is(new BigDecimal("9.0")));
         }
         {
             Integer result = (Integer) transform("12 - 11");
@@ -154,12 +156,8 @@ public class ExpressionEnvironmentTest
     {
 
         {
-            Double result = (Double) transform("2.0 * 3.0");
-            assertThat(result, is(6.0));
-        }
-        {
-            Double result = (Double) transform("10 * 2.0");
-            assertThat(result, is(20.0));
+            BigDecimal result = (BigDecimal) transform("2.0 * 3.0");
+            assertThat(result, is(new BigDecimal("6.00")));
         }
         {
             Integer result = (Integer) transform("2 * 7");
@@ -176,18 +174,20 @@ public class ExpressionEnvironmentTest
     public void testDivision() throws Exception
     {
         {
-            Double result = (Double) transform("2.0 / 3.0");
-            assertThat(result, is(0.6666666666666666));
+            BigDecimal result = (BigDecimal) transform("2.000 / 3.0");
+
+            // xxx: keep scale?
+            assertThat(result, is( new BigDecimal("0.667")));
         }
 
         {
-            Double result = (Double) transform("4.5 / 2");
-            assertThat(result, is(2.0));
+            BigDecimal result = (BigDecimal) transform("4.50 / 2");
+            assertThat(result, is(new BigDecimal("2.25")));
         }
 
         {
-            Double result = (Double) transform("10 / 2.5");
-            assertThat(result, is(4.0));
+            BigDecimal result = (BigDecimal) transform("10 / 2.5");
+            assertThat(result, is(new BigDecimal("4")));
         }
     }
 
@@ -236,8 +236,10 @@ public class ExpressionEnvironmentTest
 
     private Object transform(String expr) throws ParseException
     {
+
         TestEnvironment env = new TestEnvironment();
         ASTExpression astExpression = ExpressionParser.parse(expr);
+        log.info(ExpressionUtil.dump(astExpression));
         return svc.evaluate(astExpression, env);
     }
 

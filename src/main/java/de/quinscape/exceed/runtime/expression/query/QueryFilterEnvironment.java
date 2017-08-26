@@ -222,7 +222,7 @@ public class QueryFilterEnvironment
         // otherwise we just concatenate together the parts and convert it to a field.
         for (int i = 0; i < propertyChainNode.jjtGetNumChildren(); i++)
         {
-            Node childNode = propertyChainNode.jjtGetChild(i);
+            Node childNode = i == 0 ? propertyChainNode.jjtGetChild(0) : propertyChainNode.jjtGetChild(i).jjtGetChild(0);
 
             if (childNode instanceof ASTFunction)
             {

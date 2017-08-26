@@ -4,12 +4,11 @@ import de.quinscape.exceed.expression.ASTAdd;
 import de.quinscape.exceed.expression.ASTArray;
 import de.quinscape.exceed.expression.ASTAssignment;
 import de.quinscape.exceed.expression.ASTBool;
-import de.quinscape.exceed.expression.ASTComputedPropertyChain;
+import de.quinscape.exceed.expression.ASTDecimal;
 import de.quinscape.exceed.expression.ASTDiv;
 import de.quinscape.exceed.expression.ASTEquality;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ASTExpressionSequence;
-import de.quinscape.exceed.expression.ASTFloat;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTIdentifier;
 import de.quinscape.exceed.expression.ASTInteger;
@@ -22,6 +21,8 @@ import de.quinscape.exceed.expression.ASTNegate;
 import de.quinscape.exceed.expression.ASTNot;
 import de.quinscape.exceed.expression.ASTNull;
 import de.quinscape.exceed.expression.ASTPropertyChain;
+import de.quinscape.exceed.expression.ASTPropertyChainDot;
+import de.quinscape.exceed.expression.ASTPropertyChainSquare;
 import de.quinscape.exceed.expression.ASTRelational;
 import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.ASTSub;
@@ -30,16 +31,20 @@ import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.Operator;
 import de.quinscape.exceed.expression.SimpleNode;
 import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
+import de.quinscape.exceed.runtime.expression.annotation.Identifier;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.svenson.util.JSONBeanUtil;
 import org.svenson.util.Util;
 
+import javax.validation.constraints.Null;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -61,6 +66,10 @@ public abstract class ExpressionEnvironment
     /** The name of the environment, used in error messages. */
     protected final String environmentName;
 
+    private final static int PRECISION_INT = 0;
+    private final static int PRECISION_LONG = 1;
+    private final static int PRECISION_DECIMAL = 2;
+    private final static int PRECISION_STRING = 3;
 
     void setOperationService(OperationService operationService)
     {
@@ -104,40 +113,11 @@ public abstract class ExpressionEnvironment
 
         for (int i = 1; i < node.jjtGetNumChildren(); i++)
         {
-            kid = node.jjtGetChild(i);
-            chainObject = propertyChainPart(kid, chainObject, i);
+            chainObject = node.jjtGetChild(i).jjtAccept(this, chainObject);
         }
         return chainObject;
     }
-
-
-    /**
-     * Called once for every child of an ASTPropertyChain.
-     *
-     * @param kid           current child
-     * @param chainObject   current property chain object
-     *
-     * @return  new / changed property chain object
-     */
-    protected Object propertyChainPart(Node kid, Object chainObject, int index)
-    {
-        if (kid instanceof ASTIdentifier)
-        {
-            String name = ((ASTIdentifier) kid).getName();
-            if (chainObject == null)
-            {
-                throw new IllegalStateException("Cannot access property '" + name + "' of null");
-            }
-            chainObject = JSONUtil.DEFAULT_UTIL.getProperty(chainObject, name);
-        }
-        if (kid instanceof ASTFunction)
-        {
-            chainObject = kid.jjtAccept(this, chainObject);
-
-        }
-        return chainObject;
-    }
-
+    
 
     @Override
     public Object visit(ASTFunction node, Object chainObject)
@@ -227,7 +207,7 @@ public abstract class ExpressionEnvironment
 
 
     @Override
-    public Object visit(ASTFloat node, Object data)
+    public Object visit(ASTDecimal node, Object data)
     {
         return node.getValue();
     }
@@ -254,7 +234,7 @@ public abstract class ExpressionEnvironment
     {
         if (!logicalOperatorsAllowed())
         {
-            throw new ExpressionEnvironmentException(environmentName + ": Logical or operators not allowed in query expressions");
+            throw new ExpressionEnvironmentException(environmentName + ": Logical or operators not allowed.");
         }
 
         int numKids = node.jjtGetNumChildren();
@@ -287,7 +267,7 @@ public abstract class ExpressionEnvironment
     {
         if (!logicalOperatorsAllowed())
         {
-            throw new ExpressionEnvironmentException(environmentName + ": Logical and operators not allowed in query expressions");
+            throw new ExpressionEnvironmentException(environmentName + ": Logical and operators not allowed.");
         }
 
         int numKids = node.jjtGetNumChildren();
@@ -318,7 +298,7 @@ public abstract class ExpressionEnvironment
     {
         if (!comparatorsAllowed())
         {
-            throw new ExpressionEnvironmentException(environmentName + ": Equality operators not allowed in query expressions");
+            throw new ExpressionEnvironmentException(environmentName + ": Equality operators not allowed.");
         }
 
         Object lft = node.jjtGetChild(0).jjtAccept(this, null);
@@ -341,22 +321,21 @@ public abstract class ExpressionEnvironment
                     throw new ExpressionEnvironmentException("Invalid operator: " + node.getOperator());
             }
         }
-        else if (lft instanceof Double || rgt instanceof Double)
+        else if (lft instanceof BigDecimal && rgt instanceof BigDecimal)
         {
-            double vLft = toDouble(lft);
-            double vRgt = toDouble(rgt);
+            BigDecimal vLft = toDecimal(lft);
+            BigDecimal vRgt = toDecimal(rgt);
 
             switch (node.getOperator())
             {
-
                 case LESS:
-                    return vLft < vRgt;
+                    return vLft.compareTo(vRgt) < 0;
                 case LESS_OR_EQUALS:
-                    return vLft <= vRgt;
+                    return vLft.compareTo(vRgt) <= 0;
                 case GREATER:
-                    return vLft > vRgt;
+                    return vLft.compareTo(vRgt) > 0;
                 case GREATER_OR_EQUALS:
-                    return vLft >= vRgt;
+                    return vLft.compareTo(vRgt) >= 0;
                 default:
                     throw new ExpressionEnvironmentException("Invalid operator " + node.getOperator());
             }
@@ -380,10 +359,10 @@ public abstract class ExpressionEnvironment
                     throw new ExpressionEnvironmentException("Invalid operator " + node.getOperator());
             }
         }
-        else if (lft instanceof Integer && rgt instanceof Integer)
+        else if (lft instanceof Integer || rgt instanceof Integer)
         {
-            int vLft = (Integer) lft;
-            int vRgt = (Integer) rgt;
+            int vLft = toInteger(lft);
+            int vRgt = toInteger(rgt);
 
             switch (node.getOperator())
             {
@@ -409,19 +388,19 @@ public abstract class ExpressionEnvironment
 
 
 
-    protected double toDouble(Object value)
+    protected BigDecimal toDecimal(Object value)
     {
-        if (value instanceof Double)
+        if (value instanceof BigDecimal)
         {
-            return (double) value;
+            return (BigDecimal) value;
         }
         else if (value instanceof Long)
         {
-            return ((Long) value).doubleValue();
+            return new BigDecimal((Long)value);
         }
         else if (value instanceof Integer)
         {
-            return ((Integer) value).doubleValue();
+            return new BigDecimal((Integer)value);
         }
         else
         {
@@ -432,9 +411,9 @@ public abstract class ExpressionEnvironment
 
     protected long toLong(Object value)
     {
-        if (value instanceof Double)
+        if (value instanceof BigDecimal)
         {
-            return (long) value;
+            return ((BigDecimal) value).longValue();
         }
         else if (value instanceof Long)
         {
@@ -450,13 +429,33 @@ public abstract class ExpressionEnvironment
         }
     }
 
+    protected int toInteger(Object value)
+    {
+        if (value instanceof BigDecimal)
+        {
+            return ((BigDecimal) value).intValue();
+        }
+        else if (value instanceof Long)
+        {
+            return ((Long) value).intValue();
+        }
+        else if (value instanceof Integer)
+        {
+            return ((Integer) value);
+        }
+        else
+        {
+            throw new ExpressionEnvironmentException("Cannot cast to long: " + value);
+        }
+    }
+
 
     @Override
     public Object visit(ASTEquality node, Object data)
     {
         if (!comparatorsAllowed())
         {
-            throw new ExpressionEnvironmentException(environmentName + ": Relational operators not allowed in query expressions");
+            throw new ExpressionEnvironmentException(environmentName + ": Relational operators not allowed.");
         }
 
         Object lft = node.jjtGetChild(0).jjtAccept(this, null);
@@ -478,97 +477,53 @@ public abstract class ExpressionEnvironment
     {
         if (!arithmeticOperatorsAllowed())
         {
-            throw new ExpressionEnvironmentException(environmentName + ": Addition operators not allowed in query expressions");
+            throw new ExpressionEnvironmentException(environmentName + ": Addition operators not allowed.");
         }
-
-        boolean stringAdd = false;
-        boolean floatPrecision = false;
 
         int numKids = node.jjtGetNumChildren();
         List<Object> results = new ArrayList<>(numKids);
-        for (int i = 0; i < numKids; i++)
+
+        int maxPrecision = findMaxPrecision(node, numKids, results);
+
+        switch(maxPrecision)
         {
-
-            Object operand;
-
-            Node kid = node.jjtGetChild(i);
-            if (kid instanceof ASTIdentifier)
+            // int
+            case PRECISION_INT:
             {
-                operand = kid.jjtAccept(this, null);
-            }
-            else if (kid instanceof ASTFunction)
-            {
-                operand = kid.jjtAccept(this, null);
-            }
-            else if (kid instanceof ASTString)
-            {
-                operand = ((ASTString) kid).getValue();
-                stringAdd = true;
-            }
-            else if (kid instanceof ASTFloat)
-            {
-                operand = ((ASTFloat) kid).getValue();
-                floatPrecision = true;
-            }
-            else if (kid instanceof ASTInteger)
-            {
-                operand = ((ASTInteger) kid).getValue();
-            }
-            else if (kid instanceof ASTBool)
-            {
-                operand = ((ASTBool) kid).getValue();
-            }
-            else if (kid instanceof ASTNull)
-            {
-                operand = null;
-            }
-            else
-            {
-                throw new ExpressionEnvironmentException("Cannot apply ADD to node " + kid);
-            }
-
-            results.add(operand);
-        }
-
-        if (stringAdd)
-        {
-            StringBuilder sb = new StringBuilder();
-            results.forEach(sb::append);
-            return sb.toString();
-        }
-        else
-        {
-            double value = 0;
-
-            for (Object result : results)
-            {
-                if (result instanceof Integer)
+                int number = toInteger(results.get(0));
+                for (int i = 1; i < numKids; i++)
                 {
-                    value += (Integer) result;
+                    number += toInteger(results.get(i));
                 }
-                else if (result instanceof Long)
-                {
-                    value += (Long) result;
-                }
-                else if (result instanceof Double)
-                {
-                    value += (Double) result;
-                }
-                else
-                {
-                    throw new ExpressionEnvironmentException("Cannot add " + result + (result != null ? "( " + result
-                        .getClass() + ")" : "") + " as number");
-                }
+                return number;
             }
+            // long
+            case PRECISION_LONG:
+            {
 
-            if (floatPrecision)
-            {
-                return value;
+                long number = toLong(results.get(0));
+                for (int i = 1; i < numKids; i++)
+                {
+                    number += toLong(results.get(i));
+                }
+                return number;
             }
-            else
+            // decimal
+            case PRECISION_DECIMAL:
             {
-                return (int) value;
+                BigDecimal number = toDecimal(results.get(0));
+                for (int i = 1; i < numKids; i++)
+                {
+                    number = number.add(toDecimal(results.get(i)));
+                }
+                return number;
             }
+            case PRECISION_STRING:
+                StringBuilder sb = new StringBuilder();
+                results.forEach(sb::append);
+                return sb.toString();
+            default:
+                throw new IllegalStateException("Unhandled precision: " + maxPrecision);
         }
     }
 
@@ -578,51 +533,51 @@ public abstract class ExpressionEnvironment
     {
         if (!arithmeticOperatorsAllowed())
         {
-            throw new ExpressionEnvironmentException(environmentName + ": Addition operators not allowed in query expressions");
+            throw new ExpressionEnvironmentException(environmentName + ": Addition operators not allowed.");
         }
-
-        boolean floatPrecision = false;
 
         int numKids = node.jjtGetNumChildren();
-
-        double value = 0;
-
         List<Object> results = new ArrayList<>(numKids);
-        for (int i = 0; i < numKids; i++)
-        {
-            Object operand = node.jjtGetChild(i).jjtAccept(this, null);
 
-            if (operand instanceof Integer)
-            {
-                Integer op = (Integer) operand;
-                value = i == 0 ? op : value - op;
-            }
-            else if (operand instanceof Long)
-            {
-                Long op = (Long) operand;
-                value = i == 0 ? op : value - op;
-            }
-            else if (operand instanceof Double)
-            {
-                Double op = (Double) operand;
-                value = i == 0 ? op : value - op;
-                floatPrecision = true;
-            }
-            else
-            {
-                throw new ExpressionEnvironmentException("Cannot subtract " + operand +
-                    (operand != null ? "( " + operand.getClass() + ")" : "")
-                    + " as number");
-            }
+        int maxPrecision = findMaxPrecision(node, numKids, results);
 
-        }
-        if (floatPrecision)
+        switch(maxPrecision)
         {
-            return value;
-        }
-        else
-        {
-            return (int) value;
+            // int
+            case PRECISION_INT:
+            {
+                int number = toInteger(results.get(0));
+                for (int i = 1; i < numKids; i++)
+                {
+                    number -= toInteger(results.get(i));
+                }
+                return number;
+            }
+            // long
+            case PRECISION_LONG:
+            {
+
+                long number = toLong(results.get(0));
+                for (int i = 1; i < numKids; i++)
+                {
+                    number -= toLong(results.get(i));
+                }
+                return number;
+            }
+            // decimal
+            case PRECISION_DECIMAL:
+            {
+                BigDecimal number = toDecimal(results.get(0));
+                for (int i = 1; i < numKids; i++)
+                {
+                    number = number.subtract(toDecimal(results.get(i)));
+                }
+                return number;
+            }
+            case PRECISION_STRING:
+                throw new ExpressionEnvironmentException(environmentName + ": Cannot subtract strings");
+            default:
+                throw new IllegalStateException("Unhandled precision: " + maxPrecision);
         }
     }
 
@@ -632,51 +587,82 @@ public abstract class ExpressionEnvironment
     {
         if (!arithmeticOperatorsAllowed())
         {
-            throw new ExpressionEnvironmentException(environmentName + ": Addition operators not allowed in query expressions");
+            throw new ExpressionEnvironmentException(environmentName + ": Addition operators not allowed.");
         }
 
-        boolean floatPrecision = false;
-
         int numKids = node.jjtGetNumChildren();
-
-        double value = 0;
-
         List<Object> results = new ArrayList<>(numKids);
+
+        int maxPrecision = findMaxPrecision(node, numKids, results);
+
+        switch(maxPrecision)
+        {
+            // int
+            case PRECISION_INT:
+            {
+                int number = toInteger(results.get(0));
+                for (int i = 1; i < numKids; i++)
+                {
+                    number *= toInteger(results.get(i));
+                }
+                return number;
+            }
+            // long
+            case PRECISION_LONG:
+            {
+
+                long number = toLong(results.get(0));
+                for (int i = 1; i < numKids; i++)
+                {
+                    number *= toLong(results.get(i));
+                }
+                return number;
+            }
+            // decimal
+            case PRECISION_DECIMAL:
+            {
+                BigDecimal number = toDecimal(results.get(0));
+                for (int i = 1; i < numKids; i++)
+                {
+                    number = number.multiply(toDecimal(results.get(i)));
+                }
+                return number;
+            }
+            case PRECISION_STRING:
+                throw new ExpressionEnvironmentException(environmentName + ": Cannot multiply strings");
+            default:
+                throw new IllegalStateException("Unhandled precision: " + maxPrecision);
+        }
+    }
+
+
+    private int findMaxPrecision(Node node, int numKids, List<Object> results)
+    {
+        int maxPrecision = PRECISION_INT;
         for (int i = 0; i < numKids; i++)
         {
             Object operand = node.jjtGetChild(i).jjtAccept(this, null);
 
-            if (operand instanceof Integer)
+            if (operand instanceof String)
             {
-                Integer op = (Integer) operand;
-                value = i == 0 ? op : value * op;
+                maxPrecision = Math.max(maxPrecision, PRECISION_STRING);
+            }
+            else if (operand instanceof BigDecimal)
+            {
+                maxPrecision = Math.max(maxPrecision, PRECISION_DECIMAL);
             }
             else if (operand instanceof Long)
             {
-                Long op = (Long) operand;
-                value = i == 0 ? op : value * op;
+                maxPrecision = Math.max(maxPrecision, PRECISION_LONG);
             }
-            else if (operand instanceof Double)
+            else if (!(operand instanceof Integer))
             {
-                Double op = (Double) operand;
-                value = i == 0 ? op : value * op;
-                floatPrecision = true;
+                throw new ExpressionEnvironmentException(environmentName + ": Invalid operand: " + operand);
             }
-            else
-            {
-                throw new ExpressionEnvironmentException("Cannot multiply " + operand +
-                    (operand != null ? "( " + operand.getClass() + ")" : ""));
-            }
-
+            
+            results.add(operand);
         }
-        if (floatPrecision)
-        {
-            return value;
-        }
-        else
-        {
-            return (int) value;
-        }
+        return maxPrecision;
     }
 
 
@@ -685,50 +671,51 @@ public abstract class ExpressionEnvironment
     {
         if (!arithmeticOperatorsAllowed())
         {
-            throw new ExpressionEnvironmentException(environmentName + ": Addition operators not allowed in query expressions");
+            throw new ExpressionEnvironmentException(environmentName + ": Addition operators not allowed.");
         }
-
-        boolean floatPrecision = false;
 
         int numKids = node.jjtGetNumChildren();
-
-        double value = 0;
-
         List<Object> results = new ArrayList<>(numKids);
-        for (int i = 0; i < numKids; i++)
-        {
-            Object operand = node.jjtGetChild(i).jjtAccept(this, null);
 
-            if (operand instanceof Integer)
-            {
-                Integer op = (Integer) operand;
-                value = i == 0 ? op : ((int)value) / op;
-            }
-            else if (operand instanceof Long)
-            {
-                Long op = (Long) operand;
-                value = i == 0 ? op : ((long)value) / op;
-            }
-            else if (operand instanceof Double)
-            {
-                Double op = (Double) operand;
-                value = i == 0 ? op : value / op;
-                floatPrecision = true;
-            }
-            else
-            {
-                throw new ExpressionEnvironmentException(environmentName + ": Cannot multiply " + operand +
-                    (operand != null ? "( " + operand.getClass() + ")" : ""));
-            }
+        int maxPrecision = findMaxPrecision(node, numKids, results);
 
-        }
-        if (floatPrecision)
+        switch(maxPrecision)
         {
-            return value;
-        }
-        else
-        {
-            return (int) value;
+            // int
+            case PRECISION_INT:
+            {
+                int number = toInteger(results.get(0));
+                for (int i = 1; i < numKids; i++)
+                {
+                    number /= toInteger(results.get(i));
+                }
+                return number;
+            }
+            // long
+            case PRECISION_LONG:
+            {
+
+                long number = toLong(results.get(0));
+                for (int i = 1; i < numKids; i++)
+                {
+                    number /= toLong(results.get(i));
+                }
+                return number;
+            }
+            // decimal
+            case PRECISION_DECIMAL:
+            {
+                BigDecimal number = toDecimal(results.get(0));
+                for (int i = 1; i < numKids; i++)
+                {
+                    number = number.divide(toDecimal(results.get(i)), number.scale(), BigDecimal.ROUND_HALF_EVEN);
+                }
+                return number;
+            }
+            case PRECISION_STRING:
+                throw new ExpressionEnvironmentException(environmentName + ": Cannot divide strings");
+            default:
+                throw new IllegalStateException("Unhandled precision: " + maxPrecision);
         }
     }
 
@@ -882,22 +869,22 @@ public abstract class ExpressionEnvironment
     }
 
 
-    @Override
-    public Object visit(ASTComputedPropertyChain node, Object data)
-    {
-        Node kid = node.jjtGetChild(0);
-
-        Object chainObject = kid.jjtAccept(this, null);
-
-        for (int i = 1; i < node.jjtGetNumChildren(); i++)
-        {
-            kid = node.jjtGetChild(i);
-            Object key = kid.jjtAccept(this, chainObject);
-
-            chainObject = JSONUtil.DEFAULT_UTIL.getProperty(chainObject, key.toString());
-        }
-        return chainObject;
-    }
+//    @Override
+//    public Object visit(ASTComputedPropertyChain node, Object data)
+//    {
+//        Node kid = node.jjtGetChild(0);
+//
+//        Object chainObject = kid.jjtAccept(this, null);
+//
+//        for (int i = 1; i < node.jjtGetNumChildren(); i++)
+//        {
+//            kid = node.jjtGetChild(i);
+//            Object key = kid.jjtAccept(this, chainObject);
+//
+//            chainObject = JSONUtil.DEFAULT_UTIL.getProperty(chainObject, key.toString());
+//        }
+//        return chainObject;
+//    }
 
 
     @Override
@@ -927,6 +914,72 @@ public abstract class ExpressionEnvironment
     }
 
 
+    @Override
+    public Object visit(ASTPropertyChainDot node, Object chainObject)
+    {
+        Node kid = node.jjtGetChild(0);
+
+        if (kid instanceof ASTIdentifier)
+        {
+            String name = ((ASTIdentifier) kid).getName();
+            if (chainObject == null)
+            {
+                throw new IllegalStateException("Cannot access property '" + name + "' of null");
+            }
+            return JSONUtil.DEFAULT_UTIL.getProperty(chainObject, name);
+        }
+        else if (kid instanceof ASTFunction)
+        {
+            return kid.jjtAccept(this, chainObject);
+        }
+        else
+        {
+            throw new IllegalStateException("Unexpected property chain dot child" + kid);
+        }
+    }
+
+
+    @Override
+    public Object visit(ASTPropertyChainSquare node, Object chainObject)
+    {
+        Node kid = node.jjtGetChild(0);
+
+        Object result = kid.jjtAccept(this, null);
+
+        if (result == null)
+        {
+            throw new IllegalStateException("Cannot access 'null' property of" + chainObject);
+        }
+
+        if (chainObject instanceof Collection)
+        {
+            if (!(result instanceof Number))
+            {
+                throw new IllegalStateException("Invalid index: " + result);
+            }
+            int index = ((Number) chainObject).intValue();
+            if (chainObject instanceof List)
+            {
+                return ((List<?>)chainObject).get(index);
+            }
+            else
+            {
+                Iterator<?> iterator = ((Collection)chainObject).iterator();
+                while (index-- >= 0)
+                {
+                    chainObject = iterator.next();
+                }
+
+                return chainObject;
+            }
+        }
+        else
+        {
+            return JSONUtil.DEFAULT_UTIL.getProperty(chainObject, result.toString());
+        }
+    }
+
+
     protected abstract boolean logicalOperatorsAllowed();
 
     protected abstract boolean comparatorsAllowed();
@@ -936,5 +989,8 @@ public abstract class ExpressionEnvironment
     protected abstract boolean arithmeticOperatorsAllowed();
 
     protected abstract boolean expressionSequenceAllowed();
+
+
+
 
 }

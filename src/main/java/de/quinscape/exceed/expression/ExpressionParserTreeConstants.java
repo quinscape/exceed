@@ -17,18 +17,19 @@ public interface ExpressionParserTreeConstants
   public int JJTDIV = 11;
   public int JJTNOT = 12;
   public int JJTNEGATE = 13;
-  public int JJTCOMPUTEDPROPERTYCHAIN = 14;
-  public int JJTPROPERTYCHAIN = 15;
-  public int JJTIDENTIFIER = 16;
-  public int JJTFUNCTION = 17;
-  public int JJTINTEGER = 18;
-  public int JJTSTRING = 19;
-  public int JJTMAP = 20;
-  public int JJTARRAY = 21;
-  public int JJTMAPENTRY = 22;
-  public int JJTFLOAT = 23;
-  public int JJTBOOL = 24;
-  public int JJTNULL = 25;
+  public int JJTPROPERTYCHAIN = 14;
+  public int JJTPROPERTYCHAINDOT = 15;
+  public int JJTPROPERTYCHAINSQUARE = 16;
+  public int JJTIDENTIFIER = 17;
+  public int JJTFUNCTION = 18;
+  public int JJTINTEGER = 19;
+  public int JJTSTRING = 20;
+  public int JJTMAP = 21;
+  public int JJTARRAY = 22;
+  public int JJTMAPENTRY = 23;
+  public int JJTDECIMAL = 24;
+  public int JJTBOOL = 25;
+  public int JJTNULL = 26;
 
 
   public String[] jjtNodeName = {
@@ -46,8 +47,9 @@ public interface ExpressionParserTreeConstants
     "Div",
     "Not",
     "Negate",
-    "ComputedPropertyChain",
     "PropertyChain",
+    "PropertyChainDot",
+    "PropertyChainSquare",
     "Identifier",
     "Function",
     "Integer",
@@ -55,9 +57,9 @@ public interface ExpressionParserTreeConstants
     "Map",
     "Array",
     "MapEntry",
-    "Float",
+    "Decimal",
     "Bool",
     "Null",
   };
 }
-/* JavaCC - OriginalChecksum=035edee79113453938caa740c7d228ca (do not edit this line) */
+/* JavaCC - OriginalChecksum=95518e0efa99609ed4c6dd0581a45efd (do not edit this line) */

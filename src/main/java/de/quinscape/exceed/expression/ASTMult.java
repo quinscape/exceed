@@ -3,7 +3,7 @@
 package de.quinscape.exceed.expression;
 
 public
-class ASTMult extends OperatorNode {
+class ASTMult extends ArithmeticOperatorNode {
   public ASTMult(int id) {
     super(id);
     setOperator(Operator.MULTIPLY);

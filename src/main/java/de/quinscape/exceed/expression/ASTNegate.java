@@ -3,13 +3,15 @@
 package de.quinscape.exceed.expression;
 
 public
-class ASTNegate extends SimpleNode {
+class ASTNegate extends ArithmeticOperatorNode {
   public ASTNegate(int id) {
     super(id);
+    setOperator(Operator.SUBTRACT);
   }
 
   public ASTNegate(ExpressionParser p, int id) {
     super(p, id);
+    setOperator(Operator.SUBTRACT);
   }
 
 

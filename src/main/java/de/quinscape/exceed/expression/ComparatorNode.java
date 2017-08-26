@@ -1,6 +1,6 @@
 package de.quinscape.exceed.expression;
 
-public abstract class ComparatorNode
+public abstract class  ComparatorNode
     extends OperatorNode
 {
     public ComparatorNode(int i)

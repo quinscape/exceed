@@ -3,7 +3,7 @@
 package de.quinscape.exceed.expression;
 
 public
-class ASTDiv extends OperatorNode {
+class ASTDiv extends ArithmeticOperatorNode {
   public ASTDiv(int id) {
     super(id);
     setOperator(Operator.DIVIDE);

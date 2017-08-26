@@ -3,7 +3,7 @@
 package de.quinscape.exceed.expression;
 
 public
-class ASTSub extends OperatorNode {
+class ASTSub extends ArithmeticOperatorNode {
   public ASTSub(int id) {
     super(id);
     setOperator(Operator.SUBTRACT);

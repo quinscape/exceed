@@ -48,10 +48,13 @@ public class ExpressionParserDefaultVisitor implements ExpressionParserVisitor{
   public Object visit(ASTNegate node, Object data){
     return defaultVisit(node, data);
   }
-  public Object visit(ASTComputedPropertyChain node, Object data){
+  public Object visit(ASTPropertyChain node, Object data){
     return defaultVisit(node, data);
   }
-  public Object visit(ASTPropertyChain node, Object data){
+  public Object visit(ASTPropertyChainDot node, Object data){
+    return defaultVisit(node, data);
+  }
+  public Object visit(ASTPropertyChainSquare node, Object data){
     return defaultVisit(node, data);
   }
   public Object visit(ASTIdentifier node, Object data){
@@ -75,7 +78,7 @@ public class ExpressionParserDefaultVisitor implements ExpressionParserVisitor{
   public Object visit(ASTMapEntry node, Object data){
     return defaultVisit(node, data);
   }
-  public Object visit(ASTFloat node, Object data){
+  public Object visit(ASTDecimal node, Object data){
     return defaultVisit(node, data);
   }
   public Object visit(ASTBool node, Object data){
@@ -85,4 +88,4 @@ public class ExpressionParserDefaultVisitor implements ExpressionParserVisitor{
     return defaultVisit(node, data);
   }
 }
-/* JavaCC - OriginalChecksum=483514c7868f35338494183f629de0d3 (do not edit this line) */
+/* JavaCC - OriginalChecksum=f7a8ef85a7d48d436f31487fd7d22a1f (do not edit this line) */

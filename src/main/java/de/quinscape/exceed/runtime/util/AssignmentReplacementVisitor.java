@@ -49,7 +49,7 @@ public class AssignmentReplacementVisitor
         }
         else if (isIdentifierChain(lft))
         {
-            identifier = (ASTIdentifier) lft.jjtGetChild(0);
+            identifier = null; //ExpressionUtil.getFirstIdentifier((PropertyChain) lft);
 
             path = getIdentifierPath(lft, 1);
         }
@@ -105,7 +105,7 @@ public class AssignmentReplacementVisitor
     }
 
 
-    private String getIdentifierPath(Node lft, int start)
+    public static String getIdentifierPath(Node lft, int start)
     {
         StringBuilder sb = new StringBuilder();
 
@@ -131,11 +131,25 @@ public class AssignmentReplacementVisitor
      * @return  <code>true</code> the given node is a property chain starting with a scope accessor function followed
      *          by only identifiers
      */
-    private boolean isIdentifierChain(Node lft)
+    public static boolean isIdentifierChain(Node lft)
     {
-        return lft instanceof ASTPropertyChain &&
-            lft.jjtGetChild(0) instanceof ASTIdentifier &&
-            isIdentifierChain((ASTPropertyChain) lft, 1);
+        return lft instanceof ASTPropertyChain && firstIsIdentifier((ASTPropertyChain)lft);
+    }
+
+
+    private static boolean firstIsIdentifier(ASTPropertyChain lft)
+    {
+        Node n = lft;
+        do
+        {
+            n = n.jjtGetChild(0);
+            if (n instanceof ASTIdentifier)
+            {
+                return true;
+            }
+
+        } while (n instanceof ASTPropertyChain);
+        return false;
     }
 
 
@@ -146,7 +160,7 @@ public class AssignmentReplacementVisitor
      * @param start         start index
      * @return <code>true</code> if there are only identifier nodes after the start index
      */
-    private boolean isIdentifierChain(ASTPropertyChain lft, int start)
+    public static boolean isIdentifierChain(ASTPropertyChain lft, int start)
     {
         int len = lft.jjtGetNumChildren();
         for (int i = start; i < len; i++)

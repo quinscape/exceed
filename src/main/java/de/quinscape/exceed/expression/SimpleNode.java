@@ -8,7 +8,7 @@ class SimpleNode implements Node {
   protected Node parent;
   protected Node[] children;
   protected int id;
-  protected Object value;
+  protected NodeAnnotation value;
   protected ExpressionParser parser;
 
   public SimpleNode(int i) {
@@ -48,8 +48,8 @@ class SimpleNode implements Node {
     return (children == null) ? 0 : children.length;
   }
 
-  public void jjtSetValue(Object value) { this.value = value; }
-  public Object jjtGetValue() { return value; }
+  public void jjtSetValue(NodeAnnotation value) { this.value = value; }
+  public NodeAnnotation jjtGetValue() { return value; }
 
   /** Accept the visitor. **/
   public Object jjtAccept(ExpressionParserVisitor visitor, Object data)
@@ -110,6 +110,15 @@ class SimpleNode implements Node {
 
   public int getId() {
     return id;
+  }
+
+  public NodeAnnotation annotation()
+  {
+    if (value == null)
+    {
+      value = new NodeAnnotation(this);
+    }
+    return value;
   }
 }
 

@@ -1,8 +1,11 @@
 package de.quinscape.exceed.expression;
 
+import de.quinscape.exceed.runtime.util.ExpressionUtil;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.math.BigDecimal;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
@@ -20,15 +23,18 @@ public class ExpressionParserTest
 
         ASTEquality eq = (ASTEquality) parse("foo.bar == 1");
 
+
         assertThat(eq.getOperator(), is(Operator.EQUALS));
         ASTPropertyChain prop = (ASTPropertyChain) eq.jjtGetChild(0);
         ASTIdentifier i1 = (ASTIdentifier) prop.jjtGetChild(0);
-        ASTIdentifier i2 = (ASTIdentifier) prop.jjtGetChild(1);
+        ASTIdentifier i2 = (ASTIdentifier) ((ASTPropertyChainDot)prop.jjtGetChild(1)).jjtGetChild(0);
         assertThat(i1.getName(), is("foo"));
         assertThat(i2.getName(), is("bar"));
 
         ASTInteger v = (ASTInteger) eq.jjtGetChild(1);
         assertThat(v.getValue(), is(1));
+
+        assertThat(eq.jjtGetParent(), is(notNullValue()));
     }
 
 
@@ -40,7 +46,7 @@ public class ExpressionParserTest
         assertThat(eq.getOperator(), is(Operator.EQUALS));
         ASTPropertyChain prop = (ASTPropertyChain) eq.jjtGetChild(0);
         ASTIdentifier i1 = (ASTIdentifier) prop.jjtGetChild(0);
-        ASTFunction fn = (ASTFunction) prop.jjtGetChild(1);
+        ASTFunction fn = (ASTFunction) prop.jjtGetChild(1).jjtGetChild(0);
         assertThat(i1.getName(), is("foo"));
         assertThat(fn.getName(), is("baz"));
 
@@ -125,16 +131,15 @@ public class ExpressionParserTest
 
 
     @Test
-    public void testFloat() throws Exception
+    public void testDecimal() throws Exception
     {
         ASTEquality eq = (ASTEquality) parse("a == 3.1415");
 
         assertThat(eq.getOperator(), is(Operator.EQUALS));
         ASTIdentifier i1 = (ASTIdentifier) eq.jjtGetChild(0);
-        ASTFloat floatNode = (ASTFloat) eq.jjtGetChild(1);
+        ASTDecimal floatNode = (ASTDecimal) eq.jjtGetChild(1);
         assertThat(i1.getName(), is("a"));
-        assertThat(floatNode.getValue(), is(is(3.1415)));
-
+        assertThat(floatNode.getValue(), is(new BigDecimal("3.1415")));
     }
 
 
@@ -167,8 +172,10 @@ public class ExpressionParserTest
     {
         ASTPropertyChain chain = (ASTPropertyChain) parse("domainType().join()");
 
+        //log.info(ExpressionUtil.dump(chain));
+
         ASTFunction i1 = (ASTFunction) chain.jjtGetChild(0);
-        ASTFunction i2 = (ASTFunction) chain.jjtGetChild(1);
+        ASTFunction i2 = (ASTFunction) ((ASTPropertyChainDot)chain.jjtGetChild(1)).jjtGetChild(0);
         assertThat(i1.getName(), is("domainType"));
         assertThat(i2.getName(), is("join"));
     }
@@ -177,13 +184,13 @@ public class ExpressionParserTest
     @Test
     public void testComputedPropertyChain() throws Exception
     {
-        ASTComputedPropertyChain chain = (ASTComputedPropertyChain) parse("context[props.name]");
+        ASTPropertyChain chain = (ASTPropertyChain) parse("context[props.name]");
 
         ASTIdentifier i1 = (ASTIdentifier) chain.jjtGetChild(0);
         assertThat(i1.getName(), is("context"));
-        ASTPropertyChain i2 = (ASTPropertyChain) chain.jjtGetChild(1);
+        ASTPropertyChain i2 = (ASTPropertyChain) chain.jjtGetChild(1).jjtGetChild(0);
         ASTIdentifier i3 = (ASTIdentifier) i2.jjtGetChild(0);
-        ASTIdentifier i4 = (ASTIdentifier) i2.jjtGetChild(1);
+        ASTIdentifier i4 = (ASTIdentifier) i2.jjtGetChild(1).jjtGetChild(0);
         assertThat(i3.getName(), is("props"));
         assertThat(i4.getName(), is("name"));
     }
@@ -191,32 +198,38 @@ public class ExpressionParserTest
     @Test
     public void testComputedPropertyChain2() throws Exception
     {
-        ASTComputedPropertyChain computedChain = (ASTComputedPropertyChain) parse("a.b[c]");
+        ASTPropertyChain propChain = (ASTPropertyChain) parse("a.b[c].d");
 
-        ASTPropertyChain propChain = (ASTPropertyChain) computedChain.jjtGetChild(0);
+        log.info(ExpressionUtil.dump(propChain));
 
         ASTIdentifier i1 = (ASTIdentifier) propChain.jjtGetChild(0);
         assertThat(i1.getName(), is("a"));
-        ASTIdentifier i2 = (ASTIdentifier) propChain.jjtGetChild(1);
+        final ASTPropertyChainDot dotElem = (ASTPropertyChainDot) propChain.jjtGetChild(1);
+        ASTIdentifier i2 = (ASTIdentifier) dotElem.jjtGetChild(0);
         assertThat(i2.getName(), is("b"));
-
-        ASTIdentifier i3 = (ASTIdentifier) computedChain.jjtGetChild(1);
+        final ASTPropertyChainSquare sqElem = (ASTPropertyChainSquare) propChain.jjtGetChild(2);
+        ASTIdentifier i3 = (ASTIdentifier) sqElem.jjtGetChild(0);
         assertThat(i3.getName(), is("c"));
+
+        final ASTPropertyChainDot dotElem2 = (ASTPropertyChainDot) propChain.jjtGetChild(3);
+        ASTIdentifier i4 = (ASTIdentifier) dotElem2.jjtGetChild(0);
+        assertThat(i4.getName(), is("d"));
     }
 
     @Test
     public void testComputedPropertyChain3() throws Exception
     {
-        ASTComputedPropertyChain computedChain = (ASTComputedPropertyChain) parse("a.b['c']");
+        ASTPropertyChain propChain = (ASTPropertyChain) parse("a.b['c']");
 
-        ASTPropertyChain propChain = (ASTPropertyChain) computedChain.jjtGetChild(0);
+        log.info(ExpressionUtil.dump(propChain));
 
         ASTIdentifier i1 = (ASTIdentifier) propChain.jjtGetChild(0);
         assertThat(i1.getName(), is("a"));
-        ASTIdentifier i2 = (ASTIdentifier) propChain.jjtGetChild(1);
+        final ASTPropertyChainDot dotElem = (ASTPropertyChainDot) propChain.jjtGetChild(1);
+        ASTIdentifier i2 = (ASTIdentifier) dotElem.jjtGetChild(0);
         assertThat(i2.getName(), is("b"));
-
-        ASTString i3 = (ASTString) computedChain.jjtGetChild(1);
+        final ASTPropertyChainSquare sqElem = (ASTPropertyChainSquare) propChain.jjtGetChild(2);
+        ASTString i3 = (ASTString) sqElem.jjtGetChild(0);
         assertThat(i3.getValue(), is("c"));
     }
 
@@ -243,7 +256,7 @@ public class ExpressionParserTest
 
         ASTPropertyChain chain = (ASTPropertyChain) not.jjtGetChild(0);
         ASTIdentifier i3 = (ASTIdentifier) chain.jjtGetChild(0);
-        ASTIdentifier i4 = (ASTIdentifier) chain.jjtGetChild(1);
+        ASTIdentifier i4 = (ASTIdentifier) chain.jjtGetChild(1).jjtGetChild(0);
         assertThat(i3.getName(), is("foo"));
         assertThat(i4.getName(), is("bar"));
     }
@@ -282,6 +295,8 @@ public class ExpressionParserTest
     {
         Node node = parse("a() ; c('arg') = 1 + 2; b()");
 
+        assertThat(node, is(instanceOf(ASTExpressionSequence.class)));
+
         assertThat(node.jjtGetChild(0) instanceof ASTFunction, is(true));
         assertThat(node.jjtGetChild(1) instanceof ASTAssignment, is(true));
         assertThat(node.jjtGetChild(2) instanceof ASTFunction, is(true));
@@ -289,33 +304,22 @@ public class ExpressionParserTest
     }
 
 
-    private String dump(Node node)
+    @Test
+    public void testMixedPropChain() throws Exception
     {
-        StringBuilder sb = new StringBuilder();
-        dumpRec(sb, node, 0);
-        return "\n" + sb.toString();
+        ASTPropertyChain chain = (ASTPropertyChain) parse("a()[1]['b'][2].c()");
+
+
+        assertThat(((ASTFunction)chain.jjtGetChild(0)).getName(), is("a"));
+        assertThat(((ASTInteger)((ASTPropertyChainSquare)chain.jjtGetChild(1)).jjtGetChild(0)).getValue(), is(1));
+        assertThat(((ASTString)((ASTPropertyChainSquare)chain.jjtGetChild(2)).jjtGetChild(0)).getValue(), is("b"));
+        assertThat(((ASTInteger)((ASTPropertyChainSquare)chain.jjtGetChild(3)).jjtGetChild(0)).getValue(), is(2));
+        assertThat(((ASTFunction)((ASTPropertyChainDot)chain.jjtGetChild(4)).jjtGetChild(0)).getName(), is("c"));
+
     }
 
 
-    private void dumpRec(StringBuilder sb, Node node, int level)
-    {
-        indent(sb, level);
-        sb.append(node).append("\n");
 
-        for (int i = 0; i < node.jjtGetNumChildren(); i++)
-        {
-            dumpRec(sb, node.jjtGetChild(i), level + 1);
-        }
-    }
-
-
-    private void indent(StringBuilder sb, int level)
-    {
-        for (int i = 0; i < level; i++)
-        {
-            sb.append("  ");
-        }
-    }
 
 
     private void testOp(String expr, Operator op, Class<? extends OperatorNode> cls) throws ParseException
@@ -329,6 +333,9 @@ public class ExpressionParserTest
     private Node parse(String expr) throws ParseException
     {
         ASTExpression exprNode = ExpressionParser.parse(expr);
+
+        assertThat(exprNode.jjtGetParent(), is(nullValue()));
+
         return exprNode.jjtGetChild(0);
     }
 
@@ -353,4 +360,5 @@ public class ExpressionParserTest
     {
         parse("1 == 2 == 3");
     }
+
 }

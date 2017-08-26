@@ -35,7 +35,13 @@ interface Node {
 
   int getId();
 
+  void jjtSetValue(NodeAnnotation value);
+
+  NodeAnnotation jjtGetValue();
+
   /** Accept the visitor. **/
   Object jjtAccept(ExpressionParserVisitor visitor, Object data);
+
+  NodeAnnotation annotation();
 }
 /* JavaCC - OriginalChecksum=6c61b131d0e5838656ce9d5d05e88a69 (do not edit this line) */

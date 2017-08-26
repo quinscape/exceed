@@ -424,7 +424,7 @@ public class QueryTransformerOperations
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < n.jjtGetNumChildren(); i++)
             {
-                Node kid = n.jjtGetChild(i);
+                Node kid = ((ASTPropertyChain) n).getChainChild(i);
 
                 if (i > 0)
                 {

@@ -4,12 +4,11 @@ import de.quinscape.exceed.expression.ASTAdd;
 import de.quinscape.exceed.expression.ASTArray;
 import de.quinscape.exceed.expression.ASTAssignment;
 import de.quinscape.exceed.expression.ASTBool;
-import de.quinscape.exceed.expression.ASTComputedPropertyChain;
+import de.quinscape.exceed.expression.ASTDecimal;
 import de.quinscape.exceed.expression.ASTDiv;
 import de.quinscape.exceed.expression.ASTEquality;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ASTExpressionSequence;
-import de.quinscape.exceed.expression.ASTFloat;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTIdentifier;
 import de.quinscape.exceed.expression.ASTInteger;
@@ -22,6 +21,8 @@ import de.quinscape.exceed.expression.ASTNegate;
 import de.quinscape.exceed.expression.ASTNot;
 import de.quinscape.exceed.expression.ASTNull;
 import de.quinscape.exceed.expression.ASTPropertyChain;
+import de.quinscape.exceed.expression.ASTPropertyChainDot;
+import de.quinscape.exceed.expression.ASTPropertyChainSquare;
 import de.quinscape.exceed.expression.ASTRelational;
 import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.ASTSub;
@@ -30,6 +31,7 @@ import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.OperatorNode;
 import de.quinscape.exceed.expression.SimpleNode;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.expression.transform.DefaultTransformationContext;
 import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
 
 /**
@@ -41,9 +43,17 @@ import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
 public class ExpressionRenderer
     implements ExpressionParserVisitor
 {
-    
-    private StringBuilder buf = new StringBuilder();
-    
+    private final StringBuilder buf;
+
+    public ExpressionRenderer()
+    {
+        this(new StringBuilder());
+    }
+    public ExpressionRenderer(StringBuilder buf)
+    {
+        this.buf = buf;
+    }
+
     @Override
     public Object visit(SimpleNode node, Object data)
     {
@@ -61,8 +71,11 @@ public class ExpressionRenderer
             buf.append('(');
         }
 
-        node.childrenAccept(this, data);
-
+        final int numChildren = node.jjtGetNumChildren();
+        for (int i=0; i < numChildren; i++)
+        {
+            visitChild(node.jjtGetChild(i), data);
+        }
         if (isNestedExpression)
         {
             buf.append(')');
@@ -90,9 +103,9 @@ public class ExpressionRenderer
         Node lft = node.jjtGetChild(0);
         Node rgt = node.jjtGetChild(1);
 
-        lft.jjtAccept(this, data);
+        visitChild(lft, data);
         buf.append(" = ");
-        rgt.jjtAccept(this, data);
+        visitChild(rgt, data);
         return data;
     }
 
@@ -116,10 +129,27 @@ public class ExpressionRenderer
             {
                 buf.append(op);
             }
-            node.jjtGetChild(i).jjtAccept(this, data);
+
+            final Node kid = node.jjtGetChild(i);
+            visitChild(kid, data);
         }
         return data;
     }
+
+    /**
+     * Visits the given child node. This method as meant as central place for subclasses of expression render
+     * to control invocation of child nodes. {@link DefaultTransformationContext.Renderer}
+     *
+     * @param kid       kid
+     * @param data      data
+     *
+     * @return result of visit
+     */
+    protected Object visitChild(Node kid, Object data)
+    {
+        return kid.jjtAccept(this, data);
+    }
+
 
     @Override
     public Object visit(ASTLogicalOr node, Object data)
@@ -179,29 +209,52 @@ public class ExpressionRenderer
     @Override
     public Object visit(ASTPropertyChain node, Object data)
     {
-        return renderMultiBinary(node, ".", data);
-    }
-
-
-    @Override
-    public Object visit(ASTComputedPropertyChain node, Object data)
-    {
-        node.jjtGetChild(0).jjtAccept(this, data);
-        for (int i=1; i < node.jjtGetNumChildren(); i++)
+        final int numChildren = node.jjtGetNumChildren();
+        for (int i = 0; i < numChildren; i++)
         {
-            buf.append("[");
-            node.jjtGetChild(i).jjtAccept(this, data);
-            buf.append("]");
+            final Node kid = node.jjtGetChild(i);
+            visitChild(kid, data);
         }
         return data;
     }
 
 
     @Override
+    public Object visit(ASTPropertyChainDot node, Object data)
+    {
+        buf.append(".");
+        visitChild(node.jjtGetChild(0), data);
+        return data;
+    }
+
+
+    @Override
+    public Object visit(ASTPropertyChainSquare node, Object data)
+    {
+        buf.append("[");
+        visitChild(node.jjtGetChild(0), data);
+        buf.append("]");
+        return data;
+    }
+
+//    @Override
+//    public Object visit(ASTComputedPropertyChain node, Object data)
+//    {
+//        visitChild(node.jjtGetChild(0), data);
+//        for (int i=1; i < node.jjtGetNumChildren(); i++)
+//        {
+//            buf.append("[");
+//            visitChild(node.jjtGetChild(i), data);
+//            buf.append("]");
+//        }
+//        return data;
+//    }
+
+    @Override
     public Object visit(ASTNot node, Object data)
     {
         buf.append("!");
-        return node.jjtGetChild(0).jjtAccept(this, data);
+        return visitChild(node.jjtGetChild(0), data);
     }
 
 
@@ -209,7 +262,7 @@ public class ExpressionRenderer
     public Object visit(ASTNegate node, Object data)
     {
         buf.append("-");
-        return node.jjtGetChild(0).jjtAccept(this, data);
+        return visitChild(node.jjtGetChild(0), data);
     }
 
 
@@ -278,7 +331,7 @@ public class ExpressionRenderer
 
 
     @Override
-    public Object visit(ASTFloat node, Object data)
+    public Object visit(ASTDecimal node, Object data)
     {
         buf.append(node.getValue());
         return data;
@@ -316,7 +369,7 @@ public class ExpressionRenderer
     public static String render(Node n)
     {
         ExpressionRenderer renderer = new ExpressionRenderer();
-        n.jjtAccept(renderer, null);
+        renderer.visitChild(n,null);
         return renderer.getOutput();
     }
 

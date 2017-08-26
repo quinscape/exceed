@@ -19,7 +19,7 @@ public interface ExpressionParserConstants {
   /** RegularExpression Id. */
   int DECIMAL_LITERAL = 10;
   /** RegularExpression Id. */
-  int FLOATING_POINT_LITERAL = 11;
+  int FRACTIONAL_LITERAL = 11;
   /** RegularExpression Id. */
   int EXPONENT = 12;
   /** RegularExpression Id. */
@@ -53,7 +53,7 @@ public interface ExpressionParserConstants {
     "<BOOLEAN_LITERAL>",
     "<INTEGER_LITERAL>",
     "<DECIMAL_LITERAL>",
-    "<FLOATING_POINT_LITERAL>",
+    "<FRACTIONAL_LITERAL>",
     "<EXPONENT>",
     "<HEX_LITERAL>",
     "<OCTAL_LITERAL>",
@@ -77,9 +77,9 @@ public interface ExpressionParserConstants {
     "\"*\"",
     "\"/\"",
     "\"!\"",
+    "\".\"",
     "\"[\"",
     "\"]\"",
-    "\".\"",
     "\"(\"",
     "\")\"",
     "\",\"",
