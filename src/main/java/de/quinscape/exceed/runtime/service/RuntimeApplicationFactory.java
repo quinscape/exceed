@@ -3,7 +3,6 @@ package de.quinscape.exceed.runtime.service;
 import com.google.common.cache.LoadingCache;
 import de.quinscape.exceed.domain.tables.pojos.AppState;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
-import de.quinscape.exceed.runtime.action.ClientActionRenderer;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
@@ -32,9 +31,7 @@ import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -110,10 +107,7 @@ public class RuntimeApplicationFactory
             resourceLoader.setResourceCache(cache);
         }
 
-        Map<String, ClientActionRenderer> generators = new HashMap<>();
-        generators.put("syslog", new SyslogCallGenerator());
-
-        final DomainService domainService = domainServiceFactory.create(modelSchemaService.getModelDomainTypes());
+        final DomainService domainService = domainServiceFactory.create();
 
         domainServiceRepository.register(appName, domainService);
 

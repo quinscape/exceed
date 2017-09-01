@@ -1,21 +1,34 @@
 package de.quinscape.exceed.runtime.action;
 
-
-import de.quinscape.exceed.model.action.ActionModel;
-import de.quinscape.exceed.runtime.RuntimeContext;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Implemented by the server-side of the unified action system.
+ * Marker annotation for action methods.
  *
- * @param <M> action model type
+ * @see CustomLogic
  */
-public interface Action<M extends ActionModel>
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Action
 {
-    Object execute(RuntimeContext runtimeContext, M model) throws Exception;
+    String METHOD_NAME = "$methodName$";
 
-    default Class<M> getActionModelClass()
-    {
-        return (Class<M>) ActionModel.class;
-    }
+    /**
+     * Returns the name of the action. As a default, the name of the annotated method is used.
+     *
+     * @return name of the action
+     */
+    String value() default METHOD_NAME;
+
+    String[] description() default {};
+    
+    /**
+     * Returns the action environment in which this action is valid. Default value is {@link ActionEnvironment#SERVER_AND_CLIENT}.
+     */
+    ActionEnvironment env() default ActionEnvironment.SERVER_AND_CLIENT;
 }
-

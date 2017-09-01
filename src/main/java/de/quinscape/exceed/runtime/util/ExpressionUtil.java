@@ -1,12 +1,10 @@
 package de.quinscape.exceed.runtime.util;
 
-import de.quinscape.exceed.domain.tables.pojos.AppTranslation;
 import de.quinscape.exceed.expression.ASTAssignment;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ASTExpressionSequence;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTIdentifier;
-import de.quinscape.exceed.expression.ASTInteger;
 import de.quinscape.exceed.expression.ASTMap;
 import de.quinscape.exceed.expression.ASTMapEntry;
 import de.quinscape.exceed.expression.ASTPropertyChain;
@@ -21,7 +19,6 @@ import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.model.component.PropType;
 import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
 import de.quinscape.exceed.model.domain.PropertyModel;
 import de.quinscape.exceed.model.meta.PropertyType;
 import de.quinscape.exceed.runtime.domain.GeneratedDomainObject;
@@ -29,15 +26,12 @@ import de.quinscape.exceed.runtime.domain.GenericDomainObject;
 import de.quinscape.exceed.runtime.domain.property.DomainTypeConverter;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironmentException;
 import de.quinscape.exceed.runtime.js.ExpressionType;
-import de.quinscape.exceed.runtime.js.InvalidExpressionException;
 import de.quinscape.exceed.runtime.model.ExpressionRenderer;
 import de.quinscape.exceed.runtime.model.InvalidClientExpressionException;
-import de.quinscape.exceed.runtime.service.ActionExpressionRenderer;
 
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -122,51 +116,6 @@ public class ExpressionUtil
         }
 
         throw new IllegalArgumentException(value + " is no " + cls.getName());
-    }
-
-
-    /**
-     * Makes sure that the given expression sequence either consists only of actions or of no action generators
-     *
-     * @param seq                      property chain
-     * @param actionExpressionRenderer action expression renderer
-     * @return
-     */
-    public static boolean isChainOfActions(ASTExpressionSequence seq, ActionExpressionRenderer actionExpressionRenderer)
-    {
-
-        // Expression sequences must have more than 1 kids ( see Expression.jjt, ExpressionSequence() producer)
-        Boolean isChainOfActions = isActionExpression(actionExpressionRenderer, seq.jjtGetChild(0));
-        int i;
-        for (i = 1; i < seq.jjtGetNumChildren(); i++)
-        {
-            Node kid = seq.jjtGetChild(i);
-
-            if (isChainOfActions != isActionExpression(actionExpressionRenderer, kid))
-            {
-                throw new InvalidClientExpressionException("Expression sequence must be only action operations or " +
-                    "have no action operations: " + ExpressionRenderer.render(seq));
-            }
-        }
-
-        return isChainOfActions;
-    }
-
-
-    private static boolean isActionExpression(ActionExpressionRenderer actionExpressionRenderer, Node node)
-    {
-        boolean isAction = false;
-        if (node instanceof ASTFunction)
-        {
-            String opName = ((ASTFunction) node).getName();
-            isAction = actionExpressionRenderer.hasOperation(opName);
-        }
-        else if (node instanceof ASTAssignment)
-        {
-            /** @see #handleAssignmentAction(Node)  */
-            throw new IllegalStateException("Unhandled assignment operator.");
-        }
-        return isAction;
     }
 
 

@@ -1,0 +1,49 @@
+{
+    "content": {
+        "main": {
+            "name": "Grid",
+            "attrs": {
+                "fluid": "{ false }"
+            },
+            "kids": [
+                {
+                    "name": "LoginForm",
+                    "kids": [
+                        {
+                            "name": "Row",
+                            "kids": [
+                                {
+                                    "name": "Col",
+                                    "attrs": {
+                                        "mdPush": "{ 2 }",
+                                        "md": "{ 12 }"
+                                    },
+                                    "kids": [
+                                        {
+                                            "name": "Heading",
+                                            "attrs": {
+                                                "icon": "info-sign",
+                                                "value": "{ i18n('Process Ended') }"
+                                            }
+                                        },
+                                        {
+                                            "name": "p",
+                                            "kids": [
+                                                {
+                                                    "name": "[String]",
+                                                    "attrs": {
+                                                        "value": "{ i18n('Process End Default Message') }"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
