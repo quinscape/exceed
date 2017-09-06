@@ -4,10 +4,9 @@ import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.domain.DomainService;
-import de.quinscape.exceed.runtime.expression.ExpressionService;
-import de.quinscape.exceed.runtime.service.ContextExpressionEnvironment;
+import de.quinscape.exceed.runtime.js.JsEnvironment;
+import de.quinscape.exceed.runtime.model.ExpressionRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +26,8 @@ public abstract class AbstractScopedContext
     private final ContextModel contextModel;
 
     private boolean initialized;
+
+    private DomainService domainService;
 
 
     public AbstractScopedContext(ContextModel contextModel)
@@ -57,10 +58,14 @@ public abstract class AbstractScopedContext
     @Override
     public void setProperty(String name, Object value)
     {
-        if (!hasProperty(name))
+        ensureInitialized();
+
+        final ScopedPropertyModel model = getModel(name);
+        if (model.isRequired() && value == null)
         {
-            throw new ScopeResolutionException("Context has not property '" + name + "'");
+            throw new IllegalArgumentException("Cannot set required property '" + name + "' to null");
         }
+
         context.put(name, value);
     }
 
@@ -89,20 +94,30 @@ public abstract class AbstractScopedContext
     public abstract ScopedContext copy(RuntimeContext runtimeContext);
 
     @Override
-    public void init(RuntimeContext runtimeContext, ExpressionService expressionService, ActionService actionService, Map<String,Object> inputValues)
+    public void init(RuntimeContext runtimeContext, JsEnvironment jsEnvironment, Map<String,Object> inputValues)
     {
         initialized = true;
 
+        this.domainService = runtimeContext.getDomainService();
+
         if (contextModel != null)
         {
-            initProperties(runtimeContext, expressionService, actionService, inputValues);
+            initProperties(runtimeContext, jsEnvironment, inputValues);
         }
     }
 
-    private void initProperties(RuntimeContext runtimeContext, ExpressionService expressionService, ActionService
-        actionService, Map<String, Object> inputValues)
+    private void initProperties(RuntimeContext runtimeContext, JsEnvironment jsEnvironment, Map<String, Object> inputValues)
     {
-        DomainService domainService = runtimeContext.getDomainService();
+        if (runtimeContext == null)
+        {
+            throw new IllegalArgumentException("runtimeContext can't be null");
+        }
+
+        if (jsEnvironment == null)
+        {
+            throw new IllegalArgumentException("jsEnvironment can't be null");
+        }
+
 
         for (ScopedPropertyModel scopedPropertyModel : contextModel.getProperties().values())
         {
@@ -116,7 +131,7 @@ public abstract class AbstractScopedContext
                 {
                     try
                     {
-                        value = domainService.getPropertyConverter(scopedPropertyModel.getType()).convertToJava(runtimeContext, input);
+                        value = scopedPropertyModel.getPropertyType().convertToJava(runtimeContext, input);
                     }
                     catch(Exception e)
                     {
@@ -135,8 +150,18 @@ public abstract class AbstractScopedContext
                 ASTExpression defaultValueExpression = scopedPropertyModel.getDefaultValueExpression();
                 if (defaultValueExpression != null)
                 {
-                    value = evaluateDefault(runtimeContext, expressionService, actionService, scopedPropertyModel,
-                        defaultValueExpression);
+                    try
+                    {
+                        value = evaluateDefault(
+                            runtimeContext,
+                            jsEnvironment,
+                            defaultValueExpression
+                        );
+                    }
+                    catch (Exception e)
+                    {
+                        throw new IllegalStateException("Error evaluation default value: " + ExpressionRenderer.render(defaultValueExpression), e);
+                    }
                 }
                 else
                 {
@@ -148,11 +173,9 @@ public abstract class AbstractScopedContext
     }
 
 
-    private Object evaluateDefault(RuntimeContext runtimeContext, ExpressionService expressionService, ActionService actionService, ScopedPropertyModel scopedPropertyModel, ASTExpression defaultValueExpression)
+    private Object evaluateDefault(RuntimeContext runtimeContext, JsEnvironment jsEnvironment, ASTExpression defaultValueExpression)
     {
-        Object value;ContextExpressionEnvironment env = new ContextExpressionEnvironment(runtimeContext, actionService, runtimeContext.getLocationParams(), scopedPropertyModel);
-        value = expressionService.evaluate(defaultValueExpression, env);
-        return value;
+        return jsEnvironment.getValue(runtimeContext, defaultValueExpression);
     }
 
 
@@ -171,26 +194,17 @@ public abstract class AbstractScopedContext
         return initialized;
     }
 
-    public void update(Map<String, Object> contextUpdates)
-    {
-        if (contextUpdates == null || contextUpdates.size() == 0)
-        {
-            return;
-        }
-
-        for (String name : getContextModel().getProperties().keySet())
-        {
-            if (contextUpdates.containsKey(name))
-            {
-                context.put(name, contextUpdates.get(name));
-            }
-        }
-    }
-
-
     @Override
     public ScopedPropertyModel getModel(String name)
     {
-        return contextModel.getProperties().get(name);
+        final ScopedPropertyModel model = contextModel.getProperties().get(name);
+        if (model == null)
+        {
+            throw new ScopeResolutionException("Context has not property '" + name + "'");
+        }
+        return model;
     }
+
+
+
 }

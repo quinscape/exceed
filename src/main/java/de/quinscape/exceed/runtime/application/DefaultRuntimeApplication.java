@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.application;
 
 import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.model.ApplicationMetaData;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
@@ -11,25 +10,27 @@ import de.quinscape.exceed.model.change.StyleChange;
 import de.quinscape.exceed.model.change.Timeout;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.context.ScopeMetaModel;
-import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.meta.StaticFunctionReferences;
-import de.quinscape.exceed.model.meta.WebpackStats;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.model.expression.Attributes;
+import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.expression.ExpressionValueType;
+import de.quinscape.exceed.model.meta.ApplicationMetaData;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.routing.Mapping;
-import de.quinscape.exceed.model.expression.ExpressionValue;
-import de.quinscape.exceed.model.expression.ExpressionValueType;
-import de.quinscape.exceed.model.expression.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.ContextUpdate;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
+import de.quinscape.exceed.runtime.component.ComponentRegistration;
 import de.quinscape.exceed.runtime.component.DataProviderPreparationException;
 import de.quinscape.exceed.runtime.domain.DomainService;
+import de.quinscape.exceed.runtime.js.def.Definitions;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.process.ProcessExecutionState;
-import de.quinscape.exceed.runtime.process.TransitionData;
+import de.quinscape.exceed.runtime.process.TransitionInput;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.ResourceChangeListener;
 import de.quinscape.exceed.runtime.resource.ResourceLoader;
@@ -37,7 +38,7 @@ import de.quinscape.exceed.runtime.resource.ResourceRoot;
 import de.quinscape.exceed.runtime.resource.ResourceWatcher;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.ModuleResourceEvent;
-import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
+import de.quinscape.exceed.runtime.resource.file.PathResources;
 import de.quinscape.exceed.runtime.schema.SchemaService;
 import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import de.quinscape.exceed.runtime.scope.ApplicationContext;
@@ -45,7 +46,6 @@ import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.scope.SessionContext;
 import de.quinscape.exceed.runtime.scope.ViewContext;
-import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.service.ProcessService;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
@@ -61,6 +61,7 @@ import de.quinscape.exceed.runtime.util.RequestUtil;
 import de.quinscape.exceed.runtime.view.ComponentData;
 import de.quinscape.exceed.runtime.view.ViewData;
 import de.quinscape.exceed.runtime.view.ViewDataService;
+import jdk.nashorn.api.scripting.NashornScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.JSON;
@@ -107,11 +108,10 @@ public class DefaultRuntimeApplication
 
     private static final String SYSTEM_CONTEXT_PATH = "/sys";
 
-    public static final String TRACK_USAGE_DATA_RESOURCE = "/resources/js/track-usage.json";
-
-    public static final String WEBPACK_STATS_RESOURCE = "/resources/js/webpack-stats.json";
 
     public static final String STATE_ID_PARAMETER = "stateId";
+
+    private static final String CONTEXT_UPDATE_PARAM = "contextUpdate";
 
     private final ServletContext servletContext;
 
@@ -137,6 +137,10 @@ public class DefaultRuntimeApplication
 
     private final ClientStateService clientStateService;
 
+    private final NashornScriptEngine nashorn;
+
+    private final Definitions systemDefinitions;
+
     private long lastChange;
 
     private final RuntimeContextFactory runtimeContextFactory;
@@ -144,6 +148,8 @@ public class DefaultRuntimeApplication
     private final Set<ClientStateProvider> clientStateProviders;
 
     private Model changeModel = null;
+
+    private ResourceInjector resourceInjector = new ResourceInjector(ApplicationMetaData.class);
 
     public DefaultRuntimeApplication(
         ServletContext servletContext,
@@ -159,7 +165,10 @@ public class DefaultRuntimeApplication
         RuntimeContextFactory runtimeContextFactory,
         ScopedContextFactory scopedContextFactory,
         StorageConfigurationRepository storageConfigurationRepository,
-        Set<ClientStateProvider> clientStateProviders)
+        Set<ClientStateProvider> clientStateProviders,
+        NashornScriptEngine nashorn,
+        Definitions definitions
+    )
     {
         if (servletContext == null)
         {
@@ -178,30 +187,26 @@ public class DefaultRuntimeApplication
         this.modelCompositionService = modelCompositionService;
         this.resourceLoader = resourceLoader;
         this.clientStateService = clientStateService;
+        this.systemDefinitions = definitions;
 
         //boolean production = ApplicationStatus.from(state) == ApplicationStatus.PRODUCTION;
-        applicationModel = new ApplicationModel();
-        applicationModel.setName(appName);
 
         this.domainService = domainService;
-        modelCompositionService.compose(this, resourceLoader.getResourceLocations(), applicationModel, domainService);
-
-
-        domainService.init(this, applicationModel.getConfigModel().getSchema());
+        applicationModel = modelCompositionService.compose(resourceLoader.getAllResources().values(), domainService, systemDefinitions, appName);
 
         ContextModel context = applicationModel.getApplicationContextModel();
 
         this.applicationContext = scopedContextFactory.createApplicationContext(context, appName);
-        RuntimeContext systemContext = runtimeContextFactory.create(
-            this,
-            SYSTEM_CONTEXT_PATH,
-            Locale.forLanguageTag("en-US"),
-            new ScopedContextChain(Collections.singletonList(applicationContext), applicationModel.getMetaData().getScopeMetaModel(), ScopeMetaModel.SYSTEM),
-            domainService);
 
-        scopedContextFactory.initializeContext(systemContext, applicationContext);
+        final ApplicationMetaData metaData = this.applicationModel.getMetaData();
+        resourceInjector.injectResources(nashorn, resourceLoader, metaData);
 
-        modelCompositionService.postprocess(this, applicationModel);
+        modelCompositionService.postprocess(applicationModel);
+        
+        RuntimeContext systemContext = createSystemContext();
+        RuntimeContextHolder.register(systemContext, null);
+        scopedContextFactory.initializeContext(applicationModel.getMetaData().getJsEnvironment(), systemContext, applicationContext);
+        domainService.init(this, applicationModel.getConfigModel().getSchema());
 
         for (ResourceRoot root : resourceLoader.getExtensions())
         {
@@ -219,20 +224,25 @@ public class DefaultRuntimeApplication
 
         synchronizeDomainTypeSchemata(systemContext, storageConfigurationRepository);
 
-        final StaticFunctionReferences staticFnRefs = load(
-            resourceLoader.getResourceLocation(TRACK_USAGE_DATA_RESOURCE).getHighestPriorityResource(),
-            StaticFunctionReferences.class
-        );
+        this.nashorn = nashorn;     
+    }
 
-        final ApplicationMetaData metaData = this.applicationModel.getMetaData();
 
-        final WebpackStats stats = load(
-            resourceLoader.getResourceLocation(WEBPACK_STATS_RESOURCE).getHighestPriorityResource(),
-            WebpackStats.class
-        );
-
-        metaData.setStaticFunctionReferences(staticFnRefs);
-        metaData.setWebpackStats(stats);
+    public RuntimeContext createSystemContext()
+    {
+        return this.runtimeContextFactory.create(
+            this,
+                SYSTEM_CONTEXT_PATH,
+                Locale.forLanguageTag("en-US"),
+                new ScopedContextChain(
+                    Collections.singletonList(
+                        applicationContext
+                    ),
+                    applicationModel.getMetaData().getScopeMetaModel(),
+                    ScopeMetaModel.SYSTEM
+                ),
+                this.domainService
+            );
     }
 
 
@@ -317,7 +327,7 @@ public class DefaultRuntimeApplication
                 domainService);
 
             RuntimeContextHolder.register(runtimeContext, request);
-            scopedContextFactory.initializeContext(runtimeContext, sessionContext);
+            scopedContextFactory.initializeContext(runtimeContext.getJsEnvironment(), runtimeContext, sessionContext);
 
 
             runtimeContext.setVariables(addRequestParameters(request, new HashMap<>(variables)));
@@ -328,7 +338,7 @@ public class DefaultRuntimeApplication
             final boolean isPreview = isAjaxRequest && isPreviewRequest(request);
             final boolean isComponentUpdate = isAjaxRequest && isComponentUpdate(request);
 
-            TransitionData transitionData = null;
+            TransitionInput transitionData = null;
 
             ProcessExecutionState state = null;
             if (processName != null)
@@ -359,7 +369,7 @@ public class DefaultRuntimeApplication
                         log.debug("Process state {}, transition = {}", stateId, transition);
                         final String json = RequestUtil.readRequestBody(request);
 
-                        transitionData = TransitionData.parse(runtimeContext, initialState.getExecution().getProcessName(), initialState.getCurrentState(), json);
+                        transitionData = TransitionInput.parse(runtimeContext, initialState.getExecution().getProcessName(), initialState.getCurrentState(), json);
                         state = processService.resume(runtimeContext, initialState, transition, transitionData);
                         state.register(request.getSession());
 
@@ -372,7 +382,7 @@ public class DefaultRuntimeApplication
                         log.debug("(Re)render state {}", stateId);
                         state = initialState;
 
-                        runtimeContext.getScopedContextChain().update(state.getScopedContext(), Process.getProcessViewName(processName, state.getCurrentState()));
+                        runtimeContext.getScopedContextChain().update(state.getScopedContext(), Process.getProcessStateName(processName, state.getCurrentState()));
 
                         redirect = false;
                     }
@@ -396,7 +406,7 @@ public class DefaultRuntimeApplication
                         "in " + process);
                 }
 
-                String processViewName = Process.getProcessViewName(state.getExecution().getProcessName(), state.getCurrentState());
+                String processViewName = Process.getProcessStateName(state.getExecution().getProcessName(), state.getCurrentState());
                 view = applicationModel.getView(processViewName);
 
             }
@@ -422,7 +432,7 @@ public class DefaultRuntimeApplication
             if (runtimeContext.getScopedContextChain().getViewContext() == null)
             {
                 final ViewContext viewContext = scopedContextFactory.createViewContext(view);
-                scopedContextFactory.initializeContext(runtimeContext, viewContext);
+                scopedContextFactory.initializeContext(runtimeContext.getJsEnvironment(), runtimeContext, viewContext);
                 runtimeContext.getScopedContextChain().update(viewContext, view.getName());
             }
 
@@ -453,14 +463,14 @@ public class DefaultRuntimeApplication
                     {
                         // yes -> use the preview view instead of the stored view
                         
-                        View previewView = modelCompositionService.createViewModel(this, view.getResource(), viewJSON, true);
+                        View previewView = modelCompositionService.createPreviewViewModel(view.getResource(), viewJSON);
                         if (!Objects.equals(view.getName(), previewView.getName()))
                         {
                             throw new IllegalStateException(
                                 "Cannot preview different view. view = " + view + ", preview = " + previewView);
                         }
                         previewView.setProcessName(view.getProcessName());
-                        modelCompositionService.postprocessView(this, previewView);
+                        modelCompositionService.postprocessView(runtimeContext.getApplicationModel(), previewView);
 
                         List<ComponentError> errors = new ArrayList<>();
 
@@ -497,7 +507,7 @@ public class DefaultRuntimeApplication
                     int index = ComponentUtil.findFlatIndex(view, e.getId());
                     model.put("previewErrors", Collections.singletonList(new ProviderError(e.getCause().getMessage(),
                         index)));
-                    RequestUtil.sendJSON(response, JSON.defaultJSON().forValue(model));
+                    RequestUtil.sendJSON(response, JSONUtil.DEFAULT_GENERATOR.forValue(model));
                     return true;
                 }
                 else
@@ -558,22 +568,34 @@ public class DefaultRuntimeApplication
 
 
 
-    private void updateComponentVars(RuntimeContext runtimeContext, HttpServletRequest request, HttpServletResponse response, ProcessExecutionState state, View view, Map<String, Object> postData) throws IOException
+    private void updateComponentVars(RuntimeContext runtimeContext, HttpServletRequest request, HttpServletResponse response, ProcessExecutionState state, View view, Map<String, Object> postData) throws IOException, ParseException
+
     {
         String componentId = (String) postData.get(UPDATE_ID_PARAM);
-        String varsJSON = (String) postData.get(UPDATE_VARS_PARAM);
+        Map<String,Object> vars = (Map<String, Object>) postData.get(UPDATE_VARS_PARAM);
+        Map<String,Object> contextUpdates = (Map<String, Object>) postData.get(CONTEXT_UPDATE_PARAM);
 
         if (componentId == null)
         {
             throw new IllegalStateException("componentId can't be null");
         }
 
-        if (varsJSON == null)
+        if (vars == null)
         {
-            throw new IllegalStateException("varsJSON can't be null");
+            throw new IllegalStateException("vars can't be null");
         }
 
-        Map<String,Object> vars = parseVars(varsJSON);
+
+        final ApplicationModel applicationModel = runtimeContext.getApplicationModel();
+
+        Process process = state != null ? applicationModel.getProcess(state.getExecution().getProcessName()) : null;
+        
+
+        if (contextUpdates != null)
+        {
+            ContextUpdate.convertToJava(runtimeContext, process,  view, contextUpdates);
+            runtimeContext.getScopedContextChain().update(contextUpdates);
+        }
 
         ComponentModel componentModel = view.find((m) -> {
             ExpressionValue value = m.getAttribute(DomainType.ID_PROPERTY);
@@ -655,12 +677,12 @@ public class DefaultRuntimeApplication
 
             for (String name : applicationModel.getConfigModel().getStyleSheets())
             {
-                ResourceLocation resourceLocation = resourceLoader.getResourceLocation(name);
+                PathResources resourceLocation = resourceLoader.getResources(name);
 
                 if (resourceLocation == null)
                 {
-                    log.info("RESOURCE LOCATIONS:\n{}", JSON.formatJSON(JSON.defaultJSON().forValue(resourceLoader
-                        .getResourceLocations().keySet())));
+                    log.info("RESOURCE LOCATIONS:\n{}", JSON.formatJSON(JSONUtil.DEFAULT_GENERATOR.forValue(resourceLoader
+                        .getAllResources().keySet())));
                     throw new IllegalStateException("Resource '" + name + "' does not exist in any extension");
                 }
 
@@ -749,7 +771,7 @@ public class DefaultRuntimeApplication
     {
         log.debug("onResourceChange:  {} {} ( ROOT {} ) ", resourceEvent, modulePath, root);
 
-        ResourceLocation resourceLocation = resourceLoader.getResourceLocation(modulePath);
+        PathResources resourceLocation = resourceLoader.getResources(modulePath);
 
         if (resourceLocation == null)
         {
@@ -775,19 +797,9 @@ public class DefaultRuntimeApplication
                     notifyStyleChange();
                 }
             }
-            else if (modulePath.equals(TRACK_USAGE_DATA_RESOURCE))
-            {
-                final StaticFunctionReferences staticFnRefs = load(topResource, StaticFunctionReferences.class);
-                this.applicationModel.getMetaData().setStaticFunctionReferences(staticFnRefs);
-            }
-            else if (modulePath.equals(WEBPACK_STATS_RESOURCE))
-            {
-                final WebpackStats stats = load(topResource, WebpackStats.class);
-                this.applicationModel.getMetaData().setWebpackStats(stats);
-            }
             else if (modulePath.endsWith(FileExtension.JSON))
             {
-                TopLevelModel model = modelCompositionService.update(this, applicationModel, topResource, domainService);
+                TopLevelModel model = modelCompositionService.update(applicationModel, domainService, topResource);
                 if (model != null)
                 {
                     notifyChange(model);
@@ -798,29 +810,19 @@ public class DefaultRuntimeApplication
                     }
                     clientStateService.flushModelVersionScope(getName());
                 }
+
+                resourceInjector.updateResource(nashorn, resourceLoader, applicationModel.getMetaData(), modulePath);
             }
             else if (modulePath.equals("/resources/js/main.js"))
             {
                 log.debug("Reload js: {}", modulePath);
                 notifyCodeChange();
             }
-        }
-    }
-
-
-    private <T> T load(AppResource resource, Class<T> cls)
-    {
-        if (resource.exists())
-        {
-            String json = new String(resource.read(), RequestUtil.UTF_8);
-            if (json.length() > 0)
+            else
             {
-                log.debug("Load {} from {}", cls, json);
-                
-                return JSONUtil.DEFAULT_PARSER.parse(cls, json);
+                resourceInjector.updateResource(nashorn, resourceLoader, applicationModel.getMetaData(), modulePath);
             }
         }
-        return null;
     }
 
 
@@ -883,20 +885,6 @@ public class DefaultRuntimeApplication
             ComponentUtil.updateComponentRegsAndParents(componentRegistry, view, componentNames);
         }
     }
-
-    private class ViewResult
-    {
-        public final String rootModelJSON;
-
-        public final String viewDataJSON;
-
-        public ViewResult(String viewModelJSON, String viewDataJSON)
-        {
-            this.rootModelJSON = viewModelJSON;
-            this.viewDataJSON = viewDataJSON;
-        }
-    }
-
 
     public ApplicationContext getApplicationContext()
     {

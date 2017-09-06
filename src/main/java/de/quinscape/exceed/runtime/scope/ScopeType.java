@@ -30,6 +30,11 @@ public enum ScopeType
     APPLICATION,
 
     /**
+     * Transition level context containing context parameters for transitions.
+     */
+    TRANSITION,
+
+    /**
      * Prototypic base scope for layout properties. Gets mixed into the the scope definitions for the views that use the layout.
      */
     LAYOUT

@@ -1,15 +1,17 @@
 package de.quinscape.exceed.runtime.datalist;
 
-import de.quinscape.exceed.model.Model;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.domain.property.PropertyModel;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.model.meta.PropertyType;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
-import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
+import de.quinscape.exceed.runtime.js.env.SvensonJsAdapter;
+import de.quinscape.exceed.runtime.util.ExpressionUtil;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +34,7 @@ public class DataGraphService
 
     private final DomainService domainService;
 
-    private JSON generator = JSON.defaultJSON();
+    private JSON generator;
 
     private final static JSONBeanUtil util = JSONUtil.DEFAULT_UTIL;
 
@@ -44,17 +46,27 @@ public class DataGraphService
         jsonifier = new DataGraphJSONifier();
         generator.registerJSONifier(DataGraph.class, jsonifier);
     }
-    
 
-    public String toJSON(Object domainObject)
+
+    /**
+     * Converts the given java bean graph to JSON, correctly handling contained data graph structures.
+     *
+     * <p>
+     *     Note: THe DataGraphJSONifier used uses the runtime context registered for the current thread via {@link RuntimeContextHolder}.
+     * </p>
+     *
+     * @param value
+     * @return
+     */
+    public String toJSON(Object value)
     {
         try
         {
-            return generator.forValue(domainObject);
+            return generator.forValue(value);
         }
         catch(Exception e)
         {
-            throw new ExceedRuntimeException("Error generating JSON for " + domainObject, e);
+            throw new ExceedRuntimeException("Error generating JSON for " + value, e);
         }
     }
 
@@ -80,6 +92,10 @@ public class DataGraphService
         public void writeToSink(JSONCharacterSink sink, Object o)
         {
             RuntimeContext runtimeContext = RuntimeContextHolder.get();
+            if (runtimeContext == null)
+            {
+                throw new IllegalStateException("No runtime context set in RuntimeContextHolder");
+            }
 
             DataGraph dataGraph = (DataGraph) o;
 
@@ -121,7 +137,7 @@ public class DataGraphService
                     {
                         String name = e.getKey();
                         Object value = e.getValue();
-                        convertValue(builder, runtimeContext, name, property.getType(), property.getTypeParam(), value);
+                        convertValue(builder, runtimeContext, name, property.getType(), property.getTypeParam(), value, PropertyType.get(runtimeContext, property));
                     }
                     builder.close();
                 }
@@ -135,7 +151,7 @@ public class DataGraphService
                         final DomainProperty domainProperty = entry.getValue();
 
                         final Object value = map.get(localName);
-                        convertValue(builder, runtimeContext, localName, domainProperty.getType(), domainProperty.getTypeParam(), value);
+                        convertValue(builder, runtimeContext, localName, domainProperty.getType(), domainProperty.getTypeParam(), value, PropertyType.get(runtimeContext, domainProperty));
                     }
                     builder.close();
                 }
@@ -160,14 +176,23 @@ public class DataGraphService
                 DomainProperty domainProperty = entry.getValue();
 
                 Object value = util.getProperty(row, localName);
-                convertValue(b, runtimeContext, localName, domainProperty.getType(), domainProperty.getTypeParam(), value);
+                convertValue(b, runtimeContext, localName, domainProperty.getType(), domainProperty.getTypeParam(), value, PropertyType.get(runtimeContext, domainProperty));
             }
         }
 
 
-        private void convertValue(JSONBuilder b, RuntimeContext runtimeContext, String localName, String domainPropertyType, Object domainPropertyTypeName, Object value)
+        private void convertValue(JSONBuilder b, RuntimeContext runtimeContext, String localName, String domainPropertyType, Object domainPropertyTypeParam, Object value, PropertyType propertyType)
         {
-            log.debug("Convert '{}' ( {}/{} ): value = {}", localName, domainPropertyType, domainPropertyTypeName, value);
+            if (log.isDebugEnabled())
+            {
+                log.debug(
+                    "Convert '{}' ( {}/{} ): value = {}",
+                        localName,
+                        domainPropertyType,
+                        domainPropertyTypeParam,
+                        value
+                );
+            }
 
             if (value == null)
             {
@@ -184,7 +209,7 @@ public class DataGraphService
             {
                 switch (domainPropertyType)
                 {
-                    case DomainProperty.LIST_PROPERTY_TYPE:
+                    case PropertyType.LIST:
                     {
                         List list = (List) value;
 
@@ -197,22 +222,23 @@ public class DataGraphService
                             b.arrayElement();
                         }
 
-                        String elemType = (String)domainPropertyTypeName;
+                        String elemType = (String)domainPropertyTypeParam;
                         String elemTypeParam = null;
                         if (domainService.getDomainTypes().containsKey(elemType))
                         {
                             elemTypeParam = elemType;
-                            elemType = DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE;
+                            elemType = PropertyType.DOMAIN_TYPE;
                         }
 
+                        final PropertyType propType = runtimeContext.getApplicationModel().getMetaData().createPropertyType(elemType, elemTypeParam, null);
                         for (Object o : list)
                         {
-                            convertValue(b, runtimeContext, null,  elemType, elemTypeParam, o);
+                            convertValue(b, runtimeContext, null,  elemType, elemTypeParam, o, propType);
                         }
                         b.close();
                         break;
                     }
-                    case DomainProperty.MAP_PROPERTY_TYPE:
+                    case PropertyType.MAP:
                     {
                         Map<String, Object> map = (Map) value;
 
@@ -225,25 +251,25 @@ public class DataGraphService
                             b.objectElement();
                         }
 
-                        String objType = (String)domainPropertyTypeName;
-                        String objTypeParam = null;
-                        if (domainService.getDomainTypes().containsKey(objType))
-                        {
-                            objTypeParam = objType;
-                            objType = DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE;
-                        }
+                        String objType = (String)domainPropertyTypeParam;
 
+                        final PropertyModel collectionType = ExpressionUtil.getCollectionType(domainService, objType);
+                        objType = collectionType.getType();
+                        String objTypeParam = collectionType.getTypeParam();
+
+                        final PropertyType propType = runtimeContext.getApplicationModel().getMetaData().createPropertyType(objType, objTypeParam, null);
                         for (Map.Entry<String, Object> mapEntry : map.entrySet())
                         {
                             String mapKey = mapEntry.getKey();
                             Object mapValue = mapEntry.getValue();
 
-                            convertValue(b, runtimeContext, mapKey, objType, objTypeParam, mapValue);
+
+                            convertValue(b, runtimeContext, mapKey, objType, objTypeParam, mapValue, propType);
                         }
                         b.close();
                         break;
                     }
-                    case DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE:
+                    case PropertyType.DOMAIN_TYPE:
                     {
 
                         if (localName != null)
@@ -254,11 +280,12 @@ public class DataGraphService
                         {
                             b.objectElement();
                         }
+
                         if (value instanceof DomainObject)
                         {
 
                             DomainObject domainObject = (DomainObject) value;
-                            b.property("_type", domainObject.getDomainType());
+                            b.property(DomainType.TYPE_PROPERTY, domainObject.getDomainType());
 
                             final DomainType domainType = domainService.getDomainType(domainObject.getDomainType());
 
@@ -266,20 +293,18 @@ public class DataGraphService
                             for (DomainProperty property : domainType.getProperties())
                             {
                                 final String propertyName = property.getName();
-                                convertValue(b, runtimeContext, propertyName, property.getType(), property.getTypeParam(), domainObject.getProperty(propertyName));
+                                convertValue(b, runtimeContext, propertyName, property.getType(), property.getTypeParam(), domainObject.getProperty(propertyName), PropertyType.get(runtimeContext, property));
                             }
                         }
-                        else if (value instanceof Model)
+                        else
                         {
-                            Model model = (Model) value;
-
-                            final DomainType domainType = domainService.getDomainType(model.getType());
-                            b.property("_type", domainType.getName());
+                            final DomainType domainType = domainService.getDomainType((String) domainPropertyTypeParam);
+                            b.property(DomainType.TYPE_PROPERTY, domainType.getName());
 
                             for (DomainProperty property : domainType.getProperties())
                             {
                                 final String propertyName = property.getName();
-                                convertValue(b, runtimeContext, propertyName, property.getType(), property.getTypeParam(), util.getProperty(model, propertyName));
+                                convertValue(b, runtimeContext, propertyName, property.getType(), property.getTypeParam(), util.getProperty(value, propertyName), PropertyType.get(runtimeContext, property));
                             }
                         }
 
@@ -293,14 +318,12 @@ public class DataGraphService
             }
             else
             {
-                final PropertyConverter converter = domainService.getPropertyConverter(domainPropertyType);
-
-                if (converter == null)
+                if (propertyType == null)
                 {
-                    throw new ExceedRuntimeException("Could not find converter for property type '" + domainPropertyType+ "'." );
+                    throw new ExceedRuntimeException("No runtime property type");
                 }
 
-                Object converted = converter.convertToJSON(runtimeContext, value);
+                Object converted = propertyType.convertToJSON(runtimeContext, value);
                 if (localName != null)
                 {
                     b.property(localName, converted);
@@ -320,7 +343,7 @@ public class DataGraphService
             throw new IllegalArgumentException("type can't be null");
         }
 
-        return type.equals(DomainProperty.LIST_PROPERTY_TYPE) || type.equals(DomainProperty.MAP_PROPERTY_TYPE) || type.equals(DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE);
+        return type.equals(PropertyType.LIST) || type.equals(PropertyType.MAP) || type.equals(PropertyType.DOMAIN_TYPE);
     }
 
 

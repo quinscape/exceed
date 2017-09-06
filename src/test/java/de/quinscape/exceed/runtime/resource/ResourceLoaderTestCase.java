@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.resource;
 
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
-import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
+import de.quinscape.exceed.runtime.resource.file.PathResources;
 import de.quinscape.exceed.runtime.resource.stream.ClassPathResourceRoot;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -33,13 +33,13 @@ public class ResourceLoaderTestCase
 
         ResourceLoader resourceLoader = new ResourceLoader(resourceRoots);
 
-        ResourceLocation resource = resourceLoader.getResourceLocation("/a.json");
+        PathResources resource = resourceLoader.getResources("/a.json");
 
         assertThat(resource, is(notNullValue()));
         assertThat(resource.getHighestPriorityResource().getResourceRoot(), is(base));
-        assertThat(resourceLoader.getResourceLocation("/b.json").getHighestPriorityResource().getResourceRoot(), is(ext2));
-        assertThat(resourceLoader.getResourceLocation("/c.json").getHighestPriorityResource().getResourceRoot(), is(ext));
-        assertThat(resourceLoader.getResourceLocation("/d.json").getHighestPriorityResource().getResourceRoot(), is(ext2));
+        assertThat(resourceLoader.getResources("/b.json").getHighestPriorityResource().getResourceRoot(), is(ext2));
+        assertThat(resourceLoader.getResources("/c.json").getHighestPriorityResource().getResourceRoot(), is(ext));
+        assertThat(resourceLoader.getResources("/d.json").getHighestPriorityResource().getResourceRoot(), is(ext2));
 
         assertThat(JSONParser.defaultJSONParser().parse(resourceLoader.readResource("/a.json")), is("a-base"));
         assertThat(JSONParser.defaultJSONParser().parse(resourceLoader.readResource("/b.json")), is("b-ext2"));

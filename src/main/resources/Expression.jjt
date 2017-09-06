@@ -153,7 +153,7 @@ void Expr() : {}
 void ExpressionSequence() : {}
 {
     (
-    AssignmentExpression() ( ";" AssignmentExpression() )*
+    AssignmentExpression() ( ";" (AssignmentExpression())? )*
     ) #ExpressionSequence(>1)
 }
 

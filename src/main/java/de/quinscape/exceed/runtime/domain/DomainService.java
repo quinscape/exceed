@@ -1,17 +1,16 @@
 package de.quinscape.exceed.runtime.domain;
 
-import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.domain.EnumType;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
-import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
+import de.quinscape.exceed.runtime.js.JsEnvironment;
 import de.quinscape.exceed.runtime.schema.StorageConfiguration;
-
-import java.util.Map;
 
 /**
  *  Handles registration of domain types in the system and converts domain objects to JSON and back.
  */
 public interface DomainService
+    extends DomainTypesRegistry
 {
     void init(RuntimeApplication runtimeApplication, String schema);
 
@@ -23,23 +22,21 @@ public interface DomainService
 
     String getSchema();
 
-    Map<String,DomainType> getDomainTypes();
+    DomainObject create(RuntimeContext runtimeContext, String type, String id);
 
-    Map<String,EnumType> getEnums();
+    DomainObject create(RuntimeContext runtimeContext, String type, String id, Class<? extends DomainObject> implClass);
 
-    DomainObject create(String type, String id);
+    DomainObject read(RuntimeContext runtimeContext, String type, String id);
 
-    DomainObject read(String type, String id);
+    boolean delete(RuntimeContext runtimeContext, DomainObject genericDomainObject);
 
-    void delete(DomainObject genericDomainObject);
+    void insert(RuntimeContext runtimeContext, DomainObject genericDomainObject);
 
-    void insert(DomainObject genericDomainObject);
+    void insertOrUpdate(RuntimeContext runtimeContext, DomainObject genericDomainObject);
 
-    void insertOrUpdate(DomainObject genericDomainObject);
-
-    void update(DomainObject genericDomainObject);
-
-    PropertyConverter getPropertyConverter(String name);
+    boolean update(RuntimeContext runtimeContext, DomainObject genericDomainObject);
 
     StorageConfiguration getStorageConfiguration(String domainType);
+
+    JsEnvironment getJsEnvironment();
 }

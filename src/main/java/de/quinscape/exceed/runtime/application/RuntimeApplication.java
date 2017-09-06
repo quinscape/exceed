@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.application;
 
 import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.resource.ResourceLoader;
 import de.quinscape.exceed.runtime.scope.ScopedContext;
 
@@ -24,4 +25,6 @@ public interface RuntimeApplication
     ScopedContext getApplicationContext();
 
     ResourceLoader getResourceLoader();
+
+    RuntimeContext createSystemContext();
 }

@@ -36,12 +36,6 @@ public class ComponentStateProvider
         throws Exception
     {
         final Map<String, ComponentData> componentData = viewData.getComponentData();
-
-        if (componentData.size() == 0)
-        {
-            return null;
-        }
-
         return new JSONData(runtimeContext.getDomainService().toJSON(componentData));
     }
 

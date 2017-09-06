@@ -1,8 +1,6 @@
 package de.quinscape.exceed.runtime.util;
 
-import de.quinscape.exceed.expression.ASTAssignment;
 import de.quinscape.exceed.expression.ASTExpression;
-import de.quinscape.exceed.expression.ASTExpressionSequence;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTIdentifier;
 import de.quinscape.exceed.expression.ASTMap;
@@ -14,20 +12,23 @@ import de.quinscape.exceed.expression.ExpressionParserVisitor;
 import de.quinscape.exceed.expression.LiteralValueNode;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.expression.PropertyChainLink;
 import de.quinscape.exceed.expression.SimpleNode;
-import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.model.component.PropType;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.PropertyModel;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.model.meta.PropertyType;
+import de.quinscape.exceed.runtime.component.DataGraph;
+import de.quinscape.exceed.runtime.config.ExpressionConfiguration;
+import de.quinscape.exceed.runtime.domain.DomainObject;
+import de.quinscape.exceed.runtime.domain.DomainTypesRegistry;
 import de.quinscape.exceed.runtime.domain.GeneratedDomainObject;
-import de.quinscape.exceed.runtime.domain.GenericDomainObject;
-import de.quinscape.exceed.runtime.domain.property.DomainTypeConverter;
+import de.quinscape.exceed.runtime.domain.property.DomainObjectConverter;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironmentException;
+import de.quinscape.exceed.runtime.expression.transform.ComponentExpressionTransformer;
 import de.quinscape.exceed.runtime.js.ExpressionType;
 import de.quinscape.exceed.runtime.model.ExpressionRenderer;
-import de.quinscape.exceed.runtime.model.InvalidClientExpressionException;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -35,6 +36,8 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+
 
 public class ExpressionUtil
 {
@@ -57,7 +60,17 @@ public class ExpressionUtil
         .withType(PropertyType.DOMAIN_TYPE)
         .build();
 
+    public static final DomainProperty DATA_GRAPH_TYPE = DomainProperty.builder()
+        .withType(PropertyType.DATA_GRAPH)
+        .build();
+
     public static final DomainProperty OBJECT_TYPE = DomainProperty.builder().withType(PropertyType.OBJECT).build();
+
+    public static final DomainProperty STATE_TYPE = DomainProperty.builder().withType(PropertyType.STATE).build();
+
+    /** pseudo property type used for foreign expression embedding */
+    public static final DomainProperty EXPRESSION_TYPE = DomainProperty.builder().withType("Expression").build();
+
 
     @SafeVarargs
     public static Object visitOneChildOf(ExpressionParserVisitor visitor, ASTFunction n, Class<? extends Node>...
@@ -78,8 +91,33 @@ public class ExpressionUtil
             }
         }
 
-        throw new ExpressionEnvironmentException("Unexpected argument for function " + n.getName() + "': " +
-            firstArg);
+        throw new ExpressionEnvironmentException(
+            "Unexpected argument for function " + n.getName() + "': " + firstArg
+        );
+    }
+
+    @SafeVarargs
+    public static Object visitNthChildOf(ExpressionParserVisitor visitor, ASTFunction n, int index, Class<? extends Node>...
+        classes)
+    {
+        if (n.jjtGetNumChildren() <= index)
+        {
+            throw new ExpressionEnvironmentException("Expected at least " + index + " arguments of " + Arrays.toString(classes) +
+                " for function " + n.getName() + "'");
+        }
+
+        Node nthArg = n.jjtGetChild(index);
+        for (Class<? extends Node> cls : classes)
+        {
+            if (cls.isInstance(nthArg))
+            {
+                return nthArg.jjtAccept(visitor, null);
+            }
+        }
+
+        throw new ExpressionEnvironmentException(
+            "Unexpected argument for function " + n.getName() + "': " + nthArg
+        );
     }
 
 
@@ -110,7 +148,7 @@ public class ExpressionUtil
     {
         Object value = node.jjtAccept(visitor, null);
 
-        if (cls.isInstance(value))
+        if (value == null || cls.isInstance(value))
         {
             return (T) value;
         }
@@ -131,7 +169,7 @@ public class ExpressionUtil
      * @param node non-root node
      * @return index
      */
-    public static int findSiblingIndex(Node node)
+    public static int findIndexInParent(Node node)
     {
         Node parent = node.jjtGetParent();
 
@@ -148,6 +186,16 @@ public class ExpressionUtil
             }
         }
         throw new IllegalStateException("Node not in children of parent");
+    }
+
+    public static void replaceNode(Node n, Node replacement)
+    {
+        final int indexInParent = findIndexInParent(n);
+
+        final Node parent = n.jjtGetParent();
+        parent.jjtAddChild(replacement, indexInParent);
+        replacement.jjtSetParent(parent);
+        n.jjtSetParent(null);
     }
 
 
@@ -223,6 +271,13 @@ public class ExpressionUtil
     }
 
 
+    /**
+     * Returns a property type for the given java type if possible.
+     *
+     * @param paramType     java type
+     *
+     * @return  property type of <code>null</code>
+     */
     public static DomainProperty findPropertyModelFor(Class<?> paramType)
     {
         if (paramType.equals(String.class))
@@ -249,7 +304,52 @@ public class ExpressionUtil
         {
             return DECIMAL_TYPE;
         }
-        else if (paramType.equals(GenericDomainObject.class))
+        else if (paramType.equals(DataGraph.class))
+        {
+            return DATA_GRAPH_TYPE;
+        }
+        else if (paramType.equals(ASTExpression.class))
+        {
+            return EXPRESSION_TYPE;
+        }
+        else if (paramType.equals(Object.class))
+        {
+            return OBJECT_TYPE;
+        }
+        else if (paramType.isArray())
+        {
+            final DomainProperty elemType = findPropertyModelFor(paramType.getComponentType());
+            final String typeParam;
+
+            if (elemType == null)
+            {
+                typeParam = null;
+            }
+            else
+            {
+                if (elemType.getType().equals(PropertyType.DOMAIN_TYPE))
+                {
+                    typeParam = elemType.getTypeParam();
+                }
+                else
+                {
+                    typeParam = elemType.getType();
+                }
+            }
+
+
+            return DomainProperty.builder()
+                .withType(PropertyType.LIST, typeParam)
+                .build();
+        }
+        else if (GeneratedDomainObject.class.isAssignableFrom(paramType))
+        {
+            return DomainProperty.builder()
+                .withType(PropertyType.DOMAIN_TYPE, paramType.getSimpleName())
+                .withConfig(DomainObjectConverter.IMPLEMENTATION_CONFIG, paramType.getName())
+                .build();
+        }
+        else if (DomainObject.class.isAssignableFrom(paramType))
         {
             return GENERIC_DOMAIN_TYPE;
         }
@@ -265,13 +365,6 @@ public class ExpressionUtil
                 .withType(PropertyType.LIST, PropertyType.OBJECT)
                 .build();
         }
-        else if (GeneratedDomainObject.class.isAssignableFrom(paramType))
-        {
-            return DomainProperty.builder()
-                .withType(PropertyType.DOMAIN_TYPE, paramType.getSimpleName())
-                .withConfig(DomainTypeConverter.IMPLEMENTATION_CONFIG, paramType.getName())
-                .build();
-        }
         return null;
     }
 
@@ -285,12 +378,13 @@ public class ExpressionUtil
     public static String renderExpressionOf(Node node)
     {
         Node parent;
-        while ((parent = node.jjtGetParent()) != null)
+        Node current = node;
+        while ((parent = current.jjtGetParent()) != null)
         {
-            node = parent;
+            current = parent;
         }
 
-        return "{ " + ExpressionRenderer.render(node) + " }";
+        return node + " in { " + ExpressionRenderer.render(current) + " }";
     }
 
     public static boolean isFirstAmongSiblings(Node node)
@@ -340,13 +434,19 @@ public class ExpressionUtil
             case BOOLEAN:
             case CLASSES:
             case TRANSITION:
+            case MAP:
+            case FIELD_REFERENCE:
             case DOMAIN_TYPE_REFERENCE:
+            case STATE_MACHINE_REFERENCE:
+            case GLYPH_ICON:
                 return ExpressionType.VALUE;
 
             case QUERY_EXPRESSION:
                 return ExpressionType.QUERY;
             case CURSOR_EXPRESSION:
                 return ExpressionType.CURSOR;
+            case CONTEXT_EXPRESSION:
+                return ExpressionType.CONTEXT;
             case FILTER_EXPRESSION:
                 return ExpressionType.FILTER;
             case VALUE_EXPRESSION:
@@ -385,90 +485,8 @@ public class ExpressionUtil
         }
     }
 
-    public static List<Object> getPath(ASTPropertyChain node, PropertyModel start, int startAt)
-    {
-        List<Object> list = new ArrayList<>();
-        for (int i = startAt; i < node.jjtGetNumChildren(); i++)
-        {
-            Object nextProp = null;
-            Node kid = node.jjtGetChild(i).jjtGetChild(0);
 
-            if (kid instanceof ASTIdentifier)
-            {
-                nextProp = ((ASTIdentifier) kid).getName();
-            }
-            else if (kid instanceof ASTString)
-            {
-                nextProp = ((ASTString) kid).getValue();
-            }
-            else if (kid instanceof ASTInteger)
-            {
-                nextProp = ((ASTInteger) kid).getValue();
-            }
-
-            if (nextProp == null)
-            {
-                throw new InvalidExpressionException("Invalid chain link while walking type '" + start.getType() + ": " + ExpressionUtil.renderExpressionOf(node));
-            }
-            list.add(nextProp);
-        }
-
-        return list;
-    }
-
-    public static  PropertyModel walk(ApplicationModel applicationModel, ASTPropertyChain node, PropertyModel start, int startAt)
-    {
-        final List<Object> path = getPath(node, start, startAt);
-
-        return walk(applicationModel, start, path);
-
-    }
-
-
-    private static PropertyModel walk(ApplicationModel applicationModel, PropertyModel start, List<Object> path)
-    {
-        PropertyModel current = start;
-
-        for (Object nextProp : path)
-        {
-            if ( current.getType().equals(PropertyType.MAP) || current.getType().equals(PropertyType.LIST))
-            {
-                final String elemTypeName = (String) current.getTypeParam();
-
-                if (applicationModel.getDomainTypes().containsKey(elemTypeName))
-                {
-                    current = DomainProperty.builder()
-                        .withType(PropertyType.DOMAIN_TYPE, elemTypeName)
-                        .build();
-                }
-                else
-                {
-                    current = getPropertyType(elemTypeName);
-                }
-            }
-            else if ( current.getType().equals(PropertyType.DOMAIN_TYPE))
-            {
-                final DomainType domainType = applicationModel.getDomainType((String) current.getTypeParam());
-                for (DomainProperty domainProperty : domainType.getProperties())
-                {
-                    if (domainProperty.getName().equals(nextProp))
-                    {
-                        current = domainProperty;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                throw new InvalidExpressionException("Cannot walk type '" + current.getType() + ": " + path);
-            }
-
-        }
-        return current;
-    }
-
-
-    private static PropertyModel getPropertyType(String elemTypeName)
+    public static PropertyModel getPropertyType(String elemTypeName)
     {
         switch (elemTypeName)
         {
@@ -494,7 +512,200 @@ public class ExpressionUtil
                     .build();
         }
     }
-    
+
+
+    /**
+     * Consults the given registry to decide whether the given former collection type param refers to
+     * a domain type, an enum type or a property type.
+     *
+     * @param registry
+     * @param elemTypeName
+     * @return
+     */
+    public static PropertyModel getCollectionType(DomainTypesRegistry registry, String elemTypeName)
+    {
+        if (registry.getDomainTypes().containsKey(elemTypeName))
+        {
+            return DomainProperty.builder()
+                .withType(PropertyType.DOMAIN_TYPE, elemTypeName)
+                .build();
+        }
+        else if (registry.getEnums().containsKey(elemTypeName))
+        {
+            return DomainProperty.builder()
+                .withType(PropertyType.ENUM, elemTypeName)
+                .build();
+        }
+        else if (registry.getStateMachines().containsKey(elemTypeName))
+        {
+            return DomainProperty.builder()
+                .withType(PropertyType.STATE, elemTypeName)
+                .build();
+        }
+        else
+        {
+            if (!registry.getPropertyTypes().containsKey(elemTypeName))
+            {
+                throw new IllegalArgumentException("Cannot resolve property type for typeParam '" + elemTypeName + "'");
+            }
+            return ExpressionUtil.getPropertyType(elemTypeName);
+        }
+    }
+
+
+    /**
+     * Returns a more readable textual description for a property model.
+     * <ul>
+     *     <li>
+     *         <code>"Map&lt;Type&gt;"</code> / <code>"List&lt;Type&gt;"</code>
+     *     </li>
+     *     <li>
+     *         <code>"MyEnumType"</code> / <code>"MyDomainType"</code>
+     *     </li>
+     *     <li>
+     *         <code>"Plaintext"</code>, <code>"Integer"</code> etc.
+     *     </li>
+     * </ul>
+     *
+     * @param propertyModel    property model
+     *
+     * @return textual description.
+     */
+    public static String describe(PropertyModel propertyModel)
+    {
+        final String type = propertyModel.getType();
+        final String typeParam = propertyModel.getTypeParam();
+
+        switch (type)
+        {
+            case PropertyType.MAP:
+            case PropertyType.LIST:
+                if (typeParam == null || typeParam.equals(PropertyType.OBJECT))
+                {
+                    return type;
+                }
+                else
+                {
+                    return type + "<" + typeParam + ">";
+                }
+
+            case PropertyType.DOMAIN_TYPE:
+            case PropertyType.ENUM:
+            case PropertyType.STATE:
+                if (typeParam == null)
+                {
+                    return type;
+                }
+                else
+                {
+                    return typeParam;
+                }
+
+
+            default:
+                return type;
+        }
+    }
+
+
+    /**
+     * Returns true if the given node is not a secondary part of a property chain or a map key, and not a true
+     * reference to its context identifier / context function.
+     *
+     *
+     * @param node  identifier
+     *
+     * @return <code>true</code> if the node is not a true identifier / function.
+     */
+    public static boolean isLinkedNode(Node node)
+    {
+        final Node parent = node.jjtGetParent();
+        if (parent instanceof PropertyChainLink)
+        {
+            // node is non-first link in a property chain
+            return true;
+        }
+        else if (parent instanceof ASTMapEntry && parent.jjtGetChild(0) == node)
+        {
+            // node is key in a map entry
+            return true;
+        }
+        return false;
+    }
+
+
+    /**
+     * Returns true if any of the parent nodes is the lazyDependency() function.
+     *
+     * @param node      node
+     * @return <code>true</code> if the node is supposed to be lazilyEvaluated
+     */
+    public static boolean isLazyDependency(Node node)
+    {
+        while ((node = node.jjtGetParent()) != null)
+        {
+            if (node instanceof ASTFunction && ((ASTFunction) node).getName().equals(ExpressionConfiguration.LAZY_DEPENDENCY))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    public static Node findNode(Node node, Predicate<Node> predicate)
+    {
+        if (node == null)
+        {
+            return null;
+        }
+
+        if (predicate.test(node))
+        {
+            return node;
+        }
+
+        final int count = node.jjtGetNumChildren();
+        for (int i = 0; i < count ; i++)
+        {
+            final Node result = findNode(node.jjtGetChild(i), predicate);
+            if (result != null)
+            {
+                return node;
+            }
+        }
+
+        return null;
+    }
+
+
+    public static boolean hasContextReference(ASTExpression expression)
+    {
+        return ExpressionUtil.findNode(expression, ExpressionUtil.HasContextReferencePredicate.INSTANCE) != null;
+    }
+
+
+    public static class HasContextReferencePredicate
+        implements Predicate<Node>
+    {
+        public final static HasContextReferencePredicate INSTANCE = new HasContextReferencePredicate();
+
+        private HasContextReferencePredicate()
+        {
+
+        }
+
+        @Override
+        public boolean test(Node node)
+        {
+            return
+                node instanceof ASTIdentifier &&
+                ((ASTIdentifier) node).getName().equals(ComponentExpressionTransformer.CONTEXT_IDENTIFIER) &&
+                // context identifier can be part of chain, but not as secondary link
+                // ( "context" and "context.foo", but not "xxx.context" )
+                !(node.jjtGetParent() instanceof PropertyChainLink);
+        }
+    }
 }
 
 

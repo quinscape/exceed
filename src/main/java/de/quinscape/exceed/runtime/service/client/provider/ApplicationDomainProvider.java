@@ -1,18 +1,18 @@
 package de.quinscape.exceed.runtime.service.client.provider;
 
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.meta.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.service.client.ClientData;
 import de.quinscape.exceed.runtime.service.client.ClientStateProvider;
 import de.quinscape.exceed.runtime.service.client.ClientStateScope;
-import de.quinscape.exceed.runtime.service.client.DefaultClientData;
 import de.quinscape.exceed.runtime.service.client.ExceedAppProvider;
 import de.quinscape.exceed.runtime.service.client.ExceedEditorProvider;
+import de.quinscape.exceed.runtime.service.client.JSONData;
 import de.quinscape.exceed.runtime.view.ViewData;
+import org.svenson.util.JSONBuilder;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
 
 /**
  * Provides the current values of the scoped context objects referenced by view expressions and static calls
@@ -43,12 +43,17 @@ public class ApplicationDomainProvider
     @Override
     public ClientData provide(HttpServletRequest request, RuntimeContext runtimeContext, ViewData viewData)
     {
-        final DomainService domainService = runtimeContext.getDomainService();
+        final ApplicationModel applicationModel = runtimeContext.getApplicationModel();
 
-        final HashMap<Object, Object> map = new HashMap<>();
-        map.put("enumTypes", domainService.getEnums());
-        map.put("domainTypes", domainService.getDomainTypes());
-        return new DefaultClientData(map);
+        return new JSONData(
+            JSONBuilder.buildObject()
+                .property("domainTypes", applicationModel.getDomainTypes())
+                .property("enumTypes", applicationModel.getEnums())
+                .property("stateMachines", applicationModel.getStateMachines())
+                .property("decimalConfig", applicationModel.getConfigModel().getDecimalConfig())
+                .property("maxDecimalPlaces", applicationModel.getMetaData().getMaxDecimalPlaces())
+                .output()
+        );
     }
 
 

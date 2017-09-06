@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.domain;
 
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTString;
+import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
 import de.quinscape.exceed.runtime.expression.annotation.Operation;
@@ -38,7 +39,9 @@ public class PropertyDefaultOperations
 
         type = ((ASTString) fn.jjtGetChild(0)).getValue();
 
-        return env.getDomainService().create(type, UUID.randomUUID().toString());
+
+
+        return env.getDomainService().create(RuntimeContextHolder.get(), type, UUID.randomUUID().toString());
     }
 
 }

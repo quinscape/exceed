@@ -4,9 +4,11 @@ import de.quinscape.exceed.TestDomainServiceBase;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.model.domain.type.DomainTypeBuilder;
 import de.quinscape.exceed.model.meta.PropertyType;
+import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.TestApplication;
@@ -15,9 +17,11 @@ import de.quinscape.exceed.runtime.js.ExpressionType;
 import de.quinscape.exceed.runtime.js.InvalidExpressionException;
 import de.quinscape.exceed.runtime.js.InvalidReferenceException;
 import de.quinscape.exceed.runtime.js.JsExpressionRenderer;
+import de.quinscape.exceed.runtime.js.ScriptBuffer;
 import de.quinscape.exceed.runtime.js.def.DefinitionType;
 import de.quinscape.exceed.runtime.js.def.Definitions;
 import de.quinscape.exceed.runtime.js.def.FunctionDefinition;
+import de.quinscape.exceed.runtime.model.ExpressionModelContext;
 import de.quinscape.exceed.runtime.util.ExpressionUtil;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 import org.junit.Test;
@@ -52,6 +56,10 @@ public class ActionExpressionTest
             .withType(PropertyType.PLAIN_TEXT)
             .buildScoped())
         .withSessionContext(DomainProperty.builder()
+            .withName("b")
+            .withType(PropertyType.PLAIN_TEXT)
+            .buildScoped())
+        .withSessionContext(DomainProperty.builder()
             .withName("container")
             .withType(PropertyType.DOMAIN_TYPE, "Container")
             .buildScoped())
@@ -64,27 +72,62 @@ public class ActionExpressionTest
         .build();
 
 
-    private static JsExpressionRenderer renderer = new JsExpressionRenderer(
-        Arrays.asList(
-            new ActionExpressionTransformer(
-                buildActions(
-                    "foo",
-                    "bar",
-                    "bar2",
-                    "baz",
-                    "baz2",
-                    "qux",
-                    "fork",
-                    "clientOnly"
-                ), true
-            ),
-            new ScopeExpressionTransformer(
-                testApplication.getApplicationModel().lookup(view).getContextIdentifiers(),
-                ExpressionType.VALUE,
-                true
+    private static JsExpressionRenderer renderer = createRenderer();
+
+    private ScriptBuffer lastBuffer;
+
+
+    private static JsExpressionRenderer createRenderer()
+    {
+
+        final Definitions definitions = buildActions(
+            "foo",
+            "bar",
+            "bar2",
+            "baz",
+            "baz2",
+            "qux",
+            "query",
+            "when",
+            ActionExpressionTransformer.FORK_ACTION,
+            ActionExpressionTransformer.CATCH_ACTION,
+            "clientOnly"
+        );
+
+        definitions.addDefinition(
+            "isBla",
+            new FunctionDefinition(
+                "isBla",
+                ExpressionUtil.PLAINTEXT_TYPE,
+                "",
+                null,
+                Arrays.asList(
+                    ExpressionUtil.PLAINTEXT_TYPE
+                ),
+                null,
+                false,
+                DefinitionType.BUILTIN,
+                "test"
             )
-        )
-    );
+        );
+
+        return new JsExpressionRenderer(
+
+
+            Arrays.asList(
+                new ActionExpressionTransformer(
+                    definitions,
+                    true
+                ),
+                new EqualityTransformer(),
+                new ScopeExpressionTransformer(
+                    testApplication.getApplicationModel().lookup(view).getLocalDefinitions(),
+                    ExpressionType.VALUE,
+                    null
+                )
+            )
+        );
+    }
 
 
     private static Definitions buildActions(String... names)
@@ -97,10 +140,11 @@ public class ActionExpressionTest
                 ExpressionUtil.PLAINTEXT_TYPE,
                 "",
                 ExpressionType.ACTION,
-                Collections.emptyList(),
+                name.equals("query") ? Collections.singletonList(ExpressionUtil.EXPRESSION_TYPE) : Arrays.asList(ExpressionUtil.PLAINTEXT_TYPE,ExpressionUtil.PLAINTEXT_TYPE),
                 null,
                 false,
-                name.equals("clientOnly") ? DefinitionType.CLIENT_SIDE_ACTION : DefinitionType.ACTION
+                name.equals("clientOnly") ? DefinitionType.CLIENT_SIDE_ACTION : DefinitionType.ACTION,
+                "test"
             ));
         }
 
@@ -113,27 +157,38 @@ public class ActionExpressionTest
     {
 
         assertThat(
+            transform(("a = isBla('xxx') ; b = 'yyy' ; test = 12")),
+            is("_v.updateScope(['a'], isBla('xxx')),_v.updateScope(['b'], 'yyy'),_v.updateScope(['test'], 12)")
+        );
+
+        assertThat(
             transform(("foo()")),
-            is("_a.action('foo')")
+            is("_a.action('foo',[])")
         );
 
         assertThat(
             transform(("a = foo()")),
-            is("_a.action('foo').then(function(__a) {_v.updateScope(['a'], __a);})")
+            is("_a.action('foo',[]).then(function(__a) {_v.updateScope(['a'], __a);})")
         );
         assertThat(
             transform(("foo() ; bar()")),
-            is("_a.action('foo').then(function(){return _a.action('bar')})")
+            is("_a.action('foo',[]).then(function(){return _a.action('bar',[])})")
         );
         assertThat(
             transform(("a.name = foo() ; bar(a)")),
-            is("_a.action('foo').then(function(__a) {_v.updateScope(['a','name'], __a);return _a.action('bar',_v.scope('a'))})")
+            is("_a.action('foo',[]).then(function(__a) {_v.updateScope(['a','name'], __a);return _a.action('bar',[_v.scope('a')])})")
         );
 
         assertThat(
             transform(("foo() ; bar() ; baz()")),
-            is("_a.action('foo').then(function(){return _a.action('bar')}).then(function(){return _a.action('baz')})")
+            is("_a.action('foo',[]).then(function(){return _a.action('bar',[])}).then(function(){return _a.action('baz',[])})")
         );
+
+        assertThat(
+            transform(("foo() ; test = bar()")),
+            is("_a.action('foo',[]).then(function(){return _a.action('bar',[])}).then(function(__test) {_v.updateScope(['test'], __test);})")
+        );
+
     }
 
 
@@ -146,7 +201,7 @@ public class ActionExpressionTest
         );
         assertThat(
             transform(("foo();test = test + 1")),
-            is("_a.action('foo').then(function(){return _v.updateScope(['test'], _v.scope('test') + 1)})")
+            is("_a.action('foo',[]).then(function(){return _v.updateScope(['test'], _v.scope('test') + 1)})")
         );
 
     }
@@ -167,7 +222,7 @@ public class ActionExpressionTest
     {
         assertThat(
             transform(("curr.num = 1 ; foo(curr)")),
-            is("_v.updateScope(['curr','num'], 1),_a.action('foo',_v.scope('curr'))")
+            is("_v.updateScope(['curr','num'], 1),_a.action('foo',[_v.scope('curr')])")
         );
 
     }
@@ -177,12 +232,12 @@ public class ActionExpressionTest
     {
         assertThat(
             transform(("fork( foo(); test = bar())")),
-            is("Promise.all(_a.action('foo').then(function(){return _a.action('bar')}).then(function(__test) {_v.updateScope(['test'], __test);}))")
+            is("Promise.all(_a.action('foo',[]).then(function(){return _a.action('bar',[])}).then(function(__test) {_v.updateScope(['test'], __test);}))")
         );
 
         assertThat(
             transform("fork( foo(); test = bar()) ; foo()"),
-            is("Promise.all(_a.action('foo').then(function(){return _a.action('bar')}).then(function(__test) {_v.updateScope(['test'], __test);})).then(function(){return _a.action('foo')})")
+            is("Promise.all(_a.action('foo',[]).then(function(){return _a.action('bar',[])}).then(function(__test) {_v.updateScope(['test'], __test);})).then(function(){return _a.action('foo',[])})")
         );
 
     }
@@ -207,11 +262,11 @@ public class ActionExpressionTest
     {
         assertThat(
             transform(("foo(); fork(bar()); qux()")),
-            is("_a.action('foo').then(function(){return Promise.all(_a.action('bar'))}).then(function(){return _a.action('qux')})")
+            is("_a.action('foo',[]).then(function(){return Promise.all(_a.action('bar',[]))}).then(function(){return _a.action('qux',[])})")
         );
         assertThat(
             transform(("foo(); fork(bar();bar2(),baz();baz2()); qux()")),
-            is("_a.action('foo').then(function(){return Promise.all(_a.action('bar').then(function(){return _a.action('bar2')}),_a.action('baz').then(function(){return _a.action('baz2')}))}).then(function(){return _a.action('qux')})")
+            is("_a.action('foo',[]).then(function(){return Promise.all(_a.action('bar',[]).then(function(){return _a.action('bar2',[])}),_a.action('baz',[]).then(function(){return _a.action('baz2',[])}))}).then(function(){return _a.action('qux',[])})")
         );
     }
 
@@ -223,11 +278,105 @@ public class ActionExpressionTest
     }
 
 
+    @Test
+    public void testCatch() throws Exception
+    {
+        assertThat(
+            transform((" foo() ; catch( baz() ; baz2()) ; qux()")),
+            is("_a.action('foo',[]).catch(function(){return _a.action('baz',[]).then(function(){return _a.action('baz2',[])})}).then(function(){return _a.action('qux',[])})")
+        );
+
+        assertThat(
+            transform(("foo() ; catch( baz()) ; qux()")),
+            is("_a.action('foo',[]).catch(function(){return _a.action('baz',[])}).then(function(){return _a.action('qux',[])})")
+        );
+
+        // when( strValue == 'special' ) ; value = 1 ; catch( value = 0 )
+    }
+
+    @Test
+    public void testWhen() throws Exception
+    {
+
+        assertThat(
+            transform("when( a == 'special').then( value = 1)"),
+            is("_v.when(Promise.resolve(_v.scope('a') === 'special'),function(){ return _v.updateScope(['value'], 1)})")
+        );
+        assertThat(
+            transform("when( a == 'special').then( value = 1).else(value = 0)"),
+            is("_v.when(Promise.resolve(_v.scope('a') === 'special'),function(){ return _v.updateScope(['value'], 1)},function(){ return _v.updateScope(['value'], 0)})")
+        );
+        assertThat(
+            transform("foo(a,b) ; when(!isNew(a)).then(foo(b))"),
+            is("_a.action('foo',[_v.scope('a'),_v.scope('b')]).then(function(){return _v.when(Promise.resolve(!isNew(_v.scope('a'))),function(){ return _a.action('foo',[_v.scope('b')])})})")
+        );
+        assertThat(
+            transform("when(a == 0).then( foo() ).else( bar() ) ; foo()"),
+            is("_v.when(Promise.resolve(_v.scope('a') === 0),function(){ return _a.action('foo',[])},function(){ return _a.action('bar',[])}).then(function(){ return _a.action('foo',[])})")
+        );
+
+        assertThat(
+            transform("when(a == 0).then( foo() ).else( b = 1 ) ; foo()"),
+            is("_v.when(Promise.resolve(_v.scope('a') === 0),function(){ return _a.action('foo',[])},function(){ return _v.updateScope(['b'], 1)}).then(function(){ return _a.action('foo',[])})")
+        );
+
+
+
+    }
+
+
+    @Test(expected = InvalidExpressionException.class)
+    public void testWhenError() throws Exception
+    {
+        transform("when( a == 1)");
+    }
+
+    @Test
+    public void testForeignExpression() throws Exception
+    {
+        assertThat(
+            transform("a = 0; b = query( DNameNum.as(d) )"),
+            is("_v.updateScope(['a'], 0),_a.action('query',[expr]).then(function(__b) {_v.updateScope(['b'], __b);})")
+        );
+
+        assertThat(lastBuffer.getPushed().get("__Expression('query(DNameNum.as(d))')"), is("expr"));
+
+        assertThat(
+            transform("a = 0; b = query( DNameNum.as(d) ).filter(d.id == a)"),
+            is("_v.updateScope(['a'], 0),_a.action('query',[expr]).then(function(__b) {_v.updateScope(['b'], __b);})")
+        );
+
+        log.info("{}", lastBuffer.getPushed());
+
+        assertThat(lastBuffer.getPushed().get("__Expression('query(DNameNum.as(d)).filter(d.id == a)')"), is("expr"));
+
+        assertThat(
+            transform("a = 0; b = query( DNameNum.as(d) ).filter(d.id == a) ; a = 1"),
+            is("_v.updateScope(['a'], 0),_a.action('query',[expr]).then(function(__b) {_v.updateScope(['b'], __b);return _v.updateScope(['a'], 1)})")
+        );
+
+    }
+
+
     private String transform(String expr) throws ParseException
     {
         final ASTExpression astExpression = ExpressionParser.parse(expr);
 
-        final String code = renderer.transform(ExpressionType.ACTION, null, astExpression);
+        final ScriptBuffer buffer = new ScriptBuffer();
+        final ExpressionModelContext context = new ExpressionModelContext(
+            new View(),
+            new ComponentModel()
+        );
+
+        final String code = renderer.transform(
+            null,
+            ExpressionType.ACTION,
+            context,
+            astExpression,
+            buffer
+        );
+
+        lastBuffer = buffer;
 
         return assertValidJs(code);
     }
@@ -244,7 +393,7 @@ public class ActionExpressionTest
         }
         catch (ScriptException e)
         {
-            throw new ExceedRuntimeException(e);
+            throw new ExceedRuntimeException("Invalid code:\n" + code, e);
         }
 
         return code;
@@ -259,7 +408,7 @@ public class ActionExpressionTest
             try
             {
                 add(
-                    DomainType.builder("Container")
+                    new DomainTypeBuilder("Container")
                         .withProperties(
                             DomainProperty.builder()
                                 .withName("name")
@@ -273,7 +422,7 @@ public class ActionExpressionTest
                 );
 
                 add(
-                    DomainType.builder("DNameNum")
+                    new DomainTypeBuilder("DNameNum")
                         .withProperties(
                             DomainProperty.builder()
                                 .withName("name")

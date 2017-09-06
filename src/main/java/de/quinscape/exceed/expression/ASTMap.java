@@ -3,7 +3,8 @@
 package de.quinscape.exceed.expression;
 
 public
-class ASTMap extends SimpleNode {
+class ASTMap extends SimpleNode
+{
   public ASTMap(int id) {
     super(id);
   }

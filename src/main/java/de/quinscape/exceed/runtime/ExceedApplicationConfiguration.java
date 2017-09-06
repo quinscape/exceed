@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime;
 
 import de.quinscape.exceed.runtime.config.DefaultAppConfiguration;
 import de.quinscape.exceed.runtime.config.DomainConfiguration;
+import de.quinscape.exceed.runtime.config.EditorConfiguration;
 import de.quinscape.exceed.runtime.config.ModelConfiguration;
 import de.quinscape.exceed.runtime.config.SecurityConfiguration;
 import de.quinscape.exceed.runtime.config.ServiceConfiguration;
@@ -19,6 +20,7 @@ import org.springframework.context.annotation.PropertySource;
     DomainConfiguration.class,
     SecurityConfiguration.class,
     ServiceConfiguration.class,
+    EditorConfiguration.class,
     WebConfiguration.class,
     DefaultAppConfiguration.class
 })

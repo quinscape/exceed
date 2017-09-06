@@ -11,14 +11,20 @@ import de.quinscape.exceed.expression.ASTPropertyChain;
 import de.quinscape.exceed.expression.ASTRelational;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
+import de.quinscape.exceed.runtime.js.InvalidExpressionException;
+import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import de.quinscape.exceed.runtime.util.ExpressionUtil;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class QueryFilterEnvironment
     extends ExpressionEnvironment
@@ -32,11 +38,22 @@ public class QueryFilterEnvironment
 
     private ComponentModel columnContext;
 
+    private Set<DataField> fieldReferences = new HashSet<>();
 
-    public QueryFilterEnvironment(QueryTransformerEnvironment transformerEnvironment, QueryDomainType queryDomainType)
+
+    public QueryFilterEnvironment(
+        QueryTransformerEnvironment transformerEnvironment,
+        QueryDomainType queryDomainType
+    )
     {
         this.transformerEnvironment = transformerEnvironment;
         this.queryDomainType = queryDomainType;
+    }
+
+
+    public Set<DataField> getFieldReferences()
+    {
+        return fieldReferences;
     }
 
 
@@ -78,7 +95,45 @@ public class QueryFilterEnvironment
     @Override
     public Object resolveIdentifier(String name)
     {
-        return DSL.field(DSL.name(name));
+        final Field<Object> queryField = resolveDSLField(name);
+        if (queryField != null)
+        {
+            return queryField;
+        }
+
+        final Object result = transformerEnvironment.resolveContextVariable(name);
+        if (result != QueryTransformerEnvironment.NO_RESULT)
+        {
+            return result;
+        }
+
+        throw new InvalidExpressionException("Cannot resolve Identifier '" + name + "'");
+    }
+
+
+    private Field<Object> resolveDSLField(String name)
+    {
+        QueryDomainType queryDomainType = getQueryDomainType();
+        DataField dataField = queryDomainType.findField(name);
+
+        if (dataField == null)
+        {
+            return null;
+        }
+        
+        addFieldReference(dataField);
+
+        final StorageConfigurationRepository storageConfigurationRepository = getTransformerEnvironment().getStorageConfigurationRepository();
+
+        NamingStrategy namingStrategy =  storageConfigurationRepository.getConfiguration(queryDomainType.getType().getStorageConfiguration()).getNamingStrategy();
+
+        return DSL.field(DSL.name(dataField.getNameFromStrategy(namingStrategy)));
+    }
+
+
+    private void addFieldReference(DataField dataField)
+    {
+        this.fieldReferences.add(dataField);
     }
 
 
@@ -203,26 +258,42 @@ public class QueryFilterEnvironment
     @Override
     public Object visit(ASTIdentifier node, Object data)
     {
-        return DSL.field( DSL.name(node.getName()));
+        final String name = node.getName();
+        final Field<Object> queryField = resolveDSLField(
+            name
+        );
+
+        if (queryField != null)
+        {
+            return queryField;
+        }
+
+        final Object result = transformerEnvironment.resolveContextVariable(name);
+        if (result != QueryTransformerEnvironment.NO_RESULT)
+        {
+            return result;
+        }
+
+        throw new InvalidExpressionException("Cannot resolve " + ExpressionUtil.renderExpressionOf(node));
     }
 
 
     @Override
-    public Object visit(ASTPropertyChain propertyChainNode, Object data) throws UnsupportedOperationException
+    public Object visit(ASTPropertyChain propertyChain, Object data) throws UnsupportedOperationException
     {
         StringBuilder sb = new StringBuilder();
 
         // the chain starts with a function, we use the default resolution
-        if (propertyChainNode.jjtGetNumChildren() > 0 && propertyChainNode.jjtGetChild(0) instanceof ASTFunction)
+        if (propertyChain.jjtGetChild(0) instanceof ASTFunction)
         {
-            return super.visit(propertyChainNode, data);
+            return super.visit(propertyChain, data);
         }
 
-
+        final int numLinks = propertyChain.jjtGetNumChildren();
         // otherwise we just concatenate together the parts and convert it to a field.
-        for (int i = 0; i < propertyChainNode.jjtGetNumChildren(); i++)
+        for (int i = 0; i < numLinks; i++)
         {
-            Node childNode = i == 0 ? propertyChainNode.jjtGetChild(0) : propertyChainNode.jjtGetChild(i).jjtGetChild(0);
+            Node childNode = i == 0 ? propertyChain.jjtGetChild(0) : propertyChain.jjtGetChild(i).jjtGetChild(0);
 
             if (childNode instanceof ASTFunction)
             {
@@ -233,10 +304,30 @@ public class QueryFilterEnvironment
                 sb.append(".");
             }
             sb.append(((ASTIdentifier)childNode).getName());
-
         }
 
-        return DSL.field( DSL.name(sb.toString()));
+        final Field<Object> queryField = resolveDSLField(sb.toString());
+
+        if (queryField != null)
+        {
+            return queryField;
+        }
+
+        final Node chainChild = propertyChain.getChainChild(0);
+        if (chainChild instanceof ASTIdentifier)
+        {
+            Object chainObj = transformerEnvironment.resolveContextVariable(((ASTIdentifier) chainChild).getName());
+            if (chainObj != QueryTransformerEnvironment.NO_RESULT)
+            {
+                for (int i=1 ; i < numLinks; i++)
+                {
+                    chainObj = propertyChain.jjtAccept(transformerEnvironment, chainObj);
+                }
+                return chainObj;
+            }
+        }
+
+        throw new InvalidExpressionException("Cannot resolve chain " + ExpressionUtil.renderExpressionOf(propertyChain));
     }
 
 

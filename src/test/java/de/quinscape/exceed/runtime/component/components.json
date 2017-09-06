@@ -1,0 +1,30 @@
+{
+    "description" : "Test component package to test var defaults. Literal value defaults, props ref defaults, props chain refs, defaults inherited from prop defaults.",
+
+    "components": {
+        "Test": {
+            "vars": {
+                "val": "'non-prop-value'",
+                "val2": "5",
+                "val3": "true",
+                "str": "props.str",
+                "num": "props.num",
+                "scope": "props.scope",
+                "scope2": "props.scope.name"
+            },
+            "propTypes": {
+                "num": {
+                    "type": "INTEGER",
+                    "defaultValue": "5"
+                },
+                "str": {
+                    "type": "PLAINTEXT",
+                    "defaultValue": "'def'"
+                },
+                "scope": {
+                    "type": "CURSOR_EXPRESSION"
+                }
+            }
+        }
+    }
+}

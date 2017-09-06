@@ -50,11 +50,13 @@ public class ExpressionServiceImpl
         for (Method m : bean.getClass().getMethods())
         {
             Operation anno = m.getAnnotation(Operation.class);
+            final String methodName = m.getName();
             if (anno != null)
             {
                 Class<?> context = anno.context();
+                final String operationName = anno.name().length() > 0 ? anno.name() : methodName;
 
-                OperationKey key = new OperationKey(envClass, context, m.getName());
+                OperationKey key = new OperationKey(envClass, context, operationName);
 
                 Class<?>[] parameterTypes = m.getParameterTypes();
 
@@ -67,7 +69,7 @@ public class ExpressionServiceImpl
                 OperationRegistration registration = new OperationRegistration(
                     bean,
                     access,
-                    access.getIndex(m.getName(), m.getParameterTypes()),
+                    access.getIndex(methodName, m.getParameterTypes()),
                     parameterTypes,
                     context.equals(void.class) ? null : context,
                     m.toString()
@@ -94,7 +96,7 @@ public class ExpressionServiceImpl
                     throw new IllegalStateException("@Identifier methods can only have one ExpressionEnv parameter: " + m);
                 }
 
-                String identifierName = m.getName();
+                String identifierName = methodName;
 
                 String nameFromAnnotation = identAnno.name();
                 if (nameFromAnnotation.length() > 0)
@@ -103,7 +105,8 @@ public class ExpressionServiceImpl
                 }
 
                 IdentifierKey key = new IdentifierKey(envClass, identifierName);
-                IdentifierRegistration registration = new IdentifierRegistration(bean, access, access.getIndex(m.getName(),
+                IdentifierRegistration registration = new IdentifierRegistration(bean, access, access.getIndex(
+                    methodName,
                     m.getParameterTypes()), takesEnvParam, m.toString());
                 identifierLookup.put(key, registration);
 
@@ -130,21 +133,28 @@ public class ExpressionServiceImpl
     @Override
     public Object evaluate(ExpressionEnvironment expressionEnvironment, ASTFunction node, Object context)
     {
-        String operationName = node.getName();
-        OperationKey key = new OperationKey(
+        final ExpressionContext<ExpressionEnvironment> ctx = new ExpressionContext<>(expressionEnvironment, node);
+        final String operationName = node.getName();
+        OperationRegistration registration = lookupRegistration(expressionEnvironment, context, operationName);
+        if (registration == null)
+        {
+            return expressionEnvironment.undefinedOperation(ctx, node, context);
+        }
+        return registration.invoke(ctx, node, context);
+    }
+
+
+    private OperationRegistration lookupRegistration(
+        ExpressionEnvironment expressionEnvironment, Object context, String operationName
+    )
+    {
+        final OperationKey key = new OperationKey(
             expressionEnvironment.getClass(),
             context == null ? void.class : context.getClass(),
             operationName
         );
 
-        OperationRegistration registration = operationLookup.get(key);
-        ExpressionContext<ExpressionEnvironment> ctx = new ExpressionContext<>(expressionEnvironment, node);
-        if (registration == null)
-        {
-            return expressionEnvironment.undefinedOperation(ctx, node, context);
-        }
-
-        return registration.invoke(ctx, node, context);
+        return operationLookup.get(key);
     }
 
 

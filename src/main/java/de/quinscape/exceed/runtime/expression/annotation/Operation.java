@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * to the environment class given in the {@link ExpressionOperations} annotation.
  *
  * The second parameter can be the operation context if applicable. All following parameters
- * receive the conversion result of the underlying ASTFunction parameters.
+ * receive the evaluation result of the underlying ASTFunction parameters.
  *
  */
 @Target({ElementType.METHOD})
@@ -29,5 +29,7 @@ public @interface Operation
      * @return
      */
     Class<?> context() default void.class;
+
+    String name() default "";
 }
 

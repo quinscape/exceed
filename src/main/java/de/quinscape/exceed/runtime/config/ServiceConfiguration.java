@@ -1,16 +1,19 @@
 package de.quinscape.exceed.runtime.config;
 
-import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.domain.migration.MigrationStep;
 import de.quinscape.exceed.runtime.domain.migration.MigrationStepRepository;
 import de.quinscape.exceed.runtime.editor.completion.CompletionService;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
+import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
+import de.quinscape.exceed.runtime.expression.query.ComponentQueryTransformer;
+import de.quinscape.exceed.runtime.expression.query.QueryFilterOperations;
+import de.quinscape.exceed.runtime.expression.query.QueryTransformerOperations;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.resource.DefaultResourceCacheFactory;
 import de.quinscape.exceed.runtime.resource.ResourceCacheFactory;
 import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
-import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.service.DomainServiceFactory;
 import de.quinscape.exceed.runtime.service.ProcessService;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
@@ -23,6 +26,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.HashSet;
 import java.util.Map;
 
 @Configuration
@@ -52,14 +56,6 @@ public class ServiceConfiguration
         return cacheFactory;
     }
 
-
-    @Bean
-    public DefaultPropertyConverters defaultPropertyConverters()
-    {
-        return new DefaultPropertyConverters();
-    }
-
-
     @Bean
     public CompletionService completionService()
     {
@@ -69,12 +65,9 @@ public class ServiceConfiguration
 
     @Bean
     public ScopedContextFactory scopedContextFactory(
-        ApplicationService applicationService,
-        ExpressionService expressionService,
-        ActionService actionService
     )
     {
-        return new ScopedContextFactory(applicationService, expressionService, actionService);
+        return new ScopedContextFactory();
     }
 
 
@@ -87,20 +80,20 @@ public class ServiceConfiguration
 
     @Bean
     public DomainServiceFactory domainServiceFactory(
-        DefaultPropertyConverters defaultPropertyConverters,
         StorageConfigurationRepository storageConfigurationRepository
     )
     {
-        return new DomainServiceFactory(defaultPropertyConverters, storageConfigurationRepository);
+
+        return new DomainServiceFactory(
+            storageConfigurationRepository
+        );
     }
 
 
     @Bean
-    public ProcessService ProcessService(ActionService actionService, ExpressionService expressionService,
-                                         ScopedContextFactory
-        scopedContextFactory)
+    public ProcessService ProcessService(ScopedContextFactory scopedContextFactory)
     {
-        return new ProcessService(actionService, expressionService, scopedContextFactory);
+        return new ProcessService(scopedContextFactory);
     }
 
     @Bean
@@ -110,4 +103,31 @@ public class ServiceConfiguration
         return new MigrationStepRepository(beansOfType);
     }
 
+    @Bean
+    public ExpressionService expressionService()
+    {
+        HashSet<Object> operationBeans = new HashSet<>(applicationContext.getBeansWithAnnotation(ExpressionOperations
+            .class).values());
+        log.info("Operations in spring context: {}", operationBeans);
+
+        QueryTransformerOperations queryTransformerOperations = new QueryTransformerOperations();
+        operationBeans.add(queryTransformerOperations);
+        operationBeans.add(new QueryFilterOperations());
+
+        ExpressionServiceImpl svc = new ExpressionServiceImpl(operationBeans);
+        queryTransformerOperations.setExpressionService(svc);
+
+        return svc;
+    }
+
+    @Bean
+    public ComponentQueryTransformer componentQueryTransformer(
+        ExpressionService expressionService,
+        StorageConfigurationRepository storageConfigurationRepository)
+    {
+         return new ComponentQueryTransformer(
+             expressionService,
+             storageConfigurationRepository
+         );
+    }
 }

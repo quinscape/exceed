@@ -1,0 +1,7 @@
+{
+    "mappings": {
+        "/": {
+            "viewName": "Home"
+        }
+    }
+}

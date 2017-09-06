@@ -1,16 +1,19 @@
 package de.quinscape.exceed.runtime.service.search;
 
-import de.quinscape.exceed.model.ApplicationConfig;
 import de.quinscape.exceed.model.DomainEditorViews;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
+import de.quinscape.exceed.model.config.ApplicationConfig;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.DomainRule;
 import de.quinscape.exceed.model.domain.DomainVersion;
-import de.quinscape.exceed.model.domain.EnumType;
-import de.quinscape.exceed.model.domain.PropertyType;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
+import de.quinscape.exceed.model.domain.type.DomainTypeModel;
+import de.quinscape.exceed.model.domain.type.EnumType;
+import de.quinscape.exceed.model.domain.type.QueryTypeModel;
+import de.quinscape.exceed.model.meta.PropertyType;
 import de.quinscape.exceed.model.process.DecisionModel;
 import de.quinscape.exceed.model.process.DecisionState;
 import de.quinscape.exceed.model.process.Process;
@@ -19,6 +22,7 @@ import de.quinscape.exceed.model.process.Transition;
 import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.model.routing.Mapping;
 import de.quinscape.exceed.model.routing.RoutingTable;
+import de.quinscape.exceed.model.state.StateMachine;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
@@ -70,7 +74,7 @@ class TopLevelModelSearcher
     @Override
     public List<SearchResult> visit(Process process, Object o)
     {
-        searchOperation.match(process.getStartTransition().getAction(), process, SearchResultType.ACTION, new
+        searchOperation.match(process.getStartTransition().getActionString(), process, SearchResultType.ACTION, new
             TransitionResultDetail(null, "start"));
 
         searchContext(process, process.getContextModel(), searchOperation, "process");
@@ -94,14 +98,14 @@ class TopLevelModelSearcher
                             (name, transition.getName()));
                         searchOperation.match(transition.getDescription(), process, SearchResultType.DESCRIPTION, new TransitionResultDetail
                             (name, transition.getName()));
-                        searchOperation.match(transition.getAction(), process, SearchResultType.ACTION, new TransitionResultDetail
+                        searchOperation.match(transition.getActionString(), process, SearchResultType.ACTION, new TransitionResultDetail
                             (name, transition.getName()));
                     }
                 }
             }
             else if (processState instanceof DecisionState)
             {
-                searchOperation.match(((DecisionState) processState).getDefaultTransition().getAction(), process,
+                searchOperation.match(((DecisionState) processState).getDefaultTransition().getActionString(), process,
                     SearchResultType.ACTION, new TransitionResultDetail(name, null));
 
 
@@ -154,7 +158,7 @@ class TopLevelModelSearcher
             searchOperation.match(scopedPropertyModel.getDescription(), topLevelModel, SearchResultType.DESCRIPTION, new ScopeResultDetail(scopedPropertyModel.getName(), contextType));
             searchOperation.match(scopedPropertyModel.getDefaultValue(), topLevelModel, SearchResultType.DEFAULT_VALUE, new ScopeResultDetail(scopedPropertyModel.getName(), contextType));
 
-            if (scopedPropertyModel.getType().equals(DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE))
+            if (scopedPropertyModel.getType().equals(PropertyType.DOMAIN_TYPE))
             {
                 searchOperation.match((String) scopedPropertyModel.getTypeParam(), topLevelModel, SearchResultType.REFERENCE, new ScopeResultDetail(scopedPropertyModel.getName(), contextType));
             }
@@ -177,7 +181,7 @@ class TopLevelModelSearcher
 
 
     @Override
-    public List<SearchResult> visit(DomainType domainType, Object o)
+    public List<SearchResult> visit(DomainTypeModel domainType, Object o)
     {
         for (DomainProperty domainProperty : domainType.getProperties())
         {
@@ -209,10 +213,34 @@ class TopLevelModelSearcher
 
 
     @Override
-    public TopLevelModel visit(DomainEditorViews domainEditorViews, Object o)
+    public List<SearchResult> visit(DomainRule domainRule, Object in)
     {
+        searchOperation.match(domainRule.getName(), domainRule, SearchResultType.RULE);
         return null;
     }
+
+
+    @Override
+    public Object visit(QueryTypeModel queryTypeModel)
+    {
+        searchOperation.match(queryTypeModel.getName(), queryTypeModel, SearchResultType.QUERY_TYPE);
+        return null;
+    }
+
+
+    @Override
+    public Object visit(StateMachine stateMachine, Object in)
+    {
+        searchOperation.match(stateMachine.getName(), stateMachine, SearchResultType.STATE_MACHINE);
+        return null;
+    }
+
+
+//    @Override
+//    public TopLevelModel visit(DomainEditorViews domainEditorViews, Object o)
+//    {
+//        return null;
+//    }
 
 
     @Override
@@ -223,7 +251,7 @@ class TopLevelModelSearcher
 
 
     @Override
-    public List<SearchResult> visit(PropertyType propertyType, Object o)
+    public List<SearchResult> visit(PropertyTypeModel propertyType, Object o)
     {
         return null;
     }

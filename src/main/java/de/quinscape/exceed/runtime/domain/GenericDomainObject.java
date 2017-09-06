@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.domain;
 
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.type.DomainType;
 import org.svenson.DynamicProperties;
 import org.svenson.JSONProperty;
 
@@ -8,12 +8,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * General purpose, unspecialised container for domain object data.
+ *
+ * @see GeneratedDomainObject
+ */
 public class GenericDomainObject
     extends DomainObjectBase
     implements DomainObject, DynamicProperties
 {
-
-    private DomainService domainService;
 
     private Map<String,Object> content;
 
@@ -36,24 +39,9 @@ public class GenericDomainObject
         setProperty(DomainType.ID_PROPERTY, id);
     }
 
-    @Override
-    public DomainService getDomainService()
-    {
-        return domainService;
-    }
-
-
-    @Override
-    @JSONProperty(ignore = true)
-    public void setDomainService(DomainService domainService)
-    {
-        this.domainService = domainService;
-    }
-
-
     public void setDomainType(String type)
     {
-        setProperty("_type", type);
+        setProperty(DomainType.TYPE_PROPERTY, type);
     }
 
 
@@ -93,10 +81,10 @@ public class GenericDomainObject
 
 
     @Override
-    @JSONProperty(value = "_type", priority = 100)
+    @JSONProperty(value = DomainType.TYPE_PROPERTY, priority = 100)
     public String getDomainType()
     {
-        return (String) getProperty("_type");
+        return (String) getProperty(DomainType.TYPE_PROPERTY);
     }
 
 

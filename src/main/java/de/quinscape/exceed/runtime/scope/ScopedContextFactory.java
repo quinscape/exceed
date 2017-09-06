@@ -3,12 +3,13 @@ package de.quinscape.exceed.runtime.scope;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.domain.DomainService;
-import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.js.JsEnvironment;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -18,22 +19,29 @@ public class ScopedContextFactory
 {
     private final static Logger log = LoggerFactory.getLogger(ScopedContextFactory.class);
 
-    private final ApplicationService applicationService;
+    private ApplicationService applicationService;
 
-    private final ExpressionService expressionService;
 
-    private final ActionService actionService;
+    /**
+     * Autowire lazily with interface based proxy to break a circular reference.
+     * 
+     * @param applicationService
+     */
+    @Autowired
+    @Lazy
+    public void setApplicationService(ApplicationService applicationService)
+    {
+        this.applicationService = applicationService;
+    }
 
 
     public final static String SESSION_CONTEXT_ATTRIBUTE_PREFIX = ScopedContextFactory.class + ":sessionContext:";
 
+    private org.springframework.context.ApplicationContext applicationContext;
 
-    public ScopedContextFactory(ApplicationService applicationService, ExpressionService expressionService,
-                                ActionService actionService)
+
+    public ScopedContextFactory()
     {
-        this.applicationService = applicationService;
-        this.expressionService = expressionService;
-        this.actionService = actionService;
     }
 
 
@@ -81,7 +89,7 @@ public class ScopedContextFactory
     }
 
 
-    public void initializeContext(RuntimeContext runtimeContext, ScopedContext scopedContext)
+    public void initializeContext(JsEnvironment jsEnvironment, RuntimeContext runtimeContext, ScopedContext scopedContext)
     {
         if (scopedContext.isInitialized())
         {
@@ -98,7 +106,7 @@ public class ScopedContextFactory
             input = runtimeContext.getDomainService().toDomainObject(Map.class, json);
         }
 
-        scopedContext.init(runtimeContext, expressionService, actionService, input);
+        scopedContext.init(runtimeContext, jsEnvironment , input);
     }
 
 

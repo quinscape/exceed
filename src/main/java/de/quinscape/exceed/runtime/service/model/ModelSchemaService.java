@@ -1,13 +1,20 @@
 package de.quinscape.exceed.runtime.service.model;
 
 
+import de.quinscape.exceed.model.AbstractModel;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.annotation.ExceedPropertyType;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.domain.property.DomainPropertyBuilder;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.model.domain.type.DomainTypeModel;
+import de.quinscape.exceed.model.domain.type.EnumType;
+import de.quinscape.exceed.model.meta.PropertyType;
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
+import de.quinscape.exceed.runtime.domain.property.EnumConverter;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +26,8 @@ import org.svenson.info.JSONClassInfo;
 import org.svenson.info.JSONPropertyInfo;
 
 import javax.annotation.PostConstruct;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -38,45 +47,49 @@ public class ModelSchemaService
     private final static Logger log = LoggerFactory.getLogger(ModelSchemaService.class);
 
     private final Map<Class<?>,DomainType> modelDomainTypes;
+    private Map<Class<? extends Enum>, EnumType> modelEnumTypes;
 
     private final static Map<Class<?>, String> MODEL_CLASS_TO_PROPERTY;
     static
     {
         final HashMap<Class<?>, String> map = new HashMap<>();
 
-        map.put(Boolean.class, "Boolean");
-        map.put(Boolean.TYPE, "Boolean");
-        map.put(Byte.class, "Integer");
-        map.put(Byte.TYPE, "Integer");
-        map.put(Short.class, "Integer");
-        map.put(Short.TYPE, "Integer");
-        map.put(Integer.class, "Integer");
-        map.put(Integer.TYPE, "Integer");
-        map.put(Long.class, "Long");
-        map.put(Long.TYPE, "Long");
-        map.put(String.class, "PlainText");
-        map.put(Timestamp.class, "Timestamp");
-        map.put(Date.class, "Date");
-        map.put(Object.class, "Object");
-        map.put(DomainObject.class, DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE);
+        map.put(Boolean.class, PropertyType.BOOLEAN);
+        map.put(Boolean.TYPE, PropertyType.BOOLEAN);
+        map.put(Byte.class, PropertyType.INTEGER);
+        map.put(Byte.TYPE, PropertyType.INTEGER);
+        map.put(Short.class, PropertyType.INTEGER);
+        map.put(Short.TYPE, PropertyType.INTEGER);
+        map.put(Integer.class, PropertyType.INTEGER);
+        map.put(Integer.TYPE, PropertyType.INTEGER);
+        map.put(Long.class, PropertyType.LONG);
+        map.put(Long.TYPE, PropertyType.LONG);
+        map.put(String.class, PropertyType.PLAIN_TEXT);
+        map.put(Timestamp.class, PropertyType.TIMESTAMP);
+        map.put(Date.class, PropertyType.DATE);
+        map.put(Object.class, PropertyType.OBJECT);
+        map.put(DomainObject.class, PropertyType.DOMAIN_TYPE);
 
         MODEL_CLASS_TO_PROPERTY = Collections.unmodifiableMap(map);
     }
 
 
+
+
     public ModelSchemaService()
     {
         modelDomainTypes = new HashMap<>();
+        modelEnumTypes = new HashMap<>();
     }
 
 
     @PostConstruct
     public void init() throws ClassNotFoundException
     {
-        ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(true);
-        provider.addIncludeFilter(new AssignableTypeFilter(Model.class));
+        ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
+        provider.addIncludeFilter(new AssignableTypeFilter(AbstractModel.class));
 
-        final Set<BeanDefinition> candidates = provider.findCandidateComponents(Model.class.getPackage()
+        final Set<BeanDefinition> candidates = provider.findCandidateComponents(AbstractModel.class.getPackage()
             .getName());
 
         for (BeanDefinition candidate : candidates)
@@ -89,92 +102,165 @@ public class ModelSchemaService
     private void analyze(Class<?> cls)
     {
 
-        if (modelDomainTypes.containsKey(cls))
+        if (modelDomainTypes.containsKey(cls) || modelEnumTypes.containsKey(cls))
         {
             return;
         }
 
-        log.debug("Analyzing {}", cls);
+        if (cls.isInterface())
+        {
+            return;
+        }
+
+
+        if (Enum.class.isAssignableFrom(cls))
+        {
+            analyzeEnum((Class<? extends Enum>) cls);
+        }
+        else
+        {
+            analyzeModel(cls);
+        }
+
+    }
+
+
+    private void analyzeModel(Class<?> cls)
+    {
+        log.debug("Analyzing model {}", cls);
 
         final String domainTypeName = Model.getType(cls);
-        final DomainType domainType = new DomainType();
+        final DomainTypeModel domainType = new DomainTypeModel();
         domainType.setName(domainTypeName);
         domainType.setSystem(true);
         domainType.setStorageConfiguration(DomainType.SYSTEM_STORAGE);
 
         modelDomainTypes.put(cls, domainType);
 
-        final JSONClassInfo classInfo = JSONUtil.getClassInfo(cls);
-
-        List<DomainProperty> properties = new ArrayList<>();
-        for (JSONPropertyInfo info : classInfo.getPropertyInfos())
+        try
         {
-            final String propName = info.getJsonName();
+            final JSONClassInfo classInfo = JSONUtil.getClassInfo(cls);
 
-            // we ignore all ignored and unreadable properties and also the "type" property because we use the
-            // domain type "_type" for the model domain object view.
-            if (info.isIgnore() || !info.isReadable() || propName.equals("type"))
+
+            List<DomainProperty> properties = new ArrayList<>();
+            for (JSONPropertyInfo info : classInfo.getPropertyInfos())
             {
-                continue;
-            }
+                final String propName = info.getJsonName();
 
-            final Class<Object> propType = info.getType();
-            final Class<Object> typeHint = info.getTypeHint();
-
-            final ExceedPropertyType typeAnno = JSONUtil.findAnnotation(cls, info, ExceedPropertyType.class);
-
-            String type;
-            if (typeAnno != null)
-            {
-                properties.add(
-                    DomainProperty.builder()
-                        .withName(propName)
-                        .withType(typeAnno.type())
-                        .withTypeParam(typeAnno.typeParam().length() > 0 ? typeAnno.typeParam() : null)
-                        .withDomainType(domainTypeName)
-                        .build()
-                );
-            }
-            else
-            {
-                type = exceedTypeFromPropertyType(propType);
-                if (type != null)
+                // we ignore all ignored and unreadable properties and also the "type" property because we use the
+                // domain type "_type" for the model domain object view.
+                if (info.isIgnore() || !info.isReadable() || (AbstractModel.class.isAssignableFrom(cls) && propName.equals("type")))
                 {
-                    String typeParam = null;
-                    switch (type)
+                    continue;
+                }
+
+                final Class<Object> propType = info.getType();
+                final Class<Object> typeHint = info.getTypeHint();
+
+                final ExceedPropertyType typeAnno = JSONUtil.findAnnotation(info, ExceedPropertyType.class);
+
+                String type;
+                if (typeAnno != null)
+                {
+                    final DomainPropertyBuilder builder = DomainProperty.builder()
+                        .withName(propName)
+                        .withType(typeAnno.type(), typeAnno.typeParam().length() > 0 ? typeAnno.typeParam() : null)
+                        .withDomainType(domainTypeName);
+
+                    properties.add(builder.build());
+                }
+                else
+                {
+                    type = exceedTypeFromPropertyType(propType);
+                    if (type != null)
                     {
-                        case DomainProperty.MAP_PROPERTY_TYPE:
-                        case DomainProperty.LIST_PROPERTY_TYPE:
-                            if (typeHint != null)
-                            {
-                                if (isInModelPackage(typeHint))
+                        String typeParam = null;
+                        switch (type)
+                        {
+                            case PropertyType.MAP:
+                            case PropertyType.LIST:
+                                if (typeHint != null)
                                 {
-                                    typeParam = Model.getType(typeHint);
-                                    analyze(typeHint);
+                                    if (isInModelPackage(typeHint))
+                                    {
+                                        typeParam = Model.getType(typeHint);
+                                        analyze(typeHint);
+                                    }
+                                    else
+                                    {
+                                        typeParam = exceedTypeFromPropertyType(typeHint);
+                                    }
                                 }
                                 else
                                 {
-                                    typeParam = exceedTypeFromPropertyType(typeHint);
+                                    typeParam = PropertyType.OBJECT;
                                 }
-                            }
-                            else
-                            {
-                                typeParam = "Object";
-                            }
-                            break;
-                        case DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE:
-                            typeParam = Model.getType(propType);
-                            analyze(propType);
-                            break;
+                                break;
+                            case PropertyType.DOMAIN_TYPE:
+                            case PropertyType.ENUM:
+                                typeParam = Model.getType(propType);
+                                analyze(propType);
+                                break;
+                        }
+
+                        final DomainPropertyBuilder builder = DomainProperty.builder()
+                            .withName(propName)
+                            .withType(type, typeParam)
+                            .withDomainType(domainTypeName);
+
+                        if (PropertyType.ENUM.equals(type))
+                        {
+                            builder.withConfig(EnumConverter.JAVA_ENUM_CONFIG, propType.getName());
+                        }
+
+                        properties.add(builder.build());
                     }
-
-                    properties.add(DomainProperty.builder().withName(propName).withType(type).withTypeParam(typeParam)
-                        .withDomainType(domainTypeName).build());
                 }
-            }
 
-        };
-        domainType.setProperties(properties);
+            };
+            domainType.setProperties(properties);
+
+        }
+        catch(Exception e)
+        {
+            throw new ExceedRuntimeException("Error analyzing " + cls, e);
+        }
+    }
+
+
+    private void analyzeEnum(Class<? extends Enum> cls)
+    {
+        log.debug("Analyzing enum {}", cls);
+
+        final String enumTypeName = Model.getType(cls);
+
+        EnumType enumType = new EnumType();
+        enumType.setName(enumTypeName);
+        enumType.setValues(getEnumValues(cls));
+
+        modelEnumTypes.put(cls, enumType);
+
+    }
+
+
+    private static List<String> getEnumValues(Class<? extends Enum> cls)
+    {
+        try
+        {
+            Method valuesMethod = cls.getMethod("values");
+            Enum[] values = (Enum[]) valuesMethod.invoke(null);
+
+            List<String> names = new ArrayList<>(values.length);
+            for (Enum value : values)
+            {
+                names.add(value.name());
+            }
+            return names;
+        }
+        catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e)
+        {
+            throw new ExceedRuntimeException(e);
+        }
     }
 
 
@@ -185,22 +271,22 @@ public class ModelSchemaService
 
     public DataGraph createDataGraph(TopLevelModel topLevelModel)
     {
-        return new DataGraph(getColumns(topLevelModel), topLevelModel, 1);
+        return new DataGraph(getColumns(topLevelModel), topLevelModel, 1, null);
     }
 
-    public <T extends TopLevelModel> DataGraph createDataGraph(Class<T> cls, Map<String,T> map)
-    {
-        return new DataGraph(getMapColumns(cls), map, 1);
-    }
-
-
-    private <T extends TopLevelModel> Map<String, DomainProperty> getMapColumns(Class<T> cls)
-    {
-        Map<String, DomainProperty> map = new HashMap<>();
-        map.put(DataGraph.WILDCARD_SYMBOL, DomainProperty.builder().withName("*").withType(DomainProperty
-            .DOMAIN_TYPE_PROPERTY_TYPE).withTypeParam("").build());
-        return map;
-    }
+//    public <T extends TopLevelModel> DataGraph createDataGraph(Class<T> cls, Map<String,T> map)
+//    {
+//        return new DataGraph(getMapColumns(cls), map, 1);
+//    }
+//
+//
+//    private <T extends TopLevelModel> Map<String, DomainProperty> getMapColumns(Class<T> cls)
+//    {
+//        Map<String, DomainProperty> map = new HashMap<>();
+//        map.put(DataGraph.WILDCARD_SYMBOL, DomainProperty.builder().withName("*").withType(PropertyType
+//            .DOMAIN_TYPE).withTypeParam("").build());
+//        return map;
+//    }
 
 
     private Map<String, DomainProperty> getColumns(TopLevelModel topLevelModel)
@@ -225,15 +311,15 @@ public class ModelSchemaService
         }
         else if (Map.class.isAssignableFrom(propType))
         {
-            return DomainProperty.MAP_PROPERTY_TYPE;
+            return PropertyType.MAP;
         }
         else if (Collection.class.isAssignableFrom(propType))
         {
-            return DomainProperty.LIST_PROPERTY_TYPE;
+            return PropertyType.LIST;
         }
         else if (isInModelPackage(propType))
         {
-            return DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE;
+            return propType.isEnum() ? PropertyType.ENUM : PropertyType.DOMAIN_TYPE;
         }
         return null;
     }
@@ -242,5 +328,17 @@ public class ModelSchemaService
     private boolean isInModelPackage(Class<Object> propType)
     {
         return propType.getPackage().getName().startsWith(Model.MODEL_PACKAGE);
+    }
+
+
+    public Map<Class<? extends Enum>, EnumType> getModelEnumTypes()
+    {
+        return modelEnumTypes;
+    }
+
+
+    public void setModelEnumTypes(Map<Class<? extends Enum>, EnumType> modelEnumTypes)
+    {
+        this.modelEnumTypes = modelEnumTypes;
     }
 }

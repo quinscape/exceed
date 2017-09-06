@@ -6,8 +6,8 @@ import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.model.component.PropType;
 import de.quinscape.exceed.model.expression.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.runtime.component.ComponentInstanceRegistration;
 import de.quinscape.exceed.runtime.editor.search.SearchResultType;
-import de.quinscape.exceed.runtime.service.ComponentRegistration;
 
 import java.util.function.Consumer;
 
@@ -34,7 +34,7 @@ class ComponentSearcher
     {
         searchOperation.match(componentModel.getName(), topLevelModel, SearchResultType.COMPONENT);
 
-        final ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
+        final ComponentInstanceRegistration componentRegistration = componentModel.getComponentRegistration();
         final ComponentDescriptor descriptor = componentRegistration != null ? componentRegistration
             .getDescriptor() : null;
 

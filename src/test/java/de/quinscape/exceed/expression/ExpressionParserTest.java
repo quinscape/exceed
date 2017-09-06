@@ -200,7 +200,7 @@ public class ExpressionParserTest
     {
         ASTPropertyChain propChain = (ASTPropertyChain) parse("a.b[c].d");
 
-        log.info(ExpressionUtil.dump(propChain));
+        //log.info(ExpressionUtil.dump(propChain));
 
         ASTIdentifier i1 = (ASTIdentifier) propChain.jjtGetChild(0);
         assertThat(i1.getName(), is("a"));
@@ -221,7 +221,7 @@ public class ExpressionParserTest
     {
         ASTPropertyChain propChain = (ASTPropertyChain) parse("a.b['c']");
 
-        log.info(ExpressionUtil.dump(propChain));
+        //log.info(ExpressionUtil.dump(propChain));
 
         ASTIdentifier i1 = (ASTIdentifier) propChain.jjtGetChild(0);
         assertThat(i1.getName(), is("a"));
@@ -319,7 +319,11 @@ public class ExpressionParserTest
     }
 
 
-
+    @Test
+    public void testChain() throws Exception
+    {
+        log.info(ExpressionUtil.dump(parse("(scope('foo')).foo")));
+    }
 
 
     private void testOp(String expr, Operator op, Class<? extends OperatorNode> cls) throws ParseException
@@ -359,6 +363,21 @@ public class ExpressionParserTest
     public void testError3() throws Exception
     {
         parse("1 == 2 == 3");
+    }
+
+    @Test()
+    public void testTrailingSemicolon() throws Exception
+    {
+        ASTFunction fn = (ASTFunction) parse("a();");
+        assertThat(fn.getName(),is("a"));
+
+        ASTExpressionSequence seq = (ASTExpressionSequence) parse("a();b();");
+        assertThat(seq.jjtGetNumChildren(), is(2));
+        assertThat(((ASTFunction)seq.jjtGetChild(0)).getName(), is("a"));
+        assertThat(((ASTFunction)seq.jjtGetChild(1)).getName(), is("b"));
+
+        ASTFunction fn2 = (ASTFunction) parse("c();;");
+        assertThat(fn2.getName(),is("c"));
     }
 
 }

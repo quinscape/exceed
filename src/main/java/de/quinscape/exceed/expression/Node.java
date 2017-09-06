@@ -6,6 +6,8 @@ package de.quinscape.exceed.expression;
    machinery for constructing the parent and child relationships
    between nodes. */
 
+import java.util.function.Consumer;
+
 public
 interface Node {
 
@@ -43,5 +45,7 @@ interface Node {
   Object jjtAccept(ExpressionParserVisitor visitor, Object data);
 
   NodeAnnotation annotation();
+
+  void walk(Consumer<Node> consumer);
 }
 /* JavaCC - OriginalChecksum=6c61b131d0e5838656ce9d5d05e88a69 (do not edit this line) */

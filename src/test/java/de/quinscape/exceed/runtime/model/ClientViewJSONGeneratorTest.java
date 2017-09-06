@@ -11,7 +11,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.svenson.JSON;
 import org.svenson.JSONParser;
 
 import java.io.File;
@@ -23,7 +22,6 @@ import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
 
-
 public class ClientViewJSONGeneratorTest
 {
     private final static Logger log = LoggerFactory.getLogger(ClientViewJSONGeneratorTest.class);
@@ -32,11 +30,10 @@ public class ClientViewJSONGeneratorTest
 
     private ClientViewJSONGenerator viewJSONGenerator = new ClientViewJSONGenerator(null);
 
-
     @Test
     public void testViewModelClientTransformation() throws Exception
     {
-        ComponentRegistry registry = createrTestRegistry();
+        ComponentRegistry registry = createTestRegistry();
 
         String json = FileUtils.readFileToString(new File("./src/test/java/de/quinscape/exceed/runtime/model/test-views/client-json-1.json"));
         // external view json
@@ -77,58 +74,8 @@ public class ClientViewJSONGeneratorTest
             assertThat(expr(heading, "value"),is("'Heading: ' + 'myHeading'"));
         }
 
-        /**
-         * more thorough tests for expression transformation and constant inlining in {@link ViewExpressionRendererTest}
-         */
-
         {
-            Map<String, Object> provider = kid(col, 1);
-            assertThat(provider.get("name"),is("Provider"));
-            assertThat(attr(provider, "var"),is("customContext"));
-
-            Map<String, Object> consumer = kid(provider, 0);
-            assertThat(consumer.get("name"),is("Consumer"));
-            assertThat(expr(consumer, "ctx"),is("customContext"));
-
-            Map<String, Object> explicitCtx = kid(provider, 1);
-            assertThat(explicitCtx.get("name"),is("Consumer"));
-            assertThat(expr(explicitCtx, "ctx"),is("explicitContext"));
-
-            Map<String, Object> computed = kid(provider, 2);
-            assertThat(computed.get("name"),is("ComputedConsumer"));
-            assertThat(expr(computed, "ctx"),is("customContext['ccName']"));
-
-            Map<String, Object> exprComputed = kid(provider, 3);
-            assertThat(exprComputed.get("name"),is("ComputedConsumer"));
-            assertThat(expr(exprComputed, "ctx"),is("customContext.foo['ccName2']"));
-        }
-
-        {
-            Map<String, Object> foo = kid(col, 2);
-            assertThat(foo.get("name"),is("Foo"));
-            assertThat(expr(foo, "model"),is("_v.content.main.kids[0].kids[0].kids[2]"));
-        }
-
-        {
-            Map<String, Object> provider = kid(col, 3);
-            assertThat(provider.get("name"), is("Provider"));
-            assertThat(attr(provider, "var"),is("customContext"));
-
-            Map<String, Object> provider2 = kid(provider, 0);
-            assertThat(provider2.get("name"), is("AnotherProvider"));
-            assertThat(attr(provider2, "var"),is("anotherContext"));
-
-            Map<String, Object> typedConsumer = kid(provider2, 0);
-            assertThat(typedConsumer.get("name"),is("Consumer"));
-            assertThat(expr(typedConsumer, "ctx"),is("customContext"));
-
-            Map<String, Object> untypedConsumer = kid(provider2, 1);
-            assertThat(untypedConsumer.get("name"),is("ComputedConsumer"));
-            assertThat(expr(untypedConsumer, "ctx"),is("anotherContext['ccName3']"));
-        }
-
-        {
-            Map<String, Object> defaultPropsComponent = kid(col, 4);
+            Map<String, Object> defaultPropsComponent = kid(col, 2);
 
             log.info("defaultPropsComponent: {}", defaultPropsComponent);
 
@@ -140,45 +87,10 @@ public class ClientViewJSONGeneratorTest
         }
     }
 
-    @Test
-    public void testContextExpr() throws Exception
-    {
-        ComponentRegistry registry = createrTestRegistry();
-
-        String json = FileUtils.readFileToString(new File("" +
-            "./src/test/java/de/quinscape/exceed/runtime/model/test-views/client-json-2.json"));
-        // external view json
-        View view = modelJSONService.toModel(View.class, json);
-        view.setName("client-json-2");
-
-        ComponentUtil.updateComponentRegsAndParents(registry, view, null);
-
-
-        // to client format
-        final TestApplication application = new TestApplicationBuilder().build();
-
-        application.getApplicationModel().getMetaData().getScopeMetaModel().addDeclarations(view);
-
-        String out = viewJSONGenerator.toJSON(application.getApplicationModel(), view, JSONFormat.INTERNAL);
-
-        log.info(JSON.formatJSON(out));
-
-        // .. and then parsed as Map for testing ( the client format is only used on the client side )
-        Map viewAsMap = JSONParser.defaultJSONParser().parse(Map.class, out);
-        Map<String,Object> col = content(viewAsMap, "main");
-        assertThat(attr(col, "ctx"),is("{ 'from prop' }"));
-        assertThat(expr(col, "ctx"),is("'from prop'"));
-
-    }
-
-    private ComponentRegistry createrTestRegistry()
+    private ComponentRegistry createTestRegistry()
     {
         Map<String, ComponentDescriptor> descriptors = new HashMap<>();
 
-        descriptors.put("Provider", descriptor("{'providesContext': 'Test'}"));
-        descriptors.put("AnotherProvider", descriptor("{'providesContext' : 'AnotherContext'}"));
-        descriptors.put("Consumer", descriptor("{ 'providesContext': 'Test.Deriv', 'propTypes': { 'ctx': { 'context': true, 'contextType': 'Test'} } }"));
-        descriptors.put("ComputedConsumer", descriptor("{ 'providesContext': 'Test.Deriv2', 'propTypes': { 'ctx': { 'context': 'context[props.name]'} } }"));
         descriptors.put("DefaultProps", descriptor("{ 'propTypes': {'defExpr' :{ 'defaultValue': '\\'default\\''}, 'defClient' :{ 'client': false, 'defaultValue': '\\'xxx\\''}} }"));
 
         ComponentDescriptor defaultDescriptor = descriptor("{}");

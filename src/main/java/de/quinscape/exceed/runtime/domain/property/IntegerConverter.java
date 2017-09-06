@@ -3,7 +3,7 @@ package de.quinscape.exceed.runtime.domain.property;
 import de.quinscape.exceed.runtime.RuntimeContext;
 
 public class IntegerConverter
-    implements PropertyConverter<Integer, Long>
+    implements PropertyConverter<Integer, Long, Number>
 {
 
     @Override
@@ -30,4 +30,28 @@ public class IntegerConverter
         return Long.class;
     }
 
+
+    @Override
+    public Number convertToJs(RuntimeContext
+                                  runtimeContext, Integer value)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+        return Double.valueOf(value);
+    }
+
+
+    @Override
+    public Integer convertFromJs(RuntimeContext
+                                     runtimeContext, Number value)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+
+        return value.intValue();
+    }
 }

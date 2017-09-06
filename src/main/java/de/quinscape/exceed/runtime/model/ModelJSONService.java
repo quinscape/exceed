@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.model;
 
 import de.quinscape.exceed.model.ApplicationModel;
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.view.View;
 
 /**

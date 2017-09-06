@@ -11,7 +11,7 @@ import de.quinscape.exceed.runtime.editor.completion.CompletionType;
 import de.quinscape.exceed.runtime.editor.completion.PropWizard;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
-import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
+import de.quinscape.exceed.runtime.expression.query.ComponentQueryTransformer;
 import de.quinscape.exceed.runtime.model.ExpressionRenderer;
 
 import java.util.List;
@@ -25,14 +25,14 @@ public class PropCompleteEnvironment
 
     private final ComponentModel componentModel;
 
-    private final QueryTransformer queryTransformer;
+    private final ComponentQueryTransformer queryTransformer;
 
     private final RuntimeContext runtimeContext;
 
 
     public PropCompleteEnvironment(
         RuntimeContext runtimeContext,
-        QueryTransformer queryTransformer,
+        ComponentQueryTransformer queryTransformer,
         View viewModel,
         ComponentModel componentModel,
         String propName)
@@ -63,7 +63,7 @@ public class PropCompleteEnvironment
     }
 
 
-    public QueryTransformer getQueryTransformer()
+    public ComponentQueryTransformer getQueryTransformer()
     {
         return queryTransformer;
     }

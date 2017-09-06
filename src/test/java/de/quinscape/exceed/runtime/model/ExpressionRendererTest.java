@@ -122,7 +122,7 @@ public class ExpressionRendererTest
 
 
     @Test
-    public void testASTFloat() throws ParseException
+    public void testASTDecimal() throws ParseException
     {
         assertThat(process("0.125"), is("0.125"));
     }

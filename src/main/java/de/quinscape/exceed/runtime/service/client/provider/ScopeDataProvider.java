@@ -3,17 +3,17 @@ package de.quinscape.exceed.runtime.service.client.provider;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.context.ScopePropertyData;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
-import de.quinscape.exceed.model.domain.DomainProperty;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.meta.StaticFunctionReferences;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.component.DataGraphQualifier;
+import de.quinscape.exceed.runtime.scope.ProcessContext;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 import de.quinscape.exceed.runtime.service.client.ClientData;
 import de.quinscape.exceed.runtime.service.client.ClientStateProvider;
 import de.quinscape.exceed.runtime.service.client.ClientStateScope;
-import de.quinscape.exceed.runtime.service.client.DefaultClientData;
 import de.quinscape.exceed.runtime.service.client.ExceedAppProvider;
 import de.quinscape.exceed.runtime.service.client.JSONData;
 import de.quinscape.exceed.runtime.service.client.scope.ScopeReference;
@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.svenson.util.JSONBuilder;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -72,32 +73,45 @@ public class ScopeDataProvider
             Map<String, DomainProperty> columns = new HashMap<>();
             Map<String, Object> map = new HashMap<>();
 
+            final DataGraph dataGraph;
             if (refs.size() == 0)
             {
-                return new DefaultClientData(false);
+                dataGraph = new DataGraph(Collections.emptyMap(), Collections.emptyMap(), 1, null);
             }
-
-            for (ScopeReference reference : refs)
+            else
             {
-                String name = reference.getName();
 
-                final ScopedPropertyModel model = scopedContextChain.getModel(name);
-                final DomainProperty property = DomainProperty.builder().withName(name).withType(model.getType())
-                    .withTypeParam(model.getTypeParam()).withMaxLength(model.getMaxLength()).build();
+                for (ScopeReference reference : refs)
+                {
+                    String name = reference.getName();
 
-                property.setData(new ScopePropertyData(reference.getScopeType()));
-                columns.put(name, property);
+                    final ScopedPropertyModel model = scopedContextChain.getModel(name);
 
-                map.put(name, scopedContextChain.getProperty(name));
+                    final DomainProperty property = DomainProperty.builder()
+                        .withName(name)
+                        .withType(model.getType(), model.getTypeParam())
+                        .withMaxLength(model.getMaxLength())
+                        .build();
+                    
+                    if (reference.getScopeType().equals(ProcessContext.class) && name.equals(ProcessContext.CURRENT))
+                    {
+                        property.setTypeParam(view.getDomainType());
+                    }
+
+                    property.setData(new ScopePropertyData(reference.getScopeType()));
+                    columns.put(name, property);
+
+                    map.put(name, scopedContextChain.getProperty(name));
+                }
+
+                dataGraph = new DataGraph(
+                    columns,
+                    map,
+                    1,
+                    DataGraphQualifier.SCOPE
+                );
+
             }
-
-            final DataGraph dataGraph = new DataGraph(
-                columns,
-                map,
-                1,
-                DataGraphQualifier.SCOPE
-            );
-            
             final String json = runtimeContext.getDomainService().toJSON(dataGraph);
             return  new JSONData(
                 JSONBuilder.buildObject()

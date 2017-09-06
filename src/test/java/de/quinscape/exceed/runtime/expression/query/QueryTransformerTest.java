@@ -4,25 +4,25 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.TestDomainServiceBase;
 import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.domain.EnumType;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.model.domain.type.DomainTypeModel;
+import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.meta.PropertyType;
+import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.TestApplication;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.TestApplicationBuilder;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
-import de.quinscape.exceed.runtime.domain.DomainObject;
-import de.quinscape.exceed.runtime.domain.DomainService;
-import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
 import de.quinscape.exceed.runtime.schema.DefaultStorageConfiguration;
 import de.quinscape.exceed.runtime.schema.DefaultStorageConfigurationRepository;
-import de.quinscape.exceed.runtime.schema.StorageConfiguration;
 import org.jooq.Condition;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -41,10 +41,11 @@ public class QueryTransformerTest
     private ExpressionService expressionService = new ExpressionServiceImpl(ImmutableSet.of
         (queryTransformerOperations));
 
-    private QueryTransformer transformer = new QueryTransformer(expressionService, new DefaultStorageConfigurationRepository(
-        ImmutableMap.of("testStorage", new DefaultStorageConfiguration( null, new DefaultNamingStrategy(), null, null)),
+    private ComponentQueryTransformer transformer = new ComponentQueryTransformer(expressionService, new DefaultStorageConfigurationRepository(
+        ImmutableMap.of("testStorage", new DefaultStorageConfiguration( null, new DefaultNamingStrategy(), null)),
         null));
 
+    private View view = new View("test");
 
     {
         queryTransformerOperations.setExpressionService(expressionService);
@@ -81,8 +82,17 @@ public class QueryTransformerTest
         assertThat(def.getLimit(), is(55));
         assertThat(def.getOffset(), is(12));
 
-        Condition filter = def.getFilter();
+        Condition filter = def.getFilter().getCondition();
         assertThat(filter, is(notNullValue()));
+    }
+
+
+    @Test
+    public void testMultiOrder() throws Exception
+    {
+        QueryDefinition def = transform("query(Foo.as('f')).orderBy(f.name,f.foo)");
+
+        assertThat(def.getOrderBy(), is(Arrays.asList("f.name", "f.foo")));
     }
 
 
@@ -100,7 +110,7 @@ public class QueryTransformerTest
         List<String> list = def.getQueryDomainType().getFieldsInOrder().stream().map(DataField::getLocalName).collect
             (Collectors.toList());
         // fields in definition order
-        assertThat(list, is(Arrays.asList("Foo.value", "Foo.foo", "Bar.value", "Bar.bar", "Baz.value", "Baz.baz")));
+        assertThat(list, is(Arrays.asList("Foo.id", "Foo.value","Foo.type", "Foo.foo", "Foo.bar_id", "Bar.id", "Bar.value", "Bar.bar", "Baz.id", "Baz.value", "Baz.baz")));
 
         log.info("{}", list);
     }
@@ -109,8 +119,8 @@ public class QueryTransformerTest
     @Test
     public void testFields() throws Exception
     {
-        QueryDefinition def = transform("Foo.join(Bar.join(Baz).on(Bar.id == Baz.id)).on(Foo.id == Bar.id)");
-        def.getQueryDomainType().setFields(Arrays.asList("foo", "baz", "bar"));
+        QueryDefinition def = transform("query(Foo.join(Bar.join(Baz).on(Bar.id == Baz.id)).on(Foo.id == Bar.id).fields('foo','baz','bar'))");
+        //def.getQueryDomainType().selectedFields(Arrays.asList("foo", "baz", "bar"));
 
         List<String> list = def.getQueryDomainType().getFieldsInOrder().stream().map(DataField::getLocalName).collect
             (Collectors.toList());
@@ -119,40 +129,96 @@ public class QueryTransformerTest
     }
 
 
+    private TestApplication app = new TestApplicationBuilder().withDomainService(new TestDomainService()).withView(view).build();
     private QueryDefinition transform(String query) throws ParseException
     {
-        TestDomainService domainService = new TestDomainService();
-        return transformer.transform(new TestApplication(null, new TestDomainService()).createRuntimeContext(),
-            query, null, null);
+        return (QueryDefinition) transformer.transform(
+            app.createRuntimeContext(view),
+            new QueryContext(
+                view, null,
+                null,
+                null,
+                null
+            ),
+            ExpressionValue.forValue(
+                query,
+                true
+            ).getAstExpression()
+        );
     }
 
 
     private class TestDomainService
         extends TestDomainServiceBase
     {
-        @Override
-        public DomainType getDomainType(String name)
+
+        public TestDomainService()
         {
-            DomainType domainType = new DomainType();
+            domainTypes.put("Foo", createDomainType("Foo", "Bar"));
+            domainTypes.put("Bar", createDomainType("Bar"));
+            domainTypes.put("Baz", createDomainType("Baz"));
+        }
+        public DomainType createDomainType(String name, String... joined)
+        {
+            DomainTypeModel domainType = new DomainTypeModel();
             domainType.setName(name);
             domainType.setAnnotation("Test domain type " + name);
             domainType.setStorageConfiguration("testStorage");
 
-            domainType.setProperties(Arrays.asList(
-                DomainProperty.builder().withName("value").withType("PlainText").build(),
-                DomainProperty.builder().withName(name.toLowerCase()).withType("PlainText").build()
-            ));
+            final List<DomainProperty> list = new ArrayList<>();
+
+            list.add(
+                DomainProperty.builder()
+                    .withName("id")
+                    .withType(PropertyType.UUID)
+                    .build()
+            );
+            list.add(
+                DomainProperty.builder()
+                .withName("value")
+                .withType(PropertyType.PLAIN_TEXT)
+                    .build()
+            );
+
+            if (name.equals("Foo"))
+            {
+                list.add(
+                    DomainProperty.builder()
+                        .withName("type")
+                        .withType(PropertyType.INTEGER)
+                        .build()
+                );
+            }
+            list.add(
+                DomainProperty.builder()
+                    .withName(name.toLowerCase())
+                    .withType(PropertyType.PLAIN_TEXT)
+                    .build()
+            );
+
+            if (joined != null)
+            {
+                for (String joinedTable : joined)
+                {
+                    list.add(
+                        DomainProperty.builder()
+                            .withName(joinedTable.toLowerCase() + "_id")
+                            .withType(PropertyType.UUID)
+                            .withForeignKey(joinedTable)
+                            .build()
+                    );
+
+                }
+            }
+
+            domainType.setProperties(list);
             return domainType;
         }
 
         @Override
         public Map<String, DomainType> getDomainTypes()
         {
-            return ImmutableMap.of(
-                "Foo", getDomainType("Foo"),
-                "Bar", getDomainType("Bar"),
-                "Baz", getDomainType("Baz")
-            );
+            return domainTypes;
         }
     }
 }

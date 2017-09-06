@@ -1,24 +1,24 @@
 package de.quinscape.exceed.runtime.service.client.scope;
 
-import de.quinscape.exceed.model.component.ComponentDescriptor;
-import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.model.component.ComponentDescriptor;
+import de.quinscape.exceed.model.component.PropDeclaration;
+import de.quinscape.exceed.model.expression.Attributes;
+import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.meta.ModuleFunctionReferences;
+import de.quinscape.exceed.model.meta.StaticFunctionReferences;
 import de.quinscape.exceed.model.process.Transition;
 import de.quinscape.exceed.model.process.ViewState;
-import de.quinscape.exceed.model.expression.ExpressionValue;
-import de.quinscape.exceed.model.expression.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.model.meta.ModuleFunctionReferences;
-import de.quinscape.exceed.model.meta.StaticFunctionReferences;
+import de.quinscape.exceed.runtime.component.ComponentInstanceRegistration;
 import de.quinscape.exceed.runtime.scope.ScopedContext;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 import de.quinscape.exceed.runtime.scope.ViewContext;
-import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -249,7 +249,7 @@ public class ScopeReferenceService
                         }
                         catch (ParseException e)
                         {
-                            throw new ExceedRuntimeException(e);
+                            throw new ExceedRuntimeException("Error parsing query expression: " + query, e);
                         }
                     }
                 }
@@ -284,7 +284,7 @@ public class ScopeReferenceService
         private void collectClientReferences(RuntimeContext runtimeContext, Set<ScopeReference> set, HashSet<String> visitedModules, ComponentModel componentModel, StaticFunctionReferences
             staticFunctionReferences)
         {
-            final ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
+            final ComponentInstanceRegistration componentRegistration = componentModel.getComponentRegistration();
 
 
             if (componentRegistration != null)

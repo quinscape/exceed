@@ -1,6 +1,8 @@
 package de.quinscape.exceed.runtime.domain.property;
 
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.util.ExpressionUtil;
+import jdk.nashorn.api.scripting.JSObject;
 
 import java.sql.Date;
 import java.text.DateFormat;
@@ -10,7 +12,7 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 public class DateConverter
-    implements PropertyConverter<Date,String>
+    implements PropertyConverter<Date,String,JSObject>
 {
     private final static long MILLIS_PER_DAY = TimeUnit.DAYS.toMillis(1);
 
@@ -40,6 +42,21 @@ public class DateConverter
 
         return df.format(value);
     }
+
+
+    @Override
+    public JSObject convertToJs(RuntimeContext runtimeContext, Date value)
+    {
+        return (JSObject) runtimeContext.getJsEnvironment().convertViaJSONToJs(runtimeContext, value, ExpressionUtil.DATE_TYPE);
+    }
+
+
+    @Override
+    public Date convertFromJs(RuntimeContext runtimeContext, JSObject value)
+    {
+        return (Date) runtimeContext.getJsEnvironment().convertViaJSONFromJs(runtimeContext, value, ExpressionUtil.DATE_TYPE);
+    }
+
 
     @Override
     public Class<Date> getJavaType()

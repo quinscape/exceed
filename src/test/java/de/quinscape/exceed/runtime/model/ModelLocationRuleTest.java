@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.model;
 
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.junit.Test;
-import org.svenson.JSON;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
@@ -23,7 +23,7 @@ public class ModelLocationRuleTest
     {
         final ModelLocationRule modelLocationRule = new ModelLocationRule(s, "test.Test");
 
-        System.out.println("matchLocationRule(" + JSON.defaultJSON().forValue(modelLocationRule) +", " + JSON.defaultJSON().forValue(path) + ")\n");
+        System.out.println("matchLocationRule(" + JSONUtil.DEFAULT_GENERATOR.forValue(modelLocationRule) +", " + JSONUtil.DEFAULT_GENERATOR.forValue(path) + ")\n");
 
         return modelLocationRule.matches(path);
     }

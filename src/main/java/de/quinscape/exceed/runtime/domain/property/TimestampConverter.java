@@ -1,15 +1,19 @@
 package de.quinscape.exceed.runtime.domain.property;
 
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.util.ExpressionUtil;
+import jdk.nashorn.api.scripting.JSObject;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 public class TimestampConverter
-    implements PropertyConverter<Timestamp, String>
+    implements PropertyConverter<Timestamp, String, JSObject>
 {
     @Override
     public Timestamp convertToJava(RuntimeContext runtimeContext, String value)
@@ -27,16 +31,28 @@ public class TimestampConverter
     public String convertToJSON(RuntimeContext runtimeContext, Timestamp value)
     {
 
-        if (value != null)
+        if (value == null)
         {
-            TimeZone tz = TimeZone.getTimeZone("UTC");
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-            df.setTimeZone(tz);
-
-            return df.format(value);
+            return null;
         }
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        df.setTimeZone(tz);
 
-        return null;
+        return df.format(value);
+    }
+
+    @Override
+    public JSObject convertToJs(RuntimeContext runtimeContext, Timestamp value)
+    {
+        return (JSObject) runtimeContext.getJsEnvironment().convertViaJSONToJs(runtimeContext, value, ExpressionUtil.TIMESTAMP_TYPE);
+    }
+
+
+    @Override
+    public Timestamp convertFromJs(RuntimeContext runtimeContext, JSObject value)
+    {
+        return (Timestamp) runtimeContext.getJsEnvironment().convertViaJSONFromJs(runtimeContext, value, ExpressionUtil.TIMESTAMP_TYPE);
     }
 
     @Override

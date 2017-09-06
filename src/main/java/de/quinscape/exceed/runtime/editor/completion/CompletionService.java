@@ -9,13 +9,13 @@ import de.quinscape.exceed.model.view.ComponentModelBuilder;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.component.ComponentRegistration;
 import de.quinscape.exceed.runtime.editor.completion.expression.ChildRuleEnvironment;
 import de.quinscape.exceed.runtime.editor.completion.expression.ParentComponent;
 import de.quinscape.exceed.runtime.editor.completion.expression.ParentRuleEnvironment;
 import de.quinscape.exceed.runtime.editor.completion.expression.PropCompleteEnvironment;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
-import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
-import de.quinscape.exceed.runtime.service.ComponentRegistration;
+import de.quinscape.exceed.runtime.expression.query.ComponentQueryTransformer;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
 import de.quinscape.exceed.runtime.util.JSONUtil;
@@ -51,7 +51,7 @@ public class CompletionService
     private ComponentRegistry componentRegistry;
 
     @Autowired
-    private QueryTransformer queryTransformer;
+    private ComponentQueryTransformer queryTransformer;
 
     @Autowired
     private ExpressionService expressionService;

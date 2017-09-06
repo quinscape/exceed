@@ -1,7 +1,7 @@
 // THIS CLASS GETS DELETED DURING THE JOOQ CODE GENERATION AND THEN RESTORED from src/main/resources/DomainBase.java.
 package de.quinscape.exceed.runtime.domain;
 
-import org.svenson.JSON;
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.svenson.JSONProperty;
 
 /**
@@ -29,7 +29,7 @@ public abstract class DomainObjectBase
     @Override
     public String toString()
     {
-        return JSON.defaultJSON().forValue(this);
+        return JSONUtil.DEFAULT_GENERATOR.forValue(this);
     }
 
     @Override
@@ -56,5 +56,4 @@ public abstract class DomainObjectBase
     {
         this.domainService = domainService;
     }
-
 }

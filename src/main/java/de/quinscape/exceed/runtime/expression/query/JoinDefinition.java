@@ -8,7 +8,7 @@ public class JoinDefinition
     private final QueryDomainType left;
     private final QueryDomainType right;
 
-    private Condition condition;
+    private QueryCondition condition;
 
 
     public JoinDefinition(String joinType, QueryDomainType left, QueryDomainType right)
@@ -37,14 +37,14 @@ public class JoinDefinition
     }
 
 
-    public void setCondition(Condition condition)
+    public QueryCondition getCondition()
     {
-        this.condition = condition;
+        return condition;
     }
 
 
-    public Condition getCondition()
+    public void setCondition(QueryCondition condition)
     {
-        return condition;
+        this.condition = condition;
     }
 }

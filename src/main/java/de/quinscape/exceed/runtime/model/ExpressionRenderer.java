@@ -368,6 +368,11 @@ public class ExpressionRenderer
      */
     public static String render(Node n)
     {
+        if (n == null)
+        {
+            return "<null>";
+        }
+
         ExpressionRenderer renderer = new ExpressionRenderer();
         renderer.visitChild(n,null);
         return renderer.getOutput();

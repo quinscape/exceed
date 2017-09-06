@@ -28,5 +28,11 @@ public class ASTPropertyChainSquare
         return
             visitor.visit(this, data);
     }
+
+    public String toString()
+    {
+        return super.toString() + " " + jjtGetChild(0).toString();
+    }
+
 }
 /* JavaCC - OriginalChecksum=1f3c937c846489bddfcbbfe393f9bbff (do not edit this line) */

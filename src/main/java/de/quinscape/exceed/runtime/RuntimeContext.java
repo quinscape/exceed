@@ -5,6 +5,7 @@ import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.i18n.Translator;
+import de.quinscape.exceed.runtime.js.JsEnvironment;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 import de.quinscape.exceed.runtime.util.AppAuthentication;
 
@@ -38,6 +39,7 @@ public class RuntimeContext
     private Map<String, Object> variables;
 
     private String routingTemplate;
+
 
     public RuntimeContext(RuntimeApplication runtimeApplication,
                           String path, Translator translator, Locale locale, ScopedContextChain scopedContextChain,
@@ -155,5 +157,11 @@ public class RuntimeContext
     public AppAuthentication getAuthentication()
     {
         return authentication;
+    }
+
+
+    public JsEnvironment getJsEnvironment()
+    {
+        return runtimeApplication.getApplicationModel().getMetaData().getJsEnvironment();
     }
 }

@@ -1,11 +1,13 @@
 package de.quinscape.exceed.runtime.expression.query;
 
-import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.Node;
+import de.quinscape.exceed.model.component.ComponentClasses;
+import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.runtime.component.ComponentInstanceRegistration;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
@@ -63,19 +65,15 @@ public class QueryFilterOperations
     {
         QueryTransformerEnvironment env = ctx.getEnv().getTransformerEnvironment();
 
-        List<ComponentModel> children = env.getComponentModel().children();
+        final ComponentModel componentModel = env.getComponentModel();
+
+
+        List<ComponentModel> children = componentModel.children();
         int size = children.size();
-        if (size == 0)
+
+        List<Condition> conditions = new ArrayList<>();
+        if (size > 0)
         {
-            return null;
-        }
-        else if (size == 1)
-        {
-            return getFilter(ctx, children.get(0));
-        }
-        else
-        {
-            List<Condition> conditions = new ArrayList<>();
             for (int i = size - 1; i >= 0; i--)
             {
                 ComponentModel kid = children.get(i);
@@ -85,17 +83,29 @@ public class QueryFilterOperations
                     conditions.add(filter);
                 }
             }
+        }
 
-            if (conditions.size() == 0)
+        if (conditions.size() == 0)
+        {
+            return null;
+        }
+        else if (conditions.size() == 1)
+        {
+            return conditions.get(0);
+        }
+        else
+        {
+            final Object filter = ctx.getEnv().getTransformerEnvironment().getVar("filter");
+
+
+            if (filter instanceof String)
             {
-                return null;
-            }
-            else if (conditions.size() == 1)
-            {
-                return conditions.get(0);
+                // we either have a string which we compare with each column and OR those results or..
+                return DSL.or(conditions);
             }
             else
             {
+                // .. we either have a map with match values for each column and we AND the results.
                 return DSL.and(conditions);
             }
         }
@@ -122,14 +132,11 @@ public class QueryFilterOperations
         final StorageConfigurationRepository storageConfigurationRepository = env.getTransformerEnvironment()
             .getStorageConfigurationRepository();
 
-
-
         QueryDomainType queryDomainType = ctx.getEnv().getQueryDomainType();
         DataField dataField = queryDomainType.resolveField(name);
-        final String domainTypeName = dataField.getQueryDomainType().getType().getName();
         NamingStrategy namingStrategy =  storageConfigurationRepository.getConfiguration(queryDomainType.getType().getStorageConfiguration()).getNamingStrategy();
 
-        return DSL.field(DSL.name(namingStrategy.getFieldName(dataField.getQueryDomainType().getNameOrAlias(), dataField.getDomainProperty().getName())));
+        return DSL.field(DSL.name(dataField.getNameFromStrategy(namingStrategy)));
     }
 
     @Operation
@@ -162,24 +169,27 @@ public class QueryFilterOperations
         ExpressionValue attrVal = kid.getAttribute("filterTemplate");
         if (attrVal == null)
         {
-            PropDeclaration filterTemplateProp = kid.getComponentRegistration().getDescriptor().getPropTypes().get
-                ("filterTemplate");
-
-            if (filterTemplateProp != null)
+            final ComponentInstanceRegistration componentRegistration = kid.getComponentRegistration();
+            if (componentRegistration != null)
             {
-                ExpressionValue defaultValue = filterTemplateProp.getDefaultValue();
+                PropDeclaration filterTemplateProp = componentRegistration.getDescriptor().getPropTypes().get("filterTemplate");
 
-                if (defaultValue != null)
+                if (filterTemplateProp != null)
                 {
+                    ExpressionValue defaultValue = filterTemplateProp.getDefaultValue();
 
-                    ASTExpression defaultExpr = defaultValue.getAstExpression();
-                    if (defaultExpr == null)
+                    if (defaultValue != null)
                     {
-                        throw new QueryTransformationException("Filter-template default is no expression for " +
-                            "component '" + kid.getName() + "'");
-                    }
 
-                    expr = defaultExpr;
+                        ASTExpression defaultExpr = defaultValue.getAstExpression();
+                        if (defaultExpr == null)
+                        {
+                            throw new QueryTransformationException("Filter-template default is no expression for " +
+                                "component '" + kid.getName() + "'");
+                        }
+
+                        expr = defaultExpr;
+                    }
                 }
             }
         }
@@ -231,9 +241,14 @@ public class QueryFilterOperations
             return null;
         }
 
+        if (value instanceof String)
+        {
+            return (String) value;
+        }
+
         if (!(value instanceof Map))
         {
-            throw new QueryTransformationException("Filter variable must be a map (is " + value + "): " + filterEnv.getTransformerEnvironment().getComponentModel());
+            throw new QueryTransformationException("Filter variable must be a map or string (is " + value + "): " + filterEnv.getTransformerEnvironment().getComponentModel());
 
         }
         return ((Map<String, String>) value).get(name);

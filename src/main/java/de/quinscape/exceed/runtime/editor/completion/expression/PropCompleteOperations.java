@@ -6,18 +6,19 @@ import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.model.component.PropType;
+import de.quinscape.exceed.model.expression.Attributes;
+import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.model.routing.Mapping;
 import de.quinscape.exceed.model.routing.MappingNode;
-import de.quinscape.exceed.model.expression.ExpressionValue;
-import de.quinscape.exceed.model.expression.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.ComponentModelBuilder;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.component.ComponentInstanceRegistration;
 import de.quinscape.exceed.runtime.editor.completion.AceCompletion;
 import de.quinscape.exceed.runtime.editor.completion.CompletionType;
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
@@ -25,8 +26,9 @@ import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
 import de.quinscape.exceed.runtime.expression.annotation.Identifier;
 import de.quinscape.exceed.runtime.expression.annotation.Operation;
 import de.quinscape.exceed.runtime.expression.query.DataField;
+import de.quinscape.exceed.runtime.expression.query.QueryContext;
+import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryDomainType;
-import de.quinscape.exceed.runtime.service.ComponentRegistration;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -257,7 +259,7 @@ public class PropCompleteOperations
     public Object prop(ExpressionContext<PropCompleteEnvironment> ctx, ComponentModel componentModel, String name)
     {
         PropCompleteEnvironment env = ctx.getEnv();
-
+        
         if (componentModel == null)
         {
             componentModel = env.getComponentModel();
@@ -271,19 +273,24 @@ public class PropCompleteOperations
         ASTExpression astExpression = attribute.getAstExpression();
         if (astExpression != null)
         {
-            ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
+            ComponentInstanceRegistration componentRegistration = componentModel.getComponentRegistration();
             PropDeclaration propDeclaration = componentRegistration.getDescriptor().getPropTypes().get(name);
 
             if (propDeclaration != null)
             {
                 if (propDeclaration.getType() == PropType.QUERY_EXPRESSION)
                 {
-                    return env.getQueryTransformer().evaluate(
+                    return env.getQueryTransformer().transform(
                         env.getRuntimeContext(),
-                        astExpression,
-                        componentModel,
-                        // TODO: vars?
-                        Collections.emptyMap());
+                        new QueryContext(
+                            env.getViewModel(),
+                            componentModel,
+                            Collections.emptyMap(),
+                            null,
+                            null
+                        ),
+                        astExpression
+                    );
                 }
             }
 
@@ -296,13 +303,15 @@ public class PropCompleteOperations
         }
     }
 
+
     @Operation
-    public List<AceCompletion> fieldOf(ExpressionContext<PropCompleteEnvironment> ctx, QueryDomainType queryDomainType)
+    public List<AceCompletion> fieldOf(ExpressionContext<PropCompleteEnvironment> ctx, QueryDefinition queryDefinition)
     {
+        QueryDomainType queryDomainType = queryDefinition.getQueryDomainType();
         Set<String> alreadyUsedNames = findAlreadyUsed(ctx);
 
         List<AceCompletion> suggestions = new ArrayList<>();
-        for (DataField dataField : queryDomainType.getDomainTypeFields())
+        for (DataField dataField : queryDomainType.getJoinedFields())
         {
             boolean isSimpleQuery = queryDomainType.getJoinedType() == null;
             String fieldName = isSimpleQuery ?  fieldName(dataField.getLocalName()) : dataField.getLocalName();

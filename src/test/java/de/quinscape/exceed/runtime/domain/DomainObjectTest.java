@@ -1,14 +1,15 @@
 package de.quinscape.exceed.runtime.domain;
 
 import de.quinscape.exceed.domain.tables.pojos.AppUser;
+import de.quinscape.exceed.model.domain.type.DomainType;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.svenson.ClassNameBasedTypeMapper;
 import org.svenson.JSONParser;
 import org.svenson.matcher.SubtypeMatcher;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 public class DomainObjectTest
 {
@@ -20,7 +21,7 @@ public class DomainObjectTest
         ClassNameBasedTypeMapper typeMapper = new ClassNameBasedTypeMapper();
         typeMapper.setBasePackage(AppUser.class.getPackage().getName());
         typeMapper.setEnforcedBaseType(DomainObjectBase.class);
-        typeMapper.setDiscriminatorField("_type");
+        typeMapper.setDiscriminatorField(DomainType.TYPE_PROPERTY);
         typeMapper.setPathMatcher(new SubtypeMatcher(DomainObjectBase.class));
         parser.setTypeMapper(typeMapper);
 

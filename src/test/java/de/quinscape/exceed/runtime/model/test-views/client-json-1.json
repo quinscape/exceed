@@ -24,62 +24,7 @@
                                     }
                                 },
                                 {
-                                    "name": "Provider",
-                                    "attrs": {
-                                        "var": "customContext"
-                                    },
-                                    "kids": [
-                                        {
-                                            "name": "Consumer"
-                                        },
-                                        {
-                                            "name": "Consumer",
-                                            "attrs": {
-                                                "ctx": "explicitContext"
-                                            }
-                                        },
-                                        {
-                                            "name": "ComputedConsumer",
-                                            "attrs": {
-                                                "name": "ccName"
-                                            }
-                                        },
-                                        {
-                                            "name": "ComputedConsumer",
-                                            "attrs": {
-                                                "name": "ccName2",
-                                                "ctx": "{ customContext.foo['ccName2'] }"
-                                            }
-                                        }
-                                    ]
-                                },
-                                {
                                     "name": "Foo"
-                                },
-                                {
-                                    "name": "Provider",
-                                    "attrs": {
-                                        "var": "customContext"
-                                    },
-                                    "kids": [
-                                        {
-                                            "name": "AnotherProvider",
-                                            "attrs": {
-                                                "var": "anotherContext"
-                                            },
-                                            "kids": [
-                                                {
-                                                    "name": "Consumer"
-                                                },
-                                                {
-                                                    "name": "ComputedConsumer",
-                                                    "attrs": {
-                                                        "name": "ccName3"
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    ]
                                 },
                                 {
                                     "name": "DefaultProps"

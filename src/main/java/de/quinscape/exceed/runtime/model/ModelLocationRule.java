@@ -1,5 +1,7 @@
 package de.quinscape.exceed.runtime.model;
 
+import org.svenson.JSONProperty;
+
 public class ModelLocationRule
 {
     private final String prefix;
@@ -26,6 +28,7 @@ public class ModelLocationRule
     }
 
 
+    @JSONProperty(priority = 20)
     public String getPrefix()
     {
         return prefix;
@@ -44,6 +47,7 @@ public class ModelLocationRule
     }
 
 
+    @JSONProperty(priority = 10, ignoreIfNull = true)
     public String getSuffix()
     {
         return suffix;

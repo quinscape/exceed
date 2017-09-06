@@ -15,12 +15,20 @@ public class ProcessExecution
 
     private String currentState;
 
+    private final ProcessExecution parent;
+
 
     public ProcessExecution(String appName, String processName)
+    {
+        this(appName, processName, null);
+    }
+    
+    public ProcessExecution(String appName, String processName, ProcessExecution parent)
     {
         this.appName = appName;
         this.processName = processName;
         this.states = new ArrayList<>();
+        this.parent = parent;
     }
 
     void setState(ProcessExecutionState processExecutionState)
@@ -46,9 +54,14 @@ public class ProcessExecution
         return states;
     }
 
-
     public String getCurrentState()
     {
         return currentState;
+    }
+
+
+    public ProcessExecution getParent()
+    {
+        return parent;
     }
 }

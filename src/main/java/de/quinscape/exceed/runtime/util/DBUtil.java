@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.util;
 
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import org.jooq.Field;
@@ -24,7 +24,7 @@ public class DBUtil
         }
         else
         {
-            return table.as(alias);
+            return table.as(namingStrategy.getTableName(alias));
         }
     }
 

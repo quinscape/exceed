@@ -1,16 +1,20 @@
 package de.quinscape.exceed.runtime.expression.query;
 
-import com.google.common.collect.ImmutableList;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.runtime.component.QueryPreparationException;
+import de.quinscape.exceed.runtime.domain.DomainObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.JSONProperty;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class QueryDomainType
 {
@@ -22,15 +26,19 @@ public class QueryDomainType
 
     private JoinDefinition joinedType;
 
-    private List<DataField> fields;
-
-    private List<DataField> domainTypeFields;
+    private List<String> selectedFieldNames;
 
     private QueryDomainType joinedWith;
 
-    private List<DataField> joinedFields;
+    private List<DataField> allFields;
 
     private Map<String, DataField> fieldMap;
+
+    private List<DataField> selectedFields;
+
+    private List<String> originalFields;
+
+    private Map<String, QueryMapping> queryMappings;
 
 
     public QueryDomainType(DomainType type)
@@ -42,18 +50,7 @@ public class QueryDomainType
 
         this.type = type;
 
-        joinedFields = new ArrayList<>();
-
-        List<DomainProperty> properties = this.getType().getProperties();
-        for (DomainProperty domainProperty : properties)
-        {
-            DataField dataField = new DataField(this, domainProperty);
-            joinedFields.add(dataField);
-        }
-
-        domainTypeFields = ImmutableList.copyOf(joinedFields);
     }
-
 
 
     public String getNameOrAlias()
@@ -97,124 +94,109 @@ public class QueryDomainType
     }
 
 
-    public void setFields(List<String> fields)
+    public void selectedFields(List<String> selectedFields)
     {
-        List<DataField> dataFields = new ArrayList<>();
-        for (int i = 0; i < fields.size(); i++)
-        {
-            String field = fields.get(i);
-            if (field.indexOf('.') < 0)
-            {
-                DataField dataField = resolveField(field).clone();
-                dataField.setLocalName(field);
-                dataFields.add(dataField);
-            }
-            else
-            {
-                DataField typeForField = findTypeForField(field);
-                if (typeForField == null)
-                {
-                    throw new IllegalArgumentException("Unknown field '" + field + "'");
-                }
-
-                dataFields.add(typeForField);
-            }
-        }
-        this.fields = dataFields;
+        this.getLeftMost().selectedFieldNames = selectedFields;
     }
 
-
-    private DataField findTypeForField(String field)
+    public DataField resolveField(final String originalField)
     {
-        int dotPos = field.indexOf('.');
-        if (dotPos < 0)
+        final DataField field = findField(originalField);
+
+        if (field == null)
         {
-            throw new IllegalArgumentException("Unqualified field: " + field);
+            throw new IllegalArgumentException("Unknown field '" + originalField + "'");
         }
 
+        return field;
+    }
 
-        QueryDomainType current = this;
 
-        do
+    public DataField findField(String originalField)
+    {
+        final int dotPos = originalField.indexOf('.');
+        final String prefix;
+        final String field;
+        if (dotPos >= 0)
         {
-            Map<String, DataField> fields = current.getFields();
-            DataField dataField;
-            if ((dataField = fields.get(field)) != null)
-            {
-                return dataField;
-            }
-
-            if (current.getJoinedType() != null)
-            {
-                current = current.getJoinedType().getRight();
-            }
-            else
-            {
-                current = null;
-            }
-
-        } while (current != null);
-
-        return null;
-    }
-
-
-    public List<DataField> getDomainTypeFields()
-    {
-        return domainTypeFields;
-    }
-
-
-    public DataField resolveField(final String field)
-    {
-        QueryDomainType current = this;
+            prefix = originalField.substring(0, dotPos);
+            field = originalField.substring(dotPos + 1);
+        }
+        else
+        {
+            prefix = null;
+            field = originalField;
+        }
 
         DataField dataField = null;
-        do
+        QueryDomainType current = this;
+        while (current != null)
         {
-            List<DataField> domainTypeFields = current.getDomainTypeFields();
-
-            for (DataField f : domainTypeFields)
+            for (DomainProperty domainProperty : current.getType().getProperties())
             {
-                if (f.getDomainProperty().getName().equals(field))
+                if (
+                    matches(domainProperty, current.getNameOrAlias(), prefix, field)
+                )
                 {
                     if (dataField != null)
                     {
-                        throw new AmbiguousFieldReferenceException("Ambiguous field reference '" + field + "': exists at least in " +
+                        throw new AmbiguousFieldReferenceException("Ambiguous field reference '" + originalField + "': exists at least in " +
                             "both\n"
                             + dataField.getQueryDomainType().getType() + "\nand\n" + current.getType());
                     }
+                    dataField = new DataField(current, domainProperty);
+                    dataField.setLocalName(originalField);
 
-                    dataField = f;
+                    if (prefix != null)
+                    {
+                        // no uniqueness check necessary
+                        return dataField;
+                    }
                 }
             }
 
-            if (current.getJoinedType() != null)
-            {
-                current = current.getJoinedType().getRight();
-            }
-            else
-            {
-                current = null;
-            }
-
-        } while (current != null);
-
-        if (dataField == null)
-        {
-            throw new InvalidFieldReferenceException("Invalid field reference '" + field + "' is not in any of the joined domain types");
+            current = nextJoinedType(current);
         }
-
         return dataField;
     }
 
-    public List<DataField> getFieldsInOrder()
+
+    public static QueryDomainType nextJoinedType(QueryDomainType current)
     {
-        return this.fields != null ? this.fields : joinedFields;
+        if (current.getJoinedType() != null)
+        {
+            return current.getJoinedType().getRight();
+        }
+        else
+        {
+            return null;
+        }
     }
 
+
+    public static boolean matches(DomainProperty domainProperty, String nameOrAlias, String prefix, String field)
+    {
+        return domainProperty.getName().equals(field) &&
+            (
+                prefix == null || prefix.equals(nameOrAlias)
+            );
+    }
+
+
+    public List<DataField> getFieldsInOrder()
+    {
+        return this.selectedFieldNames != null ? this.selectedFields : allFields;
+    }
+
+
+    public List<String> getSelectedFieldNames()
+    {
+        return selectedFieldNames;
+    }
+
+
     @JSONProperty(ignore = true)
-    public Map<String, DataField> getFields()
+    public Map<String, DataField> getSelectedFields()
     {
         if (fieldMap == null)
         {
@@ -236,23 +218,6 @@ public class QueryDomainType
             throw new IllegalStateException("Already joined with " + joinedType);
         }
 
-        int pos = joinedFields.size();
-        QueryDomainType current = other;
-        do
-        {
-            joinedFields.addAll(current.getDomainTypeFields());
-
-            if (current.getJoinedType() != null)
-            {
-                current = current.getJoinedType().getRight();
-            }
-            else
-            {
-                current = null;
-            }
-
-        } while (current != null);
-
         other.seJoinedWith(this);
         joinedType = new JoinDefinition(name, this, other);
         return joinedType;
@@ -262,7 +227,7 @@ public class QueryDomainType
     @JSONProperty(ignore = true)
     public List<DataField> getJoinedFields()
     {
-        return joinedFields;
+        return allFields;
     }
 
 
@@ -285,9 +250,194 @@ public class QueryDomainType
             + "type = " + type.getName()
             + ", alias = '" + alias + '\''
             + ", joinedType = " + joinedType
-            + ", fields = " + fields
-            + ", domainTypeFields = " + domainTypeFields
+            + ", selectedFieldNames = " + selectedFieldNames
             + ", joinedWith = " + (joinedWith != null ? joinedWith.getType().getName() : null)
             ;
+    }
+
+
+    public QueryDomainType resolve()
+    {
+
+        this.allFields = collectAllJoinedFields();
+
+        if (selectedFieldNames != null)
+        {
+            final ResolvedSelection resolved = resolveSelection(selectedFieldNames);
+
+            this.selectedFields = resolved.dataFields;
+            originalFields = selectedFieldNames;
+            selectedFieldNames  = resolved.expandedSelection;
+
+            log.info("originalFields: {}, selectedFieldNames: {}", originalFields, selectedFieldNames);
+        }
+        else
+        {
+            this.originalFields = Collections.emptyList();
+            this.selectedFields = Collections.emptyList();
+        }
+
+        return this;
+    }
+
+
+    private ResolvedSelection resolveSelection(List<String> selectedFieldNames)
+    {
+        final List<DataField> dataFields = new ArrayList<>();
+
+        final List<String> expandedSelection = new ArrayList<>();
+
+        for (String selectedField : selectedFieldNames)
+        {
+            final DataField dataField = findField( selectedField);
+
+            if (dataField != null)
+            {
+                expandedSelection.add(selectedField);
+                dataFields.add(dataField);
+            }
+            else
+            {
+                QueryDomainType queryDomainType = null;
+                List<Integer> columns = new ArrayList<>();
+                for (int i = 0; i < allFields.size(); i++)
+                {
+                    DataField curField = allFields.get(i);
+                    if (curField.getQueryDomainType().getNameOrAlias().equals(selectedField))
+                    {
+                        dataFields.add(curField);
+                        columns.add(i);
+                        expandedSelection.add(curField.getQualifiedName());
+                        queryDomainType = curField.getQueryDomainType();
+                    }
+                }
+
+                if (queryDomainType == null)
+                {
+                    throw new QueryPreparationException("Could not find any columns matching '" + selectedField + "'");
+                }
+
+                if (queryMappings == null)
+                {
+                    queryMappings = new HashMap<>();
+                }
+
+                queryMappings.put(selectedField,
+                    new QueryMapping(
+                        queryDomainType.getType().getName(),
+                        selectedField,
+                        columns,
+                        queryDomainType.getNameOrAlias()
+                    )
+                );
+
+            }
+        }
+
+        QueryDomainType current = this;
+        while (current != null)
+        {
+            final JoinDefinition joinDefinition = current.getJoinedType();
+            if (joinDefinition != null)
+            {
+                for (DataField dataField : joinDefinition.getCondition().getFieldReferences())
+                {
+                    if (!dataField.getDomainProperty().getName().equals(DomainType.ID_PROPERTY))
+                    {
+                        expandedSelection.add(dataField.getQualifiedName());
+                        dataFields.add(dataField);
+                    }
+                }
+            }
+
+            current = nextJoinedType(current);
+        }
+
+
+        return new ResolvedSelection(dataFields, expandedSelection);
+    }
+
+
+
+
+    private List<DataField> collectAllJoinedFields()
+    {
+        final List<DataField> fields = getFieldsFor(this);
+
+        if (joinedType != null)
+        {
+            QueryDomainType current = joinedType.getRight();
+            while (current != null)
+            {
+                fields.addAll(getFieldsFor(current));
+                current = nextJoinedType(current);
+
+            }
+
+        }
+        return fields;
+    }
+
+
+    public List<String> getOriginalFields()
+    {
+        return selectedFieldNames != null ? originalFields : allFields.stream().map( DataField::getQualifiedName ).collect(Collectors.toList());
+    }
+
+
+    private static List<DataField> getFieldsFor(QueryDomainType queryDomainType)
+    {
+        List<DataField> fields = new ArrayList<>();
+
+        List<DomainProperty> properties = queryDomainType.getType().getProperties();
+        for (DomainProperty domainProperty : properties)
+        {
+            fields.add(
+                new DataField(
+                    queryDomainType,
+                    domainProperty
+                )
+            );
+        }
+
+        return fields;
+    }                                                               
+
+
+    public QueryDomainType getLeftMost()
+    {
+        QueryDomainType current = this;
+
+        QueryDomainType next;
+        while ((next = current.getJoinedWith()) != null)
+        {
+            current = next;
+        }
+
+        return current;
+    }
+
+
+    public Map<String, QueryMapping> getQueryMappings()
+    {
+        if (queryMappings == null)
+        {
+            return Collections.emptyMap();
+        }
+
+        return queryMappings;
+    }
+
+
+    private static class ResolvedSelection
+    {
+        public final List<DataField> dataFields;
+        public final List<String> expandedSelection;
+
+        public ResolvedSelection(List<DataField> dataFields, List<String> expandedSelection)
+        {
+            this.dataFields = dataFields;
+            this.expandedSelection = expandedSelection;
+        }
     }
 }

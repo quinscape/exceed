@@ -3,9 +3,12 @@ package de.quinscape.exceed.runtime.editor.completion;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.TestDomainServiceBase;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.model.domain.type.DomainTypeModel;
+import de.quinscape.exceed.model.domain.type.EnumType;
 import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.meta.PropertyType;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.TestApplication;
@@ -15,21 +18,22 @@ import de.quinscape.exceed.runtime.editor.completion.expression.PropCompleteEnvi
 import de.quinscape.exceed.runtime.editor.completion.expression.PropCompleteOperations;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
-import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
+import de.quinscape.exceed.runtime.expression.query.ComponentQueryTransformer;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
 import de.quinscape.exceed.runtime.model.TestRegistry;
 import de.quinscape.exceed.runtime.schema.DefaultStorageConfiguration;
 import de.quinscape.exceed.runtime.schema.DefaultStorageConfigurationRepository;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.svenson.JSON;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,6 +56,7 @@ public class PropCompleteEnvironmentTest
 
         // external view json
         View viewModel = modelJSONService.toModel(View.class, json);
+        viewModel.setName("test");
         ComponentModel componentModel = viewModel.find(m -> {
             ExpressionValue attrValue = m.getAttribute("name");
             return attrValue != null && attrValue.getValue().equals("xxx");
@@ -61,16 +66,19 @@ public class PropCompleteEnvironmentTest
 
         ComponentUtil.updateComponentRegsAndParents(testRegistry, viewModel, null);
 
-        TestApplication app = new TestApplicationBuilder().withDomainService(new TestDomainService()).build();
+        EnumType myEnum = new EnumType();
+        myEnum.setName("MyEnum");
+        myEnum.setValues(Arrays.asList("A","B","C", "D"));
+        TestApplication app = new TestApplicationBuilder().withDomainService(new TestDomainService()).withEnum("MyEnum", myEnum).withView(viewModel).build();
         ExpressionService expressionService = new ExpressionServiceImpl(ImmutableSet.of(new PropCompleteOperations()));
 
-        QueryTransformer queryTransformer = new QueryTransformer(expressionService, new DefaultStorageConfigurationRepository(
-            ImmutableMap.of("testStorage", new DefaultStorageConfiguration(null, new DefaultNamingStrategy(), null, null)),
+        ComponentQueryTransformer queryTransformer = new ComponentQueryTransformer(expressionService, new DefaultStorageConfigurationRepository(
+            ImmutableMap.of("testStorage", new DefaultStorageConfiguration(null, new DefaultNamingStrategy(), null)),
             null));
 
         {
 
-            PropCompleteEnvironment env = new PropCompleteEnvironment( app.createRuntimeContext(), queryTransformer,
+            PropCompleteEnvironment env = new PropCompleteEnvironment( app.createRuntimeContext(viewModel), queryTransformer,
                 viewModel, componentModel, "name");
 
             List<AceCompletion> completions = env.evaluate(expressionService);
@@ -89,7 +97,7 @@ public class PropCompleteEnvironmentTest
 
             List<AceCompletion> suggestions = env.evaluate(expressionService);
 
-            log.info(JSON.defaultJSON().forValue(suggestions));
+            log.info(JSONUtil.DEFAULT_GENERATOR.forValue(suggestions));
 
         }
 
@@ -98,10 +106,19 @@ public class PropCompleteEnvironmentTest
     private class TestDomainService
         extends TestDomainServiceBase
     {
+        private Map<String, DomainType> domainTypes = new HashMap<>();
+
+
+        {
+            domainTypes.put("Foo", getDomainType("Foo"));
+            domainTypes.put("Bar", getDomainType("Bar"));
+            domainTypes.put("Baz", getDomainType("Baz"));
+        }
+
         @Override
         public DomainType getDomainType(String name)
         {
-            DomainType domainType = new DomainType();
+            DomainTypeModel domainType = new DomainTypeModel();
             domainType.setName(name);
             domainType.setAnnotation("Test domain type " + name);
 
@@ -109,10 +126,10 @@ public class PropCompleteEnvironmentTest
                 ("0").build();
             enumProp.setTypeParam("MyEnum");
             domainType.setProperties(Arrays.asList(
-                DomainProperty.builder().withName("value").withType("PlainText").build(),
-                DomainProperty.builder().withName(name.toLowerCase()).withType("PlainText").build(),
+                DomainProperty.builder().withName("value").withType(PropertyType.PLAIN_TEXT).build(),
+                DomainProperty.builder().withName(name.toLowerCase()).withType(PropertyType.PLAIN_TEXT).build(),
                 enumProp,
-                DomainProperty.builder().withName("num").withType("Integer").withDefaultValue("0").build()
+                DomainProperty.builder().withName("num").withType(PropertyType.INTEGER).withDefaultValue("0").build()
             ));
             return domainType;
         }
@@ -120,11 +137,7 @@ public class PropCompleteEnvironmentTest
         @Override
         public Map<String, DomainType> getDomainTypes()
         {
-            return ImmutableMap.of(
-                "Foo", getDomainType("Foo"),
-                "Bar", getDomainType("Bar"),
-                "Qux", getDomainType("Baz")
-            );
+            return domainTypes;
         }
     }
 

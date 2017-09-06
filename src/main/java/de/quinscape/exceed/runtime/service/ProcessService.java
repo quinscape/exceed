@@ -3,6 +3,7 @@ package de.quinscape.exceed.runtime.service;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.context.ContextModel;
+import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.process.DecisionModel;
 import de.quinscape.exceed.model.process.DecisionState;
 import de.quinscape.exceed.model.process.Process;
@@ -11,13 +12,13 @@ import de.quinscape.exceed.model.process.Transition;
 import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.controller.ActionService;
 import de.quinscape.exceed.runtime.domain.DomainObject;
-import de.quinscape.exceed.runtime.domain.DomainService;
-import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.js.JsEnvironment;
+import de.quinscape.exceed.runtime.js.env.Promise;
+import de.quinscape.exceed.runtime.js.env.PromiseState;
 import de.quinscape.exceed.runtime.process.ProcessExecution;
 import de.quinscape.exceed.runtime.process.ProcessExecutionState;
-import de.quinscape.exceed.runtime.process.TransitionData;
+import de.quinscape.exceed.runtime.process.TransitionInput;
 import de.quinscape.exceed.runtime.scope.ProcessContext;
 import de.quinscape.exceed.runtime.scope.ScopeType;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
@@ -26,22 +27,17 @@ import de.quinscape.exceed.runtime.scope.ViewContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 public class ProcessService
 {
     private final static Logger log = LoggerFactory.getLogger(ProcessService.class);
 
-    private final ActionService actionService;
-
-    private final ExpressionService expressionService;
-
     private final ScopedContextFactory scopedContextFactory;
 
 
-    public ProcessService(ActionService actionService, ExpressionService expressionService, ScopedContextFactory
-        scopedContextFactory)
+    public ProcessService(ScopedContextFactory scopedContextFactory)
     {
-        this.actionService = actionService;
-        this.expressionService = expressionService;
         this.scopedContextFactory = scopedContextFactory;
     }
 
@@ -55,16 +51,20 @@ public class ProcessService
         ContextModel contextModel = process.getContextModel();
 
         ProcessContext scopedContext = scopedContextFactory.createProcessContext(contextModel);
-        scopedContextFactory.initializeContext(runtimeContext, scopedContext);
+        scopedContextFactory.initializeContext(runtimeContext.getJsEnvironment(), runtimeContext, scopedContext);
 
         ProcessExecution execution = new ProcessExecution(appName, process.getName());
 
-        return transition(runtimeContext, execution, scopedContext, process.getStartTransition(), new TransitionData());
+        return transition(runtimeContext, execution, scopedContext, process.getStartTransition(), new TransitionInput());
     }
 
 
-    public ProcessExecutionState resume(RuntimeContext runtimeContext, ProcessExecutionState state, String
-        transition, TransitionData transitionData)
+    public ProcessExecutionState resume(
+        RuntimeContext runtimeContext,
+        ProcessExecutionState state,
+        String transition,
+        TransitionInput transitionInput
+    )
     {
         if (transition == null)
         {
@@ -94,19 +94,26 @@ public class ProcessService
                 transition + "'");
         }
 
-        return transition(runtimeContext, state.getExecution(), state.getScopedContext(), transitionModel,
-            transitionData);
+        return transition(
+            runtimeContext,
+            state.getExecution(),
+            state.getScopedContext(),
+            transitionModel,
+            transitionInput
+        );
     }
 
 
     private ProcessExecutionState transition(RuntimeContext runtimeContext, ProcessExecution execution,
-                                             ProcessContext scopedContext, Transition transitionModel, TransitionData transitionData)
+                                             ProcessContext scopedContext, Transition transitionModel, TransitionInput transitionInput)
     {
         final ApplicationModel applicationModel = runtimeContext.getApplicationModel();
 
         final String processName = execution.getProcessName();
         final Process process = applicationModel.getProcess(processName);
         final ProcessState sourceState = process.getStates().get(transitionModel.getFrom());
+        final String newStateName = transitionModel.getTo();
+        final ProcessState targetStateModel = process.getStates().get(newStateName);
 
         if (log.isDebugEnabled())
         {
@@ -116,74 +123,122 @@ public class ProcessService
                 transitionModel.getName(),
                 sourceState != null ? sourceState.getName() : "start",
                 transitionModel.getTo(),
-                transitionData
+                transitionInput
             );
         }
 
         final ScopedContextChain scopedContextChain = runtimeContext.getScopedContextChain();
 
         ProcessContext newScopedCtx = (ProcessContext) scopedContext.copy(runtimeContext);
-        newScopedCtx.update(transitionData.getContextUpdate());
 
-        DomainObject domainObjectContext;
-        DomainObject partialDomainObjectContext = transitionData.getObjectContext();
-        if (transitionModel.isMergeContext())
+        if (targetStateModel instanceof ViewState)
         {
-            DomainService domainService = runtimeContext.getDomainService();
-            DomainObject fullObject = partialDomainObjectContext != null ? domainService.read
-                (partialDomainObjectContext.getDomainType(), partialDomainObjectContext.getId()) : null;
-            if (fullObject != null)
+            final View view = process.getView(targetStateModel.getName());
+            final String viewDomainType = view.getDomainType();
+            if (viewDomainType != null)
             {
-                domainObjectContext = mergeInto(fullObject, partialDomainObjectContext);
+                DomainObject found = null;
+
+                final Map<String, DomainObject> context = transitionInput.getContext();
+                if (context != null)
+                {
+                    for (DomainObject domainObject : context.values())
+                    {
+                        if (domainObject.getDomainType().equals(viewDomainType))
+                        {
+                            if (found != null)
+                            {
+                                // ambiguous domain objects, take none
+                                throw new TransitionContextException("More than one object of type '" + viewDomainType + "', cannot choose current");
+                            }
+                            found = domainObject;
+                        }
+                    }
+                }
+
+                if (found != null)
+                {
+                    newScopedCtx.setCurrentDomainObject(found);
+                }
             }
-            else
-            {
-                domainObjectContext = partialDomainObjectContext;
-            }
+        }
+
+
+        final String scopeLocation;
+
+        // if we have no source state, we're in the start transition
+        if (sourceState == null)
+        {
+            // and we use the process scope location for it
+            scopeLocation = process.getScopeLocation();
         }
         else
         {
-            domainObjectContext = partialDomainObjectContext;
+            scopeLocation = Process.getProcessStateName(
+                process.getName(),
+                sourceState.getName()
+            );
         }
+        scopedContextChain.update(newScopedCtx, scopeLocation);
 
-        newScopedCtx.setDomainObjectContext(domainObjectContext);
-
-
-
-        scopedContextChain.update(newScopedCtx, sourceState == null ? null : Process.getProcessViewName(process.getName(), sourceState.getName()));
+        scopedContextChain.update(transitionInput.getContextUpdate());
 
         ViewContext viewContext = null;
+        final JsEnvironment jsEnvironment = runtimeContext.getJsEnvironment();
         if (sourceState instanceof ViewState)
         {
             final View view = process.getView(sourceState.getName());
             viewContext = scopedContextFactory.createViewContext(view);
-            scopedContextFactory.initializeContext(runtimeContext, viewContext);
+            scopedContextFactory.initializeContext(jsEnvironment, runtimeContext, viewContext);
+            scopedContextChain.update(viewContext, view.getName());
 
-            if (sourceState.getName().equals(transitionData.getStateName()))
+            if (sourceState.getName().equals(transitionInput.getStateName()))
             {
-                viewContext.update(transitionData.getContextUpdate());
+                scopedContextChain.update(transitionInput.getContextUpdate());
             }
 
-            scopedContextChain.update(viewContext, view.getName());
         }
 
         ASTExpression actionAST = transitionModel.getActionAST();
         if (actionAST != null)
         {
-            ActionExecutionEnvironment environment = new ActionExecutionEnvironment(runtimeContext, scopedContextChain, actionService, processName);
-            expressionService.evaluate(actionAST, environment);
-            transitionData.setContextUpdate(viewContext != null ? viewContext.getContext() : null);
+            final Promise promise = jsEnvironment.execute(runtimeContext, actionAST);
+            if (promise.getState() == PromiseState.REJECTED && !Boolean.FALSE.equals(promise.getResult()))
+            {
+                final StringBuilder buff = new StringBuilder();
+                buff.append("Error executing transition '")
+                    .append(transitionModel.getName())
+                    .append("'");
+                if (sourceState != null)
+                {
+                    buff.append(" from '")
+                        .append(sourceState.getScopeLocation())
+                        .append("'");
+                }
+                buff.append(": action = ")
+                    .append(transitionModel.getAction());
+
+                final Object result = promise.getResult();
+                if (result instanceof Throwable)
+                {
+                    throw new ProcessExecutionException(buff.toString(), (Throwable)result);
+                }
+                else
+                {
+                    buff.append(result);
+
+                    throw new ProcessExecutionException(buff.toString());
+                }
+            }
+            transitionInput.setContextUpdate(viewContext != null ? viewContext.getContext() : null);
         }
 
-        String newStateName = transitionModel.getTo();
-
-        ProcessState targetStateModel = process.getStates().get(newStateName);
 
         // internally handled states
         if (targetStateModel instanceof DecisionState)
         {
             scopedContextChain.clearContext(ScopeType.VIEW);
-            return decide(runtimeContext, execution, newScopedCtx, (DecisionState) targetStateModel, transitionData);
+            return decide(runtimeContext, execution, newScopedCtx, (DecisionState) targetStateModel, transitionInput);
         }
         else if (targetStateModel instanceof ViewState)
         {
@@ -193,7 +248,7 @@ public class ProcessService
                 // entered a new view, still have the old view context.
                 // We recreate the view context for the new view.
                 final ViewContext newViewContext = scopedContextFactory.createViewContext(view);
-                scopedContextFactory.initializeContext(runtimeContext, newViewContext);
+                scopedContextFactory.initializeContext(jsEnvironment, runtimeContext, newViewContext);
                 runtimeContext.getScopedContextChain().update(newViewContext, view.getName());
             }
         }
@@ -207,7 +262,7 @@ public class ProcessService
     {
         for (String name : partialDomainObjectContext.propertyNames())
         {
-            if (!name.equals("_type"))
+            if (!name.equals(DomainType.TYPE_PROPERTY))
             {
                 Object value = partialDomainObjectContext.getProperty(name);
                 if (value != null)
@@ -221,14 +276,13 @@ public class ProcessService
 
 
     private ProcessExecutionState decide(RuntimeContext runtimeContext, ProcessExecution execution, ProcessContext
-        newScopedCtx, DecisionState decisionStateModel, TransitionData transitionData)
+        newScopedCtx, DecisionState decisionStateModel, TransitionInput transitionInput)
     {
+        final JsEnvironment jsEnvironment = runtimeContext.getJsEnvironment();
 
         for (DecisionModel decisionModel : decisionStateModel.getDecisions())
         {
-            ActionExecutionEnvironment environment = new ActionExecutionEnvironment(runtimeContext, runtimeContext
-                .getScopedContextChain(), actionService, execution.getProcessName());
-            Object result = expressionService.evaluate(decisionModel.getExpressionAST(), environment);
+            Object result = jsEnvironment.getValue(runtimeContext, decisionModel.getExpressionAST());
 
             if (!(result instanceof Boolean))
             {
@@ -243,10 +297,10 @@ public class ProcessService
 
             if ((Boolean) result)
             {
-                return transition(runtimeContext, execution, newScopedCtx, decisionModel.getTransition(), transitionData);
+                return transition(runtimeContext, execution, newScopedCtx, decisionModel.getTransition(), transitionInput);
             }
         }
 
-        return transition(runtimeContext, execution, newScopedCtx, decisionStateModel.getDefaultTransition(), transitionData);
+        return transition(runtimeContext, execution, newScopedCtx, decisionStateModel.getDefaultTransition(), transitionInput);
     }
 }

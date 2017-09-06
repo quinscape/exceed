@@ -88,73 +88,143 @@ if (REACT_CATCH_ERRORS)
 }
 
 
-module.exports = {
+module.exports = [
+    // CLIENT SIDE CONFIGURATION
+    {
+        devtool: "source-map",
 
-    devtool: "source-map",
+        context: path.resolve(__dirname, "src/main/js"),
+        entry: {
+            app: "./app-main.js",
+            editor: "./editor-main.js",
+        },
 
-    context: path.resolve(__dirname, "src/main/js"),
-    entry: {
-        app: "./app-main.js",
-        editor: "./editor-main.js"
-    },
+        output: {
+            path: path.join(__dirname, "src/main/base/resources/js"),
+            publicPath: "/exceed/res/exceed/js",
+            filename: "exceed-[name]-[chunkhash].js",
+            chunkFilename: "exceed-[name]-[chunkhash].js",
+            library: "Exceed",
+            libraryTarget: "var",
+            //pathinfo: true
+        },
 
-    output: {
-        path: path.join(__dirname, "src/main/base/resources/js"),
-        publicPath: "/exceed/res/exceed/js",
-        filename: "exceed-[name]-[chunkhash].js",
-        library: "Exceed",
-        libraryTarget: "var",
-        //pathinfo: true
-    },
+        plugins: [
+            new webpack.optimize.CommonsChunkPlugin({
+                name: "common"
+            }),
 
-    plugins: [
-        new webpack.optimize.CommonsChunkPlugin({
-            name: "common"
-        }),
-
-        // Always expose NODE_ENV to webpack, you can now use `process.env.NODE_ENV`
-        // inside your code for any environment checks; UglifyJS will automatically
-        // drop any unreachable code.
-        new webpack.DefinePlugin({
-            "__PROD": PRODUCTION,
-            "__DEV": !PRODUCTION,
-            "process.env": {
-                "USE_EDITOR": USE_EDITOR,
-                "NO_CATCH_ERRORS": !REACT_CATCH_ERRORS
-            }
-        }),
-        new TrackUsagePlugin({
-            output: path.join(__dirname, "src/main/base/resources/js/track-usage.json")
-        }),
-        WebpackStatsPlugin(path.join(__dirname, "src/main/base/resources/js/webpack-stats.json")),
-        new CleanObsoleteChunks(),
-        WatchTimePlugin
-    ],
-
-    module: {
-        loaders: [
-            {
-                test: /\.jsx?$/,
-                loader: "babel-loader",
-                exclude: [/node_modules/, /\.es5\.js/],
-                // XXX: jsonified to escape warning "DeprecationWarning: loaderUtils.parseQuery() received a non-string value"
-                //query: JSON.stringify(babelConfig)
-                query: babelConfig
-            },
-            {
-                test: /.json$/,
-                loader: "json-loader",
-                include: [
-                    /node_modules/
-                ]
-            },
-            {
-                test: /.svg$/,
-                loader: "symbol-loader",
-                query: {
-                    parseStyle: true
+            // Always expose NODE_ENV to webpack, you can now use `process.env.NODE_ENV`
+            // inside your code for any environment checks; UglifyJS will automatically
+            // drop any unreachable code.
+            new webpack.DefinePlugin({
+                "__SERVER": false,
+                "__PROD": PRODUCTION,
+                "__DEV": !PRODUCTION,
+                "process.env": {
+                    "USE_EDITOR": USE_EDITOR,
+                    "NO_CATCH_ERRORS": !REACT_CATCH_ERRORS
                 }
-            }
-        ]
+            }),
+            new TrackUsagePlugin({
+                output: path.join(__dirname, "src/main/base/resources/js/track-usage.json")
+            }),
+            WebpackStatsPlugin(path.join(__dirname, "src/main/base/resources/js/webpack-stats.json")),
+            new CleanObsoleteChunks(),
+            WatchTimePlugin
+        ],
+
+        module: {
+            loaders: [
+                {
+                    test: /\.jsx?$/,
+                    loader: "babel-loader",
+                    exclude: [/node_modules/, /\.es5\.js/],
+                    // XXX: jsonified to escape warning "DeprecationWarning: loaderUtils.parseQuery() received a non-string value"
+                    //query: JSON.stringify(babelConfig)
+                    query: babelConfig
+                },
+                {
+                    test: /.json$/,
+                    loader: "json-loader",
+                    include: [
+                        /node_modules/
+                    ]
+                },
+                {
+                    test: /.svg$/,
+                    loader: "symbol-loader",
+                    query: {
+                        parseStyle: true
+                    }
+                }
+            ]
+        }
+    },
+    // SERVER SIDE CONFIGURATION
+    {
+
+        devtool: "source-map",
+
+        context: path.resolve(__dirname, "src/main/js"),
+        entry: {
+            server: "./server-main.js"
+        },
+
+        node: {
+            console: false,
+            global: false,
+            process: false,
+            __filename: "mock",
+            __dirname: "mock",
+            Buffer: false,
+            setImmediate: false
+        },
+
+        output: {
+            path: path.join(__dirname, "src/main/base/resources/js"),
+            publicPath: "/exceed/res/exceed/js",
+            filename: "exceed-[name].js",
+            library: "Exceed",
+            libraryTarget: "var",
+            //pathinfo: true
+        },
+
+        plugins: [
+
+            // Always expose NODE_ENV to webpack, you can now use `process.env.NODE_ENV`
+            // inside your code for any environment checks; UglifyJS will automatically
+            // drop any unreachable code.
+            new webpack.DefinePlugin({
+                "__PROD": PRODUCTION,
+                "__DEV": !PRODUCTION,
+                "__SERVER": true,
+                "process.env": {
+                    "USE_EDITOR": USE_EDITOR,
+                    "NO_CATCH_ERRORS": !REACT_CATCH_ERRORS
+                }
+            }),
+            new webpack.IgnorePlugin(/(node-libs-browser|process|timers-browserify)/)
+        ],
+
+        module: {
+            loaders: [
+                {
+                    test: /\.jsx?$/,
+                    loader: "babel-loader",
+                    exclude: [/node_modules/, /\.es5\.js/],
+                    // XXX: jsonified to escape warning "DeprecationWarning: loaderUtils.parseQuery() received a non-string value"
+                    //query: JSON.stringify(babelConfig)
+                    query: babelConfig
+                },
+                {
+                    test: /.json$/,
+                    loader: "json-loader",
+                    include: [
+                        /node_modules/
+                    ]
+                }
+            ]
+        }
     }
-};
+];

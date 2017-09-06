@@ -4,12 +4,17 @@ package de.quinscape.exceed.runtime.util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -318,15 +323,14 @@ public final class Util
         }
     }
 
-    public static int hashcodeOver(Object... objs)
+    public static int hashcodeOver(Object... objects)
     {
         int hashcode = 17;
-        for (Object obj : objs)
+        for (Object obj : objects)
         {
-            if (obj != null)
-            {
-                hashcode = (hashcode + obj.hashCode()) * 37;
-            }
+            final int objHash = obj != null ? obj.hashCode() : 0;
+
+            hashcode = (hashcode + objHash) * 37;
         }
         return hashcode;
     }
@@ -353,11 +357,21 @@ public final class Util
         return set != null ? ImmutableSet.copyOf(set) : Collections.emptySet();
     }
 
+    public static <T> List<T> listOrEmpty(List<T> in)
+    {
+        return in == null ? Collections.emptyList() : in;
+    }
 
-    public static String join(List<Object> values, String sep)
+    public static <T> Set<T> settOrEmpty(Set<T> in)
+    {
+        return in == null ? Collections.emptySet() : in;
+    }
+
+
+    public static String join(Collection<?> values, String sep)
     {
         StringBuilder sb = new StringBuilder();
-        for (Iterator<Object> iterator = values.iterator(); iterator.hasNext(); )
+        for (Iterator<?> iterator = values.iterator(); iterator.hasNext(); )
         {
             Object value = iterator.next();
             sb.append(value);
@@ -370,4 +384,54 @@ public final class Util
 
         return sb.toString();
     }
+
+
+    public static String capitalize(String name)
+    {
+        final int length = name.length();
+        if (length == 0)
+        {
+            return "";
+        }
+        else if (length == 1)
+        {
+            return name.toUpperCase();
+        }
+        else
+        {
+            return name.substring(0, 1).toUpperCase() + name.substring(1);
+        }
+    }
+
+
+    public static String toDate(long timestamp)
+    {
+        return DateTimeFormatter.ISO_DATE_TIME.format(
+
+            Instant.ofEpochMilli(timestamp)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+        );
+    }
+
+
+    /**
+     * Inverts a map so that the former values map to the former keys.
+     *
+     * @param map       map to be inverted
+     * @param <T>       type of map key and value
+     * @return  map
+     */
+    public static <T> Map<T,T> invertMap(Map<T,T> map)
+    {
+        Map<T, T> inverted = Maps.newHashMapWithExpectedSize(map.size());
+
+        for (Map.Entry<T, T> e : map.entrySet())
+        {
+            inverted.put(e.getValue(), e.getKey());
+        }
+        return inverted;
+    }
 }
+
+

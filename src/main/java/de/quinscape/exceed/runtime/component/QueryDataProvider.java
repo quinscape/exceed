@@ -1,21 +1,24 @@
 package de.quinscape.exceed.runtime.component;
 
-import de.quinscape.exceed.expression.TokenMgrError;
 import de.quinscape.exceed.model.component.ComponentDescriptor;
+import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.expression.ExpressionValueType;
 import de.quinscape.exceed.model.view.ComponentModel;
-import de.quinscape.exceed.runtime.expression.query.InvalidFieldReferenceException;
+import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.action.ActionService;
+import de.quinscape.exceed.runtime.domain.DomainOperations;
+import de.quinscape.exceed.runtime.expression.query.QueryContext;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryDomainType;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
-import de.quinscape.exceed.runtime.schema.StorageConfiguration;
 import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
-import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.view.DataProviderContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Data provider implementation for the default query definition mechanism. Can be replaced
@@ -26,15 +29,18 @@ public class QueryDataProvider
 {
     private final static Logger log = LoggerFactory.getLogger(QueryDataProvider.class);
 
-    private final QueryTransformer queryTransformer;
-
     private final StorageConfigurationRepository storageConfigurationRepository;
 
+    private final ActionService actionService;
 
-    public QueryDataProvider(QueryTransformer queryTransformer, StorageConfigurationRepository storageConfigurationRepository)
+
+    public QueryDataProvider(
+        StorageConfigurationRepository storageConfigurationRepository,
+        ActionService actionService
+    )
     {
-        this.queryTransformer = queryTransformer;
         this.storageConfigurationRepository = storageConfigurationRepository;
+        this.actionService = actionService;
     }
 
 
@@ -45,134 +51,94 @@ public class QueryDataProvider
         Map<String, Object> vars
     )
     {
-        ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
+        ComponentInstanceRegistration componentRegistration = componentModel.getComponentRegistration();
         if (componentRegistration == null)
         {
             log.warn("No componentRegistration found for {}", componentModel);
             return null;
         }
 
-        PreparedQueries queries = prepare(dataProviderContext, componentModel, vars);
+        final RuntimeContext runtimeContext = dataProviderContext.getRuntimeContext();
+        Map<String, ExpressionValue> queries = componentRegistration.getQueryExpressions(runtimeContext);
         if (queries == null)
         {
             return null;
         }
 
 
-        Map<String, QueryDefinition> runtimeQueries = queries.getQueryDefinitions();
-        registerQueryTranslations(dataProviderContext, runtimeQueries);
+        final QueryTransformer queryTransformer = componentRegistration.getQueryTransformer();
 
         Map<String, Object> map = new HashMap<>();
 
-
-        for (Map.Entry<String, QueryDefinition> entry : runtimeQueries.entrySet())
+        for (Map.Entry<String, ExpressionValue> e : queries.entrySet())
         {
-            String name = entry.getKey();
-            QueryDefinition queryDefinition = entry.getValue();
-            final String config = queryDefinition.getQueryDomainType().getType().getStorageConfiguration();
-            final StorageConfiguration configuration = storageConfigurationRepository.getConfiguration(config);
-            QueryExecutor executor = configuration.getQueryExecutor();
 
-            if (executor == null)
+            final String queryName = e.getKey();
+            final ExpressionValue expressionValue = e.getValue();
+
+            // we inject the query results into the props finally, so if we have a prop with that name already we
+            // don't override it
+            if (( componentModel.getAttribute(queryName) == null || !componentRegistration.getDescriptor().getPropTypes().get(queryName).isClient()) && expressionValue.getType() == ExpressionValueType.EXPRESSION)
             {
-                throw new UnsupportedOperationException("Querying not supported by storage config '" + config + "'");
+
+                long start = System.nanoTime();
+
+                Function<QueryDefinition, Object> fn = (queryDefinition -> {
+
+                    registerTranslations(dataProviderContext, queryDefinition);
+
+                    final String config = queryDefinition.getQueryDomainType().getType().getStorageConfiguration();
+                    final DomainOperations ops = storageConfigurationRepository.getConfiguration(config)
+                        .getDomainOperations();
+
+                    return ops.query(runtimeContext, runtimeContext.getDomainService(), queryDefinition);
+
+                }
+                );
+
+                final Object transformed = queryTransformer.transform(
+                    runtimeContext,
+                    new QueryContext(
+                        dataProviderContext.getRuntimeContext().getApplicationModel()
+                            .getView(dataProviderContext.getViewName()),
+                        componentModel,
+                        vars,
+                        fn,
+                        actionService
+                    ),
+                    expressionValue.getAstExpression()
+                );
+
+                if (transformed instanceof QueryDefinition)
+                {
+                    final QueryDefinition queryDefinition = (QueryDefinition) transformed;
+                    map.put(queryName, fn.apply(queryDefinition));
+                }
+                else
+                {
+                    map.put(queryName, transformed);
+                }
             }
-
-            Object result = executor.execute(dataProviderContext.getRuntimeContext(), queryDefinition);
-            log.debug("Result: {}", result);
-            map.put(name, result);
         }
-
-        map.putAll(queries.getQueryErrors());
 
         return map;
     }
 
 
-    /**
-     * Registers the translations used in the map of runtime queries. Calls {@link #registerTranslations()} which can
-     * be overridden for custom translation keys.
-     *
-     * @param dataProviderContext
-     * @param runtimeQueries
-     */
-    private void registerQueryTranslations(DataProviderContext dataProviderContext, Map<String, QueryDefinition> runtimeQueries)
-    {
-        for (QueryDefinition definition : runtimeQueries.values())
-        {
-            QueryDomainType current = definition.getQueryDomainType();
-
-            while(current != null)
-            {
-                dataProviderContext.registerTranslations(current.getType());
-                current = current.getJoinedWith();
-            }
-        }
-
-        this.registerTranslations();
-    }
-
-
-    /**
-     * Can be overridden to provide custom translations for a query driven component.
-     */
-    protected void registerTranslations()
-    {
-        // intentionally empty
-    }
-
-    private PreparedQueries prepare(
-        DataProviderContext dataProviderContext,
-        ComponentModel elem,
-        Map<String,Object> vars
+    private void registerTranslations(
+        DataProviderContext dataProviderContext, QueryDefinition queryDefinition
     )
     {
-        final PreparedQueries preparedQueries = new PreparedQueries();
-        ComponentRegistration registration = elem.getComponentRegistration();
-        Map<String, Object> queries = registration.getDescriptor().getQueries();
-        if (queries == null)
+        if (queryDefinition != null)
         {
-            return null;
-        }
-
-        for (Map.Entry<String, Object> entry : queries.entrySet())
-        {
-            String name = entry.getKey();
-
-            if (elem.getAttribute(name) == null)
+            QueryDomainType current = queryDefinition.getQueryDomainType();
+            while (current != null)
             {
-                Object value = entry.getValue();
+                dataProviderContext.registerTranslations(dataProviderContext.getRuntimeContext(), current.getType());
 
-                if (!(value instanceof String))
-                {
-                    throw new QueryPreparationException("Queries for QueryDataProvider must be query expression " +
-                        "strings" + registration + ", elem = " + elem);
-                }
-
-                String queryExpression = (String) value;
-                try
-                {
-                    QueryDefinition definition = queryTransformer.transform(dataProviderContext.getRuntimeContext(),
-                        queryExpression, elem, vars);
-
-                    preparedQueries.addDefinition(name, definition);
-                }
-                catch(InvalidFieldReferenceException e)
-                {
-                    preparedQueries.addError(name, new QueryError(name ,"Invalid field reference in query", e));
-                }
-                catch (Exception e)
-                {
-                    preparedQueries.addError(name, new QueryError(name,"Error parsing expression '" +
-                        name + "' = " + queryExpression + " of " + elem, e));
-                }
-                catch (TokenMgrError e)
-                {
-                    preparedQueries.addError(name, new QueryError(name,"Token error parsing expression" +
-                        " '" + name + "' = " + queryExpression + " of " + elem, e));
-                }
+                current = QueryDomainType.nextJoinedType(current);
             }
         }
-        return preparedQueries;
     }
+
 }

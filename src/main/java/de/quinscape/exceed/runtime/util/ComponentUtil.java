@@ -1,16 +1,21 @@
 package de.quinscape.exceed.runtime.util;
 
-import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.component.ComponentClasses;
 import de.quinscape.exceed.model.expression.Attributes;
+import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
-import de.quinscape.exceed.runtime.service.ComponentRegistration;
+import de.quinscape.exceed.runtime.component.ComponentInstanceRegistration;
+import de.quinscape.exceed.runtime.component.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class ComponentUtil
 {
@@ -30,7 +35,6 @@ public class ComponentUtil
             componentNames = null;
         }
 
-        // XXX: is this really a good idea or too clever to be good?
         // provide parents for content subtrees
         for (ComponentModel componentModel : view.getContent().values())
         {
@@ -68,22 +72,37 @@ public class ComponentUtil
         }
     }
 
-    private static void updateComponentRegsAndParentsRecursive(ComponentRegistry componentRegistry, ComponentModel elem, Set<String> componentNames, ComponentModel parent)
+    private static void updateComponentRegsAndParentsRecursive(
+        ComponentRegistry componentRegistry,
+        ComponentModel elem,
+        Set<String> componentNames,
+        ComponentModel parent
+    )
     {
         if (elem.isComponent() && (componentNames == null || componentNames.contains(elem.getName())))
         {
             ComponentRegistration registration = componentRegistry.getComponentRegistration(elem.getName());
             if (registration != null)
             {
-                final String componentId = elem.getComponentId();
-                
-                if (registration.getDataProvider() != null && componentId == null)
+                final ExpressionValue idAttr = elem.getAttribute(ComponentModel.ID_ATTRIBUTE);
+                if (
+                    idAttr == null &&
+                    (
+                        registration.getDataProvider() != null ||
+                        registration.getDescriptor().hasClass(ComponentClasses.FIELD) ||
+                        registration.getDescriptor().hasClass(ComponentClasses.NEEDS_ID)
+                    )
+                )
                 {
                     final String id = COUNTER.nextId();
                     setIdAttribute(elem, id);
                 }
 
-                elem.setComponentRegistration(registration);
+                ComponentInstanceRegistration instanceRegistration = new ComponentInstanceRegistration(
+                    registration,
+                    elem
+                );
+                elem.setComponentRegistration(instanceRegistration);
             }
 
             elem.setParent(parent);
@@ -91,7 +110,12 @@ public class ComponentUtil
 
         for (ComponentModel componentModel : elem.children())
         {
-            updateComponentRegsAndParentsRecursive(componentRegistry, componentModel, componentNames, elem);
+            updateComponentRegsAndParentsRecursive(
+                componentRegistry,
+                componentModel,
+                componentNames,
+                elem
+            );
         }
     }
 
@@ -102,12 +126,12 @@ public class ComponentUtil
         if (attrs == null)
         {
             final Attributes newAttrs = new Attributes();
-            newAttrs.setAttribute("id", id);
+            newAttrs.setAttribute(ComponentModel.ID_ATTRIBUTE, id);
             elem.setAttrs(newAttrs);
         }
         else
         {
-            attrs.setAttribute("id", id);
+            attrs.setAttribute(ComponentModel.ID_ATTRIBUTE, id);
         }
     }
 
@@ -150,8 +174,80 @@ public class ComponentUtil
     }
 
 
+    public static List<ComponentModel> findComponents(View view, Predicate<ComponentModel> predicate)
+    {
+        final Map<String, ComponentModel> content = view.getContent();
+        if (content == null)
+        {
+            return Collections.emptyList();
+        }
+
+        List<ComponentModel> componentsFound = new ArrayList<>();
+        for (ComponentModel componentModel : content.values())
+        {
+            findComponents(componentModel, predicate, componentsFound);
+        }
+
+
+        return componentsFound;
+    }
+
+
+    public static void findComponents(
+        ComponentModel componentModel,
+        Predicate<ComponentModel> predicate,
+        List<ComponentModel> componentsFound
+    )
+    {
+        if (predicate.test(componentModel))
+        {
+            componentsFound.add(componentModel);
+        }
+
+        for (ComponentModel model : componentModel.children())
+        {
+            findComponents(model, predicate, componentsFound);
+        }
+    }
+
+
+    public static ComponentModel findParent(ComponentModel componentModel, Predicate<ComponentModel> consumer)
+    {
+        ComponentModel current = componentModel.getParent();
+
+        while (current != null)
+        {
+            if (consumer.test(current))
+            {
+                return current;
+            }
+            current = current.getParent();
+        }
+        return null;
+    }
+
+
     private static class FindFlatResult
     {
         private int index = 0;
+    }
+
+    public final static class HasClassPredicate
+        implements Predicate<ComponentModel>
+    {
+        private final String cls;
+
+
+        public HasClassPredicate(String cls)
+        {
+            this.cls = cls;
+        }
+
+        @Override
+        public boolean test(ComponentModel componentModel)
+        {
+            final ComponentInstanceRegistration registration = componentModel.getComponentRegistration();
+            return registration != null && registration.getDescriptor().hasClass(cls);
+        }
     }
 }

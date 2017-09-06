@@ -5,11 +5,9 @@ import de.quinscape.exceed.runtime.component.QueryError;
 import de.quinscape.exceed.runtime.service.client.ClientData;
 import de.quinscape.exceed.runtime.service.client.ClientStateProvider;
 import de.quinscape.exceed.runtime.service.client.ClientStateScope;
-import de.quinscape.exceed.runtime.service.client.DefaultClientData;
 import de.quinscape.exceed.runtime.service.client.ExceedAppProvider;
 import de.quinscape.exceed.runtime.service.client.JSONData;
 import de.quinscape.exceed.runtime.view.ViewData;
-import org.springframework.stereotype.Service;
 import org.svenson.util.JSONBuilder;
 
 import javax.servlet.http.HttpServletRequest;

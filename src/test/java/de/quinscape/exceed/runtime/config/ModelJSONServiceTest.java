@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.config;
 
+import de.quinscape.exceed.model.AbstractModel;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.expression.ExpressionValue;
@@ -35,14 +36,14 @@ public class ModelJSONServiceTest
     {
 
         {
-            RoutingTable routingTable = (RoutingTable) modelJSONService.toModel(Model.class, "{\"type\":\"xcd.routing.RoutingTable\",\"rootNode\":{\"name\":\"foo\", \"mapping\": null}}");
+            RoutingTable routingTable = (RoutingTable) modelJSONService.toModel(AbstractModel.class, "{\"type\":\"xcd.routing.RoutingTable\",\"rootNode\":{\"name\":\"foo\", \"mapping\": null}}");
 
             assertThat(routingTable,is(notNullValue()));
             assertThat(routingTable.getRootNode().getName(),is("foo"));
             assertThat(routingTable.getRootNode().getMapping(), is(nullValue()));
         }
 
-        View view = (View) modelJSONService.toModel(Model.class, "{\"type\":\"xcd.view.View\"," +
+        View view = (View) modelJSONService.toModel(AbstractModel.class, "{\"type\":\"xcd.view.View\"," +
             "\"content\":{\"main\":{\"name\":\"div\", \"kids\": [\"String child\"]}}}");
 
         assertThat(view,is(notNullValue()));

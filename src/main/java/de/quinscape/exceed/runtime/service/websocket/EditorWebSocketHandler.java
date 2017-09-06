@@ -5,15 +5,16 @@ import de.quinscape.exceed.message.Group;
 import de.quinscape.exceed.message.IncomingMessage;
 import de.quinscape.exceed.message.Message;
 import de.quinscape.exceed.message.Query;
+import de.quinscape.exceed.model.AbstractModel;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.util.AppAuthentication;
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.svenson.AbstractPropertyValueBasedTypeMapper;
-import org.svenson.JSON;
 import org.svenson.JSONParseException;
 import org.svenson.JSONParser;
 import org.svenson.matcher.OrMatcher;
@@ -85,7 +86,7 @@ public class EditorWebSocketHandler
             EditorClientConnection connection = connections.get(connectionId);
             if (connection == null)
             {
-                final String errorJSON = JSON.defaultJSON().forValue(
+                final String errorJSON = JSONUtil.DEFAULT_GENERATOR.forValue(
                     new Error("Unregistered connection id '" +connectionId + "'.")
                 );
                 webSocketConnection.send(errorJSON);
@@ -188,7 +189,7 @@ public class EditorWebSocketHandler
         public MessageAndModelMapper()
         {
             setDiscriminatorField("type");
-            setPathMatcher(new OrMatcher(new SubtypeMatcher(Model.class), new SubtypeMatcher(Message.class)));
+            setPathMatcher(new OrMatcher(new SubtypeMatcher(AbstractModel.class), new SubtypeMatcher(Message.class)));
         }
 
 

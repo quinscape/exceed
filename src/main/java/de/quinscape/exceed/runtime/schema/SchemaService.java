@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.schema;
 
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.runtime.RuntimeContext;
 
 import java.util.List;

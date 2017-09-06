@@ -2,7 +2,6 @@ package de.quinscape.exceed.runtime.service.client.scope;
 
 import com.google.common.base.Objects;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
-import de.quinscape.exceed.runtime.scope.ProcessContext;
 import de.quinscape.exceed.runtime.scope.ScopedContext;
 import de.quinscape.exceed.runtime.util.Util;
 
@@ -27,7 +26,7 @@ public final class ScopeReference
             throw new IllegalArgumentException("scopeType can't be null");
         }
 
-        if (model == null && !ProcessContext.RESERVED_NAMES.contains(name))
+        if (model == null)
         {
             throw new IllegalArgumentException("model can't be null for non-reserved name '" + name + "'");
         }
@@ -39,7 +38,7 @@ public final class ScopeReference
 
     public String getName()
     {
-        return model != null ? model.getName() : ProcessContext.DOMAIN_OBJECT_CONTEXT;
+        return model.getName();
     }
 
 

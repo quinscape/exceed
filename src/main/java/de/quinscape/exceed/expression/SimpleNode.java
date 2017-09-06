@@ -2,6 +2,8 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package de.quinscape.exceed.expression;
 
+import java.util.function.Consumer;
+
 public
 class SimpleNode implements Node {
 
@@ -119,6 +121,23 @@ class SimpleNode implements Node {
       value = new NodeAnnotation(this);
     }
     return value;
+  }
+
+
+  /**
+   * Recursively walks over the node structure and calls the consumer for every node.
+   *
+   * @param consumer  consumer
+   */
+  public void walk(Consumer<Node> consumer)
+  {
+    consumer.accept(this);
+
+    final int len = jjtGetNumChildren();
+    for (int i = 0; i < len; i++)
+    {
+      this.jjtGetChild(i).walk(consumer);
+    }
   }
 }
 

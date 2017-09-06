@@ -5,6 +5,7 @@ import de.quinscape.exceed.domain.tables.pojos.AppState;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DomainService;
+import de.quinscape.exceed.runtime.js.def.Definitions;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.resource.ResourceCacheFactory;
 import de.quinscape.exceed.runtime.resource.ResourceLoader;
@@ -19,6 +20,7 @@ import de.quinscape.exceed.runtime.service.client.ExceedAppProvider;
 import de.quinscape.exceed.runtime.service.model.ModelSchemaService;
 import de.quinscape.exceed.runtime.util.Util;
 import de.quinscape.exceed.runtime.view.ViewDataService;
+import jdk.nashorn.api.scripting.NashornScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,11 +72,29 @@ public class RuntimeApplicationFactory
 
     private final ModelSchemaService modelSchemaService;
 
+    private final NashornScriptEngine nashorn;
+
+    private final Definitions systemDefinitions;
+
     private Set<ClientStateProvider> clientStateProviders;
 
-
     @Autowired
-    public RuntimeApplicationFactory(ResourceCacheFactory resourceCacheFactory, ApplicationContext applicationContext, ModelCompositionService modelCompositionService, StorageConfigurationRepository storageConfigurationRepository, ComponentRegistry componentRegistry, ClientStateService clientStateService, StyleService styleService, ViewDataService viewDataService, DomainServiceFactory domainServiceFactory, ProcessService processService, RuntimeContextFactory runtimeContextFactory, ScopedContextFactory scopedContextFactory, ModelSchemaService modelSchemaService, DomainServiceRepository domainServiceRepository)
+    public RuntimeApplicationFactory(
+        ResourceCacheFactory resourceCacheFactory,
+        ApplicationContext applicationContext,
+        ModelCompositionService modelCompositionService,
+        StorageConfigurationRepository storageConfigurationRepository,
+        ComponentRegistry componentRegistry, ClientStateService clientStateService,
+        StyleService styleService, ViewDataService viewDataService,
+        DomainServiceFactory domainServiceFactory,
+        ProcessService processService,
+        RuntimeContextFactory runtimeContextFactory,
+        ScopedContextFactory scopedContextFactory,
+        ModelSchemaService modelSchemaService,
+        DomainServiceRepository domainServiceRepository,
+        NashornScriptEngine nashorn,
+        Definitions systemDefinitions
+    )
     {
         this.resourceCacheFactory = resourceCacheFactory;
         this.applicationContext = applicationContext;
@@ -90,6 +110,8 @@ public class RuntimeApplicationFactory
         this.scopedContextFactory = scopedContextFactory;
         this.modelSchemaService = modelSchemaService;
         this.domainServiceRepository = domainServiceRepository;
+        this.nashorn = nashorn;
+        this.systemDefinitions = systemDefinitions;
     }
 
 
@@ -111,7 +133,7 @@ public class RuntimeApplicationFactory
 
         domainServiceRepository.register(appName, domainService);
 
-        return new DefaultRuntimeApplication( servletContext, viewDataService, componentRegistry, styleService,  modelCompositionService, resourceLoader, domainService, clientStateService, processService, appName, runtimeContextFactory, scopedContextFactory, storageConfigurationRepository, clientStateProviders);
+        return new DefaultRuntimeApplication( servletContext, viewDataService, componentRegistry, styleService,  modelCompositionService, resourceLoader, domainService, clientStateService, processService, appName, runtimeContextFactory, scopedContextFactory, storageConfigurationRepository, clientStateProviders, nashorn, systemDefinitions);
     }
 
     private List<ResourceRoot> configureExtensions(ServletContext servletContext, AppState state)

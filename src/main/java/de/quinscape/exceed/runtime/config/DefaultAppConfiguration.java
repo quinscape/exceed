@@ -1,6 +1,9 @@
 package de.quinscape.exceed.runtime.config;
 
 import de.quinscape.exceed.domain.tables.pojos.AppState;
+import de.quinscape.exceed.model.meta.ApplicationError;
+import de.quinscape.exceed.runtime.application.ApplicationStatus;
+import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.stream.ClassPathResourceRoot;
@@ -20,6 +23,9 @@ import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -37,17 +43,24 @@ public class DefaultAppConfiguration
 
     private final static String ROOT_NAME = "exceed-root";
 
-    @Autowired
-    private ServletContext servletContext;
+    private final ServletContext servletContext;
+
+    private final ApplicationService applicationService;
+
+    private final ComponentRegistryImpl componentRegistry;
+
+    private final Environment env;
+
 
     @Autowired
-    private ApplicationService applicationService;
+    public DefaultAppConfiguration(ServletContext servletContext, ApplicationService applicationService, ComponentRegistryImpl componentRegistry, Environment env)
+    {
+        this.servletContext = servletContext;
+        this.applicationService = applicationService;
+        this.componentRegistry = componentRegistry;
+        this.env = env;
+    }
 
-    @Autowired
-    private ComponentRegistryImpl componentRegistry;
-
-    @Autowired
-    private Environment env;
 
     @PostConstruct
     public void initialize() throws IOException
@@ -155,17 +168,69 @@ public class DefaultAppConfiguration
 
     @EventListener(ContextRefreshedEvent.class)
     void contextRefreshedEvent() {
+
+        final List<AppState> activeApplications = applicationService.getActiveApplications();
+
+        Set<String> appWithErrors = new HashSet<>();
+
+        for (AppState state : activeApplications)
+        {
+            final String appName = state.getName();
+            final RuntimeApplication runtimeApplication = applicationService.getRuntimeApplication(
+                servletContext,
+                appName
+            );
+
+            final Set<ApplicationError> errors = runtimeApplication.getApplicationModel().getMetaData().getErrors();
+
+            final int numberOfErrors = errors.size();
+            if (numberOfErrors > 0)
+            {
+                log.error("{} Errors in application '{}':\n{}", numberOfErrors, appName, Util.join(errors, "\n"));
+
+                final ApplicationStatus status = ApplicationStatus.from(state);
+                if (status == ApplicationStatus.PRODUCTION)
+                {
+                    //applicationService.setStatus(servletContext, appName, ApplicationStatus.OFFLINE);
+                    appWithErrors.add(appName);
+                }
+            }
+        }
+
+
         log.info("***************************************************************************");
         log.info("*");
-        log.info("*  Exceed Application Container started");
+        if (appWithErrors.size() > 0)
+        {
+            log.info("*  Exceed Application Container  ");
+        }
+        else
+        {
+            log.info("*  Exceed Application Container started");
+        }
         log.info("*");
         log.info("*  Active applications:");
         log.info("*");
-        applicationService.getActiveApplications().forEach( appState -> {
+        activeApplications.forEach(appState -> {
 
-            log.info("*    Application: {}", appState.getName());
-            log.info("*    Extensions: {}", appState.getExtensions());
+            if (!appWithErrors.contains(appState.getName()))
+            {
+                log.info("*    Application: {}", appState.getName());
+                log.info("*    Extensions: {}", appState.getExtensions());
+            }
             log.info("*");
         });
+
+        if (appWithErrors.size() > 0)
+        {
+            log.error("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+            log.error("X    ERRORS IN: {}", Util.join(appWithErrors, ", "));
+            log.error("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        }
+        else
+        {
+            log.info("***************************************************************************");
+        }
+
     }
 }

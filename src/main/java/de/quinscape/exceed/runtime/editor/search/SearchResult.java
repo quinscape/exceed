@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.editor.search;
 
-import de.quinscape.exceed.model.ApplicationConfig;
 import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.config.ApplicationConfig;
 import de.quinscape.exceed.model.routing.RoutingTable;
 
 public class SearchResult

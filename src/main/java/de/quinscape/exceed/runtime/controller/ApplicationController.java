@@ -29,7 +29,7 @@ import java.io.IOException;
 public class ApplicationController
 {
 
-    private final static Logger log = LoggerFactory.getLogger(ApplicationController.class);
+    public final static Logger log = LoggerFactory.getLogger(ApplicationController.class);
 
     public static final String BASE_TEMPLATE_RESOURCE = "/resources/template/template.html";
 

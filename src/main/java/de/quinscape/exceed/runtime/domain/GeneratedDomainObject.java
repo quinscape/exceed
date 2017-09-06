@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime.domain;
 
+import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.svenson.JSONProperty;
 import org.svenson.util.JSONBeanUtil;
@@ -7,7 +8,7 @@ import org.svenson.util.JSONBeanUtil;
 import java.util.Set;
 
 /**
- * Base class for generated domain objects.
+ * Base class for specialized, maven/JOOQ generated, POJO domain objects.
  */
 public abstract class GeneratedDomainObject
     extends DomainObjectBase
@@ -19,7 +20,7 @@ public abstract class GeneratedDomainObject
         throw new UnsupportedOperationException();
     }
 
-    @JSONProperty(value = "_type", readOnly = true, priority = 100)
+    @JSONProperty(value = DomainType.TYPE_PROPERTY, readOnly = true, priority = 100)
     public String getDomainType()
     {
         return this.getClass().getSimpleName();

@@ -79,22 +79,21 @@ public final class ScopedContextChain
     public Object getProperty(String name)
     {
         final ScopeDeclaration definition = getDefinitionInternal(name);
-        return chainedScopes.get(getScopeIndex(definition)).getProperty(name);
+        final ScopedContext scopedContext = chainedScopes.get(getScopeIndex(definition));
+
+        if (scopedContext == null)
+        {
+            throw new IllegalStateException("Scoped context missing for property '" + name + "'");
+        }
+
+        return scopedContext.getProperty(name);
     }
 
     @Override
     public ScopedPropertyModel getModel(String name)
     {
         final ScopeDeclaration definition = getDefinitionInternal(name);
-
-        final ScopedPropertyModel model = definition.getModel();
-
-        if (definition.getScopeType() == ScopeType.PROCESS && name.equals(ProcessContext.DOMAIN_OBJECT_CONTEXT))
-        {
-            final ProcessContext processContext = (ProcessContext) chainedScopes.get(getScopeIndex(definition));
-            return processContext.getCurrentDomainObjectModel();
-        }
-        return model;
+        return definition.getModel();
     }
 
 
@@ -108,7 +107,7 @@ public final class ScopedContextChain
 
     private ScopeDeclaration getDefinitionInternal(String name)
     {
-        final ScopeDeclaration declaration = scopeDeclarations.get(name);
+        final ScopeDeclaration declaration = scopeDeclarations != null ? scopeDeclarations.get(name) : null;
         if (declaration == null)
         {
             throw new ScopeResolutionException("No property '" + name + "' in either " + describe() + ". Definitions are " + scopeDeclarations);
@@ -216,4 +215,24 @@ public final class ScopedContextChain
     }
 
 
+    public void update(Map<String, Object> contextUpdates)
+    {
+        
+        if (contextUpdates == null || contextUpdates.size() == 0)
+        {
+            return;
+        }
+
+        for (Map.Entry<String, Object> e : contextUpdates.entrySet())
+        {
+            final String name = e.getKey();
+            final Object value = e.getValue();
+            final ScopedContext scope = findScopeWithProperty(name);
+
+            if (scope != null)
+            {
+                scope.setProperty(name, value);
+            }
+        }
+    }
 }

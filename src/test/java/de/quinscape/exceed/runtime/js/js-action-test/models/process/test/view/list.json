@@ -1,0 +1,45 @@
+{
+    "title": "{ i18n('Test Process Home') }",
+    "content": {
+        "main": {
+            "name": "Grid",
+            "attrs": {
+                "fluid": "{ true }"
+            },
+            "kids": [
+                {
+                    "name": "Row",
+                    "kids": [
+                        {
+                            "name": "Col",
+                            "attrs": {
+                                "md": "{ 6 }"
+                            },
+                            "kids": [
+                                {
+                                    "name": "Heading",
+                                    "attrs": {
+                                        "id": "myHeading",
+                                        "value": "{ 'Heading: ' + value }"
+                                    }
+                                },
+                                {
+                                    "name": "Toolbar",
+                                    "kids": [
+                                        {
+                                            "name": "TButton",
+                                            "attrs": {
+                                                "transition": "inc",
+                                                "text": "++"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

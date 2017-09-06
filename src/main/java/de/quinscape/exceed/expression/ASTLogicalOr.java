@@ -3,7 +3,7 @@
 package de.quinscape.exceed.expression;
 
 public
-class ASTLogicalOr extends OperatorNode {
+class ASTLogicalOr extends LogicalOperatorNode {
   public ASTLogicalOr(int id) {
     super(id);
     setOperator(Operator.OR);

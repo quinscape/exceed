@@ -4,27 +4,24 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.TestDomainServiceBase;
 import de.quinscape.exceed.model.Model;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.model.domain.type.DomainTypeModel;
+import de.quinscape.exceed.model.meta.PropertyType;
 import de.quinscape.exceed.model.translation.TranslationEntry;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.RuntimeContextHolder;
+import de.quinscape.exceed.runtime.TestApplication;
+import de.quinscape.exceed.runtime.TestApplicationBuilder;
 import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.GenericDomainObject;
-import de.quinscape.exceed.runtime.domain.property.DateConverter;
-import de.quinscape.exceed.runtime.domain.property.DomainTypeConverter;
-import de.quinscape.exceed.runtime.domain.property.ListConverter;
-import de.quinscape.exceed.runtime.domain.property.MapConverter;
-import de.quinscape.exceed.runtime.domain.property.PlainTextConverter;
-import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
-import de.quinscape.exceed.runtime.domain.property.TimestampConverter;
-import de.quinscape.exceed.runtime.domain.property.UUIDConverter;
 import de.quinscape.exceed.runtime.service.model.ModelSchemaService;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.HashMap;
@@ -63,45 +60,54 @@ public class DataGraphServiceTest
     }
 
 
-    private Map<String, PropertyConverter> propertyConverters = new HashMap<>();
-    {
-        propertyConverters.put("UUIDConverter", new UUIDConverter());
-        propertyConverters.put("PlainTextConverter", new PlainTextConverter());
-        propertyConverters.put("DateConverter", new DateConverter());
-        propertyConverters.put("TimestampConverter", new TimestampConverter());
-        propertyConverters.put("DomainTypeConverter", new DomainTypeConverter());
-        propertyConverters.put("ListConverter", new ListConverter());
-        propertyConverters.put("MapConverter", new MapConverter());
-    };
+//    private Map<String, PropertyConverter> propertyConverters = new HashMap<>();
+//    {
+//        propertyConverters.put("UUIDConverter", new UUIDConverter());
+//        propertyConverters.put("PlainTextConverter", new PlainTextConverter());
+//        propertyConverters.put("DateConverter", new DateConverter());
+//        propertyConverters.put("TimestampConverter", new TimestampConverter());
+//        propertyConverters.put("DomainTypeConverter", new DomainTypeConverter());
+//        propertyConverters.put("ListConverter", new ListConverter());
+//        propertyConverters.put("MapConverter", new MapConverter());
+//    };
 
-    private TestDomainService domainService = new TestDomainService(modelSchemaService, propertyConverters);
+    private TestDomainService domainService = new TestDomainService(modelSchemaService);
 
     private DataGraphService dataGraphService = new DataGraphService(
         domainService
     );
 
+    private TestApplication testApplication = new TestApplicationBuilder()
+        .withBaseProperties(true)
+        .withDomainService(domainService)
+        .build();
+
+    @Before
+    public void registerRuntimeContext()
+    {
+        RuntimeContextHolder.register(testApplication.createRuntimeContext(), null);
+    }
+
     @Test
     public void testSimpleToJSON() throws Exception
     {
-        DataGraph dataGraph = new DataGraph(
-            ImmutableMap.of(
-                "name", DomainProperty.builder().withName("name").withType("PlainText")
-                    .withDomainType("Foo").build(),
-                "created", DomainProperty.builder().withName("created").withType("Date")
-                    .withDomainType("Foo").build()
-            ),
-            ImmutableList.of(
-                ImmutableMap.of(
-                    "name", "MyFoo", "created", new Date(0)
-                )
-            ),
-            1);
+
+        DataGraph dataGraph = new DataGraph(ImmutableMap.of(
+                        "name", DomainProperty.builder().withName("name").withType(PropertyType.PLAIN_TEXT)
+                            .withDomainType("Foo").build(),
+                        "created", DomainProperty.builder().withName("created").withType(PropertyType.TIMESTAMP)
+                            .withDomainType("Foo").build()
+                    ), ImmutableList.of(
+                        ImmutableMap.of(
+                            "name", "MyFoo", "created", new Timestamp(0)
+                        )
+                    ), 1, null);
 
 
         String json = dataGraphService.toJSON(dataGraph);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
-        assertThat(json, containsString("\"created\":\"1970-01-01\""));
+        assertThat(json, containsString("\"created\":\"1970-01-01"));
 
         //log.info(JSON.formatJSON(json));
     }
@@ -109,26 +115,24 @@ public class DataGraphServiceTest
     @Test
     public void testJoinedToJSON() throws Exception
     {
-        DataGraph dataGraph = new DataGraph(
-            ImmutableMap.of(
-                "name", DomainProperty.builder().withName("name").withType("PlainText").withDomainType("Foo").build(),
-                "created", DomainProperty.builder().withName("created").withType("Date").withDomainType("Foo").build(),
-                "barCreated", DomainProperty.builder().withName("createdWithADifferentName").withType("Timestamp")
-                    .withDomainType("Bar").build()
-            ),
-            ImmutableList.of(
-                ImmutableMap.of(
-                    "name", "MyFoo",
-                    "created", new Date(TimeUnit.DAYS.toMillis(1)),
-                    "barCreated", new Timestamp(TimeUnit.DAYS.toMillis(2))
-                )
-            ), 1);
+        DataGraph dataGraph = new DataGraph(ImmutableMap.of(
+                        "name", DomainProperty.builder().withName("name").withType(PropertyType.PLAIN_TEXT).withDomainType("Foo").build(),
+                        "created", DomainProperty.builder().withName("created").withType(PropertyType.TIMESTAMP).withDomainType("Foo").build(),
+                        "barCreated", DomainProperty.builder().withName("createdWithADifferentName").withType(PropertyType.TIMESTAMP)
+                            .withDomainType("Bar").build()
+                    ), ImmutableList.of(
+                        ImmutableMap.of(
+                            "name", "MyFoo",
+                            "created", new Timestamp(TimeUnit.DAYS.toMillis(1)),
+                            "barCreated", new Timestamp(TimeUnit.DAYS.toMillis(2))
+                        )
+                    ), 1, null);
 
 
         String json = dataGraphService.toJSON(dataGraph);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
-        assertThat(json, containsString("\"created\":\"1970-01-02\""));
+        assertThat(json, containsString("\"created\":\"1970-01-02"));
         assertThat(json, containsString("\"barCreated\":\"1970-01-03T00:00:00Z\""));
 
         //log.info(JSON.formatJSON(json));
@@ -138,29 +142,38 @@ public class DataGraphServiceTest
     @Test
     public void testComplexListToJSON() throws Exception
     {
-        DataGraph dataGraph = new DataGraph(
-            ImmutableMap.of(
-                "name", DomainProperty.builder().withName("name").withType("PlainText").withDomainType("CContainer").build(),
-                "created", DomainProperty.builder().withName("created").withType("Date").withDomainType("CContainer").build(),
-                "bazes", DomainProperty.builder().withName("bazes").withType(DomainProperty.LIST_PROPERTY_TYPE)
-                    .withTypeParam("Baz").withDomainType("CContainer").build()
-            ),
-            ImmutableList.of(
-                ImmutableMap.of(
-                    "name", "MyFoo",
-                    "created", new Date(TimeUnit.DAYS.toMillis(1)),
-                    "bazes", ImmutableList.of(
-                        createDomainObject("Baz", "created", new Timestamp(TimeUnit.DAYS.toMillis(3))),
-                        createDomainObject("Baz","created", new Timestamp(TimeUnit.DAYS.toMillis(4)))
-                    )
-                )
-            ), 1);
+        DataGraph dataGraph = new DataGraph(ImmutableMap.of(
+                        "name", DomainProperty.builder()
+                                .withName("name")
+                                .withType(PropertyType.PLAIN_TEXT)
+                                .withDomainType("CContainer")
+                                .build(),
+                        "created", DomainProperty.builder()
+                            .withName("created")
+                            .withType(PropertyType.TIMESTAMP)
+                            .withDomainType("CContainer")
+                            .build(),
+                        "bazes", DomainProperty.builder()
+                            .withName("bazes")
+                            .withType(PropertyType.LIST, "Baz")
+                            .withDomainType("CContainer")
+                            .build()
+                    ), ImmutableList.of(
+                        ImmutableMap.of(
+                            "name", "MyFoo",
+                            "created", new Timestamp(TimeUnit.DAYS.toMillis(1)),
+                            "bazes", ImmutableList.of(
+                                createDomainObject("Baz", "created", new Timestamp(TimeUnit.DAYS.toMillis(3))),
+                                createDomainObject("Baz","created", new Timestamp(TimeUnit.DAYS.toMillis(4)))
+                            )
+                        )
+                    ), 1, null);
 
 
         String json = dataGraphService.toJSON(dataGraph);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
-        assertThat(json, containsString("\"created\":\"1970-01-02\""));
+        assertThat(json, containsString("\"created\":\"1970-01-02"));
         assertThat(json, containsString("\"bazes\":["));
         assertThat(json, containsString("\"_type\":\"Baz\""));
         assertThat(json, containsString("\"_type\":\"Baz\",\"created\":\"1970-01-04T00:00:00Z\""));
@@ -186,32 +199,29 @@ public class DataGraphServiceTest
     @Test
     public void testPropertyListToJSON() throws Exception
     {
-        DataGraph dataGraph = new DataGraph(
-            ImmutableMap.of(
-                "name", DomainProperty.builder().withName("name").withType("PlainText")
-                    .withDomainType("PLContainer").build(),
-                "created", DomainProperty.builder().withName("created").withType("Date")
-                    .withDomainType("PLContainer").build(),
-                "dates", DomainProperty.builder().withName("dates").withType(DomainProperty.LIST_PROPERTY_TYPE).withTypeParam("Date").withDomainType("PLContainer").build()
-            ),
-            ImmutableList.of(
-                ImmutableMap.of(
-                    "name", "MyFoo",
-                    "created", new Date(TimeUnit.DAYS.toMillis(1)),
-                    "dates", ImmutableList.of(
-                        new Date(TimeUnit.DAYS.toMillis(5)),
-                        new Date(TimeUnit.DAYS.toMillis(6))
-                    )
-                )
-            ), 1);
+        DataGraph dataGraph = new DataGraph(ImmutableMap.of(
+                        "name", DomainProperty.builder().withName("name").withType(PropertyType.PLAIN_TEXT)
+                            .withDomainType("PLContainer").build(),
+                        "created", DomainProperty.builder().withName("created").withType(PropertyType.TIMESTAMP)
+                            .withDomainType("PLContainer").build(),
+                        "dates", DomainProperty.builder().withName("dates").withType(PropertyType.LIST, PropertyType.TIMESTAMP).withDomainType("PLContainer").build()
+                    ), ImmutableList.of(
+                        ImmutableMap.of(
+                            "name", "MyFoo",
+                            "created", new Timestamp(TimeUnit.DAYS.toMillis(1)),
+                            "dates", ImmutableList.of(
+                                new Timestamp(TimeUnit.DAYS.toMillis(5)),
+                                new Timestamp(TimeUnit.DAYS.toMillis(6))
+                            )
+                        )
+                    ), 1, null);
 
 
         String json = dataGraphService.toJSON(dataGraph);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
-        assertThat(json, containsString("\"created\":\"1970-01-02\""));
-        assertThat(json, containsString("[\"1970-01-06\",\"1970-01-07\"]"));
-
+        assertThat(json, containsString("\"created\":\"1970-01-02"));
+        assertThat(json, containsString("[\"1970-01-06T00:00:00Z\",\"1970-01-07T00:00:00Z\"]"));
 
         //log.info(JSON.formatJSON(json));
     }
@@ -220,34 +230,32 @@ public class DataGraphServiceTest
     @Test
     public void testComplexMapToJSON() throws Exception
     {
-        DataGraph dataGraph = new DataGraph(
-            ImmutableMap.of(
-                "name", DomainProperty.builder().withName("name").withType("PlainText")
-                    .withDomainType("MapContainer").build(),
-                "created", DomainProperty.builder().withName("created").withType("Date")
-                    .withDomainType("MapContainer").build(),
-                "bazes", DomainProperty.builder().withName("bazes").withType(DomainProperty.MAP_PROPERTY_TYPE).withTypeParam("Baz").withDomainType("MapContainer").build()
-            ),
-            ImmutableList.of(
-                ImmutableMap.of(
-                    "name", "MyFoo",
-                    "created", new Date(TimeUnit.DAYS.toMillis(1)),
-                    "bazes", ImmutableMap.of(
-                        "Bar1", createDomainObject("Baz",
-                            "created", new Timestamp(TimeUnit.DAYS.toMillis(7))
-                        ),
-                        "Bar2", createDomainObject("Baz",
-                            "created", new Timestamp(TimeUnit.DAYS.toMillis(8))
+        DataGraph dataGraph = new DataGraph(ImmutableMap.of(
+                        "name", DomainProperty.builder().withName("name").withType(PropertyType.PLAIN_TEXT)
+                            .withDomainType("MapContainer").build(),
+                        "created", DomainProperty.builder().withName("created").withType(PropertyType.TIMESTAMP)
+                            .withDomainType("MapContainer").build(),
+                        "bazes", DomainProperty.builder().withName("bazes").withType(PropertyType.MAP, "Baz").withDomainType("MapContainer").build()
+                    ), ImmutableList.of(
+                        ImmutableMap.of(
+                            "name", "MyFoo",
+                            "created", new Timestamp(TimeUnit.DAYS.toMillis(1)),
+                            "bazes", ImmutableMap.of(
+                                "Bar1", createDomainObject("Baz",
+                                    "created", new Timestamp(TimeUnit.DAYS.toMillis(7))
+                                ),
+                                "Bar2", createDomainObject("Baz",
+                                    "created", new Timestamp(TimeUnit.DAYS.toMillis(8))
+                                )
+                            )
                         )
-                    )
-                )
-            ), 1);
+                    ), 1, null);
 
 
         String json = dataGraphService.toJSON(dataGraph);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
-        assertThat(json, containsString("\"created\":\"1970-01-02\""));
+        assertThat(json, containsString("\"created\":\"1970-01-02"));
         assertThat(json, containsString("\"bazes\":{"));
         assertThat(json, containsString("\"Bar1\":{\"_type\":\"Baz\",\"created\":\"1970-01-08T00:00:00Z\""));
         assertThat(json, containsString("\"Bar2\":{\"_type\":\"Baz\",\"created\":\"1970-01-09T00:00:00Z\""));
@@ -259,32 +267,30 @@ public class DataGraphServiceTest
     @Test
     public void testPropertyMapToJSON() throws Exception
     {
-        DataGraph dataGraph = new DataGraph(
-            ImmutableMap.of(
-                "name", DomainProperty.builder().withName("name").withType("PlainText")
-                    .withDomainType("PropMapContainer").build(),
-                "created", DomainProperty.builder().withName("created").withType("Date")
-                    .withDomainType("PropMapContainer").build(),
-                "dates", DomainProperty.builder().withName("dates").withType(DomainProperty.MAP_PROPERTY_TYPE).withTypeParam("Date").withDomainType("PropMapContainer").build()
-            ),
-            ImmutableList.of(
-                ImmutableMap.of(
-                    "name", "MyFoo",
-                    "created", new Date(TimeUnit.DAYS.toMillis(1)),
-                    "dates", ImmutableMap.of(
-                        "Event1", new Date(TimeUnit.DAYS.toMillis(7)),
-                        "Event2", new Date(TimeUnit.DAYS.toMillis(8))
-                    )
-                )
-            ), 1);
+        DataGraph dataGraph = new DataGraph(ImmutableMap.of(
+                        "name", DomainProperty.builder().withName("name").withType(PropertyType.PLAIN_TEXT)
+                            .withDomainType("PropMapContainer").build(),
+                        "created", DomainProperty.builder().withName("created").withType(PropertyType.TIMESTAMP)
+                            .withDomainType("PropMapContainer").build(),
+                        "dates", DomainProperty.builder().withName("dates").withType(PropertyType.MAP, PropertyType.TIMESTAMP).withDomainType("PropMapContainer").build()
+                    ), ImmutableList.of(
+                        ImmutableMap.of(
+                            "name", "MyFoo",
+                            "created", new Timestamp(TimeUnit.DAYS.toMillis(1)),
+                            "dates", ImmutableMap.of(
+                                "Event1", new Timestamp(TimeUnit.DAYS.toMillis(7)),
+                                "Event2", new Timestamp(TimeUnit.DAYS.toMillis(8))
+                            )
+                        )
+                    ), 1, null);
 
 
         String json = dataGraphService.toJSON(dataGraph);
 
         assertThat(json, containsString("\"name\":\"MyFoo\""));
-        assertThat(json, containsString("\"created\":\"1970-01-02\""));
-        assertThat(json, containsString("\"Event1\":\"1970-01-08\""));
-        assertThat(json, containsString("\"Event2\":\"1970-01-09\""));
+        assertThat(json, containsString("\"created\":\"1970-01-02"));
+        assertThat(json, containsString("\"Event1\":\"1970-01-08"));
+        assertThat(json, containsString("\"Event2\":\"1970-01-09"));
 
 
         //log.info(JSON.formatJSON(json));
@@ -294,24 +300,22 @@ public class DataGraphServiceTest
     @Test
     public void testStructuredObjectGraph() throws Exception
     {
-        DataGraph dataGraph = new DataGraph(
-            ImmutableMap.of(
-                "name", DomainProperty.builder().withName("name").withType("PlainText")
-                    .withDomainType("PropMapContainer").build(),
-                "created", DomainProperty.builder().withName("created").withType("Date").withDomainType("PropMapContainer").build()
-            ),
-            ImmutableMap.of(
-                "name", "MyFoo",
-                "created", new Date(TimeUnit.DAYS.toMillis(1))
-            ), -1);
+        DataGraph dataGraph = new DataGraph(ImmutableMap.of(
+                        "name", DomainProperty.builder().withName("name").withType(PropertyType.PLAIN_TEXT)
+                            .withDomainType("PropMapContainer").build(),
+                        "created", DomainProperty.builder().withName("created").withType(PropertyType.TIMESTAMP).withDomainType("PropMapContainer").build()
+                    ), ImmutableMap.of(
+                        "name", "MyFoo",
+                        "created", new Timestamp(TimeUnit.DAYS.toMillis(1))
+                    ), -1, null);
 
 
         String json = dataGraphService.toJSON(dataGraph);
 
         assertThat(json, containsString("\"type\":\"OBJECT\""));
         assertThat(json, containsString("\"name\":\"MyFoo\""));
-        assertThat(json, containsString("\"created\":\"1970-01-02\""));
-        assertThat(json, containsString("\"count\":2"));
+        assertThat(json, containsString("\"created\":\"1970-01-02"));
+        assertThat(json, containsString("\"count\":1"));
 
 
     }
@@ -319,22 +323,20 @@ public class DataGraphServiceTest
     @Test
     public void testMapLikeGraph() throws Exception
     {
-        DataGraph dataGraph = new DataGraph(
-            ImmutableMap.of(
-                "*", DomainProperty.builder().withName("created").withType("Date").build()
-            ),
-            ImmutableMap.of(
-                "A", new Date(TimeUnit.DAYS.toMillis(1)),
-                "B", new Date(TimeUnit.DAYS.toMillis(2))
-            ), -1);
+        DataGraph dataGraph = new DataGraph(ImmutableMap.of(
+                        "*", DomainProperty.builder().withName("created").withType(PropertyType.TIMESTAMP).build()
+                    ), ImmutableMap.of(
+                        "A", new Timestamp(TimeUnit.DAYS.toMillis(1)),
+                        "B", new Timestamp(TimeUnit.DAYS.toMillis(2))
+                    ), -1, null);
 
 
         String json = dataGraphService.toJSON(dataGraph);
 
         assertThat(json, containsString("\"type\":\"OBJECT\""));
-        assertThat(json, containsString("\"A\":\"1970-01-02\""));
-        assertThat(json, containsString("\"B\":\"1970-01-03\""));
-        assertThat(json, containsString("\"count\":2"));
+        assertThat(json, containsString("\"A\":\"1970-01-02"));
+        assertThat(json, containsString("\"B\":\"1970-01-03"));
+        assertThat(json, containsString("\"count\":1"));
 
 
     }
@@ -343,25 +345,23 @@ public class DataGraphServiceTest
     @Test
     public void testRecursiveType() throws Exception
     {
-        DomainObject root = createDomainObject("Recursive", "created", new Date(TimeUnit.DAYS.toMillis(3)));
-        DomainObject kid = createDomainObject("Recursive", "created", new Date(TimeUnit.DAYS.toMillis(4)));
+        DomainObject root = createDomainObject("Recursive", "created", new Timestamp(TimeUnit.DAYS.toMillis(3)));
+        DomainObject kid = createDomainObject("Recursive", "created", new Timestamp(TimeUnit.DAYS.toMillis(4)));
         root.setProperty("kids", Collections.singletonList(kid));
 
 
-        DataGraph dataGraph = new DataGraph(
-            ImmutableMap.of(
-                "root", DomainProperty.builder().withName("root").withType(DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE).withTypeParam("Recursive").build()
-            ),
-            ImmutableMap.of(
-                "root", root
-            ), 1);
+        DataGraph dataGraph = new DataGraph(ImmutableMap.of(
+                        "root", DomainProperty.builder().withName("root").withType(PropertyType.DOMAIN_TYPE, "Recursive").build()
+                    ), ImmutableMap.of(
+                        "root", root
+                    ), 1, null);
 
 
         String json = dataGraphService.toJSON(dataGraph);
 
         assertThat(json, containsString("\"_type\":\"Recursive\""));
-        assertThat(json, containsString("\"created\":\"1970-01-04\""));
-        assertThat(json, containsString("\"created\":\"1970-01-05\""));
+        assertThat(json, containsString("\"created\":\"1970-01-04"));
+        assertThat(json, containsString("\"created\":\"1970-01-05"));
 
     }
 
@@ -391,20 +391,15 @@ public class DataGraphServiceTest
             ImmutableList.of(local)
         );
 
-        DataGraph dataGraph = new DataGraph(
-            ImmutableMap.of(
-                DataGraph.WILDCARD_SYMBOL,
-                DomainProperty.builder()
-                    .withName("entry")
-                    .withType(DomainProperty.DOMAIN_TYPE_PROPERTY_TYPE)
-                    .withTypeParam("xcd.translation.TranslationEntry")
-                    .build()
-            ),
-            ImmutableMap.of(
-                testTagName, entry
-            ),
-            1
-        );
+        DataGraph dataGraph = new DataGraph(ImmutableMap.of(
+                        DataGraph.WILDCARD_SYMBOL,
+                        DomainProperty.builder()
+                            .withName("entry")
+                            .withType(PropertyType.DOMAIN_TYPE, "xcd.translation.TranslationEntry")
+                            .build()
+                    ), ImmutableMap.of(
+                        testTagName, entry
+                    ), 1, null);
 
         String json = dataGraphService.toJSON(dataGraph);
 
@@ -420,7 +415,7 @@ public class DataGraphServiceTest
     private DomainObject translation(String tag, String translation)
     {
         final String id = UUID.randomUUID().toString();
-        final DomainObject domainObject = domainService.create("AppTranslation", id);
+        final DomainObject domainObject = domainService.create(testApplication.createRuntimeContext(), "AppTranslation", id);
 
         domainObject.setProperty("tag", tag);
 
@@ -446,13 +441,6 @@ public class DataGraphServiceTest
     }
 
 
-    private DomainType createDomainType(String name, List<DomainProperty> props)
-    {
-        DomainType domainType = new DomainType();
-        domainType.setName(name);
-        domainType.setProperties(props);
-        return domainType;
-    }
 
     private class TestDomainService
         extends TestDomainServiceBase
@@ -460,75 +448,73 @@ public class DataGraphServiceTest
 
         private final ModelSchemaService modelSchemaService;
 
-        private final Map<String, PropertyConverter> propertyConverters;
-
         private Map<String,DomainType> domainTypes;
 
+        private DomainType createDomainType(String name, List<DomainProperty> props)
+        {
+            DomainTypeModel domainType = new DomainTypeModel();
+            domainType.setDomainService(this);
+            domainType.setName(name);
+            domainType.setProperties(props);
+            return domainType;
+        }
 
-        public TestDomainService(ModelSchemaService modelSchemaService, Map<String, PropertyConverter>
-            propertyConverters)
+        public TestDomainService(ModelSchemaService modelSchemaService)
         {
 
-            this.propertyConverters = propertyConverters;
             this.modelSchemaService = modelSchemaService;
             domainTypes = domainTypeMap(
                 createDomainType("Foo", ImmutableList.of(
-                    DomainProperty.builder().withName("name").withType("PlainText").build(),
-                    DomainProperty.builder().withName("created").withType("Date").build()
+                    DomainProperty.builder().withName("name").withType(PropertyType.PLAIN_TEXT).build(),
+                    DomainProperty.builder().withName("created").withType(PropertyType.TIMESTAMP).build()
                 )),
                 createDomainType("CContainer", ImmutableList.of(
-                    DomainProperty.builder().withName("name").withType("PlainText").withDomainType
+                    DomainProperty.builder().withName("name").withType(PropertyType.PLAIN_TEXT).withDomainType
                         ("CContainer").build(),
-                    DomainProperty.builder().withName("created").withType("Date").withDomainType("CContainer").build(),
-                    DomainProperty.builder().withName("bazes").withType(DomainProperty.LIST_PROPERTY_TYPE)
-                        .withTypeParam("Baz").withDomainType("CContainer").build()
+                    DomainProperty.builder().withName("created").withType(PropertyType.TIMESTAMP).withDomainType("CContainer").build(),
+                    DomainProperty.builder().withName("bazes").withType(PropertyType.LIST, "Baz").withDomainType("CContainer").build()
                 )),
                 createDomainType("PLContainer", ImmutableList.of(
-                    DomainProperty.builder().withName("name").withType("PlainText").withDomainType
+                    DomainProperty.builder().withName("name").withType(PropertyType.PLAIN_TEXT).withDomainType
                         ("PLContainer").build(),
-                    DomainProperty.builder().withName("created").withType("Date").withDomainType("PLContainer").build(),
-                    DomainProperty.builder().withName("dates").withType(DomainProperty.LIST_PROPERTY_TYPE)
-                        .withTypeParam("Date").withDomainType("PLContainer").build()
+                    DomainProperty.builder().withName("created").withType(PropertyType.TIMESTAMP).withDomainType("PLContainer").build(),
+                    DomainProperty.builder().withName("dates").withType(PropertyType.LIST,PropertyType.TIMESTAMP).withDomainType("PLContainer").build()
                 )),
                 createDomainType("MapContainer", ImmutableList.of(
-                    DomainProperty.builder().withName("name").withType("PlainText").withDomainType
+                    DomainProperty.builder().withName("name").withType(PropertyType.PLAIN_TEXT).withDomainType
                         ("MapContainer").build(),
-                    DomainProperty.builder().withName("created").withType("Date").withDomainType
+                    DomainProperty.builder().withName("created").withType(PropertyType.TIMESTAMP).withDomainType
                         ("MapContainer").build(),
-                    DomainProperty.builder().withName("bazes").withType(DomainProperty.MAP_PROPERTY_TYPE)
-                        .withTypeParam("Baz").withDomainType("MapContainer").build()
+                    DomainProperty.builder().withName("bazes").withType(PropertyType.MAP,"Baz").withDomainType("MapContainer").build()
                 )),
                 createDomainType("PropMapContainer", ImmutableList.of(
-                    DomainProperty.builder().withName("name").withType("PlainText").withDomainType
+                    DomainProperty.builder().withName("name").withType(PropertyType.PLAIN_TEXT).withDomainType
                         ("PropMapContainer").build(),
-                    DomainProperty.builder().withName("created").withType("Date").withDomainType
+                    DomainProperty.builder().withName("created").withType(PropertyType.TIMESTAMP).withDomainType
                         ("PropMapContainer").build(),
-                    DomainProperty.builder().withName("dates").withType(DomainProperty.MAP_PROPERTY_TYPE)
-                        .withTypeParam("Date").withDomainType("PropMapContainer").build()
+                    DomainProperty.builder().withName("dates").withType(PropertyType.MAP, PropertyType.TIMESTAMP).withDomainType("PropMapContainer").build()
                 )),
                 createDomainType("Bar", ImmutableList.of(
-                    DomainProperty.builder().withName("createdWithADifferentName").withType("Timestamp")
+                    DomainProperty.builder().withName("createdWithADifferentName").withType(PropertyType.TIMESTAMP)
                         .build()
                 )),
                 createDomainType("Baz", ImmutableList.of(
-                    DomainProperty.builder().withName("created").withType("Timestamp").build()
+                    DomainProperty.builder().withName("created").withType(PropertyType.TIMESTAMP).build()
                 )),
                 createDomainType("Recursive", ImmutableList.of(
-                    DomainProperty.builder().withName("created").withType("Date").build(),
-                    DomainProperty.builder().withName("kids").withType("List").withTypeParam("Recursive").build()
+                    DomainProperty.builder().withName("created").withType(PropertyType.TIMESTAMP).build(),
+                    DomainProperty.builder().withName("kids").withType("List", "Recursive").build()
                 )),
                 createDomainType("AppTranslation", ImmutableList.of(
                     DomainProperty.builder().withName("id").withType("UUID").setRequired(true).withMaxLength(36).build(),
-                    DomainProperty.builder().withName("locale").withType("PlainText").setRequired(true).withMaxLength(64).build(),
-                    DomainProperty.builder().withName("tag").withType("PlainText").setRequired(true).withMaxLength(255).build(),
-                    DomainProperty.builder().withName("translation").withType("PlainText").setRequired(true).build(),
-                    DomainProperty.builder().withName("created").withType("Timestamp").setRequired(true).build(),
-                    DomainProperty.builder().withName("processName").withType("PlainText").withMaxLength(64).build(),
-                    DomainProperty.builder().withName("viewName").withType("PlainText").withMaxLength(64).build()
+                    DomainProperty.builder().withName("locale").withType(PropertyType.PLAIN_TEXT).setRequired(true).withMaxLength(64).build(),
+                    DomainProperty.builder().withName("tag").withType(PropertyType.PLAIN_TEXT).setRequired(true).withMaxLength(255).build(),
+                    DomainProperty.builder().withName("translation").withType(PropertyType.PLAIN_TEXT).setRequired(true).build(),
+                    DomainProperty.builder().withName("created").withType(PropertyType.TIMESTAMP).setRequired(true).build(),
+                    DomainProperty.builder().withName("processName").withType(PropertyType.PLAIN_TEXT).withMaxLength(64).build(),
+                    DomainProperty.builder().withName("viewName").withType(PropertyType.PLAIN_TEXT).withMaxLength(64).build()
                 ))
             );
-
-
 
             domainTypes.putAll(
                 modelSchemaService.getModelDomainTypes().entrySet().stream()
@@ -548,20 +534,9 @@ public class DataGraphServiceTest
 
 
         @Override
-        public PropertyConverter getPropertyConverter(String name)
+        public DomainType getDomainType(String name)
         {
-            return propertyConverters.get(name + "Converter");
-        }
-
-
-        @Override
-        public DomainObject create(String type, String id)
-        {
-
-            final GenericDomainObject genericDomainObject = new GenericDomainObject();
-            genericDomainObject.setDomainType(type);
-            genericDomainObject.setId(id);
-            return genericDomainObject;
+            return domainTypes.get(name);
         }
     }
 }

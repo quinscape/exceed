@@ -1,17 +1,11 @@
 package de.quinscape.exceed.expression;
 
-import de.quinscape.exceed.model.domain.PropertyModel;
-import de.quinscape.exceed.runtime.js.CompilationResult;
+import de.quinscape.exceed.model.domain.property.PropertyModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Encapsulates a set of values the exceed systems annotates AST expression nodes with.
- * <p>
- * <ul>
- * <li>A {@link CompilationResult} for ASTExpression nodes</li>
- * <li>A {@link CompilationResult} for ASTExpression nodes</li>
- * </ul>
  */
 public class NodeAnnotation
 {
@@ -20,7 +14,9 @@ public class NodeAnnotation
     private final Node node;
 
 
-    private CompilationResult compilationResult;
+    private String compilationResult;
+
+    private String identifier;
 
     private PropertyModel propertyType;
 
@@ -32,15 +28,27 @@ public class NodeAnnotation
     }
 
 
-    public CompilationResult getCompilationResult()
+    public String getCompilationResult()
     {
         return compilationResult;
     }
 
 
-    public void setCompilationResult(CompilationResult compilationResult)
+    public void setCompilationResult(String compilationResult)
     {
         this.compilationResult = compilationResult;
+    }
+
+
+    public String getIdentifier()
+    {
+        return identifier;
+    }
+
+
+    public void setIdentifier(String identifier)
+    {
+        this.identifier = identifier;
     }
 
 

@@ -52,10 +52,10 @@ public class DomainEditorProvider
         final ApplicationModel applicationModel = runtimeContext.getApplicationModel();
         final String appName = applicationModel.getName();
 
-        dataProviderContext.registerTranslations(domainService.getDomainType("DomainPropertyModel"));
-        dataProviderContext.registerTranslations(domainService.getDomainType("DomainTypeModel"));
-        dataProviderContext.registerTranslations(domainService.getDomainType("EnumTypeModel"));
-        dataProviderContext.registerTranslations(domainService.getDomainType("ForeignKeyDefinition"));
+        dataProviderContext.registerTranslations(runtimeContext, domainService.getDomainType("DomainPropertyModel"));
+        dataProviderContext.registerTranslations(runtimeContext, domainService.getDomainType("DomainTypeModel"));
+        dataProviderContext.registerTranslations(runtimeContext, domainService.getDomainType("EnumTypeModel"));
+        dataProviderContext.registerTranslations(runtimeContext, domainService.getDomainType("ForeignKeyDefinition"));
 
         final List<? extends ResourceRoot> extensions = runtimeContext.getRuntimeApplication().getResourceLoader()
             .getExtensions();

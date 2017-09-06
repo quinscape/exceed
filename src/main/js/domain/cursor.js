@@ -514,7 +514,7 @@ class DataCursor {
      * Makes the new list the current list of the cursor.
      *
      * @param obj   {object} object to merge in
-     * @param path  {Array?} relative path to current cursor
+     * @param [path]  {Array} relative path to current cursor
      *
      * @returns {DataGraph} new data graph object
      */
@@ -529,7 +529,7 @@ class DataCursor {
      * Makes the new list the current list of the cursor.
      *
      * @param value {*} value to set
-     * @param path  {Array?} relative path to current cursor
+     * @param [path]  {Array} relative path to current cursor
      * @returns {DataGraph} new data graph object
      */
     set(value, path)
@@ -543,7 +543,7 @@ class DataCursor {
      * Makes the new list the current list of the cursor.
      *
      * @param fn {Function} function to apply
-     * @param path  {Array?} relative path to current cursor
+     * @param [path]  {Array} relative path to current cursor
      * @returns {DataGraph} new data graph object
      */
     apply(fn, path)
@@ -554,7 +554,7 @@ class DataCursor {
     /**
      * Returns a new cursor based on the current cursor and an optional relative path.
      *
-     * @param path  {Array?} relative path to current cursor
+     * @param [path]  {Array} relative path to current cursor
      * @returns {DataCursor}
      */
     getCursor(path)
@@ -565,7 +565,7 @@ class DataCursor {
     /**
      * Reads the value from the cursor
      *
-     * @param path  {Array?} relative path to current cursor
+     * @param [path]  {Array} relative path to current cursor
      * @returns {*} value
      */
     get(path)

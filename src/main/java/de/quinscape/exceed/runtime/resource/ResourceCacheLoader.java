@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.resource;
 
 import com.google.common.cache.CacheLoader;
-import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
+import de.quinscape.exceed.runtime.resource.file.PathResources;
 import de.quinscape.exceed.runtime.service.CachedResource;
 
 public class ResourceCacheLoader
@@ -21,7 +21,7 @@ public class ResourceCacheLoader
     @Override
     public CachedResource load(String key) throws Exception
     {
-        ResourceLocation resourceLocation = resourceLoader.getResourceLocation(key);
+        PathResources resourceLocation = resourceLoader.getResources(key);
 
         if (resourceLocation == null)
         {

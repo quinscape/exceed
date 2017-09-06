@@ -1,29 +1,25 @@
 package de.quinscape.exceed.runtime.config;
 
 import com.jolbox.bonecp.BoneCPDataSource;
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.model.domain.type.QueryTypeModel;
+import de.quinscape.exceed.runtime.action.ActionService;
 import de.quinscape.exceed.runtime.component.QueryDataProvider;
 import de.quinscape.exceed.runtime.component.TestDataProvider;
 import de.quinscape.exceed.runtime.db.JOOQConfigFactory;
 import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
+import de.quinscape.exceed.runtime.domain.DefaultQueryParameterProvider;
+import de.quinscape.exceed.runtime.domain.DefaultQueryTypeSQLFactory;
 import de.quinscape.exceed.runtime.domain.JOOQDomainOperations;
-import de.quinscape.exceed.runtime.domain.JOOQQueryExecutor;
 import de.quinscape.exceed.runtime.domain.NeutralNamingStrategy;
 import de.quinscape.exceed.runtime.domain.PropertyDefaultOperations;
-import de.quinscape.exceed.runtime.domain.SystemStorageExecutor;
+import de.quinscape.exceed.runtime.domain.QueryTypeOperations;
+import de.quinscape.exceed.runtime.domain.QueryTypeParameterProvider;
+import de.quinscape.exceed.runtime.domain.QueryTypeUpdateHandler;
+import de.quinscape.exceed.runtime.domain.SqlQueryFactory;
 import de.quinscape.exceed.runtime.domain.SystemStorageOperations;
-import de.quinscape.exceed.runtime.domain.property.BooleanConverter;
-import de.quinscape.exceed.runtime.domain.property.DateConverter;
-import de.quinscape.exceed.runtime.domain.property.EnumConverter;
-import de.quinscape.exceed.runtime.domain.property.IntegerConverter;
-import de.quinscape.exceed.runtime.domain.property.LongConverter;
-import de.quinscape.exceed.runtime.domain.property.ObjectConverter;
-import de.quinscape.exceed.runtime.domain.property.PlainTextConverter;
-import de.quinscape.exceed.runtime.domain.property.RichTextConverter;
-import de.quinscape.exceed.runtime.domain.property.TimestampConverter;
-import de.quinscape.exceed.runtime.domain.property.UUIDConverter;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
-import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
+import de.quinscape.exceed.runtime.expression.query.ComponentQueryTransformer;
 import de.quinscape.exceed.runtime.i18n.DefaultTranslator;
 import de.quinscape.exceed.runtime.i18n.JOOQTranslationProvider;
 import de.quinscape.exceed.runtime.i18n.TranslationProvider;
@@ -67,7 +63,6 @@ public class DomainConfiguration
     @Autowired
     private ApplicationContext applicationContext;
 
-
     @Bean
     public JdbcTemplate jdbcTemplate(DataSource dataSource)
     {
@@ -81,7 +76,7 @@ public class DomainConfiguration
     }
 
     @Bean
-    public TransactionAwareDataSourceProxy transactionAwareDataSourceProxy(Environment environment)
+    public DataSource transactionAwareDataSourceProxy(Environment environment)
     {
         BoneCPDataSource src = new BoneCPDataSource();
         src.setDriverClass(environment.getProperty("database.driver"));
@@ -98,7 +93,6 @@ public class DomainConfiguration
         src.setStatementsCacheSize(100);
         return new TransactionAwareDataSourceProxy(src);
     }
-
 
     @Bean
     public DataSourceTransactionManager transactionManager(DataSource dataSource)
@@ -145,10 +139,14 @@ public class DomainConfiguration
         return tokenRepository;
     }
 
+
     @Bean
-    public QueryDataProvider queryDataProvider(QueryTransformer queryTransformer, StorageConfigurationRepository storageConfigurationRepository)
+    public QueryDataProvider queryDataProvider(
+        StorageConfigurationRepository storageConfigurationRepository,
+        ActionService actionService
+    )
     {
-        return new QueryDataProvider(queryTransformer, storageConfigurationRepository);
+        return new QueryDataProvider(storageConfigurationRepository, actionService);
     }
 
     @Bean
@@ -157,12 +155,6 @@ public class DomainConfiguration
         return new TestDataProvider();
     }
 
-
-    @Bean
-    public SystemStorageExecutor systemStorageExecutor()
-    {
-        return new SystemStorageExecutor();
-    }
 
     @Bean
     public StorageConfigurationRepository storageConfigurationRepository()
@@ -175,40 +167,69 @@ public class DomainConfiguration
     }
 
     @Bean(name = DomainType.SYSTEM_STORAGE)
-    public StorageConfiguration systemStorage(SystemStorageExecutor systemStorageExecutor)
+    public StorageConfiguration systemStorage()
     {
-        return new DefaultStorageConfiguration(new SystemStorageOperations(), new NeutralNamingStrategy(), systemStorageExecutor, null);
+        return new DefaultStorageConfiguration(new SystemStorageOperations(), new NeutralNamingStrategy(), null);
     }
 
     @Bean(name = DomainType.DEFAULT_STORAGE)
     public StorageConfiguration jooqDatabaseStorage(
-        DSLContext dslContext,
         JOOQDomainOperations jooqDomainOperations,
         DefaultSchemaService defaultSchemaService
     )
     {
-        final JOOQQueryExecutor jooqQueryExecutor = new JOOQQueryExecutor(dslContext);
         return new DefaultStorageConfiguration(
             jooqDomainOperations,
             new DefaultNamingStrategy(),
-            jooqQueryExecutor,
-            defaultSchemaService);
+            defaultSchemaService
+        );
     }
 
-    @Bean
-    public QueryTransformer queryTransformer(ExpressionService expressionService, StorageConfigurationRepository storageConfigurationRepository)
+    @Bean(name = QueryTypeModel.DEFAULT_QUERY_STORAGE)
+    public StorageConfiguration queryTypeStorageConfiguration(
+        DefaultSchemaService defaultSchemaService,
+        QueryTypeOperations queryTypeOperations
+    )
     {
-        return new QueryTransformer(expressionService, storageConfigurationRepository);
+        return new DefaultStorageConfiguration(
+            queryTypeOperations,
+            new DefaultNamingStrategy(),
+            null
+        );
     }
 
     @Bean
-    public JOOQDomainOperations jooqDomainOperations(DSLContext dslContext, ExpressionService expressionService, PlatformTransactionManager txManager)
+    public QueryTypeOperations queryTypeOperations(
+        JdbcTemplate jdbcTemplate
+    )
     {
-        return new JOOQDomainOperations(dslContext, expressionService, txManager);
+        return new QueryTypeOperations(
+            jdbcTemplate,
+            applicationContext.getBeansOfType(SqlQueryFactory.class),
+            applicationContext.getBeansOfType(QueryTypeParameterProvider.class),
+            applicationContext.getBeansOfType(QueryTypeUpdateHandler.class)
+        );
+    }
+    
+    @Bean
+    public ComponentQueryTransformer queryTransformer(ExpressionService expressionService, StorageConfigurationRepository storageConfigurationRepository)
+    {
+        return new ComponentQueryTransformer(expressionService, storageConfigurationRepository);
     }
 
     @Bean
-    public DefaultSchemaService defaultSchemaService(DataSource dataSource)
+    public JOOQDomainOperations jooqDomainOperations(
+        DSLContext dslContext,
+        PlatformTransactionManager txManager
+    )
+    {
+        return new JOOQDomainOperations(dslContext, txManager);
+    }
+
+    @Bean
+    public DefaultSchemaService defaultSchemaService(
+        DataSource dataSource
+    )
     {
         final DefaultNamingStrategy namingStrategy = new DefaultNamingStrategy();
         return new DefaultSchemaService(namingStrategy, new InformationSchemaOperations(dataSource, namingStrategy));
@@ -227,74 +248,16 @@ public class DomainConfiguration
         return new DefaultTranslator(provider);
     }
 
-
     @Bean
-    public BooleanConverter BooleanConverter()
+    public DefaultQueryTypeSQLFactory defaultQueryTypeSQLFactory()
     {
-        return new BooleanConverter();
+        return new DefaultQueryTypeSQLFactory();
     }
 
-
     @Bean
-    public DateConverter DateConverter()
+    public DefaultQueryParameterProvider defaultQueryParameterProvider()
     {
-        return new DateConverter();
-    }
-
-
-    @Bean
-    public EnumConverter EnumConverter()
-    {
-        return new EnumConverter();
-    }
-
-
-    @Bean
-    public IntegerConverter IntegerConverter()
-    {
-        return new IntegerConverter();
-    }
-
-
-    @Bean
-    public LongConverter LongConverter()
-    {
-        return new LongConverter();
-    }
-
-
-    @Bean
-    public PlainTextConverter PlainTextConverter()
-    {
-        return new PlainTextConverter();
-    }
-
-
-    @Bean
-    public RichTextConverter RichTextConverter()
-    {
-        return new RichTextConverter();
-    }
-
-
-    @Bean
-    public TimestampConverter TimestampConverter()
-    {
-        return new TimestampConverter();
-    }
-
-
-    @Bean
-    public UUIDConverter UUIDConverter()
-    {
-        return new UUIDConverter();
-    }
-
-
-    @Bean
-    public ObjectConverter ObjectConverter()
-    {
-        return new ObjectConverter();
+        return new DefaultQueryParameterProvider();
     }
 
 }

@@ -3,8 +3,8 @@
 NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package de.quinscape.exceed.expression;
 
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.PropertyModel;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.model.meta.PropertyType;
 import de.quinscape.exceed.runtime.domain.property.DecimalConverter;
 

@@ -1,11 +1,13 @@
 package de.quinscape.exceed.runtime.service;
 
-import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.model.component.ComponentDescriptor;
 import de.quinscape.exceed.model.component.ComponentPackageDescriptor;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.component.ComponentRegistration;
 import de.quinscape.exceed.runtime.component.DataProvider;
 import de.quinscape.exceed.runtime.component.QueryDataProvider;
+import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
+import de.quinscape.exceed.runtime.model.InconsistentModelException;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.ResourceChangeListener;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
@@ -13,6 +15,7 @@ import de.quinscape.exceed.runtime.resource.ResourceWatcher;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.ModuleResourceEvent;
 import de.quinscape.exceed.runtime.util.FileExtension;
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import de.quinscape.exceed.runtime.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +23,13 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.svenson.JSONParser;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,21 +47,30 @@ public class ComponentRegistryImpl
 
     private final static Logger log = LoggerFactory.getLogger(ComponentRegistryImpl.class);
 
-    private static final String COMPONENTS_JSON_SUFFIX = "/components.json";
+    private static final String COMPONENTS_JSON_SUFFIX = "/" + ComponentRegistry.COMPONENT_PACKAGE_FILE_NAME;
+
+    private static final String DEFAULT_QUERY_TRANSFORMER = "componentQueryTransformer";
 
     private JSONParser parser;
 
-    private StyleService styleService;
+    private final StyleService styleService;
 
+    private ApplicationService applicationService;
+
+
+
+    /**
+     * Autowire lazily with interface based proxy to break a circular reference.
+     *
+     * @param applicationService
+     */
     @Autowired
-    public void setStyleService(StyleService styleService)
+    @Lazy
+    public void setApplicationService(ApplicationService applicationService)
     {
-        this.styleService = styleService;
+        this.applicationService = applicationService;
     }
 
-
-    @Autowired
-    private ApplicationService applicationService;
 
     private ConcurrentMap<String, ComponentRegistration> components = new ConcurrentHashMap<>();
 
@@ -64,10 +78,13 @@ public class ComponentRegistryImpl
 
     private Map<String, DataProvider> dataProviders;
 
+    private Map<String, QueryTransformer> queryTransformers;
 
-    public ComponentRegistryImpl()
+    @Autowired
+    public ComponentRegistryImpl(StyleService styleService)
     {
-        this.parser = new JSONParser();
+        this.parser = JSONUtil.DEFAULT_PARSER;
+        this.styleService = styleService;
     }
 
 
@@ -158,13 +175,24 @@ public class ComponentRegistryImpl
 
 
             String dataProviderName = descriptor.getDataProvider();
-            DataProvider dataProviderBean = dataProviders.get(dataProviderName != null ? dataProviderName :
-                DEFAULT_DATA_PROVIDER);
+
+            DataProvider dataProviderBean = dataProviders.get(
+                dataProviderName != null ?
+                    dataProviderName :
+                    DEFAULT_DATA_PROVIDER
+            );
             if (dataProviderBean == null)
             {
-                log.warn("No data provider with name {}", dataProviderName);
+                throw new InconsistentModelException("No data provider with name '" +  dataProviderName + "'");
             }
 
+            String beanName = descriptor.getQueryTransformer();
+            QueryTransformer queryTransformer = queryTransformers.get(
+                beanName != null ?
+                    beanName :
+                    DEFAULT_QUERY_TRANSFORMER
+            );
+            
             // if we have no queries, and the data provider is the query data provider, we ignore
             // it since it wouldn't provide as with data anyway and we can minimize the component models
             // we need to define id attributes for
@@ -173,8 +201,16 @@ public class ComponentRegistryImpl
                 dataProviderBean = null;
             }
 
-            ComponentRegistration registration = new ComponentRegistration(componentName, descriptor,
-                styles, dataProviderBean, getModuleName(parentDir, componentName));
+
+            ComponentRegistration registration = new ComponentRegistration(
+                componentName,
+                descriptor,
+                styles,
+                dataProviderBean,
+                getModuleName(parentDir, componentName),
+                queryTransformer
+            );
+
             components.put(componentName, registration);
 
             log.debug("(Re)registering {}", registration);
@@ -257,7 +293,7 @@ public class ComponentRegistryImpl
                 }
                 else
                 {
-                    AppResource resource = root.getResource(Util.parentDir(resourcePath) + "/components.json");
+                    AppResource resource = root.getResource(Util.parentDir(resourcePath) + "/" + ComponentRegistry.COMPONENT_PACKAGE_FILE_NAME);
                     processResource(root, resource, true);
                 }
                 applicationService.signalStyleChanges();
@@ -269,12 +305,13 @@ public class ComponentRegistryImpl
         }
     }
 
-
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
-        this.dataProviders = ImmutableMap.copyOf(applicationContext.getBeansOfType(DataProvider.class));
+        this.dataProviders = Collections.unmodifiableMap(applicationContext.getBeansOfType(DataProvider.class));
+        this.queryTransformers = Collections.unmodifiableMap(applicationContext.getBeansOfType(QueryTransformer.class));
 
-        log.info("DATA-PROVIDERS: {}", dataProviders);
+        log.info("DataProviders: {}", dataProviders);
+        log.info("QueryExecutors: {}", queryTransformers);
     }
 }

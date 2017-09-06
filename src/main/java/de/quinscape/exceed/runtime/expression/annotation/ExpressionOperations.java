@@ -29,9 +29,9 @@ import java.lang.annotation.Target;
  *         }
  *
  *         \@Identifier
- *         public String myIdentifier(MyEnv env)
+ *         public String myIdentifier(ExpressionContext<MyEnv> ctx)
  *         {
- *              return env.getMyIdentifierValue();
+ *              return ctx.getEnv().getMyIdentifierValue();
  *         }
  *
  *     }

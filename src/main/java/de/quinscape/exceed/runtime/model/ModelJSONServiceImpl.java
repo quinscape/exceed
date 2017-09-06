@@ -1,12 +1,15 @@
 package de.quinscape.exceed.runtime.model;
 
+import de.quinscape.exceed.model.AbstractModel;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.Model;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.domain.ForeignKeyDefinition;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.model.domain.property.ForeignKeyDefinition;
+import de.quinscape.exceed.model.domain.type.DomainTypeModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -20,15 +23,13 @@ public class ModelJSONServiceImpl
     implements ModelJSONService
 {
 
-    public static final String CONTEXT_DEFAULT_NAME = "context";
-
     public static final String MODEL_ATTR_NAME = "model";
 
     private final static Logger log = LoggerFactory.getLogger(ModelJSONServiceImpl.class);
 
     private final JSONParser parser;
 
-    private final JSON generator = JSON.defaultJSON();
+    private final JSON generator = JSONUtil.DEFAULT_GENERATOR;
 
     private ClientViewJSONGenerator clientViewJSONGenerator;
 
@@ -54,7 +55,7 @@ public class ModelJSONServiceImpl
         {
             return toJSON(null, (View) model, JSONFormat.EXTERNAL);
         }
-        if (model instanceof DomainType)
+        else if (model instanceof DomainType)
         {
             return toJSON(null, (DomainType) model, JSONFormat.EXTERNAL);
         }
@@ -154,7 +155,7 @@ public class ModelJSONServiceImpl
         public ModelMapper()
         {
             setDiscriminatorField("type");
-            setPathMatcher(new SubtypeMatcher(Model.class));
+            setPathMatcher(new SubtypeMatcher(AbstractModel.class));
         }
 
 

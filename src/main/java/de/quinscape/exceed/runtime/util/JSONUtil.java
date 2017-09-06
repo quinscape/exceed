@@ -25,6 +25,7 @@ public class JSONUtil
     private final static String OK_RESPONSE = "{\"ok\":true}";
 
     public final static JavaObjectSupport OBJECT_SUPPORT = new JavaObjectSupport();
+    public final static JSON DEFAULT_GENERATOR;
     public final static JSONParser DEFAULT_PARSER;
     public final static JSONBeanUtil DEFAULT_UTIL;
     static
@@ -35,6 +36,7 @@ public class JSONUtil
         util.setObjectSupport(OBJECT_SUPPORT);
         DEFAULT_PARSER = jsonParser;
         DEFAULT_UTIL = util;
+        DEFAULT_GENERATOR = JSON.defaultJSON();
     }
 
     public static String ok()
@@ -62,8 +64,9 @@ public class JSONUtil
     }
 
 
-    public static <T extends Annotation> T findAnnotation(Class<?> cls, JSONPropertyInfo propertyInfo, Class<T > annoClass)
+    public static <T extends Annotation> T findAnnotation(JSONPropertyInfo propertyInfo, Class<T> annoClass)
     {
+
         if (!(propertyInfo instanceof JavaObjectPropertyInfo))
         {
             throw new IllegalArgumentException("Invalid property info type: " + propertyInfo + ", must be " + JavaObjectPropertyInfo.class.getName());
@@ -95,5 +98,10 @@ public class JSONUtil
     public static JSONClassInfo getClassInfo(Class<?> cls)
     {
         return TypeAnalyzer.getClassInfo(JSONUtil.OBJECT_SUPPORT,cls);
+    }
+
+    public static String forValue(Object value)
+    {
+        return formatJSON(DEFAULT_GENERATOR.forValue(value));
     }
 }

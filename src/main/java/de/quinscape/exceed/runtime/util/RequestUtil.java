@@ -15,7 +15,7 @@ public class RequestUtil
 
     public static boolean isAjaxRequest(HttpServletRequest request)
     {
-        return "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+        return request != null && "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
     }
 
 

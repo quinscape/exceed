@@ -1,8 +1,12 @@
 package de.quinscape.exceed.runtime.expression.query;
 
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.context.ScopeDeclarations;
+import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.action.ActionRegistration;
+import de.quinscape.exceed.runtime.action.ActionResult;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
 import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import org.slf4j.Logger;
@@ -18,30 +22,46 @@ public class QueryTransformerEnvironment
 
     private final StorageConfigurationRepository storageConfigurationRepository;
 
-    private final ComponentModel componentModel;
-
-    private final Map<String, Object> vars;
-
     private final RuntimeContext runtimeContext;
 
+    private final QueryContext queryContext;
+
+    private final ScopeDeclarations scopeDeclarations;
+
+    public final static Object NO_RESULT = new Object();
 
     public QueryTransformerEnvironment(
         RuntimeContext runtimeContext,
         StorageConfigurationRepository storageConfigurationRepository,
-        ComponentModel componentModel,
-        Map<String, Object> vars
+        QueryContext queryContext
     )
     {
         this.runtimeContext = runtimeContext;
         this.storageConfigurationRepository = storageConfigurationRepository;
-        this.componentModel = componentModel;
-        this.vars = vars;
+        this.queryContext = queryContext;
+
+        if (runtimeContext != null)
+        {
+            scopeDeclarations = runtimeContext.getApplicationModel().lookup(
+                runtimeContext.getScopedContextChain().getScopeLocation()
+            );
+        }
+        else
+        {
+            scopeDeclarations = null;
+        }
+
     }
 
 
     @Override
     public Object resolveIdentifier(String name)
     {
+        Object varResult = resolveContextVariable(name);
+        if (varResult != NO_RESULT)
+        {
+            return varResult;
+        }
 
         DomainType domainType = runtimeContext.getDomainService().getDomainType(name);
         if (domainType == null)
@@ -53,6 +73,16 @@ public class QueryTransformerEnvironment
         log.debug("Resolving {} to {}", name, queryDomainType);
 
         return queryDomainType;
+    }
+
+
+    public Object resolveContextVariable(String name)
+    {
+        if (scopeDeclarations != null && scopeDeclarations.hasDefinition(name))
+        {
+            return runtimeContext.getScopedContextChain().getProperty(name);
+        }
+        return NO_RESULT;
     }
 
 
@@ -73,7 +103,7 @@ public class QueryTransformerEnvironment
     @Override
     protected boolean complexLiteralsAllowed()
     {
-        return false;
+        return true;
     }
 
 
@@ -93,23 +123,18 @@ public class QueryTransformerEnvironment
 
     public ComponentModel getComponentModel()
     {
-        return componentModel;
+        return queryContext.getComponentModel();
     }
 
 
     public Map<String, Object> getVars()
     {
-        return vars;
+        return queryContext.getVars();
     }
 
     public Object getVar(String name)
     {
-        if (vars == null)
-        {
-            return null;
-        }
-
-        return vars.get(name);
+        return queryContext.getVars().get(name);
     }
 
 
@@ -122,5 +147,33 @@ public class QueryTransformerEnvironment
     public StorageConfigurationRepository getStorageConfigurationRepository()
     {
         return storageConfigurationRepository;
+    }
+
+
+    public View getViewModel()
+    {
+
+        return queryContext.getViewModel();
+    }
+
+    public Object executeQuery(QueryDefinition queryDefinition)
+    {
+        return queryContext.getExecutorFunction().apply(queryDefinition);
+    }
+
+
+    public boolean hasAction(String o)
+    {
+        final ActionRegistration actionRegistration = queryContext.getActionService().getRegistrations().get(o);
+        return actionRegistration != null;
+    }
+
+    public ActionResult execute(
+        String action,
+        QueryTransformerActionParameters actionParameters
+    )
+    {
+        final ActionRegistration actionRegistration = queryContext.getActionService().getRegistrations().get(action);
+        return actionRegistration.execute(runtimeContext, actionParameters);
     }
 }

@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.service.model;
 
-import de.quinscape.exceed.model.domain.DomainProperty;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
 
 import java.util.Map;
 

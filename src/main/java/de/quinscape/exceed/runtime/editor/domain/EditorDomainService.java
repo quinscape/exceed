@@ -1,8 +1,8 @@
 package de.quinscape.exceed.runtime.editor.domain;
 
 import de.quinscape.exceed.model.ApplicationModel;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.service.websocket.EditorMessageHandler;
@@ -34,7 +34,7 @@ public class EditorDomainService
     private DataGraph createModelDataList(DomainType enumTypeModel, Map<String, ?> map)
     {
         ArrayList<?> rows = new ArrayList<>(map.values());
-        return new DataGraph(mapProperties(enumTypeModel), rows, rows.size());
+        return new DataGraph(mapProperties(enumTypeModel), rows, rows.size(), null);
     }
 
     private Map<String, DomainProperty> mapProperties(DomainType domainTypeModel)

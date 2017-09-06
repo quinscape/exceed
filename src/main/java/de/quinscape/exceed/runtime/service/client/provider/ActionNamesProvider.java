@@ -2,7 +2,7 @@ package de.quinscape.exceed.runtime.service.client.provider;
 
 import de.quinscape.exceed.model.meta.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.controller.ActionService;
+import de.quinscape.exceed.runtime.action.ActionService;
 import de.quinscape.exceed.runtime.service.client.ClientData;
 import de.quinscape.exceed.runtime.service.client.ClientStateProvider;
 import de.quinscape.exceed.runtime.service.client.ClientStateScope;
@@ -48,7 +48,7 @@ public class ActionNamesProvider
     @Override
     public ClientData provide(HttpServletRequest request, RuntimeContext runtimeContext, ViewData viewData)
     {
-        return new DefaultClientData(actionService.getActionNames());
+        return new DefaultClientData(actionService.getRegistrations().keySet());
     }
 
 

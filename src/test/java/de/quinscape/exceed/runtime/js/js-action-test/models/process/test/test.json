@@ -1,0 +1,226 @@
+{
+    "startTransition": {
+        "to": "list",
+        "action": "syslog('Entered Test-Process')"
+    },
+    "context": {
+        "properties": {
+            "value": {
+                "type": "Integer",
+                "defaultValue": "0"
+            },
+            "limit": {
+                "type": "Integer",
+                "defaultValue": "10"
+            },
+
+            "fooVar": {
+                "type": "DomainType",
+                "typeParam": "Foo",
+                "defaultValue" : "newObject()"
+            },
+
+            "routing": {
+                "type": "DomainType",
+                "typeParam": "xcd.routing.RoutingTable"
+            },
+
+            "strValue": {
+                "type": "PlainText"
+            },
+
+            "enumA": {
+                "type": "Enum",
+                "typeParam" : "EnumA",
+                "defaultValue" : "EnumA.AA"
+            },
+
+            "enumB": {
+                "type": "Enum",
+                "typeParam" : "EnumB",
+                "defaultValue" : "EnumB.BB"
+            },
+
+            "enumC": {
+                "type": "Enum",
+                "typeParam" : "EnumC",
+                "defaultValue" : "EnumC.CC"
+            },
+
+            "stateA": {
+                "type": "State",
+                "typeParam" : "MachineA"
+            },
+
+            "stateB": {
+                "type": "State",
+                "typeParam" : "MachineB",
+                "defaultValue" : "MachineB.B"
+            }
+        }
+    },
+    "states": {
+        "list": {
+            "type": "xcd.process.ViewState",
+            "transitions": {
+                "inc": {
+                    "to": "check",
+                    "action": "value = value + increment"
+                },
+                "nameFoo": {
+                    "to": "check",
+                    "action": "fooVar.name = 'fooName'"
+                },
+                "complex": {
+                    "to": "check",
+                    "action": "strValue = routing.mappings['/'].viewName"
+                },
+                "chain" : {
+                    "to": "check",
+                    "action": "strValue = foo() ; bar(strValue)"
+                },
+                "error" : {
+                    "to": "check",
+                    "action": "error()"
+                },
+                "enum" : {
+                    "to": "check",
+                    "action": "error()"
+                },
+                "when2" : {
+                    "to": "check",
+                    "action": "when( strValue == 'special' ).then( value = 1).else( value = 0 )"
+                },
+                "when3" : {
+                    "to": "check",
+                    "action": "when( strValue == 'special' ).then( value = 2)"
+                }
+            }
+
+        },
+        "decimalCheck": {
+            "type": "xcd.process.DecisionState",
+            "decisions": [
+                {
+                    "expression": "decVal + decVal2 == 24.69",
+                    "transition": {
+                        "to": "end"
+                    }
+                },
+                {
+                    "expression": "decVal < decVal2",
+                    "transition": {
+                        "to": "end"
+                    }
+                },
+                {
+                    "expression": "decVal <= decVal2",
+                    "transition": {
+                        "to": "end"
+                    }
+                },
+                {
+                    "expression": "decVal > decVal2",
+                    "transition": {
+                        "to": "end"
+                    }
+                },
+                {
+                    "expression": "decVal >= decVal2",
+                    "transition": {
+                        "to": "end"
+                    }
+                },
+                {
+                    "expression": "decVal == decVal2",
+                    "transition": {
+                        "to": "end"
+                    }
+                },
+                {
+                    "expression": "decVal != decVal2",
+                    "transition": {
+                        "to": "end"
+                    }
+                }
+            ],
+            "defaultTransition": {
+                "to": "list",
+                "discard": true
+            }
+        },
+        "enumCheck": {
+            "type": "xcd.process.DecisionState",
+            "decisions": [
+                {
+                    "expression": "enumA == EnumA.AA",
+                    "transition": {
+                        "to": "end"
+                    }
+                },
+                {
+                    "expression": "enumB != EnumB.BB",
+                    "transition": {
+                        "to": "end"
+                    }
+                },
+                {
+                    "expression": "enumA == cast('EnumA', enumB)",
+                    "transition": {
+                        "to": "end"
+                    }
+                }
+            ],
+            "defaultTransition": {
+                "to": "list",
+                "discard": true
+            }
+        },
+        "stateMachineCheck": {
+            "type": "xcd.process.DecisionState",
+            "decisions": [
+                {
+                    "expression": "stateA == MachineA.START",
+                    "transition": {
+                        "to": "end"
+                    }
+                },
+                {
+                    "expression": "stateB != MachineB.A",
+                    "transition": {
+                        "to": "end"
+                    }
+                },
+                {
+                    "expression": "MachineA.D.from(stateA)",
+                    "transition": {
+                        "to": "end"
+                    }
+                }
+            ],
+            "defaultTransition": {
+                "to": "list",
+                "discard": true
+            }
+        },
+        "check": {
+            "type": "xcd.process.DecisionState",
+            "decisions": [
+                {
+                    "expression": "value >= limit",
+                    "transition": {
+                        "to": "end",
+                        "action" : "syslog('Jumping to End')"
+                    }
+                }
+            ],
+            "defaultTransition": {
+                "to": "list",
+                "discard": true
+            }
+        },
+        "end": {
+            "type": "xcd.process.ViewState"
+        }
+    }
+}

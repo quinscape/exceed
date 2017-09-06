@@ -2,8 +2,7 @@ package de.quinscape.exceed.runtime.scope;
 
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.controller.ActionService;
-import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.js.JsEnvironment;
 
 import java.util.Map;
 
@@ -16,5 +15,5 @@ public interface ScopedContext
 
     boolean isInitialized();
 
-    void init(RuntimeContext runtimeContext, ExpressionService expressionService, ActionService actionService, Map<String,Object> inputValues);
+    void init(RuntimeContext runtimeContext, JsEnvironment jsEnvironment, Map<String,Object> inputValues);
 }

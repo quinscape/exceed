@@ -3,7 +3,7 @@
 NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package de.quinscape.exceed.expression;
 
-import de.quinscape.exceed.model.domain.PropertyModel;
+import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.runtime.util.ExpressionUtil;
 
 public class ASTString

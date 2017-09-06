@@ -1,31 +1,33 @@
 package de.quinscape.exceed.runtime.service.client.provider;
 
+import de.quinscape.exceed.expression.ASTExpression;
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.component.ComponentDescriptor;
 import de.quinscape.exceed.model.component.PropDeclaration;
-import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.context.ScopeDeclaration;
+import de.quinscape.exceed.model.context.ScopeDeclarations;
+import de.quinscape.exceed.model.context.ScopedPropertyModel;
+import de.quinscape.exceed.model.domain.DomainRule;
 import de.quinscape.exceed.model.expression.Attributes;
+import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.meta.StaticFunctionReferences;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.model.meta.ModuleFunctionReferences;
-import de.quinscape.exceed.model.meta.StaticFunctionReferences;
+import de.quinscape.exceed.runtime.component.ComponentInstanceRegistration;
 import de.quinscape.exceed.runtime.i18n.Translator;
-import de.quinscape.exceed.runtime.service.ComponentRegistration;
-import de.quinscape.exceed.runtime.service.client.DefaultClientData;
-import de.quinscape.exceed.runtime.service.client.ClientStateProvider;
 import de.quinscape.exceed.runtime.service.client.ClientData;
+import de.quinscape.exceed.runtime.service.client.ClientStateProvider;
 import de.quinscape.exceed.runtime.service.client.ClientStateScope;
+import de.quinscape.exceed.runtime.service.client.DefaultClientData;
 import de.quinscape.exceed.runtime.service.client.ExceedAppProvider;
 import de.quinscape.exceed.runtime.service.client.ExceedEditorProvider;
 import de.quinscape.exceed.runtime.service.client.scope.TranslationReferenceVisitor;
 import de.quinscape.exceed.runtime.view.ViewData;
-import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,7 +53,7 @@ public class RuntimeTranslationProvider
     @Override
     public ClientStateScope getScope()
     {
-        return ClientStateScope.REQUEST;
+        return ClientStateScope.VIEW;
     }
 
 
@@ -63,10 +65,21 @@ public class RuntimeTranslationProvider
 
 
     @Override
+    public boolean isSkippedOnAjax()
+    {
+        return true;
+    }
+
+    @Override
     public ClientData provide(HttpServletRequest request, RuntimeContext runtimeContext, ViewData viewData)
     {
-        Set<String> references = new HashSet<>();
-        references.addAll(findReferences(runtimeContext));
+        TranslationReferenceVisitor visitor  = new TranslationReferenceVisitor();
+
+        findScopeReference(runtimeContext, visitor, viewData);
+        findReferences(runtimeContext, visitor);
+
+        final Set<String> references = visitor.getReferences();
+
         references.addAll(viewData.getTranslations());
 
         Map<String, Object> map = new HashMap<>();
@@ -78,39 +91,74 @@ public class RuntimeTranslationProvider
     }
 
 
-    private Set<String> findReferences(RuntimeContext runtimeContext)
+    private void findScopeReference(
+        RuntimeContext runtimeContext, TranslationReferenceVisitor visitor,
+        ViewData viewData
+    )
     {
-        StaticFunctionReferences staticFunctionReferences = runtimeContext.getApplicationModel().getMetaData().getStaticFunctionReferences();
+        final String scopeLocation = runtimeContext.getScopedContextChain().getScopeLocation();
+
+        final ScopeDeclarations declarations = runtimeContext.getApplicationModel().lookup(scopeLocation);
+
+        for (ScopeDeclaration declaration : declarations.getDeclarations().values())
+        {
+            final ScopedPropertyModel propertyModel = declaration.getModel();
+            viewData.registerTranslation(runtimeContext, propertyModel);
+
+            final ASTExpression defaultValueExpression = propertyModel.getDefaultValueExpression();
+            if (defaultValueExpression != null)
+            {
+                visitor.visit(defaultValueExpression, null);
+            }
+        }
+    }
+
+
+    private void findReferences(RuntimeContext runtimeContext, TranslationReferenceVisitor visitor)
+    {
+        final ApplicationModel applicationModel = runtimeContext.getApplicationModel();
+        View view = runtimeContext.getView();
+
+        if (view != null)
+        {
+            findViewTranslationReferences(visitor, applicationModel, view);
+        }
+
+        for (DomainRule domainRule : applicationModel.getDomainRules().values())
+        {
+            final ExpressionValue errorMessageValue = domainRule.getErrorMessageValue();
+            visitor.visit(domainRule.getRuleValue());
+            visitor.visit(domainRule.getErrorMessageValue());
+        }
+    }
+
+
+    private void findViewTranslationReferences(TranslationReferenceVisitor visitor, ApplicationModel applicationModel, View view)
+    {
+        StaticFunctionReferences staticFunctionReferences = applicationModel.getMetaData().getStaticFunctionReferences();
         if (staticFunctionReferences == null)
         {
             throw new IllegalStateException("No static function references provided");
         }
 
-        View view = runtimeContext.getView();
+        final Set<String> visitedModules = new HashSet<>();
 
-        if (view == null)
-        {
-            return Collections.emptySet();
-        }
-
-        Set<String> referencedTags = new HashSet<>();
-        TranslationReferenceVisitor visitor  = new TranslationReferenceVisitor();
         for (ComponentModel componentModel : view.getContent().values())
         {
-            collectTranslationsFromComponent(referencedTags, new HashSet<>(), componentModel,
-                staticFunctionReferences, visitor);
+            collectTranslationsFromComponent(
+                componentModel,
+                visitor,
+                staticFunctionReferences,
+                visitedModules
+            );
         }
-
-        referencedTags.addAll(visitor.getReferences());
-
-        return referencedTags;
     }
 
 
-    private void collectTranslationsFromComponent(Set<String> referencedTags, HashSet<String> visitedModules, ComponentModel componentModel, StaticFunctionReferences
-        staticFunctionReferences, TranslationReferenceVisitor visitor)
+    private void collectTranslationsFromComponent(ComponentModel componentModel, TranslationReferenceVisitor visitor, StaticFunctionReferences
+        staticFunctionReferences, Set<String> visitedModules)
     {
-        final ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
+        final ComponentInstanceRegistration componentRegistration = componentModel.getComponentRegistration();
         if (componentRegistration != null)
         {
             final ComponentDescriptor descriptor = componentRegistration.getDescriptor();
@@ -120,7 +168,7 @@ public class RuntimeTranslationProvider
                 throw new IllegalStateException("No module name set in " + componentRegistration);
             }
 
-            staticFunctionReferences.collectReferencesFromModule(moduleName, Translator.I18N_CALL_NAME, referencedTags, visitedModules);
+            staticFunctionReferences.collectReferencesFromModule(moduleName, Translator.I18N_CALL_NAME, visitor.getReferences(), visitedModules);
 
             Attributes attrs = componentModel.getAttrs();
 
@@ -150,10 +198,7 @@ public class RuntimeTranslationProvider
 
         for (ComponentModel kid : componentModel.children())
         {
-            collectTranslationsFromComponent(referencedTags, visitedModules, kid, staticFunctionReferences, visitor);
-
+            collectTranslationsFromComponent(kid, visitor, staticFunctionReferences, visitedModules);
         }
     }
-
-
 }

@@ -9,7 +9,7 @@ import de.quinscape.exceed.runtime.RuntimeContext;
  * @param <T> type for both JSON and Java
  */
 public abstract class NeutralConverter<T>
-    implements PropertyConverter<T,T>
+    implements PropertyConverter<T, T, T>
 {
     private final Class<T> type;
 
@@ -41,6 +41,23 @@ public abstract class NeutralConverter<T>
     {
         return getType();
     }
+
+
+    @Override
+    public T convertToJs(RuntimeContext runtimeContext, T
+        value)
+    {
+        return value;
+    }
+
+
+    @Override
+    public T convertFromJs(RuntimeContext runtimeContext, T
+        value)
+    {
+        return value;
+    }
+
 
     public Class<T> getType()
     {

@@ -1,12 +1,15 @@
 package de.quinscape.exceed.runtime.domain;
 
 import de.quinscape.exceed.model.ApplicationModel;
-import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.domain.EnumType;
-import de.quinscape.exceed.model.domain.PropertyType;
+import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.model.domain.type.EnumType;
+import de.quinscape.exceed.model.domain.type.QueryTypeModel;
+import de.quinscape.exceed.model.state.StateMachine;
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.datalist.DataGraphService;
-import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
+import de.quinscape.exceed.runtime.js.JsEnvironment;
 import de.quinscape.exceed.runtime.schema.StorageConfiguration;
 import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import de.quinscape.exceed.runtime.util.JSONUtil;
@@ -27,11 +30,7 @@ public class DomainServiceImpl
 {
     private final static Logger log = LoggerFactory.getLogger(DomainServiceImpl.class);
 
-    private final Map<String, PropertyConverter> converters;
-
     private final StorageConfigurationRepository storageConfigurationRepository;
-
-    private final Map<Class<?>, DomainType> modelDomainTypes;
 
     private final JSONParser parser;
 
@@ -45,13 +44,10 @@ public class DomainServiceImpl
 
 
     public DomainServiceImpl(
-        Map<String, PropertyConverter> converters,
-        StorageConfigurationRepository storageConfigurationRepository,
-        Map<Class<?>, DomainType> modelDomainTypes)
+        StorageConfigurationRepository storageConfigurationRepository
+    )
     {
-        this.converters = converters;
         this.storageConfigurationRepository = storageConfigurationRepository;
-        this.modelDomainTypes = modelDomainTypes;
 
         parser = new JSONParser();
         parser.setObjectSupport(JSONUtil.OBJECT_SUPPORT);
@@ -75,10 +71,6 @@ public class DomainServiceImpl
 
         final ApplicationModel applicationModel = runtimeApplication.getApplicationModel();
         final Map<String, DomainType> domainTypes = new HashMap<>(applicationModel.getDomainTypes());
-
-        modelDomainTypes.values().forEach( domainType ->
-            domainTypes.put(domainType.getName(), domainType)
-        );
 
         this.domainTypes = domainTypes;
 
@@ -186,44 +178,64 @@ public class DomainServiceImpl
 
 
     @Override
-    public DomainObject create(String type, String id)
+    public Map<String, PropertyTypeModel> getPropertyTypes()
     {
-        return dbOps(type).create(this, type, id);
+        return runtimeApplication.getApplicationModel().getPropertyTypes();
     }
 
 
     @Override
-    public DomainObject read(String type, String id)
+    public Map<String, StateMachine> getStateMachines()
     {
-        return dbOps(type).read(this, type, id);
+        return runtimeApplication.getApplicationModel().getStateMachines();
     }
 
 
     @Override
-    public void delete(DomainObject genericDomainObject)
+    public DomainObject create(RuntimeContext runtimeContext, String type, String id)
     {
-        dbOps(genericDomainObject.getDomainType()).delete(this, genericDomainObject);
+        return dbOps(type).create(runtimeContext, this, type, id, GenericDomainObject.class);
+    }
+
+    @Override
+    public DomainObject create(RuntimeContext runtimeContext, String type, String id, Class<? extends DomainObject> implClass)
+    {
+        return dbOps(type).create(runtimeContext, this, type, id, implClass);
     }
 
 
     @Override
-    public void insert(DomainObject genericDomainObject)
+    public DomainObject read(RuntimeContext runtimeContext, String type, String id)
     {
-        dbOps(genericDomainObject.getDomainType()).insert(this, genericDomainObject);
+        return dbOps(type).read(runtimeContext, this, type, id);
     }
 
 
     @Override
-    public void insertOrUpdate(DomainObject genericDomainObject)
+    public boolean delete(RuntimeContext runtimeContext, DomainObject genericDomainObject)
     {
-        dbOps(genericDomainObject.getDomainType()).insertOrUpdate(this, genericDomainObject);
+        return dbOps(genericDomainObject.getDomainType()).delete(runtimeContext, this, genericDomainObject);
     }
 
 
     @Override
-    public void update(DomainObject genericDomainObject)
+    public void insert(RuntimeContext runtimeContext, DomainObject genericDomainObject)
     {
-        dbOps(genericDomainObject.getDomainType()).update(this, genericDomainObject);
+        dbOps(genericDomainObject.getDomainType()).insert(runtimeContext, this, genericDomainObject);
+    }
+
+
+    @Override
+    public void insertOrUpdate(RuntimeContext runtimeContext, DomainObject genericDomainObject)
+    {
+        dbOps(genericDomainObject.getDomainType()).insertOrUpdate(runtimeContext, this, genericDomainObject);
+    }
+
+
+    @Override
+    public boolean update(RuntimeContext runtimeContext, DomainObject genericDomainObject)
+    {
+        return dbOps(genericDomainObject.getDomainType()).update(runtimeContext, this, genericDomainObject);
     }
 
 
@@ -239,29 +251,27 @@ public class DomainServiceImpl
         return ops.getDomainOperations();
     }
 
-
-    @Override
-    public PropertyConverter getPropertyConverter(String propertyType)
-    {
-        final String converterName = runtimeApplication.getApplicationModel().getPropertyType(propertyType).getConverter();
-        final PropertyConverter propertyConverter = converters.get(converterName);
-        if (propertyConverter == null)
-        {
-            throw new IllegalStateException("No converter '" + converterName + "' for type '" + propertyType + "'");
-        }
-        return propertyConverter;
-    }
-
-
-
-
     @Override
     public StorageConfiguration getStorageConfiguration(String domainType)
     {
-        final DomainType type = domainTypes.get(domainType);
+        final DomainType type = getDomainType(domainType);
         final String config = type.getStorageConfiguration();
         return storageConfigurationRepository.getConfiguration(config);
     }
+
+
+    @Override
+    public JsEnvironment getJsEnvironment()
+    {
+        return runtimeApplication.getApplicationModel().getMetaData().getJsEnvironment();
+    }
+
+
+    public void update(QueryTypeModel queryTypeModel)
+    {
+        domainTypes.put(queryTypeModel.getName(), queryTypeModel);
+    }
+
 
     public String getAppName()
     {

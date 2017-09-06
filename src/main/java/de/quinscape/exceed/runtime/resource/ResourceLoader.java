@@ -3,7 +3,7 @@ package de.quinscape.exceed.runtime.resource;
 import com.google.common.cache.LoadingCache;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.ModuleResourceEvent;
-import de.quinscape.exceed.runtime.resource.file.ResourceLocation;
+import de.quinscape.exceed.runtime.resource.file.PathResources;
 import de.quinscape.exceed.runtime.service.CachedResource;
 import de.quinscape.exceed.runtime.util.Util;
 import org.slf4j.LoggerFactory;
@@ -25,16 +25,16 @@ public class ResourceLoader
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     private final List<ResourceRoot> extensions;
-    private final ConcurrentMap<String, ResourceLocation> resourceLocations;
+
+    private final ConcurrentMap<String, PathResources> allResources;
 
     private LoadingCache<String, CachedResource> resourceCache;
-
 
     public ResourceLoader(List<ResourceRoot> extensions)
     {
         this.extensions = extensions;
 
-        resourceLocations = new ConcurrentHashMap<>();
+        allResources = new ConcurrentHashMap<>();
 
         for (int extensionIndex = 0; extensionIndex < extensions.size(); extensionIndex++)
         {
@@ -48,12 +48,12 @@ public class ResourceLoader
             {
                 String relative = resource.getRelativePath();
 
-                ResourceLocation location = getResourceLocation(relative);
-                if (location == null)
+                PathResources pathResources = getResources(relative);
+                if (pathResources == null)
                 {
-                    location = register(resource);
+                    pathResources = register(resource);
                 }
-                location.addExtensionResource(resource);
+                pathResources.addExtensionResource(resource);
             }
         }
     }
@@ -61,7 +61,7 @@ public class ResourceLoader
 
     /**
      * Registers the given resource with a newly created ResourceLocation.
-     *
+     * <p>
      * In general, we only register new resources on two occasions: At startup we register all existing resources and
      * if we do hot loading, we create new locations if we receive CREATED events about resources that did not exist
      * before. In all other cases, we don't do anything and return <code>null</code>.
@@ -69,11 +69,11 @@ public class ResourceLoader
      * @param resource
      * @return
      */
-    private ResourceLocation register(AppResource resource)
+    private PathResources register(AppResource resource)
     {
         final String relativePath = resource.getRelativePath();
-        ResourceLocation location = new ResourceLocation(relativePath);
-        resourceLocations.put(relativePath, location);
+        PathResources location = new PathResources(relativePath);
+        allResources.put(relativePath, location);
         location.addExtensionResource(resource);
         return location;
     }
@@ -105,31 +105,40 @@ public class ResourceLoader
     }
 
 
-    public ResourceLocation getResourceLocation(String relativePath)
+    public PathResources getResources(String relativePath)
     {
-        return resourceLocations.get(Util.toSystemPath(relativePath));
+        return allResources.get(Util.toSystemPath(relativePath));
     }
 
 
-    public Map<String, ResourceLocation> getResourceLocations()
+    /**
+     * Returns a map containing all available app resources mapped by the relative path.
+     *
+     * @return map mapping relative paths to the path resources for that path.
+     */
+    public Map<String, PathResources> getAllResources()
     {
-        return resourceLocations;
+        return allResources;
     }
+
 
     public String readResource(String relativePath)
     {
-        ResourceLocation resourceLocation = resourceFile(relativePath);
+        PathResources resourceLocation = resourceFile(relativePath);
         return new String(resourceLocation.getHighestPriorityResource().read(), UTF8);
     }
+
+
     public long lastModified(String relativePath) throws ResourceNotFoundException
     {
-        ResourceLocation resourceLocation = resourceFile(relativePath);
+        PathResources resourceLocation = resourceFile(relativePath);
         return resourceLocation.getHighestPriorityResource().lastModified();
     }
 
-    private ResourceLocation resourceFile(String relativePath)
+
+    private PathResources resourceFile(String relativePath)
     {
-        ResourceLocation resourceLocation = getResourceLocation(relativePath);
+        PathResources resourceLocation = getResources(relativePath);
         if (resourceLocation == null)
         {
             throw new ResourceNotFoundException("No resource found for relative path '" + relativePath + "'");
@@ -137,17 +146,19 @@ public class ResourceLoader
         return resourceLocation;
     }
 
+
     public List<? extends ResourceRoot> getExtensions()
     {
         return extensions;
     }
+
 
     @Override
     public String toString()
     {
         return super.toString() + ": "
             + "extensions = " + extensions
-            + ", resourceLocations = " + resourceLocations
+            + ", allResources = " + allResources
             ;
     }
 
@@ -155,7 +166,7 @@ public class ResourceLoader
     @Override
     public void onResourceChange(ModuleResourceEvent resourceEvent, FileResourceRoot root, String resourcePath)
     {
-        ResourceLocation resourceLocation = getResourceLocation(resourcePath);
+        PathResources resourceLocation = getResources(resourcePath);
         if (resourceLocation == null)
         {
             resourceLocation = register(root.getResource(resourcePath));

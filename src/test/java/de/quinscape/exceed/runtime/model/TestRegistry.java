@@ -2,7 +2,7 @@ package de.quinscape.exceed.runtime.model;
 
 import de.quinscape.exceed.model.component.ComponentDescriptor;
 import de.quinscape.exceed.model.component.ComponentPackageDescriptor;
-import de.quinscape.exceed.runtime.service.ComponentRegistration;
+import de.quinscape.exceed.runtime.component.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import org.svenson.JSONParser;
 import org.svenson.tokenize.InputStreamSource;
@@ -34,7 +34,8 @@ public class TestRegistry
         for (Map.Entry<String, ComponentDescriptor> entry : componentDescriptors.entrySet())
         {
             String componentName = entry.getKey();
-            m.put(componentName, new ComponentRegistration(componentName, entry.getValue(), "", null, null));
+            m.put(componentName, new ComponentRegistration(componentName, entry.getValue(), "", null, null,
+                null));
         }
         this.componentRegistrations = m;
     }
@@ -49,7 +50,7 @@ public class TestRegistry
 
         for (String componentName : names)
         {
-            ComponentPackageDescriptor pkg = JSONParser.defaultJSONParser().parse(ComponentPackageDescriptor.class, new InputStreamSource(new FileInputStream(new File("./src/main/js/components/" + componentName + "/components.json")), true));
+            ComponentPackageDescriptor pkg = JSONParser.defaultJSONParser().parse(ComponentPackageDescriptor.class, new InputStreamSource(new FileInputStream(new File("./src/main/js/components/" + componentName + "/" + ComponentRegistry.COMPONENT_PACKAGE_FILE_NAME)), true));
             map.putAll(pkg.getComponents());
         }
 

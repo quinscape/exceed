@@ -1,10 +1,23 @@
 package de.quinscape.exceed.runtime.domain;
 
+import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.component.DataGraph;
+import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
+
 public class SystemStorageOperations
     implements DomainOperations
 {
     @Override
-    public DomainObject create(DomainService domainService, String type, String id)
+    public DataGraph query(RuntimeContext runtimeContext, DomainService domainService, QueryDefinition
+        queryDefinition)
+    {
+        throw new UnsupportedOperationException("System storage does not support query()");
+    }
+
+
+    @Override
+    public DomainObject create(RuntimeContext runtimeContext, DomainService domainService, String type, String id, Class<? extends DomainObject>
+        implClass)
     {
         final GenericDomainObject genericDomainObject = new GenericDomainObject();
         genericDomainObject.setDomainType(type);
@@ -15,21 +28,21 @@ public class SystemStorageOperations
 
 
     @Override
-    public DomainObject read(DomainService domainService, String type, String id)
+    public DomainObject read(RuntimeContext runtimeContext, DomainService domainService, String type, String id)
     {
         throw new UnsupportedOperationException("System storage does not support read()");
     }
 
 
     @Override
-    public void delete(DomainService domainService, DomainObject genericDomainObject)
+    public boolean delete(RuntimeContext runtimeContext, DomainService domainService, DomainObject genericDomainObject)
     {
         throw new UnsupportedOperationException("System storage does not support delete()");
     }
 
 
     @Override
-    public void insert(DomainService domainService, DomainObject genericDomainObject)
+    public void insert(RuntimeContext runtimeContext, DomainService domainService, DomainObject genericDomainObject)
     {
         throw new UnsupportedOperationException("System storage does not support insert()");
 
@@ -37,14 +50,15 @@ public class SystemStorageOperations
 
 
     @Override
-    public void insertOrUpdate(DomainService domainService, DomainObject genericDomainObject)
+    public void insertOrUpdate(RuntimeContext
+                                   runtimeContext, DomainService domainService, DomainObject genericDomainObject)
     {
         throw new UnsupportedOperationException("System storage does not support insertOrUpdate()");
     }
 
 
     @Override
-    public void update(DomainService domainService, DomainObject genericDomainObject)
+    public boolean update(RuntimeContext runtimeContext, DomainService domainService, DomainObject genericDomainObject)
     {
         throw new UnsupportedOperationException("System storage does not support update()");
     }

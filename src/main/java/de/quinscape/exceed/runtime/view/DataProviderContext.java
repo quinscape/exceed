@@ -1,24 +1,25 @@
 package de.quinscape.exceed.runtime.view;
 
 import de.quinscape.exceed.expression.ASTExpression;
-import de.quinscape.exceed.expression.ASTFunction;
-import de.quinscape.exceed.expression.ExpressionParser;
-import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.domain.property.PropertyModel;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.model.domain.type.EnumType;
+import de.quinscape.exceed.model.meta.PropertyType;
+import de.quinscape.exceed.model.state.StateMachine;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.expression.ExpressionContext;
-import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
-import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.component.ComponentInstanceRegistration;
 import de.quinscape.exceed.runtime.process.ProcessExecutionState;
 import de.quinscape.exceed.runtime.scope.ScopedContext;
-import de.quinscape.exceed.runtime.service.ComponentRegistration;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Encapsulates the necessary context for a view data provisioning invocation for
@@ -37,20 +38,17 @@ public final class DataProviderContext
 
     private final ViewData viewData;
 
-    private final ExpressionService expressionService;
-
     private boolean continueOnChildren = true;
 
     private final ComponentModel overridden;
 
     private final Map<String, Object> varsOverride;
 
-    public DataProviderContext(ViewDataService viewDataService, RuntimeContext runtimeContext, ExpressionService expressionService, String viewName, ProcessExecutionState state, ViewData viewData, ComponentModel overridden, Map<String, Object> varsOverride)
+    public DataProviderContext(ViewDataService viewDataService, RuntimeContext runtimeContext, String viewName, ProcessExecutionState state, ViewData viewData, ComponentModel overridden, Map<String, Object> varsOverride)
     {
         this.viewDataService = viewDataService;
         this.viewName = viewName;
         this.runtimeContext = runtimeContext;
-        this.expressionService = expressionService;
         this.state = state;
         this.viewData = viewData;
         this.overridden = overridden;
@@ -151,43 +149,47 @@ public final class DataProviderContext
 
 
         Map<String, Object> vars = new HashMap<>();
-        try
+
+        final boolean isUpdatedComponent = componentModel.equals(overridden);
+
+        ComponentInstanceRegistration componentRegistration = componentModel.getComponentRegistration();
+        if (componentRegistration == null)
         {
-            VariableResolutionEnvironment variableResolutionEnvironment = new VariableResolutionEnvironment
-                (componentModel, runtimeContext.getLocationParams());
+            throw new IllegalStateException("No component registration for " + componentModel);
+        }
 
-            ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
-            if (componentRegistration == null)
+        Map<String, ASTExpression> varExpressions = componentRegistration.getVarExpressions();
+
+        if (varExpressions != null)
+        {
+            for (Map.Entry<String, ASTExpression> entry : varExpressions.entrySet())
             {
-                throw new IllegalStateException("No component registration for " + componentModel);
-            }
+                String varName = entry.getKey();
 
-            Map<String, String> varExpressions = componentRegistration.getDescriptor().getVars();
+                boolean useDefault = true;
 
-            if (varExpressions != null)
-            {
-                for (Map.Entry<String, String> entry : varExpressions.entrySet())
+                if (isUpdatedComponent)
                 {
-                    String varName = entry.getKey();
-                    String expression = entry.getValue();
+                    final Object v = varsOverride.get(varName);
+                    if (v != null)
+                    {
+                        // use override value
+                        vars.put(varName, v);
+                        useDefault = false;
+                    }
+                }
 
-                    ASTExpression astExpression = ExpressionParser.parse(expression);
-                    Object result = expressionService.evaluate(astExpression, variableResolutionEnvironment);
+                if (useDefault)
+                {
+                    ASTExpression astExpression = entry.getValue();
+                    Object result = runtimeContext.getJsEnvironment().getValue(runtimeContext, astExpression);
                     vars.put(varName, result);
                 }
             }
-
-            if (componentModel.equals(overridden))
-            {
-                vars.putAll(varsOverride);
-            }
-
-            return vars;
         }
-        catch (ParseException e)
-        {
-            throw new ExceedRuntimeException(e);
-        }
+
+
+        return vars;
     }
 
 
@@ -196,119 +198,9 @@ public final class DataProviderContext
         viewData.registerTranslation(tag);
     }
 
-    public void registerTranslations(DomainType type)
+    public void registerTranslations(RuntimeContext runtimeContext, DomainType type)
     {
-        registerTranslation(type.getName());
-
-        for (DomainProperty domainProperty : type.getProperties())
-        {
-            registerTranslation(domainProperty.getTranslationTag());
-        }
-    }
-
-
-    public static class VariableResolutionEnvironment
-        extends ExpressionEnvironment
-    {
-
-        private final ComponentModel componentModel;
-
-        private final Map<String, Object> locationParams;
-
-
-        public VariableResolutionEnvironment(ComponentModel componentModel, Map<String, Object> locationParams)
-        {
-            this.componentModel = componentModel;
-            this.locationParams = locationParams;
-        }
-
-
-
-        @Override
-        protected boolean logicalOperatorsAllowed()
-        {
-            return true;
-        }
-
-
-        @Override
-        protected boolean comparatorsAllowed()
-        {
-            return true;
-        }
-
-
-        @Override
-        protected boolean complexLiteralsAllowed()
-        {
-            return true;
-        }
-
-
-        @Override
-        protected boolean arithmeticOperatorsAllowed()
-        {
-            return true;
-        }
-
-
-        @Override
-        protected boolean expressionSequenceAllowed()
-        {
-            return false;
-        }
-
-
-        @Override
-        public Object undefinedOperation(ExpressionContext<ExpressionEnvironment> ctx, ASTFunction node, Object chainObject)
-        {
-            if (node.getName().equals("param"))
-            {
-                if (node.jjtGetNumChildren() != 1 && node.jjtGetNumChildren() != 2)
-                {
-                    throw new IllegalStateException("Operation prop() takes one or two arguments : (name, default)");
-                }
-
-                String name = node.jjtGetChild(0).jjtAccept(this, null).toString();
-
-                Object value = locationParams.get(name);
-                if (value == null && node.jjtGetNumChildren() == 2)
-                {
-                    value = node.jjtGetChild(1).jjtAccept(this, null).toString();
-                }
-                return value;
-            }
-            if (node.getName().equals("prop"))
-            {
-                if (node.jjtGetNumChildren() != 1)
-                {
-                    throw new IllegalStateException("Operation prop() takes exactly one argument");
-                }
-
-                Object result = node.jjtGetChild(0).jjtAccept(this, null);
-                if (result instanceof String)
-                {
-                    String propName = (String) result;
-                    ExpressionValue attribute = componentModel.getAttribute(propName);
-                    if (attribute == null)
-                    {
-                        return null;
-                    }
-
-                    ASTExpression astExpression = attribute.getAstExpression();
-                    if (astExpression != null)
-                    {
-                        return astExpression.jjtAccept(this, null);
-                    }
-                    return attribute.getValue();
-                }
-                else
-                {
-                    throw new VariableResolutionException("Invalid prop operator argument: " + result);
-                }
-            }
-            return super.undefinedOperation(ctx, node, chainObject);
-        }
+        viewData.registerTranslations(runtimeContext, type);
     }
 
 

@@ -1,7 +1,9 @@
 package de.quinscape.exceed.runtime.controller;
 
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.context.ScopeMetaModel;
 import de.quinscape.exceed.model.meta.StaticFunctionReferences;
+import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
@@ -43,6 +45,12 @@ public class EditorController
     implements ApplicationContextAware
 {
     private final static Logger log = LoggerFactory.getLogger(EditorController.class);
+
+    private static final View EMPTY_VIEW = new View();
+    static
+    {
+        EMPTY_VIEW.setName("__empty__");
+    }
 
     private final ApplicationService applicationService;
 
@@ -90,14 +98,15 @@ public class EditorController
         }
 
 
-        SessionContext sessionContext = scopedContextFactory.getSessionContext(request, appName, runtimeApplication.getApplicationModel().getSessionContextModel());
+        final ApplicationModel applicationModel = runtimeApplication.getApplicationModel();
+        SessionContext sessionContext = scopedContextFactory.getSessionContext(request, appName, applicationModel.getSessionContextModel());
 
         final ScopedContextChain scopedContextChain = new ScopedContextChain(
             Arrays.asList(
                 runtimeApplication.getApplicationContext(),
                 sessionContext
             ),
-            runtimeApplication.getApplicationModel().getMetaData().getScopeMetaModel(),
+            applicationModel.getMetaData().getScopeMetaModel(),
             ScopeMetaModel.ACTION);
 
         RuntimeContext runtimeContext = runtimeContextFactory.create(
@@ -109,17 +118,19 @@ public class EditorController
         );
 
         RuntimeContextHolder.register(runtimeContext, request);
-        scopedContextFactory.initializeContext(runtimeContext, sessionContext);
+        scopedContextFactory.initializeContext(runtimeContext.getJsEnvironment(), runtimeContext, sessionContext);
 
         RuntimeContextHolder.register(runtimeContext, request);
 
         final ViewData viewData = new ViewData();
 
-        final StaticFunctionReferences staticFunctionReferences = runtimeApplication.getApplicationModel()
+        final StaticFunctionReferences staticFunctionReferences = applicationModel
             .getMetaData().getStaticFunctionReferences();
 
         // register all editor module references
         staticFunctionReferences.getEditorTranslations().forEach(viewData::registerTranslation);
+
+        runtimeContext.setView(EMPTY_VIEW);
 
         final String clientStateJSON = clientStateService.getClientStateJSON(request, runtimeContext, viewData, providers);
 

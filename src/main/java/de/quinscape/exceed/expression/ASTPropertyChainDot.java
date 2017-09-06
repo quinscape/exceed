@@ -28,5 +28,12 @@ public class ASTPropertyChainDot
         return
             visitor.visit(this, data);
     }
+
+
+    @Override
+    public String toString()
+    {
+        return super.toString() + " " + jjtGetChild(0).toString();
+    }
 }
 /* JavaCC - OriginalChecksum=c677bd223143c9745c6da4bbfb38e4b7 (do not edit this line) */

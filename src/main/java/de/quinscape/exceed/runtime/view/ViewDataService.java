@@ -3,22 +3,18 @@ package de.quinscape.exceed.runtime.view;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.component.ComponentInstanceRegistration;
 import de.quinscape.exceed.runtime.component.DataProvider;
-import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.component.DataProviderPreparationException;
 import de.quinscape.exceed.runtime.process.ProcessExecutionState;
-import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
 
 public class ViewDataService
 {
     private final static Logger log = LoggerFactory.getLogger(ViewDataService.class);
-
-    @Autowired
-    private ExpressionService expressionService;
 
     /**
      * Prepares view data for the current view by recursively invoking the data providers registered
@@ -36,7 +32,7 @@ public class ViewDataService
     public ViewData prepareView(RuntimeContext runtimeContext, View view, ProcessExecutionState state)
     {
         ViewData viewData = new ViewData();
-        DataProviderContext context = new DataProviderContext(this, runtimeContext, expressionService, view.getName(), state, viewData, null, null);
+        DataProviderContext context = new DataProviderContext(this, runtimeContext, view.getName(), state, viewData, null, null);
 
         for (ComponentModel componentModel : view.getContent().values())
         {
@@ -65,39 +61,20 @@ public class ViewDataService
                                           Map<String, Object> vars, ProcessExecutionState state)
     {
         ViewData viewData = new ViewData();
-        DataProviderContext context = new DataProviderContext(this, runtimeContext, expressionService, view.getName(), state, viewData, componentModel, vars);
+        DataProviderContext context = new DataProviderContext(this, runtimeContext, view.getName(), state, viewData, componentModel, vars);
         prepareRecursive(context, componentModel);
         return viewData.getComponentData().get(componentModel.getComponentId());
     }
 
     void prepareRecursive(DataProviderContext context, ComponentModel element)
     {
-        ComponentRegistration componentRegistration = element.getComponentRegistration();
+        ComponentInstanceRegistration componentRegistration = element.getComponentRegistration();
         if (element.isComponent() && componentRegistration != null)
         {
             DataProvider dataProviderInstance = componentRegistration.getDataProvider();
             if (dataProviderInstance != null)
             {
-                log.debug("Calling {} for {}", dataProviderInstance, element);
-
-                context.enableContinueOnChildren();
-
-                Map<String, Object> vars = context.getVars(element);
-                Map<String, Object> componentDataMap = dataProviderInstance.provide(context, element, vars);
-
-                ViewData viewData = context.getViewData();
-                String componentId = element.getComponentId();
-
-                final Object varsArg = vars.size() > 0 ? vars : false;
-
-                if (componentDataMap != null)
-                {
-                    viewData.provide(componentId, new ComponentData(varsArg, componentDataMap));
-                }
-                else
-                {
-                    viewData.provide(componentId, new ComponentData(varsArg, false));
-                }
+                prepareComponent(context, element, dataProviderInstance);
 
                 if (context.isContinueOnChildren())
                 {
@@ -109,9 +86,44 @@ public class ViewDataService
                 return;
             }
         }
+
         for (ComponentModel kid : element.children())
         {
             prepareRecursive(context, kid);
+        }
+    }
+
+
+    private void prepareComponent(
+        DataProviderContext context, ComponentModel element, DataProvider dataProviderInstance
+    )
+    {
+        final String componentId = element.getComponentId();
+        try
+        {
+            log.debug("Calling {} for {}", dataProviderInstance, element);
+
+            context.enableContinueOnChildren();
+
+            final Map<String, Object> vars = context.getVars(element);
+            final Map<String, Object> componentDataMap = dataProviderInstance.provide(context, element, vars);
+
+            final ViewData viewData = context.getViewData();
+
+            final Object varsArg = vars.size() > 0 ? vars : false;
+
+            if (componentDataMap != null)
+            {
+                viewData.provide(componentId, new ComponentData(varsArg, componentDataMap));
+            }
+            else
+            {
+                viewData.provide(componentId, new ComponentData(varsArg, false));
+            }
+        }
+        catch(Exception e)
+        {
+            throw new DataProviderPreparationException(componentId,"Error providing for " + element + " with " + dataProviderInstance + ", context = " + context, e);
         }
     }
 }

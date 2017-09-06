@@ -3,6 +3,8 @@
 NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package de.quinscape.exceed.expression;
 
+import de.quinscape.exceed.runtime.model.ExpressionRenderer;
+
 public class ASTPropertyChain
     extends SimpleNode
 {
@@ -39,6 +41,13 @@ public class ASTPropertyChain
         {
             return link.jjtGetChild(0);
         }
+    }
+
+
+    @Override
+    public String toString()
+    {
+        return super.toString() + " " + ExpressionRenderer.render(this);
     }
 }
 /* JavaCC - OriginalChecksum=142d79af8dafd11ed964e736410e6a12 (do not edit this line) */

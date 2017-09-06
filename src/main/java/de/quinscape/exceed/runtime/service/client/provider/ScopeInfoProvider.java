@@ -2,7 +2,6 @@ package de.quinscape.exceed.runtime.service.client.provider;
 
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.context.ScopeDeclarations;
-import de.quinscape.exceed.model.context.ScopeMetaModel;
 import de.quinscape.exceed.model.meta.StaticFunctionReferences;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.security.Roles;
@@ -59,10 +58,7 @@ public class ScopeInfoProvider
         }
 
         final ApplicationModel applicationModel = runtimeContext.getApplicationModel();
-        final ScopeMetaModel scopeMetaModel = applicationModel.getMetaData().getScopeMetaModel();
-
-        final ScopeDeclarations declarations = scopeMetaModel.lookup(runtimeContext.getView());
-
+        final ScopeDeclarations declarations = applicationModel.lookup(runtimeContext.getView());
 
         return new DefaultClientData(declarations);
     }

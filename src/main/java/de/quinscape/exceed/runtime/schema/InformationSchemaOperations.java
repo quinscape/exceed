@@ -1,8 +1,8 @@
 package de.quinscape.exceed.runtime.schema;
 
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.domain.ForeignKeyDefinition;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.model.domain.property.ForeignKeyDefinition;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
@@ -12,6 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
 import javax.sql.DataSource;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -110,16 +111,7 @@ public class InformationSchemaOperations
     private String columnClause(RuntimeContext runtimeContext, DomainType type, DomainProperty domainProperty)
     {
         final FieldType sqlType = getSQLType(runtimeContext, domainProperty);
-        String typeExpr;
-
-        if (sqlType == FieldType.CHARACTER_VARYING)
-        {
-            typeExpr = sqlType.getSqlWithMax(domainProperty.getMaxLength());
-        }
-        else
-        {
-            typeExpr = sqlType.getSqlName();
-        }
+        String typeExpr = sqlType.getSqlExpression(runtimeContext, domainProperty);
         final String[] fieldName = namingStrategy.getFieldName(type.getName(), domainProperty.getName());
         return fieldName[1] + " " + typeExpr + (domainProperty.isRequired() ? " NOT NULL" : "");
     }
@@ -127,8 +119,12 @@ public class InformationSchemaOperations
 
     private FieldType getSQLType(RuntimeContext runtimeContext, DomainProperty domainProperty)
     {
-        final PropertyConverter converter = runtimeContext.getDomainService().getPropertyConverter
-            (domainProperty.getType());
+        final PropertyConverter converter = domainProperty.getPropertyType();
+
+        if (converter == null)
+        {
+            throw new IllegalStateException("No converter registered for domain property: " + domainProperty);
+        }
 
         final Class javaType = converter.getJavaType();
         if (javaType.equals(String.class))
@@ -156,14 +152,6 @@ public class InformationSchemaOperations
         {
             return FieldType.BIGINT;
         }
-        else if (javaType.equals(Float.class))
-        {
-            return FieldType.REAL;
-        }
-        else if (javaType.equals(Double.class))
-        {
-            return FieldType.DOUBLE_PRECISION;
-        }
         else if (javaType.equals(Timestamp.class))
         {
             return FieldType.TIMESTAMP_WITHOUT_TIME_ZONE;
@@ -171,6 +159,10 @@ public class InformationSchemaOperations
         else if (javaType.equals(Date.class))
         {
             return FieldType.DATE;
+        }
+        else if (javaType.equals(BigDecimal.class))
+        {
+            return FieldType.DECIMAL;
         }
         else
         {
@@ -196,9 +188,8 @@ public class InformationSchemaOperations
             final FieldType fieldType = getSQLType(runtimeContext, domainProperty);
             final String name = namingStrategy.getFieldName(type.getName(), domainProperty.getName())[1];
             final boolean nullable = !domainProperty.isRequired();
-            final int length = domainProperty.getMaxLength();
 
-            final String sqlType = fieldType.getSqlWithMax(length);
+            final String sqlType = fieldType.getSqlExpression(runtimeContext,domainProperty);
 
             updatedColumns.add(name);
 

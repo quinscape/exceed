@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.service.client;
 
-import org.svenson.JSON;
+import de.quinscape.exceed.runtime.util.JSONUtil;
 
 /**
  * Result based on an object that is automatically converted to JSON with the default generator.
@@ -20,7 +20,7 @@ public class DefaultClientData
 
     public DefaultClientData(Object data)
     {
-        this.json = JSON.defaultJSON().forValue(data);
+        this.json = JSONUtil.DEFAULT_GENERATOR.forValue(data);
     }
 
 

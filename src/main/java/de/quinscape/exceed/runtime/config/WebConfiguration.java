@@ -20,6 +20,7 @@ import de.quinscape.exceed.runtime.service.websocket.EditorWebSocketHandler;
 import de.quinscape.exceed.runtime.service.websocket.MessageHubRegistry;
 import de.quinscape.exceed.runtime.service.websocket.MessageHubRegistryImpl;
 import de.quinscape.exceed.runtime.service.websocket.WebSocketServerFactory;
+import de.quinscape.exceed.runtime.spring.ExceedViewResolver;
 import de.quinscape.exceed.runtime.template.TemplateVariablesProvider;
 import de.quinscape.exceed.runtime.util.MediaTypeService;
 import de.quinscape.exceed.runtime.util.MediaTypeServiceImpl;
@@ -66,30 +67,7 @@ public class WebConfiguration
 
     @Autowired
     private ApplicationContext applicationContext;
-
-//    @Autowired
-//    private ApplicationService applicationService;
-//
-//    @Bean
-//    public JsService jsService() throws IOException
-//    {
-//        File sourceDir = Util.getExceedLibrarySource();
-//        String sourceLocation = null;
-//        ResourceRoot root;
-//        if (sourceDir != null)
-//        {
-//            root = new FileResourceRoot(new File(sourceDir, Util.path("target/classes/META-INF/resources")), true);
-//        }
-//        else
-//        {
-//            root = new ServletResourceRoot(servletContext, "");
-//        }
-//        return new JsService(applicationService, root);
-//
-//    }
-//
-
-
+    
     @Override
     public void configureViewResolvers(ViewResolverRegistry registry)
     {

@@ -3,6 +3,8 @@ package de.quinscape.exceed.runtime.expression;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.Node;
+import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.util.ExpressionUtil;
 
 public final class OperationRegistration
 {
@@ -32,6 +34,20 @@ public final class OperationRegistration
 
 
     public Object invoke(ExpressionContext ctx, ASTFunction node, Object context)
+    {
+        try
+        {
+            Object[] params = prepareParameters(ctx, node, context);
+            return access.invoke(bean, index, params);
+        }
+        catch(Exception e)
+        {
+            throw new ExceedRuntimeException("Error invoking operation: " + ExpressionUtil.renderExpressionOf(node) + ": context = " + context + ", env = " + ctx.getEnv(), e);
+        }
+    }
+
+
+    private Object[] prepareParameters(ExpressionContext ctx, ASTFunction node, Object context)
     {
         int length = parameterTypes.length;
         Object[] params = new Object[length];
@@ -73,7 +89,6 @@ public final class OperationRegistration
 //            }
             params[i + paramOffset] = param;
         }
-
-        return access.invoke(bean, index, params);
+        return params;
     }
 }

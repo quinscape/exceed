@@ -2,8 +2,9 @@ package de.quinscape.exceed.runtime.action;
 
 import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.TestDomainServiceBase;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.model.domain.type.DomainTypeModel;
 import de.quinscape.exceed.model.meta.PropertyType;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Date;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -261,16 +263,19 @@ public class ActionServiceTest
     private static class TestDomainService
         extends TestDomainServiceBase
     {
-        private Map<String, DomainType> domainTypes = ImmutableMap.of(
-            "Foo", createDomainType("Foo"),
-            "Bar", createDomainType("Bar"),
-            "Baz", createDomainType("Baz")
-        );
+        private Map<String, DomainType> domainTypes = new HashMap<>();
+
+
+        {
+            domainTypes.put("Foo", createDomainType("Foo"));
+            domainTypes.put("Bar", createDomainType("Bar"));
+            domainTypes.put("Baz", createDomainType("Baz"));
+        }
 
 
         public DomainType createDomainType(String name)
         {
-            DomainType domainType = new DomainType();
+            DomainTypeModel domainType = new DomainTypeModel();
             domainType.setName(name);
             domainType.setAnnotation("Test domain type " + name);
             domainType.setStorageConfiguration("testStorage");

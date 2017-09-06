@@ -1,6 +1,5 @@
 package de.quinscape.exceed.runtime.schema;
 
-import de.quinscape.exceed.runtime.component.QueryExecutor;
 import de.quinscape.exceed.runtime.domain.DomainOperations;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 
@@ -16,12 +15,9 @@ public class DefaultStorageConfiguration
 
     private final NamingStrategy namingStrategy;
 
-    private final QueryExecutor queryExecutor;
-
     private final SchemaService schemaService;
 
-
-    public DefaultStorageConfiguration(DomainOperations domainOperations, NamingStrategy namingStrategy, QueryExecutor queryExecutor, SchemaService schemaService)
+    public DefaultStorageConfiguration(DomainOperations domainOperations, NamingStrategy namingStrategy, SchemaService schemaService)
     {
         if (namingStrategy == null)
         {
@@ -30,7 +26,6 @@ public class DefaultStorageConfiguration
 
         this.domainOperations = domainOperations;
         this.namingStrategy = namingStrategy;
-        this.queryExecutor = queryExecutor;
         this.schemaService = schemaService;
     }
 
@@ -39,13 +34,6 @@ public class DefaultStorageConfiguration
     public NamingStrategy getNamingStrategy()
     {
         return namingStrategy;
-    }
-
-
-    @Override
-    public QueryExecutor getQueryExecutor()
-    {
-        return queryExecutor;
     }
 
 

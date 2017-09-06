@@ -1,32 +1,27 @@
 package de.quinscape.exceed.runtime.model;
 
-import com.google.common.base.Objects;
 import de.quinscape.exceed.expression.ASTExpression;
-import de.quinscape.exceed.expression.ASTIdentifier;
-import de.quinscape.exceed.expression.ASTNull;
-import de.quinscape.exceed.expression.ExpressionParser;
-import de.quinscape.exceed.expression.ExpressionParserConstants;
-import de.quinscape.exceed.expression.Node;
-import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.expression.SimpleNode;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.component.ComponentClasses;
 import de.quinscape.exceed.model.component.ComponentDescriptor;
 import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.model.component.PropType;
+import de.quinscape.exceed.model.expression.Attributes;
 import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.expression.ExpressionValueType;
-import de.quinscape.exceed.model.expression.Attributes;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
-import de.quinscape.exceed.runtime.ExceedRuntimeException;
-import de.quinscape.exceed.runtime.action.ClientActionRenderer;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
-import de.quinscape.exceed.runtime.service.ActionExpressionRenderer;
-import de.quinscape.exceed.runtime.service.ActionExpressionRendererFactory;
-import de.quinscape.exceed.runtime.service.ComponentRegistration;
-import de.quinscape.exceed.runtime.service.SyslogCallGenerator;
-import de.quinscape.exceed.runtime.util.AssignmentReplacementVisitor;
+import de.quinscape.exceed.runtime.action.ActionService;
+import de.quinscape.exceed.runtime.component.ComponentInstanceRegistration;
+import de.quinscape.exceed.runtime.expression.transform.ActionExpressionTransformer;
+import de.quinscape.exceed.runtime.expression.transform.ComponentExpressionTransformer;
+import de.quinscape.exceed.runtime.expression.transform.DefaultExpressionTransformerFactory;
+import de.quinscape.exceed.runtime.expression.transform.ExpressionTransformer;
+import de.quinscape.exceed.runtime.js.ExpressionBundle;
+import de.quinscape.exceed.runtime.js.ExpressionType;
+import de.quinscape.exceed.runtime.js.JsExpressionRenderer;
+import de.quinscape.exceed.runtime.js.ScriptBuffer;
+import de.quinscape.exceed.runtime.js.def.Definitions;
 import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +34,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static de.quinscape.exceed.model.view.ComponentModelBuilder.component;
+import static de.quinscape.exceed.model.view.ComponentModelBuilder.*;
+import static de.quinscape.exceed.runtime.util.ExpressionUtil.*;
 
 /**
  * Produces a special augmented view model JSON from a view model.
@@ -47,10 +43,10 @@ import static de.quinscape.exceed.model.view.ComponentModelBuilder.component;
  * The JSON contains components with an additional "exprs" property that contains the attribute expressions transformed
  * for client consumption.
  *
- * @see ViewExpressionRenderer
  */
 public class ClientViewJSONGenerator
 {
+
     private final static Logger log = LoggerFactory.getLogger(ClientViewJSONGenerator.class);
 
     public static final String CONTEXT_DEFAULT_NAME = "context";
@@ -59,22 +55,23 @@ public class ClientViewJSONGenerator
 
     private static final ComponentModel TITLE_MODEL = component("div").getComponent();
 
-    private final ActionExpressionRendererFactory actionExpressionRendererFactory;
+    private final JsExpressionRenderer renderer;
 
-    private Map<String, ClientActionRenderer> generators;
+    private final ActionService actionService;
 
-
-    public ClientViewJSONGenerator(ActionExpressionRendererFactory actionExpressionRendererFactory)
+    public ClientViewJSONGenerator(ActionService actionService)
     {
-        this.actionExpressionRendererFactory = actionExpressionRendererFactory;
-
-        generators = new HashMap<>();
-        generators.put("syslog", new SyslogCallGenerator());
+        this.actionService = actionService;
+        renderer = new JsExpressionRenderer(
+            Collections.emptyList()
+        );
     }
 
     public String toJSON(ApplicationModel applicationModel, View view, JSONFormat jsonFormat)
     {
         JSONBuilder builder = JSONBuilder.buildObject();
+
+        ScriptBuffer scriptBuffer = new ScriptBuffer();
 
         builder.property("type", "xcd.view.View")
             .property("name", view.getName())
@@ -93,7 +90,9 @@ public class ClientViewJSONGenerator
 
         if (titleExpression != null)
         {
-            builder.property("titleExpr", transformExpression(titleExpression, applicationModel, view, TITLE_MODEL, "title", new ComponentRenderPath("root"), false));
+            builder.property("titleExpr", transformExpression(titleExpression, applicationModel, view, TITLE_MODEL, "title", new ComponentRenderPath("root"), ExpressionType.VALUE,
+                scriptBuffer
+            ));
         }
         else
         {
@@ -109,40 +108,49 @@ public class ClientViewJSONGenerator
 
             JSONBuilder.Level lvl = builder.getCurrentLevel();
             builder.objectProperty(contentName);
-            dumpComponentRecursive(builder, applicationModel, view, contentRoot, new ComponentRenderPath(contentName), jsonFormat);
+            dumpComponentRecursive(builder, applicationModel, view, contentRoot, new ComponentRenderPath(contentName), jsonFormat,
+                scriptBuffer
+            );
             builder.closeUntil(lvl);
         }
         builder.close();
 
+        StringBuilder constantsBuilder = new StringBuilder();
+        ExpressionBundle.dumpResults(constantsBuilder, scriptBuffer, scriptBuffer.getPushed());
+
         builder.property("comments", view.getComments());
+        builder.property("contextDependencies", view.getContextDependencies());
+        builder.property("constants",  constantsBuilder.toString() );
 
         return builder.output();
     }
 
 
 
-    private void dumpComponentRecursive(JSONBuilder builder, ApplicationModel application, View view, ComponentModel componentModel, ComponentRenderPath path, JSONFormat jsonFormat)
+    private void dumpComponentRecursive(
+        JSONBuilder builder, ApplicationModel application, View view, ComponentModel componentModel,
+        ComponentRenderPath path, JSONFormat jsonFormat, ScriptBuffer scriptBuffer
+    )
     {
-        ComponentRegistration componentRegistration = componentModel.getComponentRegistration();
+        ComponentInstanceRegistration componentRegistration = componentModel.getComponentRegistration();
+        String uniqueContextName = null;
         if (jsonFormat == JSONFormat.INTERNAL && componentRegistration != null)
         {
-
             String providedContext = componentRegistration.getDescriptor().getProvidesContext();
             if (providedContext != null)
             {
-                ExpressionValue varAttr = componentModel.getAttribute("var");
-                String contextName;
+                ExpressionValue varAttr = componentModel.getAttribute(ComponentModel.VAR_ATTRIBUTE);
                 if (varAttr == null)
                 {
-                    contextName = CONTEXT_DEFAULT_NAME;
+                    uniqueContextName = path.getUniqueName(CONTEXT_DEFAULT_NAME);
                 }
                 else
                 {
-                    contextName = varAttr.getValue();
+                    uniqueContextName = path.getUniqueName(varAttr.getValue());
                 }
-                path.setContextName(contextName);
-                path.setProvidedContext(providedContext);
             }
+            path.setContextName(uniqueContextName);
+            path.setProvidedContext(providedContext);
         }
 
         builder.property("name", componentModel.getName());
@@ -164,21 +172,30 @@ public class ClientViewJSONGenerator
                 .collect(Collectors.toSet());
         }
 
-        if (attrs != null || defaultAttrs.size() > 0)
+        if (attrs != null || defaultAttrs.size() > 0 || uniqueContextName != null)
         {
             builder.objectProperty("attrs");
             for (String attrName : attrNames)
             {
                 Object value = attrs.getAttribute(attrName).getValue();
-                builder.property(attrName, value);
+
+                if (!attrName.equals(ComponentModel.VAR_ATTRIBUTE))
+                {
+                    builder.property(attrName, value);
+                }
             }
 
             if (componentRegistration != null)
             {
                 addDefaults(builder, view, componentRegistration.getDescriptor(), defaultAttrs, false, application,
-                    componentModel, path);
+                    componentModel, path, scriptBuffer
+                );
             }
 
+            if (uniqueContextName != null)
+            {
+                builder.property("var", uniqueContextName);
+            }
             builder.close();
         }
 
@@ -199,14 +216,23 @@ public class ClientViewJSONGenerator
                         propDecl = componentRegistration.getDescriptor().getPropTypes().get(attrName);
                     }
 
+                    final ExpressionType expressionType = getExpressionType(propDecl);
+
                     if (expression != null)
                     {
-                        /** if this is a context expression, we will deal with it later in {@link #provideContextExpressions(JSONBuilder, RuntimeApplication, View, ComponentModel, ComponentRenderPath, ComponentDescriptor)} ) */
-                        boolean isContextExpression = propDecl != null && propDecl.getContext() != null;
-                        if (!isContextExpression)
-                        {
-                            builder.property(attrName, transformExpression(expression, application, view, componentModel, attrName, path, propDecl != null && propDecl.getType() == PropType.ACTION_EXPRESSION));
-                        }
+                        builder.property(
+                            attrName,
+                            transformExpression(
+                                expression,
+                                application,
+                                view,
+                                componentModel,
+                                attrName,
+                                path,
+                                expressionType,
+                                scriptBuffer
+                            )
+                        );
                     }
                 }
             }
@@ -215,14 +241,16 @@ public class ClientViewJSONGenerator
             {
                 ComponentDescriptor descriptor = componentRegistration.getDescriptor();
 
-                if (descriptor.hasClass(ComponentClasses.MODEL_AWARE))
+                if (descriptor.hasClass(ComponentClasses.MODEL_AWARE) || hasCursorProp(descriptor))
                 {
                     builder.property(MODEL_ATTR_NAME, path.modelPath());
                 }
 
-                addDefaults(builder, view, componentRegistration.getDescriptor(), defaultAttrs, true, application, componentModel, path);
+                addDefaults(builder, view, componentRegistration.getDescriptor(), defaultAttrs, true, application, componentModel, path,
+                    scriptBuffer
+                );
 
-                provideContextExpressions(builder, application, view, componentModel, path, descriptor);
+                //provideContextExpressions(builder, application, view, componentModel, path, descriptor);
 
                 builder.close();
             }
@@ -266,7 +294,9 @@ public class ClientViewJSONGenerator
                     if (astExpression != null)
                     {
                         builder.objectProperty("exprs");
-                        builder.property("value", transformExpression(astExpression, application, view, componentModel, "value", path, false));
+                        builder.property("value", transformExpression(astExpression, application, view, kid, "value", path, ExpressionType.VALUE,
+                            scriptBuffer
+                        ));
                         builder.close();
                     }
                     builder.close();
@@ -274,7 +304,7 @@ public class ClientViewJSONGenerator
                 else
                 {
                     builder.objectElement();
-                    dumpComponentRecursive(builder, application, view, kid, kidPath, jsonFormat);
+                    dumpComponentRecursive(builder, application, view, kid, kidPath, jsonFormat, scriptBuffer);
                 }
             }
             builder.close();
@@ -283,7 +313,24 @@ public class ClientViewJSONGenerator
     }
 
 
-    private void addDefaults(JSONBuilder builder, View view, ComponentDescriptor descriptor, Set<String> defaultAttrs, boolean isExpression, ApplicationModel applicationModel, ComponentModel componentModel, ComponentRenderPath path)
+    private static boolean hasCursorProp(ComponentDescriptor descriptor)
+    {
+        for (PropDeclaration propDeclaration : descriptor.getPropTypes().values())
+        {
+            if (propDeclaration.getType() == PropType.CURSOR_EXPRESSION)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    private void addDefaults(
+        JSONBuilder builder, View view, ComponentDescriptor descriptor, Set<String> defaultAttrs, boolean isExpression,
+        ApplicationModel applicationModel, ComponentModel componentModel, ComponentRenderPath path,
+        ScriptBuffer scriptBuffer
+    )
 
     {
         Map<String, PropDeclaration> propTypes = descriptor.getPropTypes();
@@ -295,7 +342,8 @@ public class ClientViewJSONGenerator
             {
                 if (isExpression)
                 {
-                    builder.property(name, transformExpression(defaultValue.getAstExpression(), applicationModel, view, componentModel, name, path, propDecl.getType() == PropType.ACTION_EXPRESSION));
+                    builder.property(name, transformExpression(defaultValue.getAstExpression(), applicationModel, view, componentModel, name, path, getExpressionType(propDecl),
+                        scriptBuffer));
                 }
                 else
                 {
@@ -307,169 +355,100 @@ public class ClientViewJSONGenerator
                     {
                         builder.property(name, defaultValue.getValue());
                     }
-
                 }
             }
         }
     }
 
-
-    private void provideContextExpressions(JSONBuilder builder, ApplicationModel applicationModel, View view, ComponentModel componentModel, ComponentRenderPath path, ComponentDescriptor descriptor)
-    {
-        // we check all property declarations of the current component
-        Map<String, PropDeclaration> propTypes = descriptor.getPropTypes();
-        for (Map.Entry<String, PropDeclaration> entry : propTypes.entrySet())
-        {
-            String propName = entry.getKey();
-            PropDeclaration decl = entry.getValue();
-
-            // when a property has a context expression (bools are "context"/null at this point)
-            String contextExpr = decl.getContext();
-            if (contextExpr != null)
-            {
-                // we parse the context expression renaming the "context" variable to our actual context
-                // name
-                try
-                {
-                    ASTExpression contextAST = ExpressionParser.parse(contextExpr);
-
-                    // we look if the context attribute has been set
-                    ExpressionValue contextAttr = componentModel.getAttribute(propName);
-                    String contextName;
-                    if (contextAttr != null)
-                    {
-                        // .. and use that context name if set
-                        ASTExpression contextAttrAST = contextAttr.getAstExpression();
-                        if (contextAttrAST == null)
-                        {
-                            if (contextAttr.getType() == ExpressionValueType.EXPRESSION_ERROR)
-                            {
-                                throw new InconsistentModelException("Context expression contains errors", contextAttr.getExpressionError());
-                            }
-                            contextName = contextAttr.getValue();
-                            renameIdentifier(contextAST, "context", contextName);
-                        }
-                        else
-                        {
-                            contextAST = contextAttrAST;
-                        }
-                    }
-                    else
-                    {
-                        // otherwise we default to the first parent of matching type to provide a context
-                        // type can be null here meaning to accept every kind of context
-                        ComponentRenderPath contextByType = findContextByType(path.getParent(), decl.getContextType());
-                        if (contextByType == null)
-                        {
-                            if (decl.isRequired())
-                            {
-                                throw new IllegalStateException("Cannot find context for " + componentModel + " in " +
-                                    "view '" + view.getName() + "'");
-                            }
-                            renameIdentifier(contextAST, "context", new ASTNull(ExpressionParserConstants.NULL));
-                        }
-                        else
-                        {
-                            contextName = contextByType.getContextName();
-                            renameIdentifier(contextAST, "context", contextName);
-                        }
-                    }
-
-                    // .. and transform it for client consumption
-                    builder.property(propName, transformExpression(contextAST, applicationModel, view, componentModel, propName, path, false));
-                }
-                catch (ParseException e)
-                {
-                    throw new ExceedRuntimeException("Error parsing context expression for component " +
-                        componentModel.getName() + ", prop '" + propName);
-                }
-            }
-        }
-    }
-
-
-    private void renameIdentifier(ASTExpression node, String from, Object to)
-    {
-        if (!Objects.equal(from,to))
-        {
-            renameRecursive(node, from, to);
-        }
-    }
-
-    private Node renameRecursive(Node node, String from, Object to)
-    {
-        if (node instanceof ASTIdentifier)
-        {
-            ASTIdentifier ident = (ASTIdentifier) node;
-            if (Objects.equal(ident.getName(), from))
-            {
-                if (to instanceof String)
-                {
-                    ident.setName((String) to);
-                }
-                else
-                {
-                    return (Node) to;
-                }
-            }
-            return null;
-        }
-
-        if (node != null)
-        {
-            for (int i=0; i < node.jjtGetNumChildren(); i++)
-            {
-                Node replacement = renameRecursive(node.jjtGetChild(i), from, to);
-                if (replacement != null)
-                {
-                    node.jjtAddChild(replacement, i);
-                }
-            }
-        }
-        return null;
-    }
-
-
-    private ComponentRenderPath findContextByType(ComponentRenderPath path, String type)
-    {
-        while (path != null)
-        {
-            String contextName = path.getContextName();
-            if (contextName != null && (type == null || type.equals(path.getProvidedContext())))
-            {
-                return path;
-            }
-            path = path.getParent();
-        }
-        return null;
-    }
-
-    private String transformExpression(
-        SimpleNode expression,
+    private Object transformExpression(
+        ASTExpression expression,
         ApplicationModel applicationModel,
-        View view, ComponentModel componentModel,
+        View view,
+        ComponentModel componentModel,
         String attrName,
         ComponentRenderPath path,
-        boolean isActionExpression)
+        ExpressionType type,
+        ScriptBuffer scriptBuffer
+    )
     {
-        ActionExpressionRenderer actionExpressionRenderer = isActionExpression ? actionExpressionRendererFactory.create(generators) : null;
-        ActionExpressionBaseRenderer renderer = new ViewExpressionRenderer(applicationModel, view, componentModel, attrName,
-            path, actionExpressionRenderer);
+        final Definitions definitions = applicationModel.lookup(view).getLocalDefinitions();
 
-        if (isActionExpression)
-        {
-            expression.jjtAccept(new AssignmentReplacementVisitor(applicationModel, view.getName()), null);
-        }
+        final boolean isActionExpression = actionService != null && type == ExpressionType.ACTION;
+        final boolean isCursorOrContextExpression = (
+            type == ExpressionType.CURSOR ||
+            type == ExpressionType.CONTEXT
+        );
 
-        expression.childrenAccept(renderer, null);
-        if (isActionExpression)
+        final ComponentDescriptor componentDescriptor= componentModel.getComponentRegistration() != null ? componentModel.getComponentRegistration().getDescriptor() : null;
+
+
+
+        ComponentRenderPath contextParent;
+        PropDeclaration propDecl;
+        if (componentDescriptor == null)
         {
-            return "function(){ return " +  renderer.getOutput() + "}";
+            contextParent = findContext(path, null);
+            propDecl = null;
+            //throw new InvalidExpressionException("Invalid identifier 'context': <" + componentModel.getName() + " " + attrName + " > is not a cursor expression property");
         }
         else
         {
-            return renderer.getOutput();
+            propDecl = componentDescriptor.getPropTypes().get(attrName);
+            contextParent = findContext(path, propDecl != null ? propDecl.getContextType() : null);
+        }
+
+
+        final List<ExpressionTransformer> transformers = DefaultExpressionTransformerFactory.createTransformers(
+            type,
+            applicationModel,
+            definitions,
+            new ComponentExpressionTransformer(componentModel, path, attrName, contextParent, propDecl),
+            isActionExpression ?
+                new ActionExpressionTransformer(definitions, false) :
+                null
+        );
+
+        String output = renderer.transform(applicationModel,
+            type, new ExpressionModelContext(view, componentModel, attrName), expression, transformers,
+            scriptBuffer
+        );
+        if (isActionExpression)
+        {
+            return "function(){ return (" +  output + "); }";
+        }
+        else if (isCursorOrContextExpression)
+        {
+            Map<String, Object> map = new HashMap<>();
+            map.put("code", "return (" + output + ")");
+            if (contextParent != null)
+            {
+                map.put("contextName", contextParent.getContextName());
+                map.put("parent", contextParent.modelChainList());
+            }
+            else
+            {
+                map.put("contextName", null);
+            }
+            return map;
+        }
+        else
+        {
+            return output;
         }
     }
+
+
+    private ComponentRenderPath findContext(
+        ComponentRenderPath path, String contextType
+    )
+    {
+        final ComponentRenderPath parent = path.getParent();
+        if (parent == null)
+        {
+            return null;
+        }
+        return parent.findContextByType(contextType);
+    }
 }
+
 
