@@ -9,6 +9,12 @@
     ],
 
     "applicationContext": {
+        "properties": {
+            "appConfig": {
+                "type": "PlainText",
+                "defaultValue": "'App Config Value'"
+            }
+        }
     },
 
     "sessionContext": {
@@ -20,7 +26,16 @@
         }
     },
 
-    "supportedLocales" : ["en-US", "de-DE"]
+    "supportedLocales" : ["en-US", "de-DE"],
+
+    "decimalConfig" : {
+        "defaultPrecision" : 10,
+        "defaultDecimalPlaces" : 3
+    },
+
+    "componentConfig" : {
+        
+    }
 }
 
 

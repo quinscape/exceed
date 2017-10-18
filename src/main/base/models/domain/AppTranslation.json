@@ -1,4 +1,6 @@
 {
+    "description" : "The data for the application translations. Gets read as a whole",
+
     "name": "AppTranslation",
     "properties": [
         {
@@ -7,33 +9,39 @@
             "maxLength": 36
         },
         {
+            "description" : "locale code",
             "name": "locale",
             "type": "PlainText",
             "required": true,
             "maxLength": 64
         },
         {
+            "description" : "translation tag. Should contain formatting placeholders if applicable",
             "name": "tag",
             "type": "PlainText",
             "required": true,
             "maxLength": 255
         },
         {
+            "description" : "Translation for the tag in that locale, must contain the same placeholders as the tag",
             "name": "translation",
             "type": "PlainText",
             "required": true
         },
         {
+            "description" : "Creation timestamp",
             "name": "created",
             "required": true,
             "type": "Timestamp"
         },
         {
+            "description" : "Process name the translation is local to or null",
             "name": "processName",
             "type": "PlainText",
             "maxLength": 64
         },
         {
+            "description" : "View name the translation is local to or null",
             "name": "viewName",
             "type": "PlainText",
             "maxLength": 64

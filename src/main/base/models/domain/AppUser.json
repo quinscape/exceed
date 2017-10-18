@@ -1,4 +1,6 @@
 {
+    "description" : "Application user object. Storage for the spring security authentication",
+
     "name": "AppUser",
     "properties": [
         {
@@ -7,28 +9,33 @@
             "maxLength": 36
         },
         {
+            "description" : "login name",
             "name": "login",
             "type": "PlainText",
             "required": true,
             "maxLength": 64
         },
         {
+            "description" : "password hash",
             "name": "password",
             "type": "PlainText",
             "required": true,
             "maxLength": 255
         },
         {
+            "description" : "creation timestamp",
             "name": "created",
             "required": true,
             "type": "Timestamp"
         },
         {
+            "description" : "last login timestamp",
             "name": "last_login",
             "type": "Timestamp",
             "required": true
         },
         {
+            "description" : "Comma separated list of roles for this user",
             "name": "roles",
             "type": "PlainText",
             "required": true,

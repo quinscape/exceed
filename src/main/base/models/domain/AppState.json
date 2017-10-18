@@ -1,4 +1,6 @@
 {
+    "description" : "Encasulates application specific persistent properties",
+
     "name": "AppState",
     "properties": [
         {
@@ -7,32 +9,38 @@
             "maxLength": 36
         },
         {
+            "description" : "Name of the application",
             "name": "name",
             "type": "PlainText",
             "required": true,
             "maxLength": 64
         },
         {
+            "description" : "Path of the application extensions within the application servlet context",
             "name": "path",
             "type": "PlainText",
             "required": true,
             "maxLength": 255
         },
         {
+            "description" : "Application status equivalent to de.quinscape.exceed.runtime.application.ApplicationStatus",
             "name": "status",
             "type": "Integer",
             "required": true
         },
         {
+            "description" : "Extensions to load",
             "name": "extensions",
             "type": "PlainText",
             "maxLength": 255
         },
         {
+            "description" : "JSON blob containing the current application context values",
             "name": "context",
             "type": "PlainText"
         },
         {
+            "description" : "Domain version currently in use (WIP)",
             "name": "domainVersion",
             "type": "PlainText",
             "maxLength": 36
