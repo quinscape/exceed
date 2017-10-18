@@ -6,7 +6,10 @@ import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.expression.TokenMgrError;
 import de.quinscape.exceed.runtime.model.ExpressionRenderer;
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.svenson.JSON;
 import org.svenson.JSONProperty;
 import org.svenson.JSONable;
@@ -27,6 +30,8 @@ import org.svenson.JSONable;
 public class ExpressionValue
     implements JSONable
 {
+    private final static Logger log = LoggerFactory.getLogger(ExpressionValue.class);
+
     private final ExpressionValueType type;
 
     private final String value;
@@ -70,6 +75,8 @@ public class ExpressionValue
                 type = ExpressionValueType.EXPRESSION_ERROR;
                 astExpression = null;
                 exception = e;
+
+                log.info("Error in expression: " + value, e);
             }
 
             this.expressionError = exception;
@@ -139,7 +146,7 @@ public class ExpressionValue
     @Override
     public String toJSON()
     {
-        return JSON.defaultJSON().forValue(value);
+        return JSONUtil.DEFAULT_GENERATOR.forValue(value);
     }
 
 
@@ -196,6 +203,11 @@ public class ExpressionValue
     public static ExpressionValue forValue(ASTExpression expression, boolean forceExpression)
     {
         return new ExpressionValue(expression, forceExpression);
+    }
+
+    public static ExpressionValue forExpression(ASTExpression astExpression)
+    {
+        return new ExpressionValue(astExpression, true);
     }
 
 

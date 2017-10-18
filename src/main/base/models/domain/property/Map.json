@@ -1,0 +1,4 @@
+{
+  "name" : "Map",
+  "converter": "de.quinscape.exceed.runtime.domain.property.MapConverterFactory"
+}

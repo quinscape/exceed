@@ -1,28 +1,27 @@
-package de.quinscape.exceed.model.domain;
+package de.quinscape.exceed.model.domain.property;
 
 import de.quinscape.exceed.expression.ASTExpression;
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.annotation.Internal;
+import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.meta.PropertyType;
+import de.quinscape.exceed.model.state.StateMachine;
+import de.quinscape.exceed.runtime.util.Util;
 import org.svenson.JSONProperty;
 
-public class DomainProperty
+import java.util.Comparator;
+import java.util.Map;
+import java.util.Objects;
+
+public final class DomainProperty
     implements PropertyModel
 {
-    public final static String DATA_LIST_ROOT_PROPERTY_TYPE = "DataListRoot";
-
-    public final static String DATA_LIST_PROPERTY_TYPE = "DataList";
-
-    public final static String MAP_PROPERTY_TYPE = "Map";
-    
-    public final static String LIST_PROPERTY_TYPE = "List";
-
-    public final static String DOMAIN_TYPE_PROPERTY_TYPE = "DomainType";
-
     private String name;
 
     private String type;
 
-    private Object typeParam;
+    private String typeParam;
 
     private ExpressionValue defaultValue;
 
@@ -38,6 +37,11 @@ public class DomainProperty
 
     private String description;
 
+    private Map<String, Object> config;
+
+    private PropertyType propertyType;
+
+
     public DomainProperty()
     {
         this(null, null, null, false);
@@ -50,7 +54,7 @@ public class DomainProperty
     }
 
 
-    public DomainProperty(String name, String type, String defaultValue, boolean required, Object typeParam, int
+    public DomainProperty(String name, String type, String defaultValue, boolean required, String typeParam, int
         maxLength, String domainType)
     {
         this.name = name;
@@ -79,6 +83,25 @@ public class DomainProperty
     public String getDescription()
     {
         return description;
+    }
+
+
+    @JSONProperty(ignoreIfNull = true)
+    public Map<String, Object> getConfig()
+    {
+        return config;
+    }
+
+
+    public void setConfig(Map<String, Object> config)
+    {
+        this.config = config;
+    }
+
+
+    public void setDescription(String description)
+    {
+        this.description = description;
     }
 
 
@@ -112,13 +135,13 @@ public class DomainProperty
      * @return
      */
     @JSONProperty(ignoreIfNull = true, priority = 80)
-    public Object getTypeParam()
+    public String getTypeParam()
     {
         return typeParam;
     }
 
 
-    public void setTypeParam(Object typeParam)
+    public void setTypeParam(String typeParam)
     {
         this.typeParam = typeParam;
     }
@@ -253,7 +276,6 @@ public class DomainProperty
             ;
     }
 
-
     @JSONProperty(ignore = true)
     public String getTranslationTag()
     {
@@ -264,4 +286,102 @@ public class DomainProperty
     {
         return new DomainPropertyBuilder();
     }
+
+
+    @JSONProperty(ignore = true)
+    @Override
+    public PropertyType getPropertyType()
+    {
+        return propertyType;
+    }
+
+
+    public void setPropertyType(PropertyType propertyType)
+    {
+        this.propertyType = propertyType;
+    }
+
+    @Override
+    public <T> T getConfig(String name, T defaultValue)
+    {
+        if (config == null)
+        {
+            return defaultValue;
+        }
+
+        final T value = (T) config.get(name);
+        if (value == null)
+        {
+            return defaultValue;
+        }
+        return value;
+    }
+
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj == this)
+        {
+            return true;
+        }
+
+        if (obj instanceof DomainProperty)
+        {
+            DomainProperty that = (DomainProperty)obj;
+
+            return this.type.equals(that.type) &&
+                Objects.equals(this.typeParam, that.typeParam) &&
+                Objects.equals(this.config, that.config);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Util.hashcodeOver(type, typeParam, config);
+    }
+
+
+    public void postProcess(ApplicationModel applicationModel)
+    {
+        PropertyType.get(applicationModel, this);
+
+        final String propertyName = getName();
+        if (DomainType.ID_PROPERTY.equals(propertyName))
+        {
+            setRequired(true);
+        }
+
+        if (PropertyType.UUID.equals(getType()) && getMaxLength() <= 0)
+        {
+            setMaxLength(36);
+        }
+
+        if (PropertyType.STATE.equals(getType()))
+        {
+            setRequired(true);
+
+            if (getDefaultValue() == null)
+            {
+                setDefaultValue(getTypeParam() + "." + StateMachine.START);
+            }
+
+            if (getMaxLength() <= 0)
+            {
+                final StateMachine stateMachine = applicationModel.getStateMachines().get(getTypeParam());
+
+                final int maxLengthOfStates =
+                    stateMachine.getStates()
+                        .keySet()
+                        .stream().max(Comparator.comparingInt(String::length))
+                    .orElse("").length();
+
+                setMaxLength(maxLengthOfStates);
+            }
+        }
+    }
 }
+
+

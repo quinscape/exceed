@@ -1,6 +1,6 @@
 package de.quinscape.exceed.model.component;
 
-import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.AbstractTopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.annotation.DocumentedMapKey;
 import org.svenson.JSONTypeHint;
@@ -19,9 +19,11 @@ import java.util.Map;
  * </p>
  */
 public class ComponentPackageDescriptor
-    extends TopLevelModel
+    extends AbstractTopLevelModel
 {
     private Map<String, ComponentDescriptor> components;
+
+    private String description;
 
     /**
      * Returns the a map mapping component names to the component descriptors for that component.
@@ -38,6 +40,29 @@ public class ComponentPackageDescriptor
     public void setComponents(Map<String, ComponentDescriptor> components)
     {
         this.components = components;
+
+        for (ComponentDescriptor componentDescriptor : components.values())
+        {
+            componentDescriptor.setPackageDescriptor(this);
+            componentDescriptor.validate();
+        }
+    }
+
+
+    /**
+     * Description for the component package.
+     * 
+     * @return
+     */
+    public String getDescription()
+    {
+        return description;
+    }
+
+
+    public void setDescription(String description)
+    {
+        this.description = description;
     }
 
 

@@ -1,6 +1,8 @@
-package de.quinscape.exceed.model;
+package de.quinscape.exceed.model.config;
 
 import com.google.common.collect.ImmutableMap;
+import de.quinscape.exceed.model.AbstractTopLevelModel;
+import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.context.ContextModel;
 import org.springframework.util.StringUtils;
 import org.svenson.JSONProperty;
@@ -16,8 +18,10 @@ import java.util.Map;
  * Encapsulates general application configuration. Corresponds to the "/models/config.json" resource.
  */
 public class ApplicationConfig
-    extends TopLevelModel
+    extends AbstractTopLevelModel
 {
+    public static final int DECIMAL_PLACES_DEFAULT = 3;
+
     private List<String> supportedLocales = Collections.singletonList("en_US");
 
     private Map<String, String> supportedLocalesMap = createLookup(supportedLocales);
@@ -32,6 +36,12 @@ public class ApplicationConfig
 
     private String defaultLayout = "Standard";
 
+    private DecimalConfig decimalConfig = new DecimalConfig();
+
+    private ComponentConfig componentConfig = new ComponentConfig();
+
+    private String defaultCurrency = "EUR";
+
     /**
      * Database schema for this application
      *
@@ -45,6 +55,11 @@ public class ApplicationConfig
 
     public void setSchema(String schema)
     {
+        if (schema == null)
+        {
+            throw new IllegalArgumentException("schema can't be null");
+        }
+
         this.schema = schema;
     }
 
@@ -213,5 +228,45 @@ public class ApplicationConfig
     public <I,O> O accept(TopLevelModelVisitor<I,O> visitor, I in)
     {
         return visitor.visit(this, in);
+    }
+    
+    public DecimalConfig getDecimalConfig()
+    {
+        return decimalConfig;
+    }
+
+
+    public void setDecimalConfig(DecimalConfig decimalConfig)
+    {
+        this.decimalConfig = decimalConfig;
+    }
+
+
+    public ComponentConfig getComponentConfig()
+    {
+        return componentConfig;
+    }
+
+
+    public void setComponentConfig(ComponentConfig componentConfig)
+    {
+        this.componentConfig = componentConfig;
+    }
+
+
+    public String getDefaultCurrency()
+    {
+        return defaultCurrency;
+    }
+
+
+    public void setDefaultCurrency(String defaultCurrency)
+    {
+        if (defaultCurrency == null)
+        {
+            throw new IllegalArgumentException("defaultCurrency can't be null");
+        }
+
+        this.defaultCurrency = defaultCurrency;
     }
 }

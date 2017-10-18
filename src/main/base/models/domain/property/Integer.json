@@ -1,4 +1,5 @@
 {
   "name" : "Integer",
-  "converter": "IntegerConverter"
+  "converter": "de.quinscape.exceed.runtime.domain.property.IntegerConverter"
+
 }

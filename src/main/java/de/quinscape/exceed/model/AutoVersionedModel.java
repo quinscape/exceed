@@ -1,7 +1,5 @@
 package de.quinscape.exceed.model;
 
-import org.svenson.JSONProperty;
-
 import java.util.UUID;
 
 /**
@@ -19,6 +17,11 @@ import java.util.UUID;
  */
 public interface AutoVersionedModel
 {
+
+    String IDENTITY_GUID = "identityGUID";
+
+    String VERSION_GUID = "versionGUID";
+
     /**
      * Returns the version guid for this model. We only use this property in-memory and do not
      *
@@ -28,11 +31,6 @@ public interface AutoVersionedModel
 
     void setVersionGUID(String version);
 
-    /**
-     * Sets the identity guid of this model.
-     *
-     * @return globally unique id expected to never change once set.
-     */
     String getIdentityGUID();
 
     /**

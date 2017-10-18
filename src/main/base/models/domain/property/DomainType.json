@@ -1,0 +1,4 @@
+{
+    "name": "DomainType",
+    "converter": "de.quinscape.exceed.runtime.domain.property.DomainObjectConverterFactory"
+}

@@ -3,12 +3,11 @@ package de.quinscape.exceed.model.process;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.model.Model;
-import de.quinscape.exceed.runtime.util.ExpressionUtil;
+import de.quinscape.exceed.model.AbstractModel;
 import org.svenson.JSONProperty;
 
 public class DecisionModel
-    extends Model
+    extends AbstractModel
 {
     private String expression;
     private Transition transition;

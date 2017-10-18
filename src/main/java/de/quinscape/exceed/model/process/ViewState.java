@@ -1,14 +1,14 @@
 package de.quinscape.exceed.model.process;
 
-import de.quinscape.exceed.expression.ASTExpression;
-import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.model.annotation.DocumentedMapKey;
-import de.quinscape.exceed.runtime.ExceedRuntimeException;
-import de.quinscape.exceed.runtime.util.AssignmentReplacementVisitor;
+import de.quinscape.exceed.runtime.model.InconsistentModelException;
 import org.svenson.JSONTypeHint;
 
 import java.util.Map;
 
+/**
+ * A view state within a process. Corresponds with a process view model.
+ */
 public class ViewState
     extends ProcessState
 {
@@ -38,8 +38,8 @@ public class ViewState
         Map<String, Transition> transitions = getTransitions();
         if (transitions != null)
         {
-            final AssignmentReplacementVisitor visitor = new AssignmentReplacementVisitor(process
-                .getApplicationModel(), process.getView(this.getName()).getName());
+//            final AssignmentReplacementVisitor visitor = new AssignmentReplacementVisitor(process
+//                .getApplicationModel(), process.getView(this.getName()).getName());
 
             for (Map.Entry<String, Transition> entry : transitions.entrySet())
             {
@@ -48,30 +48,31 @@ public class ViewState
                 final String transitionName = entry.getKey();
                 if (to == null)
                 {
-                    throw new IllegalStateException("Process '" + process.getName() + "':  Transition '" + transitionName + "' has no target process state");
+                    throw new InconsistentModelException("Process '" + process.getName() + "':  Transition '" + transitionName + "' has no target process state");
                 }
                 if (!process.getStates().containsKey(to))
                 {
-                    throw new IllegalStateException("Process '" + process.getName() + "':  Transition '" + transitionName + "' references non-existing process-state '" + to + "'");
+                    throw new InconsistentModelException("Process '" + process.getName() + "':  Transition '" + transitionName + "' references non-existing process-state '" + to + "'");
                 }
 
                 transition.setFrom(getName());
                 transition.setName(transitionName);
 
-                try
+                final Confirmation confirmation = transition.getConfirmation();
+                if (confirmation != null)
                 {
-                    final ASTExpression actionAST = ExpressionParser.parse(transition.getAction());
-                    if (actionAST != null)
+                    if (confirmation.getMessageValue() == null)
                     {
-                        actionAST.jjtAccept(visitor, null);
-                        transition.setActionAST(actionAST);
+                        throw new InconsistentModelException("Transition confirmation needs a message: " + this);
                     }
-                }
-                catch (Exception e)
-                {
-                    throw new ExceedRuntimeException("Error postprocessing " + transition + " in " + this, e);
                 }
             }
         }
     }
 }
+
+/**
+ * { popCursor(current) }
+ *
+ *
+ */

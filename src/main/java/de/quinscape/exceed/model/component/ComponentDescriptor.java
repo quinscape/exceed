@@ -5,8 +5,10 @@ import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.annotation.DocumentedMapKey;
 import de.quinscape.exceed.model.annotation.DocumentedModelType;
+import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.component.DataProvider;
 import de.quinscape.exceed.runtime.component.QueryDataProvider;
+import de.quinscape.exceed.runtime.model.InconsistentModelException;
 import de.quinscape.exceed.runtime.util.Util;
 import org.svenson.JSONParameter;
 import org.svenson.JSONProperty;
@@ -59,6 +61,11 @@ public class ComponentDescriptor
 
     private final String description;
 
+    private final String queryTransformerName;
+
+    private ComponentPackageDescriptor packageDescriptor;
+
+
     public ComponentDescriptor(
         @JSONParameter("vars")
             Map<String, String> vars,
@@ -94,14 +101,19 @@ public class ComponentDescriptor
             String parentRule,
 
         @JSONParameter("description")
-        String description
+        String description,
+
+        @JSONParameter("queryTransformer")
+        String queryTransformerName
     ) throws ParseException
 
     {
         this.vars = vars;
         this.parentRule = parentRule;
         this.queries = Util.immutableMap(queries);
+
         this.propTypes = Util.immutableMap(propTypes);
+
         this.templates = Util.immutableList(templates);
         this.classes = Util.immutableSet(classes);
         this.dataProvider = dataProvider;
@@ -113,7 +125,15 @@ public class ComponentDescriptor
         this.componentPropWizards = Util.immutableMap(componentPropWizards);
 
         this.description = description;
+        this.queryTransformerName = queryTransformerName;
+
+
+        if (this.propTypes.containsKey(ComponentModel.VAR_ATTRIBUTE))
+        {
+            throw new InconsistentModelException("'var' is a reserved property name.");
+        }
     }
+
 
     /**
      * Var definitions for this component
@@ -235,4 +255,48 @@ public class ComponentDescriptor
         return classes.contains(cls);
     }
 
+
+    /**
+     * Description for the component.
+     *
+     * @return
+     */
+    public String getDescription()
+    {
+        return description;
+    }
+
+
+    /**
+     * Bean name of a {@link de.quinscape.exceed.runtime.expression.query.QueryTransformer} implementation
+     * (Default is "componentQueryTransformer")
+     *
+     * @return
+     */
+    public String getQueryTransformer()
+    {
+        return queryTransformerName;
+    }
+
+
+    @JSONProperty(ignore = true)
+    public void setPackageDescriptor(ComponentPackageDescriptor packageDescriptor)
+    {
+        this.packageDescriptor = packageDescriptor;
+    }
+
+
+    public ComponentPackageDescriptor getPackageDescriptor()
+    {
+        return packageDescriptor;
+    }
+
+
+    public void validate()
+    {
+        if (hasClass(ComponentClasses.FIELD) && !hasClass(ComponentClasses.MODEL_AWARE))
+        {
+            throw new InconsistentModelException("Component declares \"field\" class but not \"model-aware\": " + this);
+        }
+    }
 }

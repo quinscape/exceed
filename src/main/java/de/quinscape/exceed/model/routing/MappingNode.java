@@ -14,12 +14,13 @@ public class MappingNode
 
     private String varName;
 
+    private String navClass;
+
     private Mapping mapping;
 
     private List<MappingNode> children;
 
     private boolean required;
-
 
     public String getName()
     {
@@ -115,4 +116,15 @@ public class MappingNode
         return varName;
     }
 
+
+    public String getNavClass()
+    {
+        return navClass;
+    }
+
+    @JSONProperty("class")
+    public void setNavClass(String navClass)
+    {
+        this.navClass = navClass;
+    }
 }

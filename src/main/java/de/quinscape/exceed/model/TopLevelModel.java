@@ -4,62 +4,22 @@ import de.quinscape.exceed.model.annotation.Internal;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import org.svenson.JSONProperty;
 
-/**
- * Base class for models with a name and a corresponding file name.
- *
- * Stores the original name internally to handle being renamed.
- *
- */
-public abstract class TopLevelModel
-    extends Model
+public interface TopLevelModel
+    extends Model,AutoVersionedModel
 {
-    private String name;
+    String getName();
 
-    private AppResource resource;
-
-    private int extensionIndex;
-
-
-    /**
-     * Name of the top level model.
-     * @return
-     */
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
-    }
+    void setName(String name);
 
     @JSONProperty(ignore = true)
-    public void setResource(AppResource resource)
-    {
-        this.resource = resource;
-    }
+    void setResource(AppResource resource);
 
-
-    /**
-     * Resource this model was read from.
-     * @return
-     */
-    public final AppResource getResource()
-    {
-        return resource;
-    }
+    AppResource getResource();
 
     @Internal
-    public int getExtension()
-    {
-        return extensionIndex;
-    }
+    int getExtension();
 
-    public void setExtension(int extensionIndex)
-    {
-        this.extensionIndex = extensionIndex;
-    }
+    void setExtension(int extensionIndex);
 
-    public abstract <I,O> O accept(TopLevelModelVisitor<I,O> visitor, I in);
+    <I,O> O accept(TopLevelModelVisitor<I, O> visitor, I in);
 }

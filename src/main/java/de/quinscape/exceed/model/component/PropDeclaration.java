@@ -21,12 +21,6 @@ public class PropDeclaration
     private final boolean client;
 
     /**
-     * Contains a context expression for the value of this prop or null. <code>true</code> given in the the constructor
-     * will be converted into "context".
-     */
-    private final String context;
-
-    /**
      * Completion rule for this prop. Wizard dialogs can be specified by setting {@link ComponentDescriptor#componentPropWizards}
      */
     private final String rule;
@@ -64,8 +58,6 @@ public class PropDeclaration
     public PropDeclaration(
         @JSONParameter("client")
         Boolean client,
-        @JSONParameter("context")
-        Object context,
         @JSONParameter("rule")
         String rule,
         @JSONParameter("type")
@@ -85,15 +77,6 @@ public class PropDeclaration
         this.ruleExpression = ExpressionParser.parse(rule);
         this.type = type != null ? type :  PropType.PLAINTEXT;
 
-        if (context instanceof Boolean)
-        {
-            context = ((Boolean) context) ? "context" : null;
-        }
-        else if (context != null && !(context instanceof String))
-        {
-            throw new IllegalArgumentException("context must be boolean or expression string.");
-        }
-        this.context = (String) context;
         this.contextType = contextType;
         this.client = client != null ? client : true;
         this.required = required;
@@ -109,18 +92,6 @@ public class PropDeclaration
     {
         return client;
     }
-
-
-    /**
-     * Contains a context expression for the value of this prop or null. <code>true</code> given in the the constructor
-     * will be converted into "context".
-     */
-    @JSONProperty(ignoreIfNull = true)
-    public String getContext()
-    {
-        return context;
-    }
-
 
     /**
      * Type of context this prop declaration is dependent on.

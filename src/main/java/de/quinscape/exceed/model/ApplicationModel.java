@@ -1,14 +1,25 @@
 package de.quinscape.exceed.model;
 
+import de.quinscape.exceed.model.config.ApplicationConfig;
 import de.quinscape.exceed.model.context.ContextModel;
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.context.ScopeDeclarations;
+import de.quinscape.exceed.model.context.ScopeMetaModel;
+import de.quinscape.exceed.model.domain.DomainRule;
 import de.quinscape.exceed.model.domain.DomainVersion;
-import de.quinscape.exceed.model.domain.EnumType;
-import de.quinscape.exceed.model.domain.PropertyType;
+import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.model.domain.type.DomainTypeModel;
+import de.quinscape.exceed.model.domain.type.EnumType;
+import de.quinscape.exceed.model.domain.type.QueryTypeModel;
+import de.quinscape.exceed.model.meta.ApplicationMetaData;
 import de.quinscape.exceed.model.process.Process;
+import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.routing.RoutingTable;
+import de.quinscape.exceed.model.state.StateMachine;
 import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.domain.DomainTypesRegistry;
+import de.quinscape.exceed.runtime.js.def.Definitions;
 import de.quinscape.exceed.runtime.model.ModelNotFoundException;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
@@ -25,7 +36,8 @@ import java.util.UUID;
  * @see de.quinscape.exceed.runtime.model.ModelCompositionService
  */
 public class ApplicationModel
-    extends Model
+    extends AbstractModel
+    implements DomainTypesRegistry
 {
     private RoutingTable routingTable;
 
@@ -37,9 +49,9 @@ public class ApplicationModel
 
     private Map<String, DomainVersion> domainVersionsRO = Collections.unmodifiableMap(domainVersions);
 
-    private Map<String, PropertyType> propertyTypes = new HashMap<>();
+    private Map<String, PropertyTypeModel> propertyTypes = new HashMap<>();
 
-    private Map<String, PropertyType> propertyTypesRO = Collections.unmodifiableMap(propertyTypes);
+    private Map<String, PropertyTypeModel> propertyTypesRO = Collections.unmodifiableMap(propertyTypes);
 
     private Map<String, EnumType> enums = new HashMap<>();
 
@@ -57,6 +69,14 @@ public class ApplicationModel
 
     private Map<String, LayoutModel> layoutsRO = Collections.unmodifiableMap(layouts);
 
+    private Map<String, DomainRule> domainRules = new HashMap<>();
+
+    private Map<String, DomainRule> domainRulesRO = Collections.unmodifiableMap(domainRules);
+
+    private Map<String, StateMachine> stateMachines = new HashMap<>();
+
+    private Map<String, StateMachine> stateMachinesRO = Collections.unmodifiableMap(stateMachines);
+
     private String name;
 
     private ApplicationConfig configModel = new ApplicationConfig();
@@ -65,12 +85,23 @@ public class ApplicationModel
 
     private String version;
 
+    private Map<String, QueryTypeModel> queryTypes = new HashMap<>();
+
+    private Map<String, QueryTypeModel> queryTypesRO = Collections.unmodifiableMap(queryTypes);
 
     public ApplicationModel()
     {
-        metaData = new ApplicationMetaData(this);
-        version = UUID.randomUUID().toString();
+        this(null);
     }
+
+
+    public ApplicationModel(Definitions definitions)
+    {
+        metaData = new ApplicationMetaData(this, definitions);
+        version = UUID.randomUUID().toString();
+
+    }
+
 
     /**
      * Routing table for this application
@@ -96,7 +127,7 @@ public class ApplicationModel
      * @return
      */
     @JSONProperty(ignore = true)
-    @JSONTypeHint(DomainType.class)
+    @JSONTypeHint(DomainTypeModel.class)
     public Map<String, DomainType> getDomainTypes()
     {
         return domainTypesRO;
@@ -115,8 +146,8 @@ public class ApplicationModel
      * @return
      */
     @JSONProperty(ignore = true)
-    @JSONTypeHint(PropertyType.class)
-    public Map<String, PropertyType> getPropertyTypes()
+    @JSONTypeHint(PropertyTypeModel.class)
+    public Map<String, PropertyTypeModel> getPropertyTypes()
     {
         return propertyTypesRO;
     }
@@ -241,9 +272,9 @@ public class ApplicationModel
     }
 
 
-    public PropertyType getPropertyType(String name)
+    public PropertyTypeModel getPropertyType(String name)
     {
-        PropertyType propertyType = propertyTypes.get(name);
+        PropertyTypeModel propertyType = propertyTypes.get(name);
         if (propertyType == null)
         {
             throw new ModelNotFoundException("Cannot find propertyType with name '" + name + "'");
@@ -282,14 +313,13 @@ public class ApplicationModel
         processes.put(process.getName(), process);
     }
 
-
     public void addLayout(LayoutModel layout)
     {
         layouts.put(layout.getName(), layout);
     }
 
 
-    public void addPropertyType(PropertyType propertyType)
+    public void addPropertyType(PropertyTypeModel propertyType)
     {
         propertyTypes.put(propertyType.getName(), propertyType);
     }
@@ -339,5 +369,83 @@ public class ApplicationModel
     public String getVersion()
     {
         return version;
+    }
+
+
+    public void addDomainRule(DomainRule domainRule)
+    {
+        this.domainRules.put(domainRule.getName(), domainRule);
+    }
+
+    public void addQueryType(QueryTypeModel queryTypeModel)
+    {
+        this.queryTypes.put(queryTypeModel.getName(), queryTypeModel);
+
+    }
+
+    public Map<String, DomainRule> getDomainRules()
+    {
+        return domainRulesRO;
+    }
+
+
+    @JSONProperty(ignore = true)
+    @JSONTypeHint(LayoutModel.class)
+    public Map<String, QueryTypeModel> getQueryTypes()
+    {
+        return queryTypesRO;
+    }
+
+
+    /**
+     * Returns the valid scope declarations for the given process state
+     *
+     * @param processState      process state
+     * @return
+     */
+    public ScopeDeclarations lookup(ProcessState processState)
+    {
+        return lookup(ScopeMetaModel.getScopeKey(processState));
+    }
+
+
+    /**
+     * Returns the valid scope declarations for the non-process view.
+     *
+     * @param view
+     * @return
+     */
+    public ScopeDeclarations lookup(View view)
+    {
+        return lookup(ScopeMetaModel.getScopeKey(view));
+    }
+
+
+
+    /**
+     * Returns the valid scope declarations for the given string key.
+     *
+     * @param scopeKey  location identifier
+     * @return
+     */
+    public ScopeDeclarations lookup(String scopeKey)
+    {
+        final ScopeMetaModel scopeMetaModel = getMetaData().getScopeMetaModel();
+        if (scopeMetaModel == null)
+        {
+            return null;
+        }
+        return scopeMetaModel.lookup(scopeKey);
+    }
+
+
+    public void addStateMachine(StateMachine stateMachine)
+    {
+        stateMachines.put(stateMachine.getName(), stateMachine);
+    }
+
+    public Map<String, StateMachine> getStateMachines()
+    {
+        return stateMachinesRO;
     }
 }

@@ -1,0 +1,9 @@
+{
+    "startState": "B",
+    "states": {
+        "START": [
+            "B"
+        ],
+        "B": []
+    }
+}

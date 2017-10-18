@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class AbstractDynamicTopLevelModel
-    extends TopLevelModel
+    extends AbstractTopLevelModel
     implements DynamicProperties
 {
     private Map<String, Object> storage;

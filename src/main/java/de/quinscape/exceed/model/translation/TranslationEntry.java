@@ -1,9 +1,9 @@
 package de.quinscape.exceed.model.translation;
 
 
-import de.quinscape.exceed.model.Model;
+import de.quinscape.exceed.model.AbstractModel;
 import de.quinscape.exceed.model.annotation.ExceedPropertyType;
-import de.quinscape.exceed.model.domain.DomainProperty;
+import de.quinscape.exceed.model.meta.PropertyType;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
@@ -18,7 +18,7 @@ import java.util.Map;
  *
  */
 public class TranslationEntry
-    extends Model
+    extends AbstractModel
 {
     /**
      * Maps a locale code to a AppTranslation domain object.
@@ -54,7 +54,7 @@ public class TranslationEntry
     }
 
 
-    @ExceedPropertyType(type = DomainProperty.MAP_PROPERTY_TYPE, typeParam = "AppTranslation")
+    @ExceedPropertyType(type = PropertyType.MAP, typeParam = "AppTranslation")
     public void setTranslations(Map<String, DomainObject> translations)
     {
         this.translations = translations;
@@ -67,7 +67,7 @@ public class TranslationEntry
     }
 
 
-    @ExceedPropertyType(type = DomainProperty.LIST_PROPERTY_TYPE, typeParam = "AppTranslation")
+    @ExceedPropertyType(type = PropertyType.LIST, typeParam = "AppTranslation")
     public void setLocalTranslations(List<DomainObject> localTranslations)
     {
         this.localTranslations = localTranslations;

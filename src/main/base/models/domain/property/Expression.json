@@ -1,0 +1,4 @@
+{
+  "name" : "Void",
+  "converter": "de.quinscape.exceed.runtime.domain.property.ExpressionConverter"
+}

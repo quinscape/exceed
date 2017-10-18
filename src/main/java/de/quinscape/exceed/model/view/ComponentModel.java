@@ -2,12 +2,14 @@ package de.quinscape.exceed.model.view;
 
 import de.quinscape.exceed.model.annotation.DocumentedMapKey;
 import de.quinscape.exceed.model.annotation.DocumentedModelType;
+import de.quinscape.exceed.model.component.PropDeclaration;
+import de.quinscape.exceed.model.component.PropType;
 import de.quinscape.exceed.model.expression.Attributes;
 import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.expression.ExpressionValueType;
-import de.quinscape.exceed.runtime.service.ComponentRegistration;
+import de.quinscape.exceed.runtime.component.ComponentInstanceRegistration;
+import de.quinscape.exceed.runtime.util.JSONUtil;
 import de.quinscape.exceed.runtime.util.Util;
-import org.svenson.JSON;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 import org.svenson.StringBuilderSink;
@@ -16,6 +18,7 @@ import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -25,10 +28,14 @@ import java.util.function.Predicate;
  */
 public class ComponentModel
 {
-
     public static final String STRING_MODEL_NAME = "[String]";
 
     public static final String ID_ATTRIBUTE = "id";
+
+    /**
+     * Attribute with which the provided context can be named.
+     */
+    public static final String VAR_ATTRIBUTE = "var";
 
     private String name;
 
@@ -36,10 +43,9 @@ public class ComponentModel
 
     private List<ComponentModel> kids;
 
-    private ComponentRegistration componentRegistration;
+    private ComponentInstanceRegistration componentRegistration;
 
     private ComponentModel parent;
-
 
     public ComponentModel()
     {
@@ -169,7 +175,7 @@ public class ComponentModel
                 Object value = attribute.getValue();
                 if (type == ExpressionValueType.STRING)
                 {
-                    JSON.defaultJSON().quote(sb, (String) value);
+                    JSONUtil.DEFAULT_GENERATOR.quote(sb, (String) value);
                 }
                 else
                 {
@@ -199,13 +205,39 @@ public class ComponentModel
 
 
     @JSONProperty(ignore = true)
-    public void setComponentRegistration(ComponentRegistration componentRegistration)
+    public void setComponentRegistration(ComponentInstanceRegistration componentRegistration)
     {
         this.componentRegistration = componentRegistration;
+
+        if (componentRegistration != null && attrs != null)
+        {
+            for (Map.Entry<String, PropDeclaration> entry : componentRegistration.getDescriptor
+                ().getPropTypes().entrySet())
+            {
+                final String attrName = entry.getKey();
+                final PropDeclaration propDeclaration = entry.getValue();
+
+                if (propDeclaration.getType() == PropType.CURSOR_EXPRESSION)
+                {
+                    final ExpressionValue value = attrs.getAttribute(attrName);
+                    if (value != null && value.getType() == ExpressionValueType.STRING)
+                    {
+                        // if we have a cursor expression that is just a string, update it to a context expression.
+                        attrs.setAttribute(
+                            attrName,
+                            ExpressionValue.forValue(
+                                "context." + value.getValue(),
+                                true
+                            )
+                        );
+                    }
+                }
+            }
+        }
     }
 
 
-    public ComponentRegistration getComponentRegistration()
+    public ComponentInstanceRegistration getComponentRegistration()
     {
         return componentRegistration;
     }

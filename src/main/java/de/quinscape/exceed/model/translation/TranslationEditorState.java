@@ -1,22 +1,22 @@
 package de.quinscape.exceed.model.translation;
 
 import de.quinscape.exceed.domain.tables.pojos.AppTranslation;
-import de.quinscape.exceed.model.ApplicationConfig;
-import de.quinscape.exceed.model.Model;
+import de.quinscape.exceed.model.AbstractModel;
 import de.quinscape.exceed.model.component.PropDeclaration;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.DomainType;
-import de.quinscape.exceed.model.meta.ModuleFunctionReferences;
-import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.config.ApplicationConfig;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.expression.Attributes;
+import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.meta.ModuleFunctionReferences;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.component.ComponentInstanceRegistration;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.i18n.TranslationProvider;
 import de.quinscape.exceed.runtime.i18n.Translator;
-import de.quinscape.exceed.runtime.service.ComponentRegistration;
 import de.quinscape.exceed.runtime.service.client.scope.TranslationReferenceVisitor;
 import org.svenson.JSONTypeHint;
 
@@ -34,7 +34,7 @@ import java.util.UUID;
  * A UI-centric view on the current translation database state.
  */
 public class TranslationEditorState
-    extends Model
+    extends AbstractModel
 {
     private final TranslationProvider translationProvider;
 
@@ -112,7 +112,7 @@ public class TranslationEditorState
                 if (translations.get(locale) == null)
                 {
                     final String id = UUID.randomUUID().toString();
-                    final DomainObject domainObject = domainService.create("AppTranslation", id);
+                    final DomainObject domainObject = domainService.create(runtimeContext, "AppTranslation", id);
 
                     domainObject.setProperty("tag", translationEntry.getName());
 
@@ -274,7 +274,7 @@ public class TranslationEditorState
         }
 
 
-        final ComponentRegistration componentRegistration = component.getComponentRegistration();
+        final ComponentInstanceRegistration componentRegistration = component.getComponentRegistration();
         if (componentRegistration != null)
         {
             for (PropDeclaration propDeclaration : componentRegistration.getDescriptor().getPropTypes().values())

@@ -1,6 +1,6 @@
-package de.quinscape.exceed.model.domain;
+package de.quinscape.exceed.model.domain.type;
 
-import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.AbstractTopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.runtime.domain.property.ConverterException;
 import org.svenson.JSONProperty;
@@ -9,7 +9,7 @@ import org.svenson.JSONTypeHint;
 import java.util.List;
 
 public class EnumType
-    extends TopLevelModel
+    extends AbstractTopLevelModel
 {
     private List<String> values;
     private String description;

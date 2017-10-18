@@ -1,19 +1,26 @@
 package de.quinscape.exceed.model.process;
 
+import de.quinscape.exceed.model.AbstractTopLevelModel;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.AutoVersionedModel;
-import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.annotation.DocumentedMapKey;
 import de.quinscape.exceed.model.annotation.DocumentedSubTypes;
+import de.quinscape.exceed.model.annotation.Internal;
 import de.quinscape.exceed.model.context.ContextModel;
+import de.quinscape.exceed.model.context.ScopeLocationModel;
+import de.quinscape.exceed.model.context.ScopedPropertyModel;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.meta.PropertyType;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.scope.ProcessContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -21,13 +28,11 @@ import java.util.Map;
  *
  */
 public class Process
-    extends TopLevelModel
-    implements AutoVersionedModel
+    extends AbstractTopLevelModel
+    implements AutoVersionedModel, ScopeLocationModel
 {
 
     private final static Logger log = LoggerFactory.getLogger(Process.class);
-
-    private String version;
 
     private Transition startTransition;
 
@@ -36,29 +41,7 @@ public class Process
     private ContextModel contextModel;
 
     private ApplicationModel applicationModel;
-
-    private String identityGUID;
-
-
-    /**
-     * UUID uniquely indentifying the current version of the process. Doesn't need to be set, needs to be removed
-     * or changed if you change the process manually.
-     *
-     * @return
-     */
-    @Override
-    public String getVersionGUID()
-    {
-        return version;
-    }
-
-    @Override
-    public void setVersionGUID(String version)
-    {
-        this.version = version;
-    }
-
-
+    
     /**
      * Process states of the process.
      *
@@ -115,8 +98,43 @@ public class Process
             state.setName(entry.getKey());
             state.setProcess(this);
         }
+
+        final Map<String, ScopedPropertyModel> properties;
+        if (contextModel == null)
+        {
+            contextModel = new ContextModel();
+            properties = new HashMap<>();
+            contextModel.setProperties(properties);
+        }
+        else
+        {
+            properties = contextModel.getProperties();
+        }
+
+        if (!properties.containsKey(ProcessContext.CURRENT))
+        {
+            properties.put(
+                ProcessContext.CURRENT,
+                DomainProperty.builder()
+                    .withName(ProcessContext.CURRENT)
+                    // any domain type will do
+                    .withType(PropertyType.DOMAIN_TYPE, null)
+                    .buildScoped()
+                );
+        }
+//        if (!properties.containsKey(ProcessContext.DOMAIN_CONTEXT))
+//        {
+//            properties.put(ProcessContext.DOMAIN_CONTEXT, DomainProperty.builder()
+//                .withName(ProcessContext.DOMAIN_CONTEXT)
+//                .withType(PropertyType.DATA_GRAPH)
+//                .buildScoped()
+//            );
+//        }
+        
+        applicationModel.getMetaData().createPropertyTypes(contextModel);
     }
 
+    
     @JSONProperty(ignore = true)
     public ApplicationModel getApplicationModel()
     {
@@ -130,12 +148,17 @@ public class Process
             throw new IllegalStateException("No applicationModel");
         }
 
-        return applicationModel.getView(getProcessViewName(this.getName(), localName));
+        return applicationModel.getView(getProcessStateName(localName));
     }
 
-    public static String getProcessViewName(String processName, String localName)
+    public static String getProcessStateName(String processName, String localName)
     {
         return processName + "/" + localName;
+    }
+
+    public String getProcessStateName(String localName)
+    {
+        return getProcessStateName(getName(), localName);
     }
 
 
@@ -156,38 +179,18 @@ public class Process
         this.contextModel = contextModel;
     }
 
-
-    /**
-     * UUID uniquely identifying the process. Doesn't need to be defined but needs to remain unchanged if it exists.
-     */
-    @Override
-    public String getIdentityGUID()
-    {
-        return identityGUID;
-    }
-
-
-    @Override
-    public void setIdentityGUID(String identity)
-    {
-        this.identityGUID = identity;
-    }
-
-
-    @Override
-    public String toString()
-    {
-        return super.toString() + ": "
-            + "startTransition = " + startTransition
-            + ", states = " + states
-            + ", context = " + contextModel
-            ;
-    }
-
-
     @Override
     public <I,O> O accept(TopLevelModelVisitor<I,O> visitor, I in)
     {
         return visitor.visit(this, in);
     }
+
+    @Override
+    @Internal
+    public String getScopeLocation()
+    {
+        return getName() + "/start";
+    }
+
+
 }

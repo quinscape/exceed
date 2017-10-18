@@ -1,16 +1,19 @@
 package de.quinscape.exceed.model.view;
 
 import de.quinscape.exceed.expression.ASTExpression;
+import de.quinscape.exceed.model.AbstractTopLevelModel;
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.AutoVersionedModel;
-import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.annotation.DocumentedMapKey;
 import de.quinscape.exceed.model.annotation.DocumentedModelType;
 import de.quinscape.exceed.model.annotation.Internal;
 import de.quinscape.exceed.model.context.ContextModel;
+import de.quinscape.exceed.model.context.ScopeLocationModel;
 import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.component.ContextDependencies;
 import de.quinscape.exceed.runtime.model.JSONFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,10 +34,13 @@ import java.util.function.Predicate;
  *
  */
 public class View
-    extends TopLevelModel
-    implements AutoVersionedModel
+    extends AbstractTopLevelModel
+    implements AutoVersionedModel, ScopeLocationModel
 {
     private final static Logger log = LoggerFactory.getLogger(View.class);
+
+    private ContextDependencies contextDependencies;
+
 
     @Override
     public <I, O> O accept(TopLevelModelVisitor<I, O> visitor, I in)
@@ -61,11 +67,9 @@ public class View
 
     private String processName;
 
-    private String version;
+    private String domainType;
 
     private ContextModel contextModel;
-
-    private String identityGUID;
 
     private String layout;
 
@@ -73,9 +77,14 @@ public class View
 
     public View()
     {
-        content = createEmptyViewWithDefaultLayout();
+        this(null);
     }
 
+    public View(String name)
+    {
+        this.setName(name);
+        content = createEmptyViewWithDefaultLayout();
+    }
 
     private Map<String, ComponentModel> createEmptyViewWithDefaultLayout()
     {
@@ -133,25 +142,6 @@ public class View
     public void setComments(List<String> comments)
     {
         this.comments = comments;
-    }
-
-
-    /**
-     * UUID uniquely indentifying the current version of the view. Doesn't need to be set, needs to be removed
-     * or changed if you change the view manually.
-     */
-    @Override
-    public String getVersionGUID()
-    {
-
-        return version;
-    }
-
-
-    @Override
-    public void setVersionGUID(String version)
-    {
-        this.version = version;
     }
 
 
@@ -248,26 +238,6 @@ public class View
             (getLocalName());
     }
 
-
-    /**
-     * UUID uniquely identifying the view. Doesn't need to be defined but needs to remain unchanged if it exists.
-     *
-     * @return
-     */
-    @Override
-    public String getIdentityGUID()
-    {
-        return identityGUID;
-    }
-
-
-    @Override
-    public void setIdentityGUID(String identity)
-    {
-        this.identityGUID = identity;
-    }
-
-
     /**
      * Layout to use for this view. If not set, the application default layout will be used.
      */
@@ -316,5 +286,50 @@ public class View
     }
 
 
+    @Override
+    @Internal
+    public String getScopeLocation()
+    {
+        return getName();
+    }
 
+
+    public String getDomainType()
+    {
+        return domainType;
+    }
+
+
+    /**
+     * Domain type of the <code>"current"</code> reference in this view.
+     *
+     * @param domainType
+     */
+    public void setDomainType(String domainType)
+    {
+        this.domainType = domainType;
+    }
+
+
+    public void setContextDependencies(ContextDependencies contextDependencies)
+    {
+        this.contextDependencies = contextDependencies;
+    }
+
+
+    @Internal
+    public ContextDependencies getContextDependencies()
+    {
+        return contextDependencies;
+    }
+
+    public String getLayout(ApplicationModel applicationModel)
+    {
+        final String layout = getLayout();
+        if (layout == null)
+        {
+            return applicationModel.getConfigModel().getDefaultLayout();
+        }
+        return layout;
+    }
 }

@@ -1,7 +1,7 @@
 package de.quinscape.exceed.model.routing;
 
 
-import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.AbstractTopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.annotation.DocumentedMapKey;
 import de.quinscape.exceed.runtime.application.MappingNotFoundException;
@@ -17,7 +17,7 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 public class RoutingTable
-    extends TopLevelModel
+    extends AbstractTopLevelModel
 {
     private static final String STATE_ID_NAME = "{stateId?}";
 

@@ -1,4 +1,5 @@
 {
   "name":"RichText",
-  "converter":"RichTextConverter"
+  "converter":"de.quinscape.exceed.runtime.domain.property.RichTextConverter"
+
 }

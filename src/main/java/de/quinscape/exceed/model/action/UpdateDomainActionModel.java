@@ -1,6 +1,7 @@
 package de.quinscape.exceed.model.action;
 
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.model.domain.type.DomainTypeModel;
 import org.svenson.JSONTypeHint;
 
 import java.util.Collections;
@@ -29,7 +30,7 @@ public class UpdateDomainActionModel
     }
 
 
-    @JSONTypeHint(DomainType.class)
+    @JSONTypeHint(DomainTypeModel.class)
     public void setNewTypes(List<DomainType> newTypes)
     {
         this.newTypes = newTypes;
@@ -47,7 +48,7 @@ public class UpdateDomainActionModel
     }
 
 
-    @JSONTypeHint(DomainType.class)
+    @JSONTypeHint(DomainTypeModel.class)
     public void setChangedTypes(List<DomainType> changedTypes)
     {
         this.changedTypes = changedTypes;
@@ -65,7 +66,7 @@ public class UpdateDomainActionModel
     }
 
 
-    @JSONTypeHint(DomainType.class)
+    @JSONTypeHint(DomainTypeModel.class)
     public void setRemovedTypes(List<DomainType> removedTypes)
     {
         this.removedTypes = removedTypes;

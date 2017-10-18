@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Internal
 public class DomainEditorViews
-    extends TopLevelModel
+    extends AbstractTopLevelModel
 {
     private static final Map<String, DomainEditorView> DEFAULT_VIEWS = createDefault();
 

@@ -1,0 +1,4 @@
+{
+    "name": "State",
+    "converter": "de.quinscape.exceed.runtime.domain.property.StateConverterFactory"
+}

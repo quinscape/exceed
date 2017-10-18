@@ -1,0 +1,4 @@
+{
+  "name" : "Decimal",
+  "converter": "de.quinscape.exceed.runtime.domain.property.DecimalConverterFactory"
+}

@@ -1,5 +1,5 @@
 {
   "name":"UUID",
-  "converter":"UUIDConverter",
+  "converter":"de.quinscape.exceed.runtime.domain.property.UUIDConverter",
   "defaultLength" : 36
 }

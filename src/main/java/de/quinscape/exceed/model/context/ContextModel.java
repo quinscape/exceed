@@ -1,7 +1,7 @@
 package de.quinscape.exceed.model.context;
 
 import de.quinscape.exceed.model.annotation.DocumentedMapKey;
-import de.quinscape.exceed.runtime.scope.ProcessContext;
+import de.quinscape.exceed.model.domain.property.PropertyModel;
 import org.svenson.JSONTypeHint;
 
 import java.util.Collections;
@@ -19,11 +19,15 @@ public class ContextModel
         for (Map.Entry<String, ScopedPropertyModel> entry : elems.entrySet())
         {
             String name = entry.getKey();
-            if (ProcessContext.RESERVED_NAMES.contains(name))
-            {
-                throw new IllegalStateException("'" + name + "' is a reserved name.");
-            }
-            entry.getValue().setName(name);
+//            if (ProcessContext.RESERVED_NAMES.contains(name))
+//            {
+//                throw new IllegalStateException("'" + name + "' is a reserved name.");
+//            }
+
+            final ScopedPropertyModel scopedPropertyModel = entry.getValue();
+            PropertyModel.initDefaults(scopedPropertyModel);
+
+            scopedPropertyModel.setName(name);
         }
     }
 

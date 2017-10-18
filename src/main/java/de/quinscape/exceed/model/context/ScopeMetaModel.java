@@ -5,8 +5,15 @@ import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.js.def.Definitions;
+import de.quinscape.exceed.runtime.model.InconsistentModelException;
 import de.quinscape.exceed.runtime.scope.ScopeType;
+import de.quinscape.exceed.runtime.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +36,7 @@ import java.util.Map;
  * </p>
  *
  * <ul>
- *     <li>View-Context as defined by <ViewContext/> definitions (in either view or layout)</li>
+ *     <li>View-Context as defined by <ViewContext/> declarations (in either view or layout)</li>
  *     <li>Process context execution contexts that are happening in a process</li>
  *     <li>Session context</li>
  *     <li>Application context</li>
@@ -38,6 +45,8 @@ import java.util.Map;
  */
 public class ScopeMetaModel
 {
+    private final static Logger log = LoggerFactory.getLogger(ScopeMetaModel.class);
+
     public final static String SYSTEM = "_system/system";
 
     public final static String ACTION = "_system/action";
@@ -52,50 +61,112 @@ public class ScopeMetaModel
      * <p>
      * qualifiedName = "processName/stateName" or "viewName"
      */
-    private Map<String, ScopeDeclarations> definitions = new HashMap<>();
+    private Map<String, ScopeDeclarations> declarations = new HashMap<>();
+    private Collection<ScopeDeclarations> allDeclarations = Collections.unmodifiableCollection(declarations.values());
+
+    private Definitions applicationDefinitions;
 
 
-    public ScopeMetaModel(ApplicationModel applicationModel)
+    public ScopeMetaModel(ApplicationModel applicationModel, Definitions systemDefinitions)
     {
         this.applicationModel = applicationModel;
+    }
 
-        definitions.put(SYSTEM, createDefinitionMap(
+    public void init(Definitions applicationDefinitions)
+    {
+        this.applicationDefinitions = applicationDefinitions;
+
+        addDeclarations(
             SYSTEM,
+            applicationDefinitions,
             null,
             null,
             applicationModel.getApplicationContextModel()
-        ));
+        );
 
 
-        definitions.put(ACTION, createDefinitionMap(ACTION,
+        addDeclarations(
+            ACTION,
+            applicationDefinitions,
             null,
             applicationModel.getSessionContextModel(),
             applicationModel.getApplicationContextModel()
-        ));
+        );
+
+        for (Process process : applicationModel.getProcesses().values())
+        {
+            final String key = process.getScopeLocation();
+            addDeclarations(
+                key,
+                applicationDefinitions, null,
+                process.getContextModel(),
+                applicationModel.getSessionContextModel(),
+                applicationModel.getApplicationContextModel()
+            );
+            
+            for (ProcessState processState : process.getStates().values())
+            {
+                if (!(processState instanceof ViewState))
+                {
+                    addDeclarations(processState);
+                }
+            }
+        }
+
+        for (View view : applicationModel.getViews().values())
+        {
+            final String processName = view.getProcessName();
+            if (processName != null)
+            {
+                final Process process = applicationModel.getProcess(processName);
+                final ProcessState processState = process.getStates().get(view.getLocalName());
+
+                if (processState == null)
+                {
+                    throw new InconsistentModelException("No view state with the name '" + view.getName() + " in " +
+                        process);
+                }
+                addDeclarations(processState);
+            }
+            else
+            {
+                addDeclarations(view);
+            }
+        }
+
+        if (log.isDebugEnabled())
+        {
+            for (ScopeDeclarations scopeDeclarations : getAllDeclarations())
+            {
+                log.debug("-- Location '{}':\n" +
+                    "{}", scopeDeclarations.getScopeLocation(), Util.join(scopeDeclarations.getLocalDefinitions().getDefinitions().values(), "\n"));
+            }
+        }
     }
 
 
     /**
-     * Adds definitions for the given process state
+     * Adds declarations for the given process state
      *
      * @param processState process state
      */
     public void addDeclarations(ProcessState processState)
     {
         final Process process = processState.getProcess();
-        final String key = key(processState);
-        definitions.put(key, createDefinitionMap(
+        final String key = getScopeKey(processState);
+        addDeclarations(
             key,
+            applicationDefinitions,
             processState instanceof ViewState ? process.getView(processState.getName()).getContextModel() : null,
             process.getContextModel(),
             applicationModel.getSessionContextModel(),
             applicationModel.getApplicationContextModel()
-        ));
+        );
     }
 
 
     /**
-     * Adds definitions for the given non-process view
+     * Adds declarations for the given non-process view
      *
      * @param view view
      * @throws UnsupportedOperationException if the view is a process view
@@ -108,75 +179,36 @@ public class ScopeMetaModel
                 "(ApplicationModel,ProcessState) method.");
         }
 
-        final String key = key(view);
-        definitions.put(key, createDefinitionMap(
-            key,
-            view.getContextModel(),
+        final String scopeLocation = getScopeKey(view);
+        addDeclarations(
+            scopeLocation,
+            applicationDefinitions, view.getContextModel(),
             null,
             applicationModel.getSessionContextModel(),
             applicationModel.getApplicationContextModel()
-        ));
+        );
     }
 
 
-    private String key(ProcessState processState)
+    /**
+     * Adds the given context declarations to the given scope location. This method is mostly for internal use and tests.
+     * The given context models must be in the order defined by {@link ScopeType}, replacing <code>null</code> for
+     * missing locations.
+     *  @param scopeLocation     scope location
+     * @param applicationDefinitions
+     * @param contexts          context varargs. arguments
+     */
+    private void addDeclarations(String scopeLocation, Definitions applicationDefinitions, ContextModel... contexts)
     {
-        final Process process = processState.getProcess();
-        return Process.getProcessViewName(process.getName(), processState.getName());
-    }
-
-
-    private String key(View view)
-    {
-        return view.getName();
-    }
-
-
-    private ScopeDeclarations createDefinitionMap(String key, ContextModel... contexts)
-    {
-        final ScopeDeclarations scopeDeclarations = new ScopeDeclarations(key);
-
-        for (int i = 0, contextsLength = contexts.length; i < contextsLength; i++)
+        if (contexts.length > ScopeType.LAYOUT.ordinal())
         {
-            ContextModel context = contexts[i];
-
-            if (context != null)
-            {
-                final ScopeType scopeType = ScopeType.values()[i];
-                scopeDeclarations.add(context, scopeType);
-            }
+            throw new IllegalArgumentException("There should be at most " + ScopeType.APPLICATION.ordinal() + " context models");
         }
 
-        return scopeDeclarations;
+        final ScopeDeclarations scopeDeclarations = new ScopeDeclarations(scopeLocation, contexts, applicationDefinitions);
+
+        declarations.put(scopeLocation, scopeDeclarations);
     }
-
-
-    /**
-     * Returns the valid scope declarations for the given process state
-     *
-     * @param processState      process state
-     * @return
-     */
-    public ScopeDeclarations lookup(ProcessState processState)
-    {
-        final String key = key(processState);
-        return lookup(key);
-    }
-
-
-    /**
-     * Returns the valid scope declarations for the non-process view.
-     *
-     * @param view
-     * @return
-     */
-    public ScopeDeclarations lookup(View view)
-    {
-        final String key = key(view);
-        return lookup(key);
-    }
-
-
 
     /**
      * Returns the valid scope declarations for the given string key.
@@ -186,11 +218,26 @@ public class ScopeMetaModel
      */
     public ScopeDeclarations lookup(String scopeKey)
     {
-        final ScopeDeclarations definitions = this.definitions.get(scopeKey);
+        final ScopeDeclarations definitions = this.declarations.get(scopeKey);
         if (definitions == null)
         {
             throw new IllegalStateException("No context data for key " + scopeKey);
         }
         return definitions;
+    }
+
+    public static String getScopeKey(ProcessState processState)
+    {
+        return processState.getProcess().getProcessStateName(processState.getName());
+    }
+
+    public static String getScopeKey(View view)
+    {
+        return view.getName();
+    }
+
+    public Collection<ScopeDeclarations> getAllDeclarations()
+    {
+        return allDeclarations;
     }
 }

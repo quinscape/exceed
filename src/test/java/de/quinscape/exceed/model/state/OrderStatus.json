@@ -1,0 +1,29 @@
+{
+    "startState": "ACCEPTED",
+    "states": {
+        "ACCEPTED": [
+            "READY",
+            "CANCELED"
+        ],
+        "READY": [
+            "SENT",
+            "CANCELED"
+        ],
+        "SENT": [
+            "DELIVERED",
+            "LOST_ON_DELIVERY"
+        ],
+        "DELIVERED": [
+            "PAID",
+            "RETOUR",
+            "LOST_ON_RETOUR"
+        ],
+        "RETOUR": [
+            "CANCELED"
+        ],
+        "LOST_ON_DELIVERY": [],
+        "LOST_ON_RETOUR": [],
+        "PAID": [],
+        "CANCELED": []
+    }
+}

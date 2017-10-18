@@ -2,13 +2,13 @@ package de.quinscape.exceed.model.context;
 
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.annotation.DocumentedModelType;
-import de.quinscape.exceed.model.domain.DomainProperty;
-import de.quinscape.exceed.model.domain.PropertyModel;
+import de.quinscape.exceed.model.annotation.Internal;
+import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.model.expression.ExpressionValue;
-import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
+import de.quinscape.exceed.model.meta.PropertyType;
+import de.quinscape.exceed.runtime.util.ExpressionUtil;
 import org.svenson.JSONProperty;
 
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -23,7 +23,7 @@ public class ScopedPropertyModel
 
     private String type;
 
-    private Object typeParam;
+    private String typeParam;
 
     private ExpressionValue defaultValue;
 
@@ -31,16 +31,29 @@ public class ScopedPropertyModel
 
     private boolean fromLayout;
 
+    private boolean required;
+
+    private Map<String, Object> config;
+
+    private PropertyType propertyType;
+
+    private boolean isPrivate;
+
+    public ScopedPropertyModel()
+    {
+
+    }
 
     /**
      * The property type of the scoped property.
      *
-     * @see DomainProperty#DOMAIN_TYPE_PROPERTY_TYPE
-     * @see DomainProperty#MAP_PROPERTY_TYPE
-     * @see DomainProperty#LIST_PROPERTY_TYPE
+     * @see PropertyType#DOMAIN_TYPE
+     * @see PropertyType#MAP
+     * @see PropertyType#LIST
      *
      * @return
      */
+    @Override
     public String getType()
     {
         return type;
@@ -56,12 +69,14 @@ public class ScopedPropertyModel
     /**
      * The default value expression for this scoped property.
      */
+    @Override
     @DocumentedModelType("Expression")
     public String getDefaultValue()
     {
         return defaultValue != null ? defaultValue.getValue() : null;
     }
 
+    @Override
     @JSONProperty(ignore = true)
     public ASTExpression getDefaultValueExpression()
     {
@@ -90,13 +105,14 @@ public class ScopedPropertyModel
      *     </li>
      * </p>
      */
-    public Object getTypeParam()
+    @Override
+    public String getTypeParam()
     {
         return typeParam;
     }
 
 
-    public void setTypeParam(Object typeParam)
+    public void setTypeParam(String typeParam)
     {
         this.typeParam = typeParam;
     }
@@ -107,6 +123,7 @@ public class ScopedPropertyModel
      * If it is less or equal to 0, the property is unbounded.
      * @return
      */
+    @Override
     public int getMaxLength()
     {
         return maxLength;
@@ -122,6 +139,7 @@ public class ScopedPropertyModel
      * The name of the scoped property. Must be unique for all scope locations, i.e. within the combination of all
      * applicable scopes the each context.
      */
+    @Override
     public String getName()
     {
         return name;
@@ -137,6 +155,7 @@ public class ScopedPropertyModel
     /**
      * Description of this scoped property
      */
+    @Override
     public String getDescription()
     {
         return description;
@@ -167,10 +186,84 @@ public class ScopedPropertyModel
     {
         return super.toString() + ": "
             + "name = '" + getName() + '\''
-            + "type = '" + type + '\''
-            + ", typeParam = " + typeParam
+            +  ExpressionUtil.describe(this)
             + ", defaultValue = " + defaultValue
             + ", maxLength = " + maxLength
             ;
+    }
+
+
+    @Override
+    @Internal
+    @JSONProperty(ignore = true)
+    public PropertyType getPropertyType()
+    {
+        return propertyType;
+    }
+
+
+    public void setPropertyType(PropertyType propertyType)
+    {
+        this.propertyType = propertyType;
+    }
+
+
+    @Override
+    public <T> T getConfig(String name, T defaultValue)
+    {
+        if (config == null)
+        {
+            return defaultValue;
+        }
+
+        final T value = (T) config.get(name);
+        if (value == null)
+        {
+            return defaultValue;
+        }
+        return value;
+    }
+
+    public void setConfig(Map<String, Object> config)
+    {
+        this.config = config;
+    }
+
+
+    @JSONProperty(ignoreIfNull = true)
+    public Map<String, Object> getConfig()
+    {
+        return config;
+    }
+
+
+    public boolean isRequired()
+    {
+        return required;
+    }
+
+
+    public void setRequired(boolean required)
+    {
+        this.required = required;
+    }
+
+
+    /**
+     * Returns <code>true</code> if the scope property is supposed to be private, that is it is only visible inside
+     * the process. It is not accepting input from the outside / a parent process nor is it accessible as
+     * sub process output.
+     *
+     * @return
+     */
+    public boolean isPrivate()
+    {
+        return isPrivate;
+    }
+
+
+    public void setPrivate(boolean aPrivate)
+    {
+        isPrivate = aPrivate;
     }
 }

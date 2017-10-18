@@ -1,8 +1,7 @@
 package de.quinscape.exceed.model.view;
 
-import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.model.AbstractTopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
-import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.context.ContextModel;
 import org.svenson.JSONProperty;
 
@@ -13,7 +12,7 @@ import static de.quinscape.exceed.model.view.ComponentModelBuilder.component;
  * Views can override the default by providing a layout prop to their root View component.
  */
 public class LayoutModel
-    extends TopLevelModel
+    extends AbstractTopLevelModel
 {
     /**
      * Name of the component marking the place to insert the individual view's components.

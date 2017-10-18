@@ -1,8 +1,10 @@
 package de.quinscape.exceed.model.domain;
 
-import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.AbstractTopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.annotation.Internal;
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.model.domain.type.EnumType;
 
 import java.util.List;
 import java.util.Map;
@@ -12,7 +14,7 @@ import java.util.Map;
  */
 @Internal
 public class DomainVersion
-    extends TopLevelModel
+    extends AbstractTopLevelModel
 {
     private String schema;
 

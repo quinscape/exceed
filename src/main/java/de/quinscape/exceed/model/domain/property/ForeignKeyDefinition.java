@@ -1,4 +1,6 @@
-package de.quinscape.exceed.model.domain;
+package de.quinscape.exceed.model.domain.property;
+
+import de.quinscape.exceed.model.domain.type.DomainType;
 
 /**
  * Domain foreign key definition.

@@ -1,12 +1,12 @@
 package de.quinscape.exceed.model.translation;
 
-import de.quinscape.exceed.model.Model;
+import de.quinscape.exceed.model.AbstractModel;
 
 /**
  * Encapsulates a reference to a translation tag.
  */
 public class ReferenceInfo
-    extends Model
+    extends AbstractModel
 {
     private final ReferenceType referenceType;
 

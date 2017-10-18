@@ -1,15 +1,21 @@
 package de.quinscape.exceed.model.process;
 
-import de.quinscape.exceed.expression.ASTExpression;
-import de.quinscape.exceed.expression.ExpressionParser;
-import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.runtime.ExceedRuntimeException;
-import de.quinscape.exceed.runtime.util.AssignmentReplacementVisitor;
+import de.quinscape.exceed.runtime.model.InconsistentModelException;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 
 import java.util.List;
 
+/**
+ * A decision state within a process,
+ * <p>
+ *     A series of decisions is considered in definition order, each having an expression attribute taking a value expression
+ *     and a transition to execute in case that expression evaluates to <code>true</code>.
+ * </p>
+ * <p>
+ *     If none of the decision transitions is taken, the default transition is used.
+ * </p>
+ */
 public class DecisionState
     extends ProcessState
 {
@@ -68,7 +74,6 @@ public class DecisionState
         final String decisionStateName = getName();
         defaultTransition.setFrom(decisionStateName);
 
-        final AssignmentReplacementVisitor visitor = new AssignmentReplacementVisitor(process.getApplicationModel(), Process.getProcessViewName(process.getName(), getName()));
 
         for (DecisionModel decision : decisions)
         {
@@ -84,7 +89,6 @@ public class DecisionState
             }
 
             transition.setFrom(decisionStateName);
-            parseTransitionAction(visitor, transition);
         }
 
         Transition defaultTransition = getDefaultTransition();
@@ -93,8 +97,6 @@ public class DecisionState
         {
             throw new IllegalStateException("No default transition given for decision state");
         }
-
-        parseTransitionAction(visitor, defaultTransition);
 
         String to = defaultTransition.getTo();
         if (to == null)
@@ -111,20 +113,4 @@ public class DecisionState
     }
 
 
-    public void parseTransitionAction(AssignmentReplacementVisitor visitor, Transition transition)
-    {
-        try
-        {
-            final ASTExpression actionAST = ExpressionParser.parse(transition.getAction());
-            if (actionAST != null)
-            {
-                actionAST.jjtAccept(visitor, null);
-                transition.setActionAST(actionAST);
-            }
-        }
-        catch (ParseException e)
-        {
-            throw new ExceedRuntimeException("Error parsing transition action expression", e);
-        }
-    }
 }

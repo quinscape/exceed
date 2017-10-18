@@ -2,29 +2,42 @@ package de.quinscape.exceed.model.process;
 
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.annotation.Internal;
+import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.runtime.model.InconsistentModelException;
+import de.quinscape.exceed.runtime.util.Util;
 import org.svenson.JSONProperty;
+
+import java.util.Collection;
 
 /**
  * A transition within a process
  */
 public class Transition
 {
+
+    public final static String CURRENT = "current";
+
     private String name;
 
     private String from;
 
     private String to;
 
-    private String action;
+    /**
+     * Raw action object: String or Collection of strings
+     */
+    private Object rawAction;
+
+    /**
+     * Parsed expression value for action
+     */
+    private ExpressionValue action;
 
     private String description;
 
-    private ASTExpression actionAST;
-
     private boolean discard = false;
 
-    private boolean mergeContext = true;
-
+    private Confirmation confirmation;
 
     /**
      * Name of the transition. Is automatically set when the transition is added to its state.
@@ -75,18 +88,37 @@ public class Transition
 
     /**
      * Action(s) to execute for this transition.
+     *
      * @return
      */
     @JSONProperty(ignoreIfNull = true)
-    public String getAction()
+    public Object getAction()
     {
-        return action;
+        return rawAction;
     }
 
-
-    public void setAction(String action)
+    public String getActionString()
     {
-        this.action = action;
+        return action != null ? action.getValue() : null;
+    }
+
+    public void setAction(Object actionValue)
+    {
+        final String action;
+        if (actionValue instanceof Collection)
+        {
+            action = Util.join((Collection<?>) actionValue, " ");
+        }
+        else if (actionValue instanceof String)
+        {
+            action = (String)actionValue;
+        }
+        else
+        {
+            throw new InconsistentModelException("Invalid transition action value: " + actionValue);
+        }
+        this.action = ExpressionValue.forValue(action, true);
+        this.rawAction = actionValue;
     }
 
 
@@ -108,45 +140,39 @@ public class Transition
     @JSONProperty(ignore = true)
     public ASTExpression getActionAST()
     {
-        return actionAST;
+        return action != null ? action.getAstExpression() : null;
     }
 
 
-    public void setActionAST(ASTExpression actionAST)
+    @JSONProperty(ignore = true)
+    public ExpressionValue getActionValue()
     {
-        this.actionAST = actionAST;
+        return action;
     }
-
-
-    /**
-     * If set to <code>false</code>, the context transitioned with the executing transition is not merged
-     * with an existing entity with the same id. The default is <code>true</code> which means that the
-     * context object will be merged by default.
-     */
-    public boolean isMergeContext()
-    {
-        return mergeContext;
-    }
-
-
-    public void setMergeContext(boolean mergeContext)
-    {
-        this.mergeContext = mergeContext;
-    }
-
 
     public void setDescription(String description)
     {
         this.description = description;
     }
 
-
     /**
-     * Description of the transition. 
+     * Description of the transition.
      */
     public String getDescription()
     {
         return description;
+    }
+
+
+    public Confirmation getConfirmation()
+    {
+        return confirmation;
+    }
+
+
+    public void setConfirmation(Confirmation confirmation)
+    {
+        this.confirmation = confirmation;
     }
 
 
@@ -158,5 +184,4 @@ public class Transition
             + ", '" + from + "' => '" + to + "'"
             ;
     }
-
 }

@@ -1,6 +1,6 @@
 package de.quinscape.exceed.model.merge;
 
-import de.quinscape.exceed.model.domain.DomainType;
+import de.quinscape.exceed.model.domain.type.DomainType;
 
 import java.util.Collections;
 import java.util.List;

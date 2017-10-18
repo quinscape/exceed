@@ -9,23 +9,23 @@ public final class ScopeDeclaration
 {
     private final String name;
 
-    private final String key;
+    private final String scopeLocation;
 
     private final ScopeType scopeType;
 
     private final ScopedPropertyModel model;
 
 
-    public ScopeDeclaration(String name, String key, ScopeType scopeType, ScopedPropertyModel model)
+    public ScopeDeclaration(String name, String scopeLocation, ScopeType scopeType, ScopedPropertyModel model)
     {
         if (name == null)
         {
             throw new IllegalArgumentException("name can't be null");
         }
 
-        if (key == null)
+        if (scopeLocation == null)
         {
-            throw new IllegalArgumentException("key can't be null");
+            throw new IllegalArgumentException("scopeLocation can't be null");
         }
 
         if (scopeType == null)
@@ -35,7 +35,7 @@ public final class ScopeDeclaration
 
 
         this.name = name;
-        this.key = key;
+        this.scopeLocation = scopeLocation;
         this.scopeType = scopeType;
         this.model = model;
     }
@@ -47,9 +47,9 @@ public final class ScopeDeclaration
 
 
     @JSONProperty(ignore = true)
-    public String getKey()
+    public String getScopeLocation()
     {
-        return key;
+        return scopeLocation;
     }
 
 
@@ -73,7 +73,7 @@ public final class ScopeDeclaration
 
             return
                 this.name.equals(that.name) &&
-                    this.key.equals(that.key) &&
+                    this.scopeLocation.equals(that.scopeLocation) &&
                     this.scopeType == that.scopeType;
         }
         return false;
@@ -87,14 +87,14 @@ public final class ScopeDeclaration
     @Override
     public int hashCode()
     {
-        return Objects.hash(name, key, scopeType);
+        return Objects.hash(name, scopeLocation, scopeType);
     }
 
 
     @Override
     public String toString()
     {
-        return "Scope definition '" + name + "' in " + key + " (" + scopeType + ")";
+        return "Scope definition '" + name + "' in " + scopeLocation + " (" + scopeType + ")";
     }
 
 }

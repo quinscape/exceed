@@ -1,0 +1,9 @@
+{
+    "startState": "INVALID",
+    "states": {
+        "A": [
+            "B"
+        ],
+        "B": []
+    }
+}

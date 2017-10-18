@@ -17,7 +17,6 @@ public class Mapping
 
     private Boolean disabled;
 
-
     /**
      * <code>true</code> if the mapping is currently disabled.
      * @return
