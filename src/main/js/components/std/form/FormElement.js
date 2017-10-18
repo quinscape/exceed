@@ -1,248 +1,169 @@
-/**
- * FormElement is a high order component for bootstrap form fields. It handles all the cursor logic and type analysis and
+/** FormElement is a high order component for bootstrap form fields. It handles all the cursor logic and type analysis and
  * error checking.
  *
  * @param FieldComponent
  * @param [opts]        options
  * @returns {*}
  */
-import FormContext from "../../../util/form-context";
-import store from "../../../service/store";
-import DataCursor from "../../../domain/cursor";
-import converter from "../../../service/property-converter";
-import ValueLink from "../../../util/value-link";
 import i18n from "../../../service/i18n";
+import store from "../../../service/store";
+import FieldState from "../../../form/field-state";
+import { changeFormField } from "../../../actions/form-state";
+import { getErrorMessage, getField, getFieldValue, getFormConfig, getFieldState, getFieldId } from "../../../reducers/form-state";
+import { getCurrency } from "../../../reducers/meta";
 import cx from "classnames";
-import React from "react";
 import assign from "object-assign";
+import React from "react";
+import { undoGroup } from "../../../actions/editor/index";
 
+const DEFAULT_OPTS = {
+    decorate: true
+};
 
-function isValueLink(value)
-{
-    return value && typeof value.requestChange === "function";
-}
 export default function(FieldComponent, opts)
 {
     //console.log("Create FormElement: ", InputComponent.displayName);
+
+    opts = assign({}, DEFAULT_OPTS, opts);
 
     return class FormElem extends React.Component {
 
         static displayName = "FormElem(" + ( FieldComponent.displayName || "Unnamed") + ")";
 
-        static contextTypes =  {
-            formContext: React.PropTypes.instanceOf(FormContext)
+        /**
+         * FormElem change handler for two-phase value handling
+         *
+         * @param value     new value
+         * @param final     if set to false, don't propagate the value if the propagate config for the field is set to false
+         *                  Field implementations that set this to false *must* ensure that they follow it up with a final = true
+         *                  (note that undefined counts as true here)
+         */
+        onChange = (value, final) =>
+        {
+            const state = store.getState();
+            const { id, propagate }= this.props;
+
+            // for iterative contexts we get the correct cursor as value prop otherwise the correct cursor path is in the field,
+            const cursorPath = this.props.value ? this.props.value.getPath() : getField(state, id).cursorPath;
+
+            let fieldId = this.getFieldId();
+
+
+            store.dispatch(
+                changeFormField(
+                    fieldId,
+                    id,
+                    cursorPath,
+                    value,
+                    final !== false,
+                    typeof propagate !== "undefined" ? propagate : getFormConfig(state, id).propagate
+                )
+            );
         };
 
-        state = (() =>
+        getFieldId()
         {
-            //console.log("getInitialState", FieldComponent.displayName);
+            const state = store.getState();
+            const modelId = this.props.id;
+            // for iterative contexts we the correct cursor as value prop, otherwise, the correct cursor path is in the field,
+            const cursorPath = this.props.value ? this.props.value.getPath() : getField(state, modelId).cursorPath;
 
-            const ctx = this.context.formContext;
-            const cursor = this.cursorFromProps(this.props);
-
-            const propertyType = cursor.getPropertyType();
-            const value = converter.toUser(cursor.get(), propertyType);
-
-            return {
-                propertyType: propertyType,
-                value : value.value,
-                id: ctx.nextId(),
-                errorLock: false
-            };
-        })();
-
-        cursorFromProps(props)
-        {
-            let value = props.value;
-
-            //console.log("CURSOR-FROM-VALUE", value);
-
-            const propertyType = this.props.propertyType;
-
-            if (value instanceof DataCursor)
-            {
-                //console.log("cursorFromProps: CURSOR ", value);
-                return value;
-            }
-            else if (typeof value === "string")
-            {
-                //console.log("cursorFromProps:  context['" + value + "']", context);
-                value = props.context.getCursor([value]);
-                //console.log("NEW CURSOR", value);
-                return value;
-            }
-            else if (value && typeof value === "object" && value.length && value[0] !== undefined)
-            {
-                //console.log("cursorFromProps:  context['" + value + "']", context);
-                value = props.context.getCursor( value );
-                //console.log("NEW CURSOR", value);
-                return value;
-            }
-            else
-            {
-                if (isValueLink(value))
-                {
-                    throw new Error("Invalid cursor value: Link provided, but no propertyType prop set or provided by element config.");
-                }
-
-                throw new Error("Invalid cursor value: " + value);
-            }
+            return getFieldId(state, modelId, cursorPath);
         }
-
-
-        componentWillUnmount()
-        {
-            const ctx = this.context.formContext;
-            ctx.deregister(this.state.id);
-        }
-
-        validate = (value) =>
-        {
-            const id = this.state.id;
-
-            //console.log("VALIDATE", value);
-
-            const result = converter.fromUser(value, this.state.propertyType);
-            let isOk = result.ok;
-
-            const ctx = this.context.formContext;
-
-            const localValidate = this.props.validate;
-            if (isOk && localValidate)
-            {
-                isOk = localValidate(ctx, id, value);
-            }
-
-            let haveError = ctx.hasError(id);
-
-            if (!isOk)
-            {
-                if (!haveError)
-                {
-                    ctx.signalError(id, result.error);
-                }
-
-                this.setState({
-                    value: value,
-                    errorLock: true
-                });
-            }
-            else
-            {
-                if (haveError)
-                {
-                    ctx.signalError(id, null);
-                }
-
-                this.setState({
-                    value: result.value,
-                    errorLock: false
-                }, function ()
-                {
-                    //console.log("setState end");
-                    if (haveError)
-                    {
-                        //console.log("signal no Error");
-                    }
-                });
-            }
-
-            return result;
-        };
-
-        onChange = (value) =>
-        {
-            const result = this.validate(value);
-
-            console.log("validate", result);
-
-            if (result.ok)
-            {
-                const cursor = this.cursorFromProps(this.props);
-                const cursorValue = cursor.get();
-                if (cursorValue !== result.value)
-                {
-                    store.dispatch(
-                        this.context.formContext.update(cursor, result.value)
-                    );
-                }
-                else
-                {
-                    console.log("Cursor value unchanged", cursorValue);
-                }
-            }
-        };
 
         getInputField()
         {
             return this._input.getInputField();
         }
 
-        componentWillReceiveProps(nextProps)
-        {
-            //console.log("componentWillReceiveProps", JSON.stringify(nextProps));
-            const id = this.state.id;
-            const ctx = this.context.formContext;
-
-            // if the field is in an error state, we cannot propagate the current erroneous value to the underlying DataGraph but instead keep it in local state only
-            // in this state, we don't want props to overwrite our current state.
-            if (!this.state.errorLock)
-            {
-                const cursor = this.cursorFromProps(nextProps);
-
-                const propertyType = cursor.getPropertyType();
-
-                const value = cursor.get();
-                const result = converter.toUser(value, propertyType);
-
-                //if (!result.ok)
-                //{
-                //    ctx.signalError(id, result.error);
-                //}
-
-                //console.log("SET NEW STATE", propertyType, result.value);
-
-                this.setState({
-                    propertyType: propertyType,
-                    value: result.value
-                });
-            }
-        }
-
         render()
         {
+            const state = store.getState();
+            const modelId = this.props.id;
 
-            const cursor = this.cursorFromProps(this.props);
+            const field = getField(state, modelId);
 
-            const ctx = this.context.formContext;
-            const id = this.state.id;
+            const { propertyType } = field;
 
-            const errorMessage = ctx.getErrorMessage(id);
+            let fieldId = this.getFieldId();
 
-            const pt = cursor.getPropertyType();
+            const value = getFieldValue(state, fieldId);
+
+            const fieldState = getFieldState(state, fieldId);
+            let fieldComponent;
+            if (fieldState === FieldState.READ_ONLY)
+            {
+                fieldComponent = (
+                    <p id={ fieldId } className={ cx(this.props.className, "form-control-static") }>
+                        { value }
+                    </p>
+                );
+            }
+            else
+            {
+                fieldComponent = (
+                    <FieldComponent
+                        {... this.props }
+                        id={ fieldId }
+                        modelId={ modelId }
+                        ref={ component => this._input = component }
+                        value={ value }
+                        onChange={ this.onChange }
+                        className={ this.props.className }
+                        disabled={ fieldState !== FieldState.NORMAL }
+                        propertyType={ propertyType }
+                    />
+                );
+            }
 
 
-            let fieldComponent = (
-                <FieldComponent
-                    {...this.props}
-                    id={ id }
-                    ref={ component => this._input = component }
-                    valueLink={ new ValueLink(this.state.value, this.validate) }
-                    className={ this.props.className }
-                    propertyType={ pt }
-                    onChange={ this.onChange }
-                />
-            );
+            const errorMessage = fieldState === FieldState.NORMAL && getErrorMessage(state, fieldId);
 
-            if (pt.type === "Boolean")
+            const cfg = getFormConfig(state, modelId);
+
+            // some components render their own surrounding markup
+
+            let shouldDecorate = opts.decorate;
+
+            if (typeof opts.decorate === "function")
+            {
+                shouldDecorate = opts.decorate(propertyType)
+            }
+
+            if (!shouldDecorate)
             {
                 return fieldComponent;
             }
 
+            if (propertyType.type === "Currency")
+            {
+                fieldComponent = (
+                    <div className="input-group">
+                        {
+                            fieldComponent
+                        }
+                        <span className="input-group-addon">
+                            {
+                                getCurrency(state, propertyType)
+                            }
+                        </span>
+                    </div>
+                )
+            }
 
             const labelElement = (
-                <label className={ cx("control-label", ctx.labelClass(this)) } htmlFor={ id }>
-                    { this.props.label || i18n(pt.parent + ":" + pt.name) }
+                <label
+                    className={
+                        cx(
+                            "control-label",
+                            cfg.horizontal && cfg.labelClass
+                        )
+                    }
+                    htmlFor={
+                        fieldId
+                    }
+                >
+                    { this.props.label || i18n(propertyType.parent + ":" + propertyType.name) }
                 </label>
             );
 
@@ -257,23 +178,32 @@ export default function(FieldComponent, opts)
                 )
             }
 
-            if (ctx.horizontal)
+
+
+            if (cfg.horizontal)
             {
                 fieldComponent = (
-                    <div className={ ctx.wrapperClass(this) }>
+                    <div className={ cfg.wrapperClass }>
                         { fieldComponent }
                         { helpBlock }
                     </div>
                 )
             }
 
-            return (
-                <div className={ cx("form-group", errorMessage && "has-error") }>
+            const out = (
+                <div className={
+                    cx(
+                        "form-group",
+                        errorMessage && "has-error"
+                    )
+                }>
                     { labelElement }
                     { fieldComponent }
-                    { !ctx.horizontal && helpBlock }
+                    { !cfg.horizontal && helpBlock }
                 </div>
             );
+
+            return out;
         }
     }
 };

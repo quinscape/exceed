@@ -1,5 +1,6 @@
 import uuidV4 from "uuid/v4";
 import assign from "object-assign"
+import Event from "./event";
 
 const DEFAULT_OPTS = {
 
@@ -8,8 +9,6 @@ const DEFAULT_OPTS = {
     // callback to call to restore a previous state on browser navigation
     onRestore: null
 };
-
-import Event from "./event";
 
 function newEntry(id, state)
 {
@@ -112,8 +111,10 @@ class NavigationHistory
 
         this.currentState.redux = state;
 
-        //console.log("UPDATE", this.currentState);
-        window.history.replaceState( this.currentState.id, "Exceed", window.location.href);
+        const newUrl = window.location.href;
+
+        //console.log("UPDATE", this.currentState, newUrl);
+        window.history.replaceState( this.currentState.id, "Exceed", newUrl);
     }
 
     newState(state, url)
@@ -123,10 +124,12 @@ class NavigationHistory
             throw new Error("No state given to update");
         }
 
+        const newUrl = url || window.location.href;
+        //console.log("NEW-STATE", this.currentState, newUrl);
+
         this.insert(state);
 
-        //console.log("NEW-STATE", this.currentState);
-        window.history.pushState( this.currentState.id , "Exceed", url || window.location.href);
+        window.history.pushState( this.currentState.id , "Exceed", newUrl);
     }
 
     lookupEntry(id)

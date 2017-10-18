@@ -1,5 +1,5 @@
-const React = require("react");
-const Event  = require("../util/event");
+import Event from "../util/event";
+import React from "react";
 
 function calculateHeight(customFn)
 {
@@ -24,12 +24,11 @@ export default function (Component)
 {
     return (class AutoHeight extends React.Component {
 
-        constructor(props)
-        {
-            super(props);
-            this.timerId = null;
-            this.state.height = calculateHeight(Component.calculateHeight)
-        }
+        timerId = null;
+
+        state = {
+            height: calculateHeight(Component.calculateHeight)
+        };
 
         componentDidMount()
         {
@@ -41,7 +40,7 @@ export default function (Component)
             window && Event.remove(window, "resize", this.onResize, false);
         }
 
-        onResize()
+        onResize = ev =>
         {
             if (this.timerId)
             {
@@ -60,8 +59,7 @@ export default function (Component)
                 100
             );
             //console.log("RESIZE");
-        }
-
+        };
 
         render()
         {

@@ -5,6 +5,8 @@ import GUIElement from "./GUIElement"
 const Symbol = require("../../ui/Symbol");
 import ValueLink from "../../util/value-link"
 
+import PropTypes from 'prop-types'
+
 import GUIContext from "../../editor/gui/gui-context"
 
 /**
@@ -24,43 +26,43 @@ class SymbolElement extends React.Component
         /**
          * Unique GUIElement id
          */
-        id: React.PropTypes.string.isRequired,
+        id: PropTypes.string.isRequired,
         /**
          * Set of symbols imported from SVG using the "symbol-loader" package
          */
-        symbols: React.PropTypes.object.isRequired,
+        symbols: PropTypes.object.isRequired,
         /**
          * Name of the symbol in the
          */
-        name: React.PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired,
         /**
          * The x-coordinate to draw the symbol at.
          */
-        x: React.PropTypes.number.isRequired,
+        x: PropTypes.number.isRequired,
         /**
          * The y-coordinate to draw the symbol at.
          */
-        y: React.PropTypes.number.isRequired,
+        y: PropTypes.number.isRequired,
         /**
          * Layer of the symbol to draw (or undefined for all layers)
          */
-        layer: React.PropTypes.string,
+        layer: PropTypes.string,
         /**
          * Additional SVG transform to apply to the symbol group.
          */
-        transform: React.PropTypes.string,
+        transform: PropTypes.string,
         /**
          * Method to call on interaction
          */
-        onInteraction: React.PropTypes.func,
+        onInteraction: PropTypes.func,
         /**
          * If true, all drag&drop of the symbol group element (default: true)
          */
-        draggable: React.PropTypes.bool,
+        draggable: PropTypes.bool,
         /**
          * If true, set CSS animation classes on symbol group element.
          */
-        animated: React.PropTypes.bool
+        animated: PropTypes.bool
     }
 
     getDefaultProps()

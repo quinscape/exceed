@@ -1,7 +1,5 @@
 import React from "react"
 
-import AutoHeight from "../ui/AutoHeight"
-
 import ModelLink from "./ModelLink"
 import NamedGroup from "./NamedGroup"
 import Memoizer from "../util/memoizer"
@@ -12,8 +10,16 @@ import debounce from "../util/debounce"
 import i18n from "../service/i18n";
 import Icon from "../ui/Icon";
 
-import { searchModel, setFilter } from "../actions/editor";
-import { getDomainTypes, getEnumTypes, getProcesses, getViews, getLayouts, getFilter, getSearchResults } from "../reducers/editor";
+import { searchModel } from "../actions/editor";
+import {
+    getDomainTypes,
+    getEnumTypes,
+    getFilter,
+    getLayouts,
+    getProcesses,
+    getSearchResults,
+    getViews
+} from "../reducers/editor";
 
 const RESULT_TYPE_LABELS = {
     NAME: i18n("SearchResult:Name"),
@@ -80,6 +86,37 @@ function getEditorType(modelType)
 const getStandaloneViews = Memoizer(getViewSelector(false));
 const getProcessViews = Memoizer(getViewSelector(true));
 
+
+function SearchResults(props)
+{
+    const { results, currentLocation } = props;
+
+    return (
+        !!results.length && (
+            <div className="search-results">
+                <h5>{ i18n("Search Results") }</h5>
+                {
+                    results.map((result, idx) =>
+                        <ModelLink
+                            key={ idx }
+                            type={ getEditorType(result.type) }
+                            name={ result.name }
+                            params={ {
+                                resultType: result.resultType,
+                                detail: result.detail
+                            }}
+                            currentLocation={ currentLocation }
+                        >
+                            <span className="text-info pull-right">{ RESULT_TYPE_LABELS[result.resultType] }</span>
+                            { result.name }
+                        </ModelLink>
+                    )
+                }
+            </div>
+        )
+    );
+}
+
 class ModelSelector extends React.Component
 {
     onFilterChange = debounce( ev => {
@@ -123,6 +160,7 @@ class ModelSelector extends React.Component
                             <Icon className="glyphicon-link"/>
                         </a>
                         { i18n("App {0}", sys.appName) }
+
                     </h4>
                     <form
                         className="form"
@@ -144,19 +182,18 @@ class ModelSelector extends React.Component
                                     placeholder={ i18n("Partial model name") }
                                 />
                                 <span className="input-group-btn">
-                                    <button
-                                        className="btn btn-default"
-                                        disabled={ !currentFilter }
-                                        type="button"
-                                        onClick={ this.clearFilter }
-                                    >
-                                        <Icon className="glyphicon-erase"/>
-                                    </button>
-                                </span>
+                        <button
+                            className="btn btn-default"
+                            disabled={ !currentFilter }
+                            type="button"
+                            onClick={ this.clearFilter }
+                        >
+                            <Icon className="glyphicon-erase"/>
+                        </button>
+                    </span>
                             </div>
                         </div>
                     </form>
-
                     <ModelLink type="config" currentLocation={ currentLocation } filter={ currentFilter }>
                         <h5>
                         <Icon className="glyphicon-cog text-info"/>
@@ -167,6 +204,12 @@ class ModelSelector extends React.Component
                         <h5>
                         <Icon className="glyphicon-road text-info"/>
                         { " " + i18n("Routing") }
+                        </h5>
+                    </ModelLink>
+                    <ModelLink type="translation" currentLocation={ currentLocation } filter={ currentFilter }>
+                        <h5>
+                        <Icon className="glyphicon-globe text-info"/>
+                        { " " + i18n("Translations") }
                         </h5>
                     </ModelLink>
                     <NamedGroup type="domainType" map={ getDomainTypes(state) } currentLocation={ currentLocation } filter={ currentFilter }>
@@ -184,31 +227,7 @@ class ModelSelector extends React.Component
                     <NamedGroup type="layout" map={ getLayouts(state) } currentLocation={ currentLocation } filter={ currentFilter }>
                         { i18n("Layouts")}
                     </NamedGroup>
-                    {
-                        !!searchResults.length && (
-                            <div className="search-results">
-                            <h5>{ i18n("Search Results") }</h5>
-                                {
-                                    searchResults.map( (result,idx) =>
-                                        <ModelLink
-                                            key={ idx }
-                                            type={ getEditorType(result.type) }
-                                            name={ result.name }
-                                            params={ {
-                                                resultType: result.resultType,
-                                                detail: result.detail
-                                            }}
-                                            currentLocation={ currentLocation }
-                                        >
-                                            <span className="text-info pull-right">{ RESULT_TYPE_LABELS[result.resultType] }</span>
-                                            { result.name }
-                                        </ModelLink>
-                                    )
-                                }
-                            </div>
-
-                        )
-                    }
+                    <SearchResults results={ searchResults } currentLocation={ currentLocation } />
                     <hr/>
                 </div>
             </div>

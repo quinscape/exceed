@@ -5,6 +5,7 @@ import Throbber from "../ui/throbber"
 
 import { updateComponent } from "../actions/component"
 
+const domainService = require("../service/domain");
 function defaultError(err)
 {
     console.error(err);
@@ -17,6 +18,15 @@ function throbberError(e)
     return defaultError(e);
 }
 
+function getStateMachineState(stateMachine, stateName)
+{
+    const array = stateMachine.states[stateName];
+    if (!array)
+    {
+        throw new Error("'" + stateName + "' is no valid state in state machine '" + stateMachine.name + "'");
+    }
+    return array;
+}
 /**
  * Internal runtime API for action expressions. de.quinscape.exceed.runtime.service.ActionExpressionRenderer
  * transforms the expression language action expressions to promise chains targeting this API.
@@ -32,21 +42,9 @@ export default {
      * @param name      {?name} optional name parameter.
      * @returns {Promise}
      */
-    action: function (model, name)
+    action: function (name, args)
     {
-        // (name, model)?
-        if (name !== undefined)
-        {
-            // yes -> make sure the given object has the right action attribute
-            model.action = name;
-        }
-
-        if (!model.action)
-        {
-            return Promise.reject(new Error("No action property set"));
-        }
-
-        return actionService.execute(model);
+        return actionService.execute(name, args);
     },
 
     /**
@@ -80,6 +78,19 @@ export default {
                 vars
             )
         );
+    },
+
+    isValidTransition: function (stateMachineName, from, to)
+    {
+        const stateMachine = domainService.getStateMachine(stateMachineName);
+        if (!stateMachine)
+        {
+            throw new Error("Could not find state machine '" + stateMachineName + "'");
+        }
+        const array = getStateMachineState(stateMachine, from);
+        getStateMachineState(stateMachine, to);
+
+        return array.indexOf(to) >= 0;
     },
 
     uri: require("../util/uri")

@@ -1,233 +1,248 @@
 import assert from "power-assert";
-import sinon from "sinon";
-import proxyquire from "proxyquire";
 
 import * as Graph from "../../../main/js/domain/graph"
 import DataCursor from "../../../main/js/domain/cursor"
+import DataGraphType from "../../../main/js/domain/graph-type";
 
 const TYPES = {
-    "Foo": {
-        "properties": [
-            {
-                "name": "name",
-                "type": "PlainText",
-                "data" : 1
-            },
-            {
-                "name": "num",
-                "type": "Integer",
-                "data" : 2
-            },
-            {
-                "name": "embedded",
-                "type": "DomainType",
-                "typeParam": "Embedded",
-                "data" : 3
-            },
-            {
-                "name": "bars",
-                "type": "List",
-                "typeParam": "Bar",
-                "data" : 4
-            },
-            {
-                "name": "flag",
-                "type": "Boolean",
-                "data" : 5
-            },
-            {
-                "name": "bazes",
-                "type": "Map",
-                "typeParam": "Baz",
-                "data" : 6
-            }
-        ]
-    },
-    "Embedded": {
-        "properties": [
-            {
-                "name": "name",
-                "type": "PlainText",
-                "data" : 6
-            }
-        ]
-    },
-    "Bar": {
-        "properties": [
-            {
-                "name": "name",
-                "type": "PlainText",
-                "data" : 7
-            }
-        ]
-    },
-    "Baz": {
-        "properties": [
-            {
-                "name": "num",
-                "type": "Integer",
-                "data" : 8
-            }
-        ]
-    },
-    "Joined": {
-        "properties": [
-            {
-                "name": "name",
-                "type": "PlainText",
-                "data" : 9
-            }
-        ]
+    domainTypes: {
+        "Foo": {
+            "name": "Foo",
+            "properties": [
+                {
+                    "name": "name",
+                    "type": "PlainText",
+                    "data": 1
+                },
+                {
+                    "name": "num",
+                    "type": "Integer",
+                    "data": 2
+                },
+                {
+                    "name": "embedded",
+                    "type": "DomainType",
+                    "typeParam": "Embedded",
+                    "data": 3
+                },
+                {
+                    "name": "bars",
+                    "type": "List",
+                    "typeParam": "Bar",
+                    "data": 4
+                },
+                {
+                    "name": "flag",
+                    "type": "Boolean",
+                    "data": 5
+                },
+                {
+                    "name": "bazes",
+                    "type": "Map",
+                    "typeParam": "Baz",
+                    "data": 6
+                }
+            ]
+        },
+        "Embedded": {
+            "name": "Embedded",
+            "properties": [
+                {
+                    "name": "name",
+                    "type": "PlainText",
+                    "data": 6
+                }
+            ]
+        },
+        "Bar": {
+            "name": "Bar",
+            "properties": [
+                {
+                    "name": "name",
+                    "type": "PlainText",
+                    "data": 7
+                }
+            ]
+        },
+        "Baz": {
+            "name": "Baz",
+            "properties": [
+                {
+                    "name": "num",
+                    "type": "Integer",
+                    "data": 8
+                }
+            ]
+        },
+        "Joined": {
+            "name": "Joined",
+            "properties": [
+                {
+                    "name": "name",
+                    "type": "PlainText",
+                    "data": 9
+                }
+            ]
+        }
     }
 };
 
 const SIMPLE_LIST_TYPES = {
-    "Foo": {
-        "name" : "Foo",
-        "properties": [
-            {
-                "name": "name",
-                "type": "PlainText",
-                "data" : 1
-            },
-            {
-                "name": "num",
-                "type": "Integer",
-                "data" : 2
-            }
-        ]
+    domainTypes: {
+        "Foo": {
+            "name": "Foo",
+            "properties": [
+                {
+                    "name": "name",
+                    "type": "PlainText",
+                    "data": 1
+                },
+                {
+                    "name": "num",
+                    "type": "Integer",
+                    "data": 2
+                }
+            ]
+        }
     }
 };
 
 const COMPLEX_MAP_TYPES = {
-    "Foo": {
-        "name" : "Foo",
-        "properties": [
-            {
-                "name": "name",
-                "type": "PlainText",
-                "domainType" : "Foo",
-                "data" : 1
-            },
-            {
-                "name": "num",
-                "type": "Integer",
-                "domainType" : "Foo",
-                "data" : 2
-            }
-        ]
+    domainTypes: {
+        "Foo": {
+            "name": "Foo",
+            "properties": [
+                {
+                    "name": "name",
+                    "type": "PlainText",
+                    "domainType": "Foo",
+                    "data": 1
+                },
+                {
+                    "name": "num",
+                    "type": "Integer",
+                    "domainType": "Foo",
+                    "data": 2
+                }
+            ]
+        }
     }
 };
 
 const JOINED_LIST_TYPES = {
-    "Foo": {
-        "name" : "Foo",
-        "properties": [
-            {
-                "name": "name",
-                "type": "PlainText",
-                "data" : 1
-            },
-            {
-                "name": "num",
-                "type": "Integer",
-                "data" : 2
-            }
-        ]
-    },
-    "Baz": {
-        "name" : "Baz",
-        "properties": [
-            {
-                "name": "num",
-                "type": "Integer",
-                "data" : 8
-            }
-        ]
+    domainTypes: {
+        "Foo": {
+            "name": "Foo",
+            "properties": [
+                {
+                    "name": "name",
+                    "type": "PlainText",
+                    "data": 1
+                },
+                {
+                    "name": "num",
+                    "type": "Integer",
+                    "data": 2
+                }
+            ]
+        },
+        "Baz": {
+            "name": "Baz",
+            "properties": [
+                {
+                    "name": "num",
+                    "type": "Integer",
+                    "data": 8
+                }
+            ]
+        }
     }
 };
 
-
 const NESTED_TYPES = {
-    "Foo": {
-        "properties": [
-            {
-                "name": "name",
-                "type": "PlainText",
-                "data" : 1
-            },
-            {
-                "name": "num",
-                "type": "Integer",
-                "data" : 2
-            },
-            {
-                "name": "embedded",
-                "type": "DomainType",
-                "typeParam": "Embedded",
-                "data" : 3
-            },
-            {
-                "name": "bars",
-                "type": "List",
-                "typeParam": "Bar",
-                "data" : 4
-            },
-            {
-                "name": "bazes",
-                "type": "Map",
-                "typeParam": "Baz",
-                "data" : 5
-            }
-        ]
-    },
-    "Embedded": {
-        "properties": [
-            {
-                "name": "name",
-                "type": "PlainText",
-                "data" : 6
-            }
-        ]
-    },
-    "Bar": {
-        "properties": [
-            {
-                "name": "name",
-                "type": "PlainText",
-                "data" : 7
-            }
-        ]
-    },
-    "Baz": {
-        "properties": [
-            {
-                "name": "num",
-                "type": "Integer",
-                "data" : 8
-            }
-        ]
-    },
-    "Joined": {
-        "properties": [
-            {
-                "name": "name",
-                "type": "PlainText",
-                "data" : 9
-            }
-        ]
+    domainTypes: {
+        "Foo": {
+            "name": "Foo",
+            "properties": [
+                {
+                    "name": "name",
+                    "type": "PlainText",
+                    "data": 1
+                },
+                {
+                    "name": "num",
+                    "type": "Integer",
+                    "data": 2
+                },
+                {
+                    "name": "embedded",
+                    "type": "DomainType",
+                    "typeParam": "Embedded",
+                    "data": 3
+                },
+                {
+                    "name": "bars",
+                    "type": "List",
+                    "typeParam": "Bar",
+                    "data": 4
+                },
+                {
+                    "name": "bazes",
+                    "type": "Map",
+                    "typeParam": "Baz",
+                    "data": 5
+                }
+            ]
+        },
+        "Embedded": {
+            "name": "Embedded",
+            "properties": [
+                {
+                    "name": "name",
+                    "type": "PlainText",
+                    "data": 6
+                }
+            ]
+        },
+        "Bar": {
+            "name": "Bar",
+            "properties": [
+                {
+                    "name": "name",
+                    "type": "PlainText",
+                    "data": 7
+                }
+            ]
+        },
+        "Baz": {
+            "name": "Baz",
+            "properties": [
+                {
+                    "name": "num",
+                    "type": "Integer",
+                    "data": 8
+                }
+            ]
+        },
+        "Joined": {
+            "name": "Joined",
+            "properties": [
+                {
+                    "name": "name",
+                    "type": "PlainText",
+                    "data": 9
+                }
+            ]
+        }
     }
 };
 
 const graph = Graph.DataGraph(require("./test-lists/data-list.json"));
 
-describe("DataGraph", function ()
-{
+describe("DataGraph", function () {
     let cursor;
 
-
-    it("supports simple maps", function ()
-    {
+    it("supports simple maps", function () {
         const simpleMap = Graph.DataGraph(require("./test-lists/simple-map.json"));
 
         const cursor = new DataCursor(TYPES, simpleMap, ['A']);
@@ -239,38 +254,35 @@ describe("DataGraph", function ()
         assert(cursor.get() === "TestFoo #3.2");
     });
 
-    it("supports complex maps", function ()
-    {
+    it("supports complex maps", function () {
         const complexMap = Graph.DataGraph(require("./test-lists/complex-map.json"));
 
         const cursor = new DataCursor(TYPES, complexMap, ['A']);
         assert(!cursor.isProperty());
         assert(cursor.type === "DomainType");
         assert(cursor.typeParam === "Foo");
-        assert(cursor.getPropertyType(complexMap).type  === "DomainType");
+        assert(cursor.getPropertyType(complexMap).type === "DomainType");
         assert(cursor.get() === complexMap.rootObject.A);
         assert(cursor.get(["name"]) === "TestFoo #3");
         assert(cursor.get(["num"]) === 456);
 
-        const cursor2 = new DataCursor(TYPES, complexMap,['A', 'name']);
+        const cursor2 = new DataCursor(TYPES, complexMap, ['A', 'name']);
+        //console.log({cursor2});
         assert(cursor2.isProperty());
         assert(cursor2.type === "PlainText");
         const pt = cursor2.getPropertyType();
         assert(pt.parent === "Foo");
         assert(pt.type === "PlainText");
 
-        assert.deepEqual(cursor.getDomainObject(), complexMap.rootObject.A);
-
         cursor.set("TestFoo #3.1", ["name"]);
         assert(cursor.get(["name"]) === "TestFoo #3.1");
     });
 
-    it("supports complex object", function ()
-    {
+    it("supports complex object", function () {
         const complex = Graph.DataGraph(require("./test-lists/complex.json"));
 
         const cursor = new DataCursor(COMPLEX_MAP_TYPES, complex, ["foo"]);
-        assert( !cursor.isProperty());
+        assert(!cursor.isProperty());
 
         //cursor = cursor.get( ["foo"] );
         //
@@ -283,8 +295,6 @@ describe("DataGraph", function ()
         assert(cursor.get(["name"]) === "TestFoo #4");
         assert(cursor.get(["num"]) === 333);
 
-        assert.deepEqual(cursor.getDomainObject(), complex.rootObject.foo);
-
         var cursor3 = new DataCursor(COMPLEX_MAP_TYPES, complex, ["num"]);
         assert(cursor3.type === "Integer");
         assert(cursor3.get() === 111);
@@ -292,7 +302,7 @@ describe("DataGraph", function ()
         const newComplex = cursor.set("TestFoo #3.3", ["name"]);
         assert(cursor.get(["name"]) === "TestFoo #3.3");
 
-        const cursor4 =  new DataCursor(COMPLEX_MAP_TYPES, complex, []);
+        const cursor4 = new DataCursor(COMPLEX_MAP_TYPES, complex, []);
 
         assert(cursor4.get(null) === complex.rootObject);
         assert(cursor4.get(["foo"]) === complex.rootObject.foo);
@@ -303,43 +313,32 @@ describe("DataGraph", function ()
         assert(newComplex2.rootObject.foo.name === "TestFoo #3.4");
     });
 
-    it("supports complex object maps", function ()
-    {
+    it("supports complex object maps", function () {
         const complex = Graph.DataGraph(require("./test-lists/complex2.json"));
-        const cursor =  new DataCursor(COMPLEX_MAP_TYPES, complex, ["foos"]);
+        const cursor = new DataCursor(COMPLEX_MAP_TYPES, complex, ["foos"]);
 
-        const cursor2 =  cursor.getCursor(["One"]);
+        const cursor2 = cursor.getCursor(["One"]);
 
         assert(cursor2.get().name === "FOO1");
-
-        assert.deepEqual(cursor2.getDomainObject(), complex.rootObject.foos.One);
+        assert(cursor2.get(['num']) === 111);
 
     });
 
-    it("validates wildcard columns", function ()
-    {
+    it("validates wildcard columns", function () {
         assert(Graph.validateWildcard({'*': true}));
         assert(!Graph.validateWildcard({'a': false}));
-        assert(!Graph.validateWildcard({'a': false, "b" : false}));
+        assert(!Graph.validateWildcard({'a': false, "b": false}));
 
-        assert.throws(function ()
-        {
-            Graph.validateWildcard({"*": false, "b" : false})
+        assert.throws(function () {
+            Graph.validateWildcard({"*": false, "b": false})
         });
-        assert.throws(function ()
-        {
-            Graph.validateWildcard({"a": false, "*" : false})
-        });
-        assert.throws(function ()
-        {
-            Graph.validateWildcard({})
+        assert.throws(function () {
+            Graph.validateWildcard({"a": false, "*": false})
         });
     });
 
-    describe("Cursor", function ()
-    {
-        it("can be created", function ()
-        {
+    describe("Cursor", function () {
+        it("can be created", function () {
 
             const cursor = new DataCursor(TYPES, graph, [0]);
 
@@ -348,7 +347,7 @@ describe("DataGraph", function ()
             assert(cursor.get(['name']) === "TestFoo");
             assert(!cursor.isProperty());
 
-            const newGraph = cursor.set( "AnotherFoo", ["name"]);
+            const newGraph = cursor.set("AnotherFoo", ["name"]);
 
             assert(graph !== newGraph);
             assert(graph.rootObject !== newGraph.rootObject);
@@ -365,8 +364,8 @@ describe("DataGraph", function ()
             assert(cursor.get(["bazes", "two", "num"]) === 2);
 
             const newGraph3 = cursor.merge({
-                "three" : { num: 3.1},
-                "five"  : { num: 5}
+                "three": {num: 3.1},
+                "five": {num: 5}
             }, ["bazes"]);
 
             assert(cursor.get(["bazes", "one", "num"], graph) === 1);
@@ -376,9 +375,9 @@ describe("DataGraph", function ()
             assert(cursor.get(["bazes", "three", "num"], newGraph3) === 3.1);
             assert(cursor.get(["bazes", "five", "num"], newGraph3) === 5);
 
-
             const cursor2 = cursor.getCursor(["embedded"]);
-            assert(cursor2.type === "Embedded");
+            assert(cursor2.type === "DomainType");
+            assert(cursor2.typeParam === "Embedded");
             assert(cursor2.get().name === "Changed Embedded");
             assert(!cursor2.isProperty());
 
@@ -409,43 +408,34 @@ describe("DataGraph", function ()
 
             assert(cursor7.get() === "TestFoo")
 
-
         });
 
-        it("is validated", function ()
-        {
+        it("is validated", function () {
             // checks if the used paths exist in the type declarations
 
-            assert.throws(function ()
-            {
+            assert.throws(function () {
                 new DataCursor(TYPES, graph, ["nonNumeric"]);
             }, /Error: First key path entry must be a numeric row index/);
 
-            assert.throws(function ()
-            {
+            assert.throws(function () {
                 new DataCursor(TYPES, graph, [0, "wrong"]);
             }, /No column 'wrong' in DataGraph columns/);
 
-            assert.throws(function ()
-            {
+            assert.throws(function () {
                 new DataCursor(TYPES, graph, [0, "embedded", "wrong"]);
             }, /Cannot find property for 'Embedded.wrong'/);
 
-            assert.throws(function ()
-            {
+            assert.throws(function () {
                 new DataCursor(TYPES, graph, [0, "bars", 0, "wrong"]);
             }, /Cannot find property for 'Bar.wrong'/);
 
-            assert.throws(function ()
-            {
+            assert.throws(function () {
                 new DataCursor(TYPES, graph, [0, "bazes", "one", "wrong"]);
             }, /Cannot find property for 'Baz.wrong'/);
 
         });
 
-
-        it("provides property type information", function ()
-        {
+        it("provides property type information", function () {
             cursor = new DataCursor(TYPES, graph, [0]);
             assert(cursor.type === Graph.ROOT_NAME);
 
@@ -510,88 +500,79 @@ describe("DataGraph", function ()
 
         });
 
-        it("extracts implicitly typed domain objects", function ()
-        {
+        it("extracts array graph slices", function () {
 
             const simpleList = Graph.DataGraph(require("./test-lists/simple-list.json"));
 
             const cursor = new DataCursor(SIMPLE_LIST_TYPES, simpleList, [1]);
-            const  obj = cursor.getDomainObject();
+            const obj = cursor.extractObjects();
 
-            assert(obj.name === "TestFoo #2");
-            assert(obj.num === 234);
-            assert(obj._type === "Foo");
+            assert.deepEqual(obj,
+                {
+                    "q":
+                        {
+                            "id": null,
+                            "_type": "Foo",
+                            "name": "TestFoo #2",
+                            "num": 234
+                        }
+                }
+            );
         });
 
-        it("extracts typed domain objects", function ()
-        {
-            const joinedList = Graph.DataGraph(require("./test-lists/joined-list.json"));
-
-            const obj = new DataCursor(JOINED_LIST_TYPES, joinedList, [0]).getDomainObject("Foo");
-
-            assert(obj.name === "TestFoo");
-            assert(obj.num === 123);
-            assert(obj._type === "Foo");
-
-            const obj2 = new DataCursor(JOINED_LIST_TYPES, joinedList, [0]).getDomainObject("Baz");
-
-            assert(obj2.name === undefined);
-            assert(obj2.num === 1);
-            assert(obj2._type === "Baz");
-
-
-            assert.throws(function ()
-            {
-                new DataCursor(JOINED_LIST_TYPES, joinedList, [0]).getDomainObject();
-            }, /Implicit type detection failed/);
-        });
-
-
-
-        it("extracts nested domain objects", function ()
-        {
-
+        it("extracts nested domain objects", function () {
             const nestedList = Graph.DataGraph(require("./test-lists/nested.json"));
+            //
+            // const cursor = new DataCursor(NESTED_TYPES, nestedList, [0, "embedded"]);
+            // const obj = cursor.extract();
+            //
+            // assert(obj._type === "Embedded");
+            // assert(obj.name === "EmbeddedObject");
 
-            const cursor = new DataCursor(NESTED_TYPES, nestedList, [0, "embedded"]);
-            const obj = cursor.getDomainObject();
+            const obj2 = new DataCursor(NESTED_TYPES, nestedList, [0, "bars", 1]).extractObjects();
 
-            assert(obj._type === "Embedded");
-            assert(obj.name === "EmbeddedObject");
 
-            const obj2 = new DataCursor(NESTED_TYPES, nestedList, [0, "bars", 1]).getDomainObject();
-            assert(obj2._type === "Bar");
-            assert(obj2.name === "Bar 2");
-
-            const obj3 = new DataCursor(NESTED_TYPES, nestedList, [0, "bazes", "one"]).getDomainObject();
-            assert(obj3._type === "Baz");
-            assert(obj3.num === 1);
-
-            assert.throws(function ()
-            {
-                new DataCursor(NESTED_TYPES, nestedList, [0, "bars"]).getDomainObject();
-            }, /Cannot extract single domain object from List/);
-
-            assert.throws(function ()
-            {
-                new DataCursor(NESTED_TYPES, nestedList, [0, "bazes"]).getDomainObject();
-
-            }, /Cannot extract single domain object from Map/)
-
+            assert.deepEqual(
+                obj2,
+                {
+                    "e": {"name": "EmbeddedObject"},
+                    "q": {
+                        "id": null,
+                        "_type": "Foo",
+                        "name": "TestFoo",
+                        "num": 123
+                    },
+                    "bars": {
+                        "id": null,
+                        "_type": "Foo",
+                        "bars": [{"name": "Bar 1"}, {"name": "Bar 2"}]
+                    },
+                    "bazes": {
+                        "id": null,
+                        "_type": "Foo",
+                        "bazes": {
+                            "one": {"num": 1},
+                            "two": {"num": 2}
+                        }
+                    },
+                    "q2": {
+                        "id": null,
+                        "_type": "Joined",
+                        "name": null
+                    }
+                }
+            );
+            
         });
 
+        describe("updates immutably", function () {
 
-        describe("updates immutably", function ()
-        {
-
-            it("push", function ()
-            {
+            it("push", function () {
                 const complex = Graph.DataGraph(require("./test-lists/complex2.json"));
 
                 const cursor = new DataCursor(TYPES, complex, ["numbers"]);
                 cursor.push([4, 5]);
                 assert.deepEqual(cursor.get(), [1, 2, 3, 4, 5]);
-
 
                 const cursor2 = new DataCursor(TYPES, complex, ["numbers"]);
                 cursor2.push(4);
@@ -599,22 +580,20 @@ describe("DataGraph", function ()
 
             });
 
-            it("unshift", function ()
-            {
+            it("unshift", function () {
                 const complex = Graph.DataGraph(require("./test-lists/complex2.json"));
 
                 const cursor = new DataCursor(TYPES, complex, ["numbers"]);
                 cursor.unshift(["foo", "bar"]);
-                // XXX: this follows "react-addons-update", not the Ecmascript unshift. The resulting order is reversed
-                assert.deepEqual(cursor.get(), ["bar", "foo", 1, 2, 3]);
+                // XXX: this follows "immutability-helper", not the Ecmascript unshift. The resulting order is reversed
+                assert.deepEqual(cursor.get(), ["foo", "bar", 1, 2, 3]);
 
                 const cursor2 = new DataCursor(TYPES, complex, ["numbers"]);
                 cursor2.unshift("foo");
                 assert.deepEqual(cursor2.get(), ["foo", 1, 2, 3]);
             });
 
-            it("splice", function ()
-            {
+            it("splice", function () {
                 const complex = Graph.DataGraph(require("./test-lists/complex2.json"));
 
                 const cursor = new DataCursor(TYPES, complex, ["numbers"]);
@@ -622,8 +601,7 @@ describe("DataGraph", function ()
                 assert.deepEqual(cursor.get(), ["foo", 2, "bar"]);
             });
 
-            it("set", function ()
-            {
+            it("set", function () {
                 const complex = Graph.DataGraph(require("./test-lists/complex2.json"));
 
                 const cursor = new DataCursor(TYPES, complex, ["numbers"]);
@@ -631,8 +609,7 @@ describe("DataGraph", function ()
                 assert.deepEqual(cursor.get(), [4]);
             });
 
-            it("merge", function ()
-            {
+            it("merge", function () {
                 const complex = Graph.DataGraph(require("./test-lists/complex2.json"));
 
                 const cursor = new DataCursor(TYPES, complex, ["foos", "One"]);
@@ -649,13 +626,11 @@ describe("DataGraph", function ()
 
             });
 
-            it("apply", function ()
-            {
+            it("apply", function () {
                 const complex = Graph.DataGraph(require("./test-lists/complex2.json"));
 
                 const cursor = new DataCursor(TYPES, complex, ["numbers"]);
-                cursor.apply((array) =>
-                {
+                cursor.apply((array) => {
                     return [array.length].concat(array);
                 });
 

@@ -13,6 +13,8 @@ const FONT_SIZES = {
     TINY: 10
 };
 
+var createReactClass = require("create-react-class");
+
 /**
  * Symbolic text size constants
  *
@@ -74,7 +76,7 @@ export default {
                     container.style.left = "-2000px";
                     document.body.appendChild(container);
 
-                    var SvgLayout = React.createClass({
+                    var SvgLayout = createReactClass({
 
                         componentDidMount: function ()
                         {

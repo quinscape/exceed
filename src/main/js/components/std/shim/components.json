@@ -1,0 +1,19 @@
+{
+    "components": {
+        "ShopNav": {
+            "description" : "Fixed Shop navigation component, currently lacking real nav components",
+
+            "classes" : [ "elem" ]
+        },
+        "ShopAddress": {
+            "description" : "Display component for address objects",
+
+            "classes" : [ "elem" ],
+            "propTypes" : {
+                "value" : {
+                    "type"  : "CURSOR_EXPRESSION"
+                }
+            }
+        }
+    }
+}

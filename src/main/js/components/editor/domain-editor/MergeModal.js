@@ -4,7 +4,7 @@
  * So we filter out all properties with the name "versionGUID".
  */
 import React from "react";
-import update from "react-addons-update";
+import update from "immutability-helper";
 import Modal from "react-bootstrap/lib/Modal";
 import cx from "classnames";
 import i18n from "../../../service/i18n";

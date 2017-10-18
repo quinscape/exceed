@@ -1,0 +1,20 @@
+.fk-targets .fk-target
+{
+    color: #555;
+}
+
+.fk-select .target
+{
+    padding-top: 8px;
+    padding-bottom: 8px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+.fk-select .target.disabled
+{
+    cursor: not-allowed;
+}

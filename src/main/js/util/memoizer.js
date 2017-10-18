@@ -1,4 +1,3 @@
-require("weakmap-polyfill");
 
 /**
  * Returns an weakmap based object memoizer function that will cache a value for the given object identity

@@ -105,6 +105,7 @@ function register(ctx, name)
 const ComponentService = {
     getComponents: function ()
     {
+        //console.log("COMPONENTS", components);
         return components;
     },
 
@@ -112,7 +113,7 @@ const ComponentService = {
     {
         let files = ctx.keys();
 
-        //console.log("KEYS", files);
+        //console.log("REGISTER", files);
 
         for (let i = 0; i < files.length; i++)
         {
@@ -126,9 +127,5 @@ const ComponentService = {
     }
 };
 
-if (typeof window !== "undefined")
-{
-    window.ComponentService = ComponentService;
-}
 
 module.exports = ComponentService;

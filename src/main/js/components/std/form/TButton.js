@@ -1,78 +1,109 @@
 /**
  * Process transition executing button.
  */
-import FormContext from "../../../util/form-context";
 import processService from "../../../service/process";
-import i18n from "../../../service/i18n";
+import store from "../../../service/store";
 import cx from "classnames";
 import React from "react";
+import { formHasError, getFieldState } from "../../../reducers/form-state";
+import FieldState from "../../../form/field-state";
 
+import PropTypes from 'prop-types'
 
 class TButton extends React.Component
 {
-
     static propTypes = {
         /** transition to execute */
-        transition: React.PropTypes.string.isRequired,
+        transition: PropTypes.string.isRequired,
         /** true if the transition execution discards all user changes / does not depend on field validation */
-        discard: React.PropTypes.bool,
+        discard: PropTypes.bool,
         /** HTML classes */
-        className: React.PropTypes.string,
+        className: PropTypes.string,
         /** Text for the button */
-        text: React.PropTypes.string.isRequired,
-        /** Domain type to extract as context for the transition. Can be undefined if the context is unambiguous */
-        domainType: React.PropTypes.string
-    }
+        text: PropTypes.string.isRequired,
 
-    static contextTypes = {
-        formContext: React.PropTypes.instanceOf(FormContext)
-    }
+        mapping: PropTypes.object
+    };
+
+    static defaultProps = {
+        // default: map any unambiguous object of the target type or throw an error
+        mapping : { "?" : "current" }
+    };
 
     isDisabled ()
     {
-        return !this.props.discard && this.context.formContext && this.context.formContext.hasError()
+        const { id, discard} = this.props;
 
+        if (discard)
+        {
+            return false;
+        }
+
+        const state = store.getState();
+
+        const hasError = formHasError(state, id);
+        const isDisabledByExpr = getFieldState(state, id) !== FieldState.NORMAL;
+
+        return hasError || isDisabledByExpr;
     }
+
+    onClick = ev => {
+
+        const { context, discard, transition } = this.props;
+        //console.log({ context, discard, transition });
+
+        if (!this.isDisabled())
+        {
+
+            let objects = null;
+
+            if (!discard && context && context.getGraph().qualifier === "QUERY")
+            {
+                objects = context.extractObjects();
+            }
+
+            processService.transition(
+                transition,
+                objects
+            )
+            .then(function () {
+                console.log("TRANSITION END")
+            })
+            // .catch(function(err)
+            // {
+            //     console.log("TRANSITION FAIL");
+            //     console.error(err);
+            // });
+        }
+    };
 
     render ()
     {
 //        console.log("RENDER TBUTTON", this.props.context && this.props.context.graph.id);
+        const { className, text, icon } = this.props;
 
-        var isDisabled = this.isDisabled();
+        const isDisabled = this.isDisabled();
         return (
 
-            <input
-                className={ cx("btn", isDisabled && "disabled", this.props.className || "btn-default") }
-                type="submit"
-                value={ this.props.text }
+            <button
+                type="button"
+                className={
+                    cx(
+                        "btn",
+                        isDisabled && "disabled",
+                        className || "btn-default"
+                    )
+                }
+                value={ text }
                 disabled={ isDisabled }
-                onClick={ (ev) => {
-                    if (!this.isDisabled())
-                    {
-                        var domainObject = null;
-                        var cursor = this.props.context;
+                onClick={ this.onClick }
+            >
 
-//                        console.log("TBUTTON CURSOR", cursor.graph.id);
-
-                        if (!this.props.discard && cursor)
-                        {
-                            if (cursor.isProperty())
-                            {
-                                cursor = cursor.pop();
-                            }
-                            domainObject = cursor.getDomainObject(this.props.domainType);
-                        }
-
-                        processService.transition( this.props.transition, domainObject)
-                            .catch(function(err)
-                            {
-                                console.error(err);
-                            });
-                    }
-                    ev.preventDefault();
-                } }/>
+                { icon && <span className={ "glyphicon glyphicon-" + icon }></span>}
+                { " " + text }
+            </button>
         );
     }
-};
+}
 
 export default TButton

@@ -1,27 +1,55 @@
-var assert = require("power-assert");
+import assert from "power-assert";
+import assign from "object-assign"
+// noinspection JSFileReferences
+import BigNumber from "bignumber.js"
 
 var domainService = require("../../../../src/main/js/service/domain");
 
-domainService.init({
+const DOMAIN_DATA = {
     enumTypes: {
         MyEnum: {
             name: "MyEnum",
             values: ["A", "B", "C"]
         }
-    }
+    },
+    maxDecimalPlaces: 3,
+    decimalConfig: assign({}, domainService.getDecimalConfig(), {
+        defaultDecimalPlaces: 3,
+        defaultTrailingZeroes: false
+    })
+};
+
+const DOMAIN_DATA_TRAILING = assign({}, DOMAIN_DATA, {
+    decimalConfig: assign({}, domainService.getDecimalConfig(), {
+        defaultDecimalPlaces: 3,
+        defaultTrailingZeroes: true
+    })
 });
 
+domainService.init(DOMAIN_DATA);
 
-var propertyConverter = require("../../../../src/main/js/service/property-converter");
 
-function assumeNeutralToUser(value, propertyType)
+var propertyConverter = require("../../../../src/main/js/service/property-converter").default;
+
+function assertNeutralFromServer(value, propertyType)
 {
-    var result = propertyConverter.toUser(value, propertyType);
-    assert(result.ok === true);
-    assert(result.value === value);
+    var result = propertyConverter.fromServer(value, propertyType);
+    assert(result === value);
 }
 
-function assumeNeutralFromUser(value, propertyType)
+function assertNeutralToServer(value, propertyType)
+{
+    var result = propertyConverter.toServer(value, propertyType);
+    assert(result === value);
+}
+
+function assertNeutralToUser(value, propertyType)
+{
+    var result = propertyConverter.toUser(value, propertyType);
+    assert(result === value);
+}
+
+function assertNeutralFromUser(value, propertyType)
 {
     var result = propertyConverter.fromUser(value, propertyType);
     assert(result.ok === true);
@@ -36,69 +64,236 @@ function Foo(value)
 
 describe("PropertyConverter", function ()
 {
-    describe("to User-Type", function ()
+    describe("does 'fromServer' conversion", function ()
     {
-        it("Boolean -> UT", function ()
+        it("for Boolean", function ()
         {
-            assumeNeutralToUser(true, { type : "Boolean" });
+            assertNeutralFromServer(true, { type : "Boolean" });
         });
 
-        it("Date -> UT", function ()
+        it("for Date", function ()
         {
-            // preliminary
-            assumeNeutralToUser("2016-02-13T00:00:00Z", { type : "Date" });
+            var result = propertyConverter.fromServer("2016-02-13T00:00:00Z", {
+                "type" : "Date"
+            });
+            assert(result.toISOString() === "2016-02-13T00:00:00.000Z");
         });
 
-        it("Enum -> UT", function ()
+        it("for Decimal", function ()
+        {
+            var result = propertyConverter.fromServer("1234.56", {
+                "type" : "Decimal"
+            });
+            assert(result.toString() === "1234.56");
+        });
+
+        it("for Enum", function ()
+        {
+            assertNeutralFromServer(1, {
+                "type" : "Enum",
+                "typeParam" : "MyEnum",
+            });
+        });
+
+        it("for Integer", function ()
+        {
+            assertNeutralFromServer(122, { type : "Integer" });
+        });
+
+        it("for Long", function ()
+        {
+            assertNeutralFromServer(9873408, { type : "Long" });
+        });
+        it("for PlainText", function ()
+        {
+            assertNeutralFromServer("abc", { type : "PlainText" });
+        });
+        it("for RichText", function ()
+        {
+            assertNeutralFromServer("<b>abc</b>", { type : "RichText" });
+        });
+        it("for Timestamp", function ()
+        {
+            var result = propertyConverter.fromServer("2016-02-14T12:34:56Z", {
+                "type" : "Timestamp"
+            });
+            assert(result.toISOString() === "2016-02-14T12:34:56.000Z");
+        });
+        it("for UUID", function ()
+        {
+            assertNeutralFromServer("34049fc7-6c05-49bc-b9c2-bb60ce67cd87", { type : "UUID" });
+        });
+
+    });
+
+    describe("does 'toServer' conversion", function ()
+    {
+        it("for Boolean", function ()
+        {
+            assertNeutralToServer(true, { type : "Boolean" });
+        });
+
+        it("for Date", function ()
+        {
+            var result = propertyConverter.toServer(new Date("2016-02-13T12:34:56.789Z"), {
+                "type" : "Date"
+            });
+            assert(result === "2016-02-13T00:00:00.000Z");
+        });
+
+        it("for Decimal", function ()
+        {
+            var result = propertyConverter.toServer("1234.56", {
+                "type" : "Decimal"
+            });
+            assert(result.toString() === "1234.56");
+        });
+
+        it("for Enum", function ()
+        {
+            assertNeutralToServer(1, {
+                "type" : "Enum",
+                "typeParam" : "MyEnum",
+            });
+        });
+
+        it("for Integer", function ()
+        {
+            assertNeutralToServer(122, { type : "Integer" });
+        });
+
+        it("for Long", function ()
+        {
+            assertNeutralToServer(9873408, { type : "Long" });
+        });
+        it("for PlainText", function ()
+        {
+            assertNeutralToServer("abc", { type : "PlainText" });
+        });
+        it("for RichText", function ()
+        {
+            assertNeutralToServer("<b>abc</b>", { type : "RichText" });
+        });
+        it("for Timestamp", function ()
+        {
+            var result = propertyConverter.toServer(new Date("2016-02-14T12:34:56.789Z"), {
+                "type" : "Timestamp"
+            });
+            assert(result === "2016-02-14T12:34:56.789Z");
+        });
+        it("for UUID", function ()
+        {
+            assertNeutralToServer("34049fc7-6c05-49bc-b9c2-bb60ce67cd87", { type : "UUID" });
+        });
+
+    });
+
+
+    describe("does 'toUser' conversion", function ()
+    {
+        it("for Boolean", function ()
+        {
+            assertNeutralToUser(true, { type : "Boolean" });
+        });
+
+        it("for Date", function ()
+        {
+            var result = propertyConverter.toUser(new Date("2016-02-13T00:00:00Z"), {
+                "type" : "Date"
+            });
+            assert(result === "2016-02-13T00:00:00.000Z");
+        });
+
+        it("for Decimal", function ()
+        {
+            var result = propertyConverter.toUser(new BigNumber("1234.56"), {
+                "type" : "Decimal"
+            });
+            assert(result === "1,234.56");
+
+            var result2 = propertyConverter.toUser(new BigNumber("12.3"), {
+                type : "Decimal",
+                config : {
+                    decimalPlaces : 3,
+                    trailingZeroes: true
+                }
+            });
+            assert(result2 === "12.300");
+
+            // test application defaults
+            domainService.init(DOMAIN_DATA_TRAILING);
+
+            var result3 = propertyConverter.toUser(new BigNumber("2.3"), {
+                type : "Decimal"
+            });
+            assert(result3 === "2.300");
+
+            domainService.init(DOMAIN_DATA);
+        });
+
+        it("for Enum", function ()
         {
             var result = propertyConverter.toUser(1, {
                 "type" : "Enum",
                 "typeParam" : "MyEnum",
             });
-            assert(result.ok === true);
-            assert(result.value === "B");
+            assert(result === "B");
         });
 
-        it("Integer -> UT", function ()
+        it("for Integer", function ()
         {
-            assumeNeutralToUser(122, { type : "Integer" });
+            assertNeutralToUser(122, { type : "Integer" });
         });
 
-        it("Long -> UT", function ()
+        it("for Long", function ()
         {
-            assumeNeutralToUser(9873408, { type : "Long" });
+            assertNeutralToUser(9873408, { type : "Long" });
         });
-        it("PlainText -> UT", function ()
+        it("for PlainText", function ()
         {
-            assumeNeutralToUser("abc", { type : "PlainText" });
+            assertNeutralToUser("abc", { type : "PlainText" });
         });
-        it("RichText -> UT", function ()
+        it("for RichText", function ()
         {
-            assumeNeutralToUser("<b>abc</b>", { type : "RichText" });
+            assertNeutralToUser("<b>abc</b>", { type : "RichText" });
         });
-        it("Timestamp -> UT", function ()
+        it("for Timestamp", function ()
         {
-            assumeNeutralToUser("2016-02-13T16:34:33Z", { type : "Timestamp" });
+            var result = propertyConverter.toUser(new Date("2016-02-14T12:34:56Z"), {
+                "type" : "Timestamp"
+            });
+            assert(result === "2016-02-14T12:34:56.000Z");
         });
-        it("UUID -> UT", function ()
+        it("for UUID", function ()
         {
-            assumeNeutralToUser("34049fc7-6c05-49bc-b9c2-bb60ce67cd87", { type : "UUID" });
+            assertNeutralToUser("34049fc7-6c05-49bc-b9c2-bb60ce67cd87", { type : "UUID" });
         });
 
     });
 
-    describe("from User-Type", function ()
+    describe("does 'fromUser' conversion", function ()
     {
-        it("UT -> Boolean", function ()
+        it("for Boolean", function ()
         {
-            assumeNeutralFromUser(true, { type : "Boolean" });
+            assertNeutralFromUser(true, { type : "Boolean" });
         });
-        it("UT -> Date", function ()
+        it("for Date", function ()
         {
-            // preliminary
-            assumeNeutralFromUser("2016-02-13T00:00:00.000Z", { type : "Date" });
+            var result = propertyConverter.fromUser("2016-02-13T12:34:56Z", {
+                "type" : "Date"
+            });
+            assert(result.ok === true);
+            assert(result.value.toISOString() === "2016-02-13T00:00:00.000Z");
         });
-        it("UT -> Enum", function ()
+        it("for Decimal", function ()
+        {
+            var result = propertyConverter.fromUser("2,345.67", {
+                "type" : "Decimal"
+            });
+            assert(result.ok === true);
+            assert(result.value.toString() === "2345.67");
+        });
+        it("for Enum", function ()
         {
             var result = propertyConverter.fromUser("C", {
                 "type" : "Enum",
@@ -107,30 +302,34 @@ describe("PropertyConverter", function ()
             assert(result.ok === true);
             assert(result.value === 2);
         });
-        it("UT -> Integer", function ()
+        it("for Integer", function ()
         {
-            assumeNeutralFromUser(122, { type : "Integer" });
+            assertNeutralFromUser(122, { type : "Integer" });
         });
-        it("UT -> Long", function ()
+        it("for Long", function ()
         {
-            assumeNeutralFromUser(9873408, { type : "Long" });
+            assertNeutralFromUser(9873408, { type : "Long" });
         });
-        it("UT -> PlainText", function ()
+        it("for PlainText", function ()
         {
-            assumeNeutralFromUser("abc", { type : "PlainText" });
+            assertNeutralFromUser("abc", { type : "PlainText" });
         });
-        it("UT -> RichText", function ()
+        it("for RichText", function ()
         {
-            assumeNeutralFromUser("<b>abc</b>", { type : "RichText" });
+            assertNeutralFromUser("<b>abc</b>", { type : "RichText" });
         });
-        it("UT -> Timestamp", function ()
+        it("for Timestamp", function ()
         {
-            assumeNeutralFromUser("2016-02-13T16:34:33.000Z", { type : "Timestamp" });
+            var result = propertyConverter.fromUser("2016-02-13T12:34:56Z", {
+                "type" : "Timestamp"
+            });
+            assert(result.ok === true);
+            assert(result.value.toISOString() === "2016-02-13T12:34:56.000Z");
         });
 
-        it("UT -> UUID", function ()
+        it("for UUID", function ()
         {
-            assumeNeutralFromUser("34049fc7-6c05-49bc-b9c2-bb60ce67cd87", { type : "UUID" });
+            assertNeutralFromUser("34049fc7-6c05-49bc-b9c2-bb60ce67cd87", { type : "UUID" });
         });
     });
 
@@ -141,18 +340,16 @@ describe("PropertyConverter", function ()
         assert.throws(function ()
         {
             propertyConverter.toUser("abc", { type : "Foo"});
-        }, /No toUser converter for property type 'Foo'/);
+        }, /No converters available for type 'Foo'/);
         assert.throws(function ()
         {
             propertyConverter.fromUser("abc", {type: "Foo"});
-        }, /No fromUser converter for property type 'Foo'/);
+        }, /No converters available for type 'Foo'/);
 
-        propertyConverter.registerFromUser("Foo", function (value, propertyType)
+        propertyConverter.register("Foo", false, false, function (value, propertyType)
         {
             return new propertyConverter.Result(new Foo(value));
-        });
-
-        propertyConverter.registerToUser("Foo", function (value, propertyType)
+        }, function (value, propertyType)
         {
             return new propertyConverter.Result(value.value);
         });

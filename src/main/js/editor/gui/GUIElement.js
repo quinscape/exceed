@@ -1,13 +1,12 @@
-var React = require("react");
-
+import React from "react";
 import ContainerContext from "./container-context";
 
 import GUIContext from "./gui-context"
 import UIState from "./ui-state";
-
-const assign = require("object-assign");
-
 import GlobalDrag from "../../util/global-drag"
+import PropTypes from 'prop-types'
+
+import assign from "object-assign";
 
 /**
  * SVGElement is a helper element for implementing SVG based user interface elements that can be interacted with by mouse and keyboard.
@@ -26,18 +25,18 @@ class GUIElement extends React.Component
     }
 
     static propTypes = {
-        id: React.PropTypes.string.isRequired,
-        className: React.PropTypes.string,
-        style: React.PropTypes.object,
-        uiState: React.PropTypes.oneOf(UIState.values()),
-        onInteraction: React.PropTypes.func,
-        onUpdate: React.PropTypes.func.isRequired,
-        draggable: React.PropTypes.bool,
-        dragThreshold: React.PropTypes.number
+        id: PropTypes.string.isRequired,
+        className: PropTypes.string,
+        style: PropTypes.object,
+        uiState: PropTypes.oneOf(UIState.values()),
+        onInteraction: PropTypes.func,
+        onUpdate: PropTypes.func.isRequired,
+        draggable: PropTypes.bool,
+        dragThreshold: PropTypes.number
     }
 
     static contextTypes = {
-        containerContext: React.PropTypes.instanceOf(ContainerContext)
+        containerContext: PropTypes.instanceOf(ContainerContext)
     }
 
 

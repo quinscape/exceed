@@ -1,20 +1,20 @@
 if (typeof Object.values === "function")
 {
     /**
-     * Returns the keys of the given object
+     * Returns the values of the given object
      *
      * @param o     object
-     * @returns {Array} keys
+     * @returns {Array} values
      */
     module.exports = Object.values;
 }
 else
 {
     /**
-     * Returns the keys of the given object
+     * Returns the values of the given object
      *
-     * @param o     object
-     * @returns {Array} keys
+     * @param obj     object
+     * @returns {Array} values
      */
     module.exports = function (obj)
     {

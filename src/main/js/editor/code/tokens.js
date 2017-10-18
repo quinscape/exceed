@@ -222,7 +222,7 @@ const Tokens = {
      * Converts the current editor session state to a JSON model.
      *
      * @param session           {EditSession} edit session
-     * @param withPosition      {boolean?} if true, add pos attribute with start end and pos
+     * @param withPosition      {?boolean} if true, add pos attribute with start end and pos
      * @returns {View} view model
      */
     toModel: function (session, withPosition)

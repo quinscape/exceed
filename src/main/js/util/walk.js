@@ -1,3 +1,5 @@
+import isArray from "./is-array"
+
 const literalRE = /^[a-z_][a-z0-9_]*$/gi;
 
 function createPathError(msg, obj, path, index)
@@ -48,6 +50,7 @@ export default function walk(obj, path)
 
     let i;
     const len = path.length;
+    const last = len - 1;
     for (i = 0; i < len; i++)
     {
         //console.log("W", obj, path[i]);
@@ -68,7 +71,7 @@ export default function walk(obj, path)
                 }
 
                 // are we not done walking our path?
-                if (i < len - 1)
+                if (i < last)
                 {
                     throw createPathError("Encountered non-walkable object " + obj + " in chain", root, path, i);
                 }

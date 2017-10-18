@@ -1,7 +1,5 @@
 import React from "react"
 
-import renderWithContext from "../util/render-with-context"
-
 export class Rule extends React.Component {
 
     render()
@@ -42,7 +40,7 @@ export function countGroups(regexp)
     return count;
 }
 
-class Annotate extends React.Component {
+class Annotate extends React.PureComponent {
 
     render()
     {

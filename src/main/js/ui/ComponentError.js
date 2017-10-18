@@ -28,15 +28,14 @@ class ComponentError extends React.Component {
         const errors = getComponentErrors(store.getState(), componentId);
 
         const defs = [];
-        let count = 0;
         errors.forEach(
             (err, index) => {
                 defs.push(
-                    <dt key={ count++ }>
+                    <dt key={ index + "t" }>
                         <span className="right">{ "(" + err.type + ")" }</span>
                         { err.queryName }
                         </dt>,
-                    <dd key={ count++ } className="text-danger">
+                    <dd key={ index + "d"} className="text-danger">
                         { err.message } <br/>
                     </dd>
                 );

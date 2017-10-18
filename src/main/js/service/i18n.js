@@ -1,5 +1,22 @@
-import { getTranslationTemplate } from "../reducers"
-import store from "./store"
+
+let lookupTemplate;
+
+if (__SERVER)
+{
+    lookupTemplate = global.__lookup_i18n;
+}
+else
+{
+    const getTranslationTemplate = require("../reducers/meta").getTranslationTemplate;
+    //console.log(getTranslationTemplate);
+    const store = require("./store").default;
+
+    lookupTemplate = function (name)
+    {
+        return getTranslationTemplate( store.getState(), name);
+    }
+}
+
 
 const EMPTY = [];
 
@@ -13,13 +30,13 @@ function format(tag, arg)
 
 /**
  * Returns a translation of the given translation key with additional optional arguments
- * @param s         {string} translation tag/key
- * @param arg       {*...} varargs
+ * @param s {string} translation tag/key
+ * @param arg {?string} translation tag/key
  * @returns {*}
  */
 export default function(s, arg)
 {
-    const result = getTranslationTemplate( store.getState(), s);
+    const result = lookupTemplate(s);
     if (result !== undefined)
     {
         if (arg !== undefined)

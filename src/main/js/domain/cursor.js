@@ -1,11 +1,25 @@
-import update from "react-addons-update";
+import update from "immutability-helper";
 import keys from "../util/keys";
 import isArray from "../util/is-array";
 import walk from "../util/walk";
 import assign from "object-assign";
 
+import { validateDataGraph, objectToDataGraph } from "../domain/graph"
+
+import arrayEquals from "../util/array-equals";
+import describeProperty from "../util/describe-property";
 import DataGraphType from "./graph-type";
-import {DataGraph, WILDCARD_SYMBOL, ROOT_NAME, getColumnType, getPropertyModel, isMapGraph} from "./graph"
+import {
+    DataGraph,
+    getColumnType,
+    getPropertyModel,
+    isArrayGraph,
+    isMapGraph,
+    ROOT_NAME,
+    WILDCARD_SYMBOL
+} from "./graph"
+
+const domainService = require("../service/domain");
 
 function Path(path)
 {
@@ -17,9 +31,18 @@ function Path(path)
     return path;
 }
 
-function followTypeDefinitionPath(types, path, startIndex, type, typeParam, resolve)
+function followTypeDefinitionPath(domainData, path, startIndex, type, typeParam, resolve)
 {
-    let key, property = null, parent;
+    let key;
+
+    const state = {
+        property: null,
+        parent: null,
+        type,
+        typeParam
+    };
+
+    //console.log("followTypeDefinitionPath", state);
 
     for (let i = startIndex; i < path.length; i++)
     {
@@ -27,70 +50,74 @@ function followTypeDefinitionPath(types, path, startIndex, type, typeParam, reso
 
         //console.log("key = ", key);
 
-        if (type === "List")
+        if (state.type === "List")
         {
             if (typeof key !== "number")
             {
-                throw new Error("List indices must be numeric:" + path)
+                if (key === "length")
+                {
+                    state.type = "Integer";
+                    state.typeParam = null;
+                    state.property = null;
+                }
+                else
+                {
+                    throw new Error("List indices must be numeric:" + path)
+                }
             }
 
-            parent = type;
-            type = typeParam;
-            typeParam = null;
-            property = null;
+            state.parent = state.type;
+            resolveCollectionType(domainData, state);
+            state.property = null;
         }
-        else if (type === "Map")
+        else if (state.type === "Map")
         {
-            parent = type;
-            type = typeParam;
-            typeParam = null;
-            property = null;
+            state.parent = state.type;
+            resolveCollectionType(domainData, state);
+            state.property = null;
+        }
+        else if (state.type === "DomainType")
+        {
+            state.parent = state.typeParam;
+            resolveCollectionType(domainData, state);
+            state.property = getPropertyModel(domainData, state.typeParam, key);
+            if (!state.property)
+            {
+                throw new Error("Cannot find property for '" + state.typeParam + ":" + key + "'");
+            }
+            state.type = state.property.type;
+            state.typeParam = state.property.typeParam;
         }
         else
         {
-            if (type === "DomainType")
-            {
-                parent = typeParam;
-                type = typeParam;
-                typeParam = null;
-                property = null;
-            }
-
-            property = getPropertyModel(types, type, key);
-            if (!property)
-            {
-                throw new Error("Cannot find property for '" + type + ":" + key + "'");
-            }
-
-            parent = type;
-            type = property.type;
-            typeParam = property.typeParam;
+            throw new Error("Cannot walk " +  key + " from " + describeProperty(state) );
         }
 
-        //console.log("TYPE", type, typeParam, "PARENT", parent, "PROPERTY", property);
+        //console.log("CURRENT", state.type, state.typeParam);
     }
 
     if (resolve)
     {
-        if (!property)
+        if (!state.property)
         {
             return {
-                parent: parent,
-                type: type
+                parent: state.parent,
+                type: state.type,
+                typeParam: state.typeParam,
             };
         }
         else
         {
             return assign({
-                parent: parent
-            }, property);
+                parent: state.parent
+            }, state.property);
         }
     }
     else
     {
         return {
-            type: type,
-            typeParam: typeParam
+            type: state.type,
+            typeParam: state.typeParam
         };
     }
 }
@@ -142,22 +169,52 @@ function executeUpdate(op, graph, cursor, value, path)
  *
  * The cursor itself is not immutable as it contains the reference to an associated list.
  *
- * @param types     {object} domain types map
- * @param graph     {DataGraph} data graph object
- * @param path      {Array} path to walk from the root object within the graph
+ * @param domainData    {object} app domain data
+ * @param graph         {DataGraph} data graph object
+ * @param path          {Array} path to walk from the root object within the graph
  * @returns {DataCursor} data cursor object
  */
 class DataCursor {
+
+    static from(data, path = [])
+    {
+        if (!data)
+        {
+            throw new Error("No data");
+        }
+
+        if (validateDataGraph(data))
+        {
+            return new DataCursor(domainService.getDomainData(), data, path);
+        }
+        else if (data instanceof DataCursor)
+        {
+            return data;
+        }
+        else if (data._type)
+        {
+            return new DataCursor(
+                domainService.getDomainData(),
+                objectToDataGraph(domainService, data),
+                [0]
+            );
+        }
+        else
+        {
+            console.error("Cannot handle data", data);
+        }
+    }
+
     /**
      * @constructor
      */
-    constructor(types, graph, path)
+    constructor(domainData, graph, path)
     {
         if (__DEV)
         {
-            if (!types || typeof types !== "object")
+            if (!domainData || typeof domainData !== "object")
             {
-                throw new Error("Invalid domain types map: " + types);
+                throw new Error("Invalid domain types map: " + domainData);
             }
 
             graph = DataGraph(graph);
@@ -166,7 +223,7 @@ class DataCursor {
 
         if (graph.type === DataGraphType.ARRAY && path.length > 0 && typeof path[0] !== "number")
         {
-            throw new Error("First key path entry must be a numeric row index");
+            throw new Error("First key path entry must be a numeric row index: " + JSON.stringify(path));
         }
 
         let type = ROOT_NAME, typeParam = null, isProperty;
@@ -209,7 +266,7 @@ class DataCursor {
 
                 if (path.length > 1)
                 {
-                    let typeInfo = followTypeDefinitionPath(types, path, 1, type, typeParam);
+                    let typeInfo = followTypeDefinitionPath(domainData, path, 1, type, typeParam);
                     type = typeInfo.type;
                     typeParam = typeInfo.typeParam;
                 }
@@ -224,47 +281,42 @@ class DataCursor {
 
                 if (path.length > 2)
                 {
-                    let typeInfo = followTypeDefinitionPath(types, path, 2, type, typeParam);
+                    let typeInfo = followTypeDefinitionPath(domainData, path, 2, type, typeParam);
                     type = typeInfo.type;
                     typeParam = typeInfo.typeParam;
                 }
             }
 
-            if (type === "DomainType")
-            {
-                type = typeParam;
-                typeParam = null;
-            }
+            // if (type === "DomainType")
+            // {
+            //     type = typeParam;
+            //     typeParam = null;
+            // }
 
-            if (type === "Map" || type === "List" || types[type])
+            if (type === "Map" || type === "List"  || type === "Enum"  || type === "StateMachine" || type === "DomainType")
             {
                 isProperty = false;
             }
         }
 
         this.graph = graph;
-        this.domainTypes = types;
+        this.domainData = domainData;
         this.type = type;
         this.typeParam = typeParam;
         this.path = path;
         this.property = isProperty;
-
-        // XXX: deprecation traps. remove after a whilee
-        Object.defineProperty(this, "value", {
-            get: function ()
-            {
-                throw new Error("cursor.value is deprecated");
-            }
-        });
-
-        this.requestChange = (newValue) =>
-        {
-            // XXX: deprecation trap
-            throw new Error("cursor.requestChange is deprecated");
-        };
-
     }
 
+
+    getType()
+    {
+        return this.type;
+    }
+
+    getTypeParam()
+    {
+        return this.typeParam;
+    }
 
     isProperty()
     {
@@ -280,121 +332,74 @@ class DataCursor {
      */
     pop(howMany = 1)
     {
-        return new DataCursor(this.domainTypes, this.graph, this.path.slice(0, this.path.length - howMany));
+        return new DataCursor(this.domainData, this.graph, this.path.slice(0, this.path.length - howMany));
     }
 
     /**
-     * Extracts a domain object from the location the cursor currently points to. This can be either a domain object or
-     * a data list root with mixed types.
+     * Extracts the object identities present at the given cursor position (which is popped once if it is pointed to a property).
      *
-     * The method will fail if the cursor currently points to a property.
+     * It reconstructs the object identifies from the columns contained in the query or from objects embedded in it.
      *
-     * @param type      {String?} type name, can be left out if the type is unambiguous
-     * @returns {*}
+     * @returns {object} object mapping query names to objects
      */
-    getDomainObject(type)
+    extractObjects()
     {
-        let object;
-
-        const firstProperty = this.path[0];
         const graph = this.graph;
-        const value = graph.rootObject[firstProperty];
-        let property;
+        const columns = graph.columns;
 
-        if (this.path.length === 1)
+        // queryName -> domain object
+        const objects = {};
+        // object with preliminary objects pending id check
+        const preliminary = {};
+
+        const index = this.path[0];
+
+        for (let name in columns)
         {
-            // extract from data list root
-            object = {};
-
-            let cols = graph.columns;
-            if (!cols)
+            if (columns.hasOwnProperty(name))
             {
-                throw new Error("No cols");
-            }
-            let checkImplicit = false;
-
-            if (graph.type === DataGraphType.OBJECT)
-            {
-                property = cols[WILDCARD_SYMBOL];
-                if (!property)
+                const column = columns[name];
+                if (column.config && column.config.queryName)
                 {
-                    property = cols[firstProperty];
-                }
+                    const queryName = column.config.queryName;
 
-                if (!property || property.type !== "DomainType")
-                {
-                    throw new Error("Cannot extract domain type from property " + JSON.stringify(property));
-                }
-
-                return value;
-
-            }
-
-            for (let name in cols)
-            {
-                if (cols.hasOwnProperty(name))
-                {
-                    property = cols[name];
-
-                    if (!type)
+                    const value = graph.rootObject[index][name];
+                    if (typeof value === "undefined")
                     {
-                        type = property.domainType;
-                        checkImplicit = true;
+                        throw new Error("Undefined column value [" + index + "][" + name + "] in " + JSON.stringify(this.graph));
                     }
 
-                    if (property.domainType === type)
+                    if (column.type === "DomainType")
                     {
-                        object[property.name] = value[name];
+                        objects[queryName] = value;
                     }
-                    else if (checkImplicit)
+                    else
                     {
-                        throw new Error("Implicit type detection failed: DataGraph contains '" + type + "' and '" + property.type + "' objects");
+                        let obj = preliminary[queryName];
+                        if (!obj)
+                        {
+                            obj = domainService.create(column.domainType, null);
+                            preliminary[queryName] = obj;
+                        }
+
+                        obj[column.name] = value
                     }
                 }
             }
-            let typeDef = this.domainTypes[type];
-
-            if (!typeDef)
-            {
-                throw new Error("No type definition for found for type " + JSON.stringify(type));
-            }
-
-            object._type = typeDef.name;
-            return object;
         }
-        else
+
+
+        // only take those preliminary object that have an id.
+        for (let name in preliminary)
         {
-            const propType = this.getPropertyType(graph);
-            if (propType.type === "List")
+            if (preliminary.hasOwnProperty(name))
             {
-                throw new Error("Cannot extract single domain object from List");
+                const obj = preliminary[name];
+                objects[name] = obj;
             }
-            else if (propType.type === "Map")
-            {
-                throw new Error("Cannot extract single domain object from Map");
-            }
-            else if (propType.type === "DomainType")
-            {
-                object = assign({
-                        _type: propType.typeParam
-                    },
-                    this.get(graph)
-                );
-            }
-            else
-            {
-                object = assign({
-                    _type: propType.type
-                }, this.get(graph));
-            }
-
-            if (type && type !== object._type)
-            {
-                throw new Error("Type parameter requests '" + type + "' but cursor points to '" + object._type + "'");
-            }
-
-            return object;
         }
+
+        return objects;
     }
 
     /**
@@ -445,8 +450,7 @@ class DataCursor {
             typeParam = property.typeParam;
         }
 
-        //console.log("getPropertyType start", type, typeParam)
-        return followTypeDefinitionPath(this.domainTypes, path, 1, type, typeParam, true);
+        return followTypeDefinitionPath(this.domainData, path, 1, type, typeParam, true);
 
     }
 
@@ -559,7 +563,7 @@ class DataCursor {
      */
     getCursor(path)
     {
-        return new DataCursor(this.domainTypes, this.graph, this.path.concat(path))
+        return new DataCursor(this.domainData, this.graph, this.path.concat(path))
     }
 
     /**
@@ -616,11 +620,66 @@ class DataCursor {
         return String(this.get());
     }
 
+    /**
+     * Returns true if the given cursor points to same graph and the same location.
+     *
+     * @param that      {DataCursor} other cursor
+     * @returns {boolean} true if the cursors point to the same location in the same graph
+     */
+    equals(that)
+    {
+        if (this === that)
+        {
+            return true;
+        }
+
+        if (this.graph !== that.graph)
+        {
+            return false;
+        }
+
+        return arrayEquals(this.path, that.path);
+    }
 
     valueOf()
     {
         return this.get();
     }
 }
+
+/**
+ * Resolves the collection type referenced by the given property model and mutably updates that propertyModel
+ * with the collection type.
+ *
+ *
+ *
+ * @param domainData
+ * @param propertyModel
+ */
+export function resolveCollectionType(domainData, /*mutable*/ propertyModel)
+{
+    const typeParam = propertyModel.typeParam;
+    if (domainData.domainTypes[typeParam])
+    {
+        propertyModel.type = "DomainType";
+        propertyModel.typeParam = typeParam;
+    }
+    else if (domainData.enumTypes[typeParam])
+    {
+        propertyModel.type = "Enum";
+        propertyModel.typeParam = typeParam;
+    }
+    else if (domainData.stateMachines[typeParam])
+    {
+        propertyModel.type = "StateMachine";
+        propertyModel.typeParam = typeParam;
+    }
+    else
+    {
+        propertyModel.type = typeParam;
+        propertyModel.typeParam = null;
+    }
+}
+
 
 export default DataCursor;

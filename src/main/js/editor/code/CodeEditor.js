@@ -12,7 +12,7 @@ import uri from "../../util/uri";
 
 import Icon from "../../ui/Icon"
 
-const update = require("react-addons-update");
+const update = require("immutability-helper");
 
 import Navbar from "react-bootstrap/lib/Navbar"
 import Nav from "react-bootstrap/lib/Nav"
@@ -25,6 +25,8 @@ import { getCurrentViewDocument, getViewDocuments, getCurrentViewDocumentIndex }
 import EditorDocument, { CONTENT_NAMES } from "./EditorDocument"
 
 import { storeShape } from "react-redux/lib/utils/PropTypes"
+
+import PropTypes from 'prop-types'
 
 function ModalControl(codeEditor)
 {
@@ -54,7 +56,7 @@ class CodeEditor extends React.Component
 {
     static propTypes = {
         store: storeShape,
-        document: React.PropTypes.instanceOf(EditorDocument)
+        document: PropTypes.instanceOf(EditorDocument)
     };
 
     state = {

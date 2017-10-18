@@ -4,7 +4,7 @@ class Heading extends React.Component
 {
     render()
     {
-        const icon = this.props.icon;
+        const { icon } = this.props;
 
         return (
             <h2>

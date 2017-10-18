@@ -1,5 +1,6 @@
 import React from "react";
 import assign from "object-assign";
+import PropTypes from 'prop-types'
 
 function stylesEqual(a, b)
 {
@@ -46,13 +47,13 @@ class SymbolLayer extends React.Component
 class Symbol extends React.Component
 {
     static propTypes = {
-        symbols: React.PropTypes.object.isRequired,
-        name: React.PropTypes.string.isRequired,
-        layer: React.PropTypes.string,
-        x: React.PropTypes.number.isRequired,
-        y: React.PropTypes.number.isRequired,
-        transform: React.PropTypes.string,
-        style: React.PropTypes.object
+        symbols: PropTypes.object.isRequired,
+        name: PropTypes.string.isRequired,
+        layer: PropTypes.string,
+        x: PropTypes.number.isRequired,
+        y: PropTypes.number.isRequired,
+        transform: PropTypes.string,
+        style: PropTypes.object
     }
 
     shouldComponentUpdate(nextProps)

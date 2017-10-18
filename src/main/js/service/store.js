@@ -13,6 +13,13 @@ let initialState = {
  * Exists to be able to use the correct store reference in view bootup and as third argument to reduct thunks. The module
  * system caches this proxy which then can be lazily initialized with the real store.
  *
+ * @name Store
+ * @type {{
+ *  getState: function,
+ *  dispatch: function,
+ *  subscribe: function,
+ *  replaceReducer: function
+ * }}
  */
 const StoreHolder = {
     /**

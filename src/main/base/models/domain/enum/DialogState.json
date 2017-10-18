@@ -1,0 +1,6 @@
+{
+    "description" : "Enum controlling the visibility of dialogs. Each modeled dialog automatically gets a view context property with this type",
+
+    "name": "DialogState",
+    "values" : ["CLOSED", "OPEN"]
+}

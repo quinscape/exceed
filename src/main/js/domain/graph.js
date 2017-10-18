@@ -19,11 +19,24 @@ export const WILDCARD_SYMBOL = "*";
  * @name DataGraph
  * @type {{
  *     type: DataGraphType,
- *     columns: Object,
+ *     columns: Map<String,PropertyModel> columns
  *     rootObject: Object|Array,
  *     count: Number,
  *     isMap: bool
  * }}
+ *
+ * @name PropertyModel
+ * @type {{
+ *     name: string,
+ *     type: string,
+ *     typeParam: string,
+ *     config: Object,
+ *     domainType: string,
+ *     description: string,
+ *     maxLength: Number,
+ *     defaultValue: string
+ * }}
+
  */
 
 /**
@@ -66,7 +79,8 @@ export function validateWildcard(columns)
 
     if (isStar === null)
     {
-        throw new TypeError("Columns can't be empty.");
+        isStar = false;
+        //throw new TypeError("Columns can't be empty.");
     }
 
     return isStar;
@@ -84,8 +98,9 @@ function error(msg, checkOnly)
 /**
  * Validates a data graph object and returns it.
  *
- * @param graph         {object} object to check for being a data graph
- * @param _checkOnly     {boolean?} don't throw but return true if valid
+ * @param graph             {object} object to check for being a data graph
+ * @param [_checkOnly]      {boolean} don't throw but return true if valid
+ *
  * @returns {DataGraph|boolean} validated graph or boolean, if we're just checking
  */
 export function DataGraph(graph, _checkOnly = false)
@@ -122,6 +137,11 @@ export function DataGraph(graph, _checkOnly = false)
     return _checkOnly || graph
 }
 
+export function isArrayGraph(graph)
+{
+    return graph.type === DataGraphType.ARRAY;
+}
+
 export function isMapGraph(graph)
 {
     return (graph.type === DataGraphType.OBJECT && !!graph.columns[WILDCARD_SYMBOL])
@@ -152,9 +172,10 @@ export function getColumnType(graph, column)
 
 }
 
-export function getPropertyModel(types, type, name)
+
+export function getPropertyModel(domainData, type, name)
 {
-    const domainType = types[type];
+    const domainType = domainData.domainTypes[type];
     const properties = domainType && domainType.properties;
     if (properties)
     {
@@ -175,4 +196,44 @@ export function validateDataGraph(object)
     return DataGraph(object, true);
 }
 
+export function objectToDataGraph(domainService, input)
+{
+    const typeName = input._type;
+    const domainType = domainService.getDomainType(typeName);
+
+    const cols = {};
+    const obj = {};
+    for (let name in input)
+    {
+        if (input.hasOwnProperty(name))
+        {
+            if (name === "_type")
+            {
+                obj[name] = input[name];
+            }
+            else
+            {
+                //const qualified = typeName + "." + name;
+                obj[name] = input[name];
+                cols[name] = {
+                    type: typeName,
+                    name: name
+                };
+            }
+        }
+    }
+
+    return {
+        type : "ARRAY",
+        types: {
+            [typeName] : domainType
+        },
+        columns: cols,
+        rootObject: [ obj ],
+        isMap: false,
+        count: 1
+    };
+}
+
 export default DataGraph;
+

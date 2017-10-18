@@ -4,7 +4,7 @@ import { toXml } from "./xml-util";
 import uuid from "uuid"
 import keys from "../../util/keys"
 
-import update from "react-addons-update"
+import update from "immutability-helper"
 
 import i18n from "../../service/i18n"
 

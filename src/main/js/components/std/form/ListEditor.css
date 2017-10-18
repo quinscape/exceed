@@ -1,0 +1,14 @@
+.list-editor-field,.list-editor-control
+{
+    display: inline-block;
+}
+.list-editor-field
+{
+    width: 80%;
+}
+.list-editor-control
+{
+    padding-top: 0.5em;
+    vertical-align: top;
+    width: 20%;
+}

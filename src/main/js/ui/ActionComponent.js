@@ -1,17 +1,20 @@
-import React, {Component} from "react"
+import React, { Component } from "react"
 import cx from "classnames"
 
+import store from "../service/store"
 import { navigateView } from "../actions/view"
+
+import PropTypes from 'prop-types'
 
 class ActionComponent extends Component {
 
     static propTypes = {
-        defaultClass: React.PropTypes.string.isRequired,
-        href: React.PropTypes.string,
-        text: React.PropTypes.string,
-        icon: React.PropTypes.string,
-        onClick: React.PropTypes.func,
-        progressive: React.PropTypes.bool
+        defaultClass: PropTypes.string.isRequired,
+        href: PropTypes.string,
+        text: PropTypes.string,
+        icon: PropTypes.string,
+        onClick: PropTypes.func,
+        progressive: PropTypes.bool
     };
 
     static defaultProps = {
@@ -23,32 +26,39 @@ class ActionComponent extends Component {
 
     onClick = (ev) =>
     {
+        const { text, onClick, disabled, href, progressive } = this.props;
+
+        console.log({ text, onClick, disabled, href, progressive });
+
         try
         {
 
-            if (this.props.onClick)
+            if (onClick)
             {
-                if (!this.props.disabled)
+                if (!disabled)
                 {
-                    this.props.onClick(ev);
+                    onClick(ev);
                 }
             }
-            else if (this.props.href)
+            else if (href)
             {
-                if (this.props.progressive)
+                if (progressive)
                 {
-                    navigateView({
-                        url: this.props.href
-                    });
+                    console.log("progressive link", href);
+                    store.dispatch(
+                        navigateView({
+                            url: href
+                        })
+                    )
                 }
                 else
                 {
-                    window.location.href = this.props.href;
+                    window.location.href = href;
                 }
             }
             else
             {
-                console.warn("No target set for Link '" + this.props.text + "'");
+                console.warn("No target set for Link '" + text + "'");
             }
 
         }

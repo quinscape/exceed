@@ -9,7 +9,7 @@ import {
         EDITOR_MARK_SAVED
     } from "../actions/inpage"
 
-import update from "react-addons-update"
+import update from "immutability-helper"
 
 /**
  * Number of views after which the editor will begin reusing document positions even if they do not belong to the

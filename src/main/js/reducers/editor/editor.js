@@ -17,13 +17,13 @@ export function getEditorData(state)
 
 export function getAppConfig(state)
 {
-    return state.editor.rootObject.config;
+    return getEditorData(state).rootObject.config;
 }
 
 
 export function getViews(state)
 {
-    return state.editor.rootObject.view;
+    return getEditorData(state).rootObject.view;
 }
 
 
@@ -38,14 +38,14 @@ export function getView(state, name)
 
 export function getRoutingTable(state)
 {
-    return state.editor.rootObject.routing;
+    return getEditorData(state).rootObject.routing;
 }
 
 
 
 export function getProcesses(state)
 {
-    return state.editor.rootObject.process;
+    return getEditorData(state).rootObject.process;
 }
 
 
@@ -56,7 +56,7 @@ export function getProcess(state, name)
 
 export function getLayouts(state)
 {
-    return state.editor.rootObject.layout;
+    return getEditorData(state).rootObject.layout;
 }
 
 
@@ -68,7 +68,7 @@ export function getLayout(state, name)
 
 export function getEnumTypes(state)
 {
-    return state.editor.rootObject.enumType;
+    return getEditorData(state).rootObject.enumType;
 }
 
 
@@ -80,7 +80,7 @@ export function getEnumType(state, name)
 
 export function getDomainTypes(state)
 {
-    return state.editor.rootObject.domainType;
+    return getEditorData(state).rootObject.domainType;
 }
 
 
@@ -90,3 +90,7 @@ export function getDomainType(state, name)
 }
 
 
+export function getTranslations(state)
+{
+    return getEditorData(state).rootObject.translation;
+}

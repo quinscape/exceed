@@ -13,6 +13,8 @@ import converter from "../../../service/property-converter";
 import i18n from "../../../service/i18n";
 import assign from "object-assign";
 
+import PropTypes from 'prop-types'
+
 
 import DataCursor from "../../../domain/cursor"
 
@@ -20,7 +22,7 @@ class EnumTypeForm extends React.Component
 {
 
     static propTypes = {
-        cursor: React.PropTypes.instanceOf(DataCursor)
+        cursor: PropTypes.instanceOf(DataCursor)
     }
 
 

@@ -8,7 +8,7 @@ import sys from "../sys";
 
 class NewWindow extends React.Component {
 
-    static initialState = {
+    state = {
         opened: false
     };
 

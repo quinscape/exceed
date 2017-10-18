@@ -1,8 +1,10 @@
 import React from "react";
 
+import PropTypes from 'prop-types'
+
 class Alert extends React.Component
 {
-    static propTypes =  React.PropTypes.string.isRequired;
+    static propTypes =  PropTypes.string.isRequired;
 
     render()
     {

@@ -7,40 +7,30 @@
  *  to have catch-errors protection for the view component, too.
  */
 
-let catchErrors;
-let ErrorReport;
-
 import sys from "../sys";
-
-// we repeat this full expression so that uglify is clever enough to really strip the code when inactive
-// if (__DEV && !process.env.NO_CATCH_ERRORS)
-// {
-//     catchErrors = require("react-transform-catch-errors");
-//     ErrorReport = require("../ui/ErrorReport.es5");
-// }
-
-const React = require("react");
-
-import rtViewAPI from "./runtime-view-api"
+import RTView from "./runtime-view-api"
 import rtActionAPI from "./runtime-action-api"
 import ViewWrapper from "../ui/ViewWrapper";
 import i18n from "./i18n";
 import ComponentClasses from "../components/component-classes"
 
 import ComponentError from "../ui/ComponentError"
+import * as Reducers from "../reducers";
+import { DEFAULT_NAME } from "../editor/editor-defaults";
+
+const React = require("react");
 
 const RENDERED_IF_PROP = "renderedIf";
-
-import * as Reducers from "../reducers";
+const MODEL_PROP = "model";
+const VALUE_PROP = "value";
+const DISABLED_IF = "disabledIf";
+const READ_ONLY_IF = "readOnlyId";
 
 function RenderContext(out, components, contentMap)
 {
     this.out = out;
     this.components = components;
     this.contentMap = contentMap;
-
-    //this.usedComponents = {};
-    this.contexts = [];
 }
 
 function indent(ctx, depth)
@@ -59,7 +49,7 @@ function hasClass(componentDescriptor, cls)
     return componentDescriptor && componentDescriptor.classes && componentDescriptor.classes.indexOf(cls) >= 0;
 }
 
-function evaluateExpression(componentModel,attrName)
+function evaluateExpression(componentModel,attrName, noComment)
 {
     const exprs = componentModel.exprs;
     const attrs = componentModel.attrs;
@@ -67,13 +57,46 @@ function evaluateExpression(componentModel,attrName)
     {
         const expr = exprs[attrName];
         const attr = attrs && attrs[attrName];
-        if (!trivialExpr.test(expr) && attr)
+        if (!trivialExpr.test(expr) && attr && !noComment)
         {
             return expr + " /* " + attr + " */"
         }
-        return expr;
+        return expr || "null";
     }
-    return attrs && JSON.stringify(attrs[attrName]);
+
+    const attrValue = attrs && JSON.stringify(attrs[attrName]);
+
+    return attrValue || "null";
+}
+
+function isFormStateComponent(name, componentDescriptor)
+{
+    if (name === "FormBlock" || name === "Button" || name === "TButton")
+    {
+        return true;
+    }
+    return componentDescriptor && componentDescriptor.classes && componentDescriptor.classes.indexOf(ComponentClasses.FIELD) >= 0
+}
+
+function inIterativeContext(ctx, componentModel)
+{
+    let current = componentModel.parent;
+    while (current)
+    {
+        const componentDescriptor = ctx.components[current.name];
+        const isIterative = hasClass(componentDescriptor, ComponentClasses.ITERATIVE_CONTEXT);
+
+        //console.log({componentModel, isIterative});
+
+        if (isIterative)
+        {
+            return true;
+        }
+
+        current = current.parent;
+    }
+
+    return false;
 }
 
 function renderRecursively(ctx, componentModel, depth, childIndex)
@@ -90,13 +113,6 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
     {
 
         componentDescriptor = ctx.components[name];
-
-        if (hasClass(componentDescriptor, ComponentClasses.CONFIGURATION))
-        {
-            ctx.out.push("false");
-            return;
-        }
-
         componentSource = "_c['" + name + "'].component";
 
 
@@ -121,17 +137,8 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
     const exprs = componentModel.exprs;
     const kids = componentModel.kids;
 
-    let queries, propTypes, contextKey, currentContextName;
-
-    if (componentDescriptor)
-    {
-        queries = componentDescriptor.queries;
-        propTypes = componentDescriptor.propTypes;
-
-        contextKey = attrs && componentDescriptor.contextKey;
-        currentContextName = ctx.contexts[0] || "undefined";
-    }
-
+    const queries = componentDescriptor && componentDescriptor.queries;
+    const propTypes = componentDescriptor && componentDescriptor.propTypes;
 
     if (name === "Content")
     {
@@ -157,11 +164,11 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
 
     const hasInjection = !!queries || !!componentDescriptor && componentDescriptor.dataProvider;
 
-    if (hasInjection)
-    {
-        ctx.out.push("_React.createElement(_ComponentError, { componentId: " + JSON.stringify(attrs.id) + "},");
-        depth++;
-    }
+    // if (hasInjection)
+    // {
+    //     ctx.out.push("_React.createElement(_ComponentError, { componentId: " + JSON.stringify(attrs.id) + "},");
+    //     depth++;
+    // }
 
     ctx.out.push("_React.createElement(", componentSource, ", ");
 
@@ -191,15 +198,20 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
     {
         for (let attrName in attrs)
         {
-            if (attrs.hasOwnProperty(attrName) && ( !exprs || !exprs.hasOwnProperty(attrName)))
+            if (attrName !== "var" && attrs.hasOwnProperty(attrName) && ( !exprs || !exprs.hasOwnProperty(attrName))    )
             {
                 commaIfNotFirst();
                 indent(ctx, depth + 2);
-                if (propTypes && propTypes[attrName] && (attrName === "var" || propTypes[attrName].client === false))
+                const commentOut = propTypes && propTypes[attrName] && (attrName === "var" || propTypes[attrName].client === false);
+                if (commentOut)
                 {
-                    ctx.out.push("//");
+                    ctx.out.push("/*");
                 }
                 ctx.out.push(JSON.stringify(attrName), " : ", JSON.stringify(attrs[attrName]));
+                if (commentOut)
+                {
+                    ctx.out.push("*/");
+                }
             }
         }
     }
@@ -210,13 +222,63 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
         {
             if (exprs.hasOwnProperty(attrName) && attrName !== RENDERED_IF_PROP)
             {
-                commaIfNotFirst();
-                indent(ctx, depth + 2);
-                if (propTypes && propTypes[attrName] && propTypes[attrName].client === false)
+                const propDecl = propTypes && propTypes[attrName];
+
+                const isCursorOrContextExpression = propDecl && (
+                    propDecl.type === "CURSOR_EXPRESSION" ||
+                    propDecl.type === "CONTEXT_EXPRESSION"
+                );
+
+                const ignoreContextValue = (
+                    attrName === VALUE_PROP ||
+                    attrName === DISABLED_IF ||
+                    attrName === READ_ONLY_IF
+                ) && isFormStateComponent(name, componentDescriptor) && !inIterativeContext(ctx,componentModel);
+
+                const commentOut = propDecl && (
+                    // we comment out attributes that are marked as client = true
+                    propDecl.client === false ||
+                    // we also comment out value props for .field components because we supply the values via form-state
+                    ignoreContextValue
+                );
+
+                if (commentOut)
                 {
-                    ctx.out.push("//");
+                    ctx.out.push("\n");
+                    indent(ctx, depth + 2);
+                    ctx.out.push("/*");
                 }
-                ctx.out.push(JSON.stringify(attrName), " : ", evaluateExpression(componentModel, attrName));
+                else
+                {
+                    commaIfNotFirst();
+                    indent(ctx, depth + 2);
+                }
+                const evaluated = evaluateExpression(componentModel, attrName, true);
+
+
+                ctx.out.push(JSON.stringify(attrName), " : ");
+
+                if (isCursorOrContextExpression)
+                {
+                    if (ignoreContextValue)
+                    {
+                        ctx.out.push(componentModel.attrs[attrName]);
+                    }
+                    else
+                    {
+                        const contextName = componentModel.exprs[attrName].contextName;
+                        ctx.out.push("_v.cursorExpr(", evaluateExpression(componentModel, MODEL_PROP, commentOut), ",", JSON.stringify(attrName), ",", contextName || "null", ")");
+                    }
+                }
+                else
+                {
+                    ctx.out.push(evaluated);
+                }
+
+                if (commentOut)
+                {
+                    ctx.out.push("*/");
+                }
             }
         }
     }
@@ -237,21 +299,12 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
         ctx.out.push("key: ", childIndex);
     }
 
-    if (componentDescriptor)
-    {
-        if (componentDescriptor.context || contextKey)
-        {
-            commaIfNotFirst();
-            indent(ctx, depth + 2);
-            ctx.out.push("context: ", currentContextName);
-        }
 
-        if (componentDescriptor && componentDescriptor.vars)
-        {
-            commaIfNotFirst();
-            indent(ctx, depth + 2);
-            ctx.out.push("vars: _r.getComponentVars(_state, \"" + attrs.id + "\")");
-        }
+    if (componentDescriptor && componentDescriptor.vars)
+    {
+        commaIfNotFirst();
+        indent(ctx, depth + 2);
+        ctx.out.push("vars: _r.getComponentVars(_state, \"" + attrs.id + "\")");
     }
 
     if (hasInjection)
@@ -292,7 +345,6 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
             ctx.out.push(",\n");
 
             const newContextName = (attrs && attrs.var) || "context";
-            ctx.contexts.unshift(newContextName);
             indent(ctx, depth + 1);
             ctx.out.push("function(" + newContextName + "){\n");
             indent(ctx, depth + 2);
@@ -308,18 +360,16 @@ function renderRecursively(ctx, componentModel, depth, childIndex)
             ctx.out.push("\n");
             indent(ctx, depth + 1);
             ctx.out.push("])}");
-
-            ctx.contexts.shift();
         }
     }
 
-    if (hasInjection)
-    {
-        ctx.out.push("\n");
-        indent(ctx, depth);
-        ctx.out.push(")");
-        depth--;
-    }
+    // if (hasInjection)
+    // {
+    //     ctx.out.push("\n");
+    //     indent(ctx, depth);
+    //     ctx.out.push(")");
+    //     depth--;
+    // }
     
     ctx.out.push("\n");
     indent(ctx, depth);
@@ -335,7 +385,7 @@ function renderViewComponentSource(viewModel, components)
     buf.push(
         "var _store = this.props.store;\n",
         "var _state = _store.getState();\n",
-        "var _v= new _RTView(_store);\n",
+        "_v.updateState(_state)\n",
 //        "console.log('REDUCERS', _r);\n",
         "return (\n\n",
         "  _React.createElement( _ViewWrapper, { title: ", viewModel.titleExpr || "\"\"" , ", store: _store},\n"
@@ -346,14 +396,15 @@ function renderViewComponentSource(viewModel, components)
     renderRecursively(ctx, contentMap.root, 2);
 
     //buf.unshift("console.log('COMPONENTS', _c);\n");
-    // const usedComponents = ctx.usedComponents;
-    // for (let componentName in usedComponents)
-    // {
-    //     if (usedComponents.hasOwnProperty(componentName))
-    //     {
-    //         buf.unshift("var " + componentName + " = _c[\"" + componentName + "\"].component;\n");
-    //     }
-    // }
+
+    const usedComponents = ctx.usedComponents;
+    for (let componentName in usedComponents)
+    {
+        if (usedComponents.hasOwnProperty(componentName))
+        {
+            buf.unshift("var " + componentName + " = _c[\"" + componentName + "\"].component;\n");
+        }
+    }
 
     buf.push(
         "\n  )\n);"
@@ -366,15 +417,22 @@ export default {
     createRenderFunction : function(viewModel, components)
     {
         const code = renderViewComponentSource(viewModel, components);
-        //console.log("\nRENDER-FN:\n", code);
+        console.log("\nRENDER-FN:\n", code);
 
-        const renderFn = new Function("_React", "_c", "_RTView", "_ComponentError", "_sys", "_a", "i18n", "_ViewWrapper", "_r", code);
-        return {
-            src: code,
-            fn: function (component)
-            {
-                return renderFn.call(component, React, components, rtViewAPI, ComponentError, sys, rtActionAPI, i18n, ViewWrapper, Reducers);
-            }
-        };
+        try
+        {
+            const renderFn = new Function("_React", "_c", "_v", "_ComponentError", "_sys", "_a", "i18n", "_ViewWrapper", "_r", code);
+            return {
+                src: code,
+                fn: function (component, rtView)
+                {
+                    return renderFn.call(component, React, components, rtView, ComponentError, sys, rtActionAPI, i18n, ViewWrapper, Reducers);
+                }
+            };
+        }
+        catch(e)
+        {
+            throw new Error("Error compiling view code:\n\n" + code + ": " + e);
+        }
     }
 };

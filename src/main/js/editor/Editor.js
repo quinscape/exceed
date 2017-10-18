@@ -5,8 +5,6 @@ import UndoManager from "../editor/UndoManager";
 import ModelSelector from "./ModelSelector";
 import ConfigEditor from "./ConfigEditor";
 import AutoHeight from "../ui/AutoHeight";
-import ButtonToolbar from "react-bootstrap/lib/ButtonToolbar";
-import ButtonGroup from "react-bootstrap/lib/ButtonGroup";
 import Button from "react-bootstrap/lib/Button";
 
 import { getCurrentEditorLocation, getFilter } from "../reducers/editor/editorView";
@@ -17,6 +15,7 @@ import {
     getLayout,
     getProcess,
     getRoutingTable,
+    getTranslations,
     getView
 } from "../reducers/editor";
 
@@ -29,7 +28,8 @@ const MODEL_SELECTORS = {
     enumType: getEnumType,
     process: getProcess,
     view: getView,
-    layout: getLayout
+    layout: getLayout,
+    translation: getTranslations
 };
 
 function JSONDump(props)

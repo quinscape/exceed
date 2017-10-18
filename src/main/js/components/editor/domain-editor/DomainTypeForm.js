@@ -15,6 +15,7 @@ import i18n from "../../../service/i18n";
 import cx from "classnames";
 import assign from "object-assign";
 
+import PropTypes from 'prop-types'
 
 import DataCursor from "../../../domain/cursor"
 
@@ -52,7 +53,7 @@ class DomainTypeForm extends React.Component
 {
 
     static propTypes = {
-        cursor: React.PropTypes.instanceOf(DataCursor)
+        cursor: PropTypes.instanceOf(DataCursor)
     }
 
     edit(index)

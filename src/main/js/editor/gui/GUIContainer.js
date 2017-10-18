@@ -3,6 +3,7 @@ import GUIContext from "./gui-context"
 import ContainerContext from "./container-context";
 import Event from "../../util/event";
 import GlobalDrag from "../../util/global-drag"
+import PropTypes from 'prop-types'
 
 const requestAnimationFrame = require("raf");
 
@@ -38,17 +39,17 @@ ViewBox.prototype.render = function ()
 class GUIContainer extends React.Component
 {
     static propTypes =  {
-        centerX : React.PropTypes.number,
-        centerY : React.PropTypes.number,
-        width: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string]),
-        height: React.PropTypes.number,
-        style: React.PropTypes.object,
-        zoom: React.PropTypes.bool,
-        onInteraction: React.PropTypes.func
+        centerX : PropTypes.number,
+        centerY : PropTypes.number,
+        width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+        height: PropTypes.number,
+        style: PropTypes.object,
+        zoom: PropTypes.bool,
+        onInteraction: PropTypes.func
     }
 
     static childContextTypes = {
-        containerContext: React.PropTypes.instanceOf(ContainerContext)
+        containerContext: PropTypes.instanceOf(ContainerContext)
     }
 
     getDefaultProps()

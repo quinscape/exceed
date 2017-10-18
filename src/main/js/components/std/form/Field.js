@@ -2,15 +2,44 @@ import React from "react";
 import FormElement from "./FormElement";
 import Checkbox from "./Checkbox";
 import CalendarField from "./CalendarField";
-import EnumSelect from "./EnumSelect";
+import PropertySelect from "./PropertySelect";
+import i18n from "../../../service/i18n";
 
+const domainService = require("../../../service/domain");
+import PropTypes from 'prop-types'
 
-const Field = FormElement(class Field extends React.Component
+function supplyEnumValues({ propertyType })
 {
-    static propTypes = {
-        validate: React.PropTypes.func
-    };
+    const enumModel = domainService.getEnumType(propertyType.typeParam);
+    return enumModel.values.map(
+        (value, idx) =>
+            <option key={ idx } value={ value }>
+                { i18n(enumModel.name + " " + value) }
+            </option>
+    )
+}
 
+function supplyStateMachineValues({ value, propertyType })
+{
+    const stateMachineModel = domainService.getStateMachine(propertyType.typeParam);
+    const states = stateMachineModel.states[value];
+
+    const options =  states.map(
+        (value, idx) =>
+            <option key={ idx } value={ value }>
+                { i18n( stateMachineModel.name + " " + value ) }
+            </option>
+    );
+
+    options.unshift(
+        <option key={ -1 } value={ value }>
+            { i18n( stateMachineModel.name + " " + value ) }
+        </option>
+    )
+}
+
+const Field = FormElement(class Field extends React.PureComponent
+{
     getInputField()
     {
         const input = this._input;
@@ -22,53 +51,81 @@ const Field = FormElement(class Field extends React.Component
         return input.getInputField();
     }
 
+    onChange = ev => this.props.onChange(ev.target.value, false);
+
+    onBlur = ev => {
+
+        if (!this.props.propagate)
+        {
+            this.props.onChange(this.getInputField().value, true);
+        }
+    };
+
     render()
     {
-        const typeName = this.props.propertyType.type;
+        const { propertyType } = this.props;
+
+        const typeName = propertyType.type;
         if (typeName === "Date" || typeName === "Timestamp")
         {
             return (
                 <CalendarField
                     ref={ component => this._input = component}
-                    {...this.props}/>
-            )
+                    {... this.props }/>
+            );
         }
 
         if (typeName === "Enum")
         {
             return (
-                <EnumSelect
-                    ref={ component => this._input = component}
-                    {...this.props}/>
-            )
+                <PropertySelect
+                    ref={ component => this._input = component }
+                    supplier={ supplyEnumValues }
+                    {... this.props }
+                />
+            );
         }
+
+        if (typeName === "State")
+        {
+            return (
+                <PropertySelect
+                    ref={ component => this._input = component }
+                    supplier={ supplyStateMachineValues }
+                    {... this.props }
+                />
+            );
+        }
+
 
         if (typeName === "Boolean")
         {
             return (
                 <Checkbox
                     ref={ component => this._input = component}
-                    {...this.props}/>
-            )
+                    {... this.props }
+                />
+            );
         }
+
+        const { value, id, disabled, autoFocus } = this.props;
 
         return (
             <input
-                id={ this.props.id }
+                id={ id }
                 ref={ elem => this._input = elem}
+                type="text"
                 className="form-control"
-                value={ this.props.valueLink.value }
-                onChange={ ev => this.props.valueLink.requestChange(ev.target.value) }
-                disabled={ this.props.disabled }
-                onBlur={ (ev) => {
-                    const value = ev.target.value;
-                    //console.log("input CHANGE", value);
-                    this.props.onChange( value)
-                }}
-                autoFocus={ this.props.autoFocus }
+                value={ value }
+                onChange={ this.onChange }
+                disabled={ disabled }
+                autoFocus={ autoFocus }
+                onBlur={ this.onBlur }
             />
         )
     }
+}, {
+    decorate: pt => pt.type !== "Boolean"
 });
 
 export default Field

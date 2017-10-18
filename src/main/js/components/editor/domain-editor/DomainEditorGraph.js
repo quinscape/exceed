@@ -1,5 +1,5 @@
 const React = require("react");
-const immutableUpdate = require("react-addons-update");
+const immutableUpdate = require("immutability-helper");
 const assign = require("object-assign");
 
 import sys from "../../../sys";

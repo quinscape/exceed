@@ -1,258 +1,428 @@
 {
     "components": {
         "Form": {
-
-            "description" : "Object form. Can either query a filtered list or work based off a cursor expression like '{ current }'.",
-
-            "classes": ["element"],
-            "queries": {
-                "data": "query( prop('type').fields(childAttributes('field', 'value'))).filter( prop('filter') )"
-            },
+            "description": "Object form. Can either query a filtered list or work based off a cursor expression like '{ current }'.",
+            "classes": ["element", "form-container", "form-config-provider"],
             "propTypes": {
                 "data": {
-                    "description" : "Cursor expression to provide data and disable the query.",
+                    "description": "Cursor expression to provide data",
                     "type": "CURSOR_EXPRESSION"
                 },
                 "type": {
-                    "description" : "Type to query (Query only)",
-
+                    "description": "Type to query (Query only)",
                     "client": false,
                     "type": "QUERY_EXPRESSION",
                     "rule": "domainType()",
-                    "required" : true
+                    "required": true
                 },
                 "filter": {
-                    "description" : "Filter expression (Query only)",
-
+                    "description": "Filter expression (Query only)",
                     "client": false,
-                    "type" : "FILTER_EXPRESSION",
+                    "type": "FILTER_EXPRESSION",
                     "rule": "filterExpr(query(prop('type')))",
-                    "required" : true
+                    "required": true
                 },
                 "horizontal": {
-                    "description" : "Horizontal form mode",
-
+                    "description": "Horizontal form mode",
                     "type": "BOOLEAN"
                 },
                 "labelClass": {
-                    "description" : "HTML classes to apply to the label element",
-
+                    "description": "HTML classes to apply to the label element",
                     "type": "CLASSES"
                 },
                 "wrapperClass": {
-                    "description" : "HTML classes to apply to the field wrapper element in horizontal mode",
-
+                    "description": "HTML classes to apply to the field wrapper element in horizontal mode",
                     "type": "CLASSES"
+                },
+                "disabledIf": {
+                    "description": "If true, form block is rendered as disabled.",
+                    "type": "CONTEXT_EXPRESSION"
+                },
+                "readOnlyIf": {
+                    "description": "If true, form block is rendered as static text field.",
+                    "type": "CONTEXT_EXPRESSION"
                 }
             },
-            "providesContext": "DataListCursor",
+            "providesContext": "DataCursor",
             "childRule": "hasClass('element') || hasClass('field')",
             "parentRule": "!parentHasClass('iterative-context')"
         },
         "FormBlock": {
-            "description" : "Block of form elements",
-
-            "classes": ["element"],
+            "description": "Block of form elements",
+            "classes": ["element", "needs-id", "form-container", "form-config-provider"],
             "propTypes": {
+                "value": {
+                    "description": "cursor expression for the form block. Is ignored if the data attribute is given",
+                    "rule": "fieldOf(parent.prop('type'))",
+                    "type": "CURSOR_EXPRESSION",
+                    "contextType": "DataCursor",
+                    "required": true
+                },
                 "horizontal": {
                     "type": "BOOLEAN"
                 },
                 "labelClass": {
                     "type": "CLASSES",
-                    "description" : "HTML classes to apply to the label element"
+                    "description": "HTML classes to apply to the label element"
                 },
                 "wrapperClass": {
                     "type": "CLASSES",
-                    "description" : "HTML classes to apply to the field wrapper element in horizontal mode"
+                    "description": "HTML classes to apply to the field wrapper element in horizontal mode"
+                },
+                "data": {
+                    "description": "Cursor expression to provide data",
+                    "type": "CURSOR_EXPRESSION",
+                    "defaultValue": "context"
+                },
+                "disabledIf": {
+                    "description": "If true, form block is rendered as disabled.",
+                    "type": "CONTEXT_EXPRESSION"
+                },
+                "readOnlyIf": {
+                    "description": "If true, form block is rendered as static text field.",
+                    "type": "CONTEXT_EXPRESSION"
                 }
             },
-            "providesContext": "DataList",
+            "providesContext": "DataCursor",
             "childRule": "hasClass('element') || hasClass('field')",
             "parentRule": "!parentHasClass('iterative-context')"
         },
         "StaticText": {
-            "description" : "Static text field that formats its output to fit in with other form elements.",
-
-            "classes": ["field", "element"],
+            "description": "Static text field that formats its output to fit in with other form elements.",
+            "classes": ["field", "model-aware", "element"],
             "propTypes": {
-                "context" : {
-                    "context": true,
-                    "contextType" : "DataListCursor"
-                },
                 "value": {
+                    "description": "cursor expression for the value",
                     "rule": "fieldOf(parent.prop('type'))",
                     "type": "CURSOR_EXPRESSION",
-                    "required" : true
+                    "contextType": "DataCursor",
+                    "required": true
                 },
-                "wrapperClass" : {
-                    "type" : "CLASSES"
+                "wrapperClass": {
+                    "type": "CLASSES"
                 },
-                "labelClass" : {
-                    "type" : "CLASSES"
+                "labelClass": {
+                    "type": "CLASSES"
                 }
             },
-            "providesContext": "DataListCursor"
+            "providesContext": "DataCursor"
         },
         "Field": {
-            "description" : "General purpose form field adapting to the property type of its target where possible",
-
-            "classes": ["element", "field"],
+            "description": "General purpose form field adapting to the property type of its target where possible",
+            "classes": ["element", "field", "model-aware"],
             "propTypes": {
-                "context" : {
-                    "context": true,
-                    "contextType" : "DataListCursor"
-                },
                 "value": {
-                    "description" : "Field name or relative cursor expression",
-
+                    "description": "cursor expression for the value",
                     "rule": "fieldOf(parent.prop('type'))",
                     "type": "CURSOR_EXPRESSION",
-                    "required" : true
+                    "contextType": "DataCursor",
+                    "required": true
                 },
-                "wrapperClass" : {
-                    "description" : "HTML classes for the field wrapper.",
-
-                    "type" : "CLASSES"
+                "wrapperClass": {
+                    "description": "HTML classes for the field wrapper.",
+                    "type": "CLASSES"
                 },
-                "labelClass" : {
-                    "description" : "HTML classes for the label element.",
-
-                    "type" : "CLASSES"
+                "labelClass": {
+                    "description": "HTML classes for the label element.",
+                    "type": "CLASSES"
+                },
+                "disabledIf": {
+                    "description": "If true, field is rendered as disabled.",
+                    "type": "CONTEXT_EXPRESSION"
+                },
+                "readOnlyIf": {
+                    "description": "If true, field is rendered as static text field.",
+                    "type": "CONTEXT_EXPRESSION"
+                },
+                "propagate" : {
+                    "description" : "Controls the propagation behavior for text inputs. { false } makes the field on propagate its value on blur. Default value is controlled by component config 'instantTextFields'",
+                    "type" : "BOOLEAN"
                 }
             }
         },
         "SelectField": {
-            "description" : "Select element whose options are based on a query. WIP",
-
-            "classes": ["element", "field"],
+            "description": "Select element whose options are based on a query. WIP",
+            "classes": ["element", "field", "model-aware"],
             "queries": {
                 "data": "query( prop('type') )"
             },
             "propTypes": {
-                "context" : {
-                    "context": true,
-                    "contextType" : "DataListCursor"
-                },
-                "data": {
-                    "type": "CURSOR_EXPRESSION"
-                },
-
                 "value": {
-                    "description" : "Field name or relative cursor expression",
-
+                    "description": "cursor expression for the value",
                     "rule": "fieldOf(parent.prop('type'))",
                     "type": "CURSOR_EXPRESSION",
-                    "required" : true
+                    "contextType": "DataCursor",
+                    "required": true
                 },
-
-                "wrapperClass" : {
-                    "description" : "HTML classes for the field wrapper.",
-
-                    "type" : "CLASSES"
+                "data": {
+                    "type": "VALUE_EXPRESSION"
                 },
-                "labelClass" : {
-                    "description" : "HTML classes for the label element.",
-
-                    "type" : "CLASSES"
+                "wrapperClass": {
+                    "description": "HTML classes for the field wrapper.",
+                    "type": "CLASSES"
                 },
-
+                "labelClass": {
+                    "description": "HTML classes for the label element.",
+                    "type": "CLASSES"
+                },
                 "type": {
-                    "description" : "Type to query for the select field contents",
-
+                    "description": "Type to query for the select field contents",
                     "client": false,
                     "type": "QUERY_EXPRESSION",
                     "rule": "domainType()",
-                    "required" : true
+                    "required": true
                 },
-
                 "optionDisplay": {
-                    "description" : "Cursor expression to resolve the display value for an option. If not given only optionValue is used.",
-
+                    "description": "Cursor expression to resolve the display value for an option. If not given only optionValue is used.",
                     "rule": "fieldOf(prop('type'))",
                     "type": "CURSOR_EXPRESSION"
-
                 },
                 "optionValue": {
-                    "description" : "Cursor expression to resolve the value for an option",
-                    
+                    "description": "Cursor expression to resolve the value for an option",
                     "rule": "fieldOf(prop('type'))",
                     "type": "CURSOR_EXPRESSION",
-                    "required" : true
+                    "required": true
+                },
+                "disabledIf": {
+                    "description": "If true, select field is rendered as disabled.",
+                    "type": "CONTEXT_EXPRESSION"
+                },
+                "readOnlyIf": {
+                    "description": "If true, select field is rendered as static text field.",
+                    "type": "CONTEXT_EXPRESSION"
                 }
             }
         },
-
         "Button": {
-            "description" : "Button to execute actions in standalone-views",
-
-            "classes": ["element", "field", "toolbar-child"],
-            "parentRule" : "!viewInProcess()",
+            "description": "Button to execute actions in standalone-views",
+            "classes": ["element", "model-aware", "toolbar-child", "field"],
+            "parentRule": "!viewInProcess()",
             "propTypes": {
                 "context": {
-                    "context" : true,
-                    "contextType" : "DataListCursor"
+                    "description": "context for the button",
+                    "defaultValue": "context",
+                    "type": "CURSOR_EXPRESSION",
+                    "contextType": "DataCursor",
+                    "required": false
                 },
-                "action" : {
-                    "description" : "Action (sequence)",
-
-                    "type" : "ACTION_EXPRESSION",
-                    "required" : true
+                "action": {
+                    "description": "Action (sequence)",
+                    "type": "ACTION_EXPRESSION",
+                    "required": true
                 },
-                "text" : {
-                    "description" : "Button text",
-
-                    "required" : true,
-                    "type" : "PLAINTEXT"
+                "text": {
+                    "description": "Button text",
+                    "required": true,
+                    "type": "PLAINTEXT"
+                },
+                "icon": {
+                    "description": "Icon to display for button",
+                    "type": "GLYPH_ICON"
+                },
+                "disabledIf": {
+                    "description": "If true, button is rendered as disabled.",
+                    "type": "CONTEXT_EXPRESSION"
                 }
             }
         },
         "TButton": {
-            "description" : "Button to execute process transitions",
-
-            "classes": ["element", "field", "toolbar-child"],
-            "parentRule" : "viewInProcess()",
+            "description": "Button to execute process transitions",
+            "classes": ["element", "model-aware", "toolbar-child", "field"],
+            "parentRule": "viewInProcess()",
             "propTypes": {
                 "context": {
-                    "context": true,
-                    "contextType" : "DataListCursor",
-                    "required" : false
+                    "description": "context for the button",
+                    "defaultValue": "context",
+                    "type": "CURSOR_EXPRESSION",
+                    "contextType": "DataCursor",
+                    "required": false
                 },
-                "transition" : {
-                    "description" : "Name of the transition to be execute from this button.",
+                "transition": {
+                    "description": "Name of the transition to be execute from this button.",
                     "rule": "transitionNames()",
-                    "type" : "TRANSITION",
-                    "required" : true
+                    "type": "TRANSITION",
+                    "required": true
                 },
-                "domainType" : {
-                    "description" : "Defines the domain type to use for this button when it is ambiguous",
-                    "type" : "DOMAIN_TYPE_REFERENCE",
-                    "required" : true
+                "domainType": {
+                    "description": "Defines the domain type to use for this button when it is ambiguous",
+                    "type": "DOMAIN_TYPE_REFERENCE",
+                    "required": true
                 },
-                "discard" : {
-                    "description" : "Allows user input to be discarded if true. (Think 'cancel' transition)",
-
-                    "type" : "BOOLEAN",
-                    "defaultValue" : "transition(props.transition).discard"
+                "discard": {
+                    "description": "Allows user input to be discarded if true. (Think 'cancel' transition)",
+                    "type": "BOOLEAN",
+                    "defaultValue": "transitionModel(props.transition).discard"
                 },
-                "text" : {
-                    "description" : "Button text",
-
-                    "required" : true,
-                    "type" : "PLAINTEXT"
+                "title": {
+                    "description": "The title for the TButton. Default is the description of the transition model.",
+                    "type": "PLAINTEXT",
+                    "defaultValue": "transitionModel(props.transition).description"
+                },
+                "text": {
+                    "description": "Button text",
+                    "required": true,
+                    "type": "PLAINTEXT"
+                },
+                "icon": {
+                    "description": "Icon to display for transition button",
+                    "type": "GLYPH_ICON"
+                },
+                "disabledIf": {
+                    "description": "If true, button is rendered as disabled.",
+                    "type": "CONTEXT_EXPRESSION"
                 }
             }
         },
         "Toolbar": {
-            "description" : "Toolbar grouping multiple toolbar-child classified elements, providing the necessary padding rules",
-
+            "description": "Toolbar grouping multiple toolbar-child classified elements, providing the necessary padding rules",
             "classes": ["element"],
             "childRule": "hasClass('toolbar-child')"
         },
-        "Toolbar.Separator" : {
-
-            "description" : "Separator in a toolbar",
-
+        "Toolbar.Separator": {
+            "description": "Separator in a toolbar",
             "classes": ["toolbar-child"]
+        },
+        "ErrorMessages": {
+            "description": "Displays error messages",
+            "classes": ["elem", "model-aware"]
+        },
+        "FKSelect": {
+            "description": "Selects the target for a foreign key property from a popup",
+            "classes": ["element", "model-aware", "field", "query-ids"],
+            "vars": {
+                "filter": "''",
+                "offset": "0"
+            },
+            "queries": {
+                "candidates": "query(domainType(formFieldType().foreignKey.type).fields(childFieldRefs())).filter( prop('filter') && combineChildFilters() ).orderBy( prop('orderBy') ).limit( prop('limit') ).offset( var('offset'))"
+            },
+            "propTypes": {
+                "value": {
+                    "description": "cursor expression for foreign key property",
+                    "type": "CURSOR_EXPRESSION",
+                    "contextType": "DataCursor",
+                    "required": true
+                },
+                "orderBy": {
+                    "description": "Field name to order the FK target list by",
+                    "client": false
+                },
+                "filter": {
+                    "description": "Filter expression to filter the applicable FK targets",
+                    "type": "FILTER_EXPRESSION",
+                    "client": false
+                },
+                "limit": {
+                    "description": "Maximum number of targets to display per page.",
+                    "type": "INTEGER",
+                    "defaultValue": "10"
+                },
+                "icon": {
+                    "description": "Icon to display for the FK targets",
+                    "type": "GLYPH_ICON"
+                }
+            },
+            "childRule": "component('FKSelect.Property')",
+            "parentRule": "!parentHasClass('iterative-context')"
+        },
+        "FKSelect.Property": {
+            "propTypes": {
+                "name": {
+                    "description": "Field name",
+                    "type": "FIELD_REFERENCE",
+                    "required": true
+                },
+                "filterTemplate": {
+                    "description": "Filter template to use for the user-defined filtering. <code>field()</code> is the current field value, <code>filterValue()</code> the current user input into the filter field.",
+                    "type": "FILTER_EXPRESSION",
+                    "defaultValue": "field().contains(var('filter'))",
+                    "client": false
+                }
+            }
+        },
+        "ListEditor": {
+            "description": "Editor for a list of domain objects",
+            "classes" : [ "element", "iterative-context", "model-aware", "form-container"],
+            "propTypes": {
+                "data": {
+                    "description": "Cursor expression to provide the list of domain objects",
+                    "type": "CURSOR_EXPRESSION",
+                    "defaultValue": "context"
+                },
+                "canAdd": {
+                    "description": "if set to false, don't allow addition of new rows (default is true)",
+                    "type": "BOOLEAN"
+                },
+                "canRemove": {
+                    "description": "if set to false, don't allow removal of rows (default is true)",
+                    "type": "BOOLEAN"
+                },
+                "canReorder": {
+                    "description": "if set to false, don't allow reordering of rows (default is true)",
+                    "type": "BOOLEAN"
+                },
+                "addLabel": {
+                    "description": "label for the add button (default is i18n('Add'))",
+                    "type": "PLAINTEXT"
+                },
+                "removeLabel": {
+                    "description": "label for the remove button (default is i18n('Remove'))",
+                    "type": "PLAINTEXT"
+                },
+                "onNewObject": {
+                    "description": "Action expression to execute when adding a new object",
+                    "type": "ACTION_EXPRESSION"
+                },
+                "disabledIf": {
+                    "description": "If true, list editor is rendered as disabled.",
+                    "type": "CONTEXT_EXPRESSION"
+                },
+                "readOnlyIf": {
+                    "description": "If true, list editor is rendered as static text field.",
+                    "type": "CONTEXT_EXPRESSION"
+                }
+            },
+            "providesContext" : "DataCursor",
+            "childRule": "hasClass('field')"
+        },
+        "StateMachineButtons": {
+            "description": "Renders a button for every possible state machine transition from a current state",
+            "classes": ["field", "model-aware", "element"],
+            "propTypes": {
+                "stateMachine": {
+                    "description": "Name of the state machine these buttons control",
+                    "type": "STATE_MACHINE_REFERENCE",
+                    "required": true
+                },
+                "value": {
+                    "description": "cursor expression for current state machine value",
+                    "type": "CURSOR_EXPRESSION",
+                    "contextType": "DataCursor",
+                    "required": true
+                },
+                "wrapperClass": {
+                    "type": "CLASSES"
+                },
+                "labelClass": {
+                    "type": "CLASSES"
+                },
+                "transition": {
+                    "description": "Name of the transition to change the state machine value",
+                    "rule": "transitionNames()",
+                    "type": "TRANSITION",
+                    "required": true
+                },
+                "stateClasses": {
+                    "description": "Map of extra classes per state machine state",
+                    "type": "MAP",
+                    "defaultValue" : "{}"
+                },
+                "stateIcons": {
+                    "description": "Map of icons per state machine state",
+                    "type": "MAP",
+                    "defaultValue" : "{}"
+                }
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-export default function (model)
+export default function ()
 {
-    console.info.apply(console, model.args);
+    console.info.apply(console, arguments);
 }

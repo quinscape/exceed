@@ -1,70 +1,73 @@
 /**
  * Action executing button
  */
-import FormContext from "../../../util/form-context";
-import actionService from "../../../service/action";
-import i18n from "../../../service/i18n";
 import cx from "classnames";
 import React from "react";
+import { formHasError, getFieldState } from "../../../reducers/form-state";
+import store from "../../../service/store";
+import FieldState from "../../../form/field-state";
 
+import PropTypes from 'prop-types'
 
 class Button extends React.Component
 {
 
     static propTypes = {
-        action: React.PropTypes.func.isRequired,
-        discard: React.PropTypes.bool,
-        className: React.PropTypes.string,
-        text: React.PropTypes.string.isRequired
+        action: PropTypes.func.isRequired,
+        discard: PropTypes.bool,
+        className: PropTypes.string,
+        text: PropTypes.string.isRequired
     };
-
-    static contextTypes = {
-        formContext: React.PropTypes.instanceOf(FormContext)
-    };
-
-    constructor(props, context)
-    {
-        super(props, context);
-        const ctx = this.context.formContext;
-        this.state = { id: ctx.nextId() };
-    }
-
-    componentWillUnmount ()
-    {
-        var ctx = this.context.formContext;
-        ctx.deregister(this.state.id);
-    }
-
 
     isDisabled ()
     {
-        return !this.props.discard && this.context.formContext.hasError()
+        const { id, discard} = this.props;
+
+        if (discard)
+        {
+            return false;
+        }
+
+        const state = store.getState();
+
+        const hasError = formHasError(state, id);
+        const isDisabledByExpr = getFieldState(state, id) !== FieldState.NORMAL;
+
+        return hasError || isDisabledByExpr;
     }
+
+    onClick = ev => {
+
+        const { action } = this.props;
+
+        if (!this.isDisabled())
+        {
+            action();
+        }
+
+    };
 
     render ()
     {
-        var formContext = this.context.formContext;
-        var id = this.state.id;
-        var isDisabled = this.isDisabled();
+        const { id, className, title, icon, text } = this.props;
+        const isDisabled = this.isDisabled();
+
         return (
 
-            <input
+            <button
+                type="button"
                 id={ id }
                 name={ id }
-                className={ cx("btn", isDisabled && "disabled", this.props.className || "btn-default") }
-                type="submit"
-                value={ this.props.text }
+                className={ cx("btn", isDisabled && "disabled", className || "btn-default") }
+                title={ title }
                 disabled={ isDisabled }
-                onClick={ (ev) => {
-
-                    if (!this.isDisabled())
-                    {
-                        actionService.execute( this.props.action, false);
-                    }
-                    ev.preventDefault();
-                } }/>
+                onClick={ this.onClick }
+            >
+                { icon && <span className={ "glyphicon glyphicon-" + icon }></span>}
+                { " " + text }
+            </button>
         );
     }
-};
+}
 
 export default Button;

@@ -77,73 +77,62 @@ const ActionService = {
     /**
      * Executes the action as specified by the given action model.
      *
-     * @param action        {object|function} Action model, must contain an identifying "action" property containing the name of either a
-     *                      client or a server action. Can also be just a function that will be executed and that can return a promise.
-     * @param [forceServer] {boolean} if set to true the action will not be executed as client execution even if such a client action
-     *                      should exist. This is useful for server actions with a client side decoration. The client side decoration needs
-     *                      to set forceServer to true to prevent an endless loop.
+     * @param actionName    Name of the action to call
+     * @param args          {Array} arguments for the action
+     *
      * @returns {*}
      */
-    execute: function (action, forceServer)
+    execute: function (actionName, args)
     {
-        if (!action)
+        if (!actionName)
         {
-            return Promise.reject(new Error("No action"));
+            throw new Error("No action name");
         }
 
-        if (typeof action === "function")
+        const entry = actions[actionName];
+
+        if (!entry)
+        {
+            return Promise.reject(new Error("No action registered for name '" + actionName + "'"))
+        }
+
+        if (entry.client)
         {
             try
             {
-                var result = action();
-                return Promise.resolve(result);
+                return Promise.resolve(
+                    entry.handler.apply(null, args)
+                );
             }
-            catch (e)
+            catch(e)
             {
-                return Promise.reject(e);
-            }
-        }
-        else if (typeof action === "object" && typeof action.action === "string")
-        {
-            var entry = actions[action.action];
+                const catchArgs = [e].concat(args);
+                const catchResult = entry.catch.apply(null, catchArgs) ;
 
-            if (!entry)
-            {
-                return Promise.reject(new Error("No action registered for name '" + action.action + "'"))
-            }
-
-            if (entry.client && !forceServer)
-            {
-                try
+                if (!catchResult || !catchResult.then)
                 {
-                    return Promise.resolve( entry.handler(action));
+                    return Promise.reject(new Error("Catch function for " + actionName + " did not return a Promise value, original error:" + e));
                 }
-                catch(e)
-                {
-                    var catchResult = entry.catch(e, action);
-
-                    if (!catchResult || !catchResult.then)
-                    {
-                        return Promise.reject(new Error("Catch function for " + action.action + " did not return a Promise value, original error:" + e));
-                    }
-                    return catchResult;
-                }
+                return catchResult;
             }
+        }
 
-            return ajax({
-                url: uri( "/action/{app}/{action}", {
-                    app: sys.appName,
-                    action: action.action
-                }),
-                method: "POST",
-                contentType: "application/json",
-                data: action
-            });
-        }
-        else
-        {
-            return  Promise.reject(new Error("Invalid action" + action));
-        }
+        return ActionService.serverAction(actionName, args);
+    },
+
+    serverAction: function (actionName, args)
+    {
+        return ajax({
+            url: uri( "/action/{app}/{action}", {
+                app: sys.appName,
+                action: actionName,
+            }),
+            method: "POST",
+            contentType: "application/json",
+            data: { args }
+        }).then(function (actionResult) {
+            
+        });
     },
 
     reset: function ()

@@ -12,6 +12,21 @@
                 }
             }
         },
+        "ResourceImage": {
+            "description" : "Displays an exceed resource as image",
+
+            "classes": ["element"],
+            "propTypes": {
+                "resource": {
+                    "type": "PLAINTEXT"
+                },
+                "alt": {
+                    "type": "PLAINTEXT",
+                    "required" : true
+                }
+            },
+            "childRule": "component('Link.Param')"
+        },
         "Link": {
             "description" : "Application link to a standalone-view or process start",
 
@@ -60,6 +75,26 @@
                 }
             }
         },
+        "InfoBlock": {
+            "description" : "Informational text block",
+
+            "classes": ["top-level", "element"],
+            "propTypes": {
+                "heading": {
+                    "description" : "Error value",
+
+                    "type": "VALUE_EXPRESSION",
+                    "defaultValue" : "'Info'",
+                    "required": true
+                },
+                "text": {
+                    "description" : "Error value",
+
+                    "type": "VALUE_EXPRESSION",
+                    "required": true
+                }
+            }
+        },
         "Content": {
             "description" : "Component used in templates to import content areas from the view using that template.",
 
@@ -72,6 +107,20 @@
                     "required": true,
 
                     "defaultValue" : "'main'"
+                }
+            }
+        },
+        "Dialog" : {
+            "description" : "Modal dialog to be displayed in the view. Can be controlled by actions (e.g. '{ myDialog = DialogState.OPEN }') ",
+            "classes": [ "element" ],
+            "propTypes": {
+                "isOpen": {
+                    "description" : "If set to true, the dialog will be open by default. Useful sometimes.",
+                    "type": "VALUE_EXPRESSION"
+                },
+                "title": {
+                    "description" : "Title of the dialog",
+                    "type": "PLAINTEXT"
                 }
             }
         }

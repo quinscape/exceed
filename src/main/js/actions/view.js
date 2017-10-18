@@ -1,41 +1,16 @@
 import ajax from "../service/ajax";
 import assign from "object-assign";
-import update from "react-addons-update";
 
 import appNavHistory from "../service/app-history";
-import { loadEditorView } from "./inpage";
+import { findCurrentViewChanges } from "../reducers/inpage";
 
-import { getComponentVars } from "../reducers/component";
-import { getViewModel } from "../reducers/meta";
-import { findCurrentViewChanges, isInPageEditorActive } from "../reducers/inpage";
-
-export const APP_RESET = "APP_RESET";
-export const COMPONENT_UPDATE = "COMPONENT_UPDATE";
-
-export function resetAppState(data)
-{
-    return (dispatch, getState) =>
-    {
-        const state = getState();
-        if (isInPageEditorActive(state))
-        {
-            dispatch(
-                loadEditorView(getViewModel(data))
-            );
-        }
-
-        dispatch({
-                type: APP_RESET,
-                viewData: data
-        });
-    };
-}
+import { hydrateAppState } from "./reset";
 
 const FETCH_DEFAULT_OPTS = {
     preview: null
 };
 
-function fetch(state, opts)
+export function fetch(state, opts)
 {
     opts = assign({}, FETCH_DEFAULT_OPTS, opts);
 
@@ -92,7 +67,7 @@ export function refetchView()
                     appNavHistory.update(data);
 
                     dispatch(
-                        resetAppState(data)
+                        hydrateAppState(data)
                     );
                 }
                 return data;
@@ -143,10 +118,10 @@ export function executeTransition(opts)
                 enterView(data, url)
             )
         })
-        .catch(function (err)
-        {
-            console.error(err);
-        });
+        // .catch(function (err)
+        // {
+        //     console.error(err);
+        // });
     };
 }
 
@@ -196,7 +171,7 @@ function enterView(data, url)
         appNavHistory.newState(data, url);
 
         dispatch(
-            resetAppState(data)
+            hydrateAppState(data)
         );
     };
 }
@@ -262,7 +237,7 @@ export function previewView(model)
             {
                 // update view
                 dispatch(
-                    resetAppState(viewData)
+                    hydrateAppState(viewData)
                 );
             }
 
@@ -288,64 +263,8 @@ function createErrorViewModel(err)
 
 export function showError(err)
 {
-    resetAppState(
+    hydrateAppState(
         createErrorViewModel(err)
     )
 }
 
-export function updateComponent(componentId, vars)
-{
-    return (dispatch, getState) =>
-    {
-        if (!componentId)
-        {
-            throw new Error("Need id: " + componentId);
-        }
-
-        if (!vars)
-        {
-            throw new Error("Need vars : " + vars);
-        }
-
-        const state = getState();
-        const currentVars = getComponentVars(state, componentId);
-
-        if (!currentVars)
-        {
-            throw new Error("No component data for component '" + componentId +"'");
-        }
-
-        vars = update(currentVars, {
-            $merge: vars
-        });
-
-
-        return fetch(getState(),
-            {
-            method:  "POST",
-            dataType: "JSON",
-            data: {
-                _id : componentId,
-                _vars: JSON.stringify(vars)
-            },
-            headers: {
-                "X-ceed-Update": "true"
-            }
-        })
-            .then((componentData) =>
-            {
-                dispatch({
-                    type: COMPONENT_UPDATE,
-                    componentId,
-                    componentData
-                });
-
-                appNavHistory.update(getState());
-            })
-            .catch(function (err)
-            {
-                console.error("Error updating component '" + componentId + ", vars = " + JSON.stringify(vars), err);
-                return Promise.reject(err);
-            });
-    }
-}

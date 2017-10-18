@@ -1,5 +1,6 @@
 import NavigationHistory from "../util/navigation-history"
-import { refetchView, resetAppState } from "../actions/view"
+import { refetchView } from "../actions/view"
+import { restoreAppState } from "../actions/reset"
 
 import store from "../service/store"
 
@@ -8,7 +9,7 @@ const appNavHistory = new NavigationHistory({
         if (state)
         {
             store.dispatch(
-                resetAppState(state)
+                restoreAppState(state)
             );
         }
         else

@@ -2,11 +2,13 @@
 import store from "../service/store"
 import { navigateView } from "../actions/view"
 
-export default function (model)
+import uri from "../util/uri"
+
+export default function (url)
 {
     store.dispatch(
         navigateView({
-            url: model.url
+            url: uri(url)
         })
     );
 }

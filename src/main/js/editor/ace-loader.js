@@ -19,7 +19,7 @@ const AceAPI = {
             return Promise.resolve(theAPI);
         }
 
-        return System.import("./ace-api")
+        return System.import(/* webpackChunkName: "ace" */ "./ace-api")
             .then((module) =>
             {
                 return theAPI = module;

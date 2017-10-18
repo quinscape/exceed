@@ -4,26 +4,24 @@ import Modal from "react-bootstrap/lib/Modal";
 import i18n from "../../../service/i18n";
 import GlyphButton from "../common/GlyphButton";
 
-
 // Tabelle mit den Anfangswochentag eines Monats relativ zum AnfangsWochentag des Jahres
-var relDay4Month=[-2, 0, 3, 3,  6, 1, 4,  6, 2, 5,  0, 3, 5];
-var daysInMonth=[null, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+const relDay4Month = [-2, 0, 3, 3, 6, 1, 4, 6, 2, 5, 0, 3, 5];
+const daysInMonth = [null, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
-var inputDate=null;
+const inputDate = null;
 
-var dateRE = /^([0-9]?[0-9])\.([0-9]?[0-9])\.([0-9][0-9][0-9][0-9])$/;
+const dateRE = /^([0-9]?[0-9])\.([0-9]?[0-9])\.([0-9][0-9][0-9][0-9])$/;
 
 //var $month,$year,$prevMonth,$nextMonth,$prevYear,$nextYear, $btToday, $btClose;
 
-var lastValue,timer;
+let lastValue, timer;
 
-var dayName = [i18n("CAL_MO"), i18n("CAL_TU"), i18n("CAL_WE"), i18n("CAL_TH"), i18n("CAL_FR"), i18n("CAL_SA"), i18n("CAL_SU")];
-var monthName = [null, i18n("CAL_JAN"), i18n("CAL_FEB"), i18n("CAL_MAR"), i18n("CAL_APR"), i18n("CAL_MAY"), i18n("CAL_JUN"), i18n("CAL_JUL"), i18n("CAL_AUG"), i18n("CAL_SEP"), i18n("CAL_OCT"), i18n("CAL_NOV"), i18n("CAL_DEC")];
-
+const dayName = [i18n("CAL_MO"), i18n("CAL_TU"), i18n("CAL_WE"), i18n("CAL_TH"), i18n("CAL_FR"), i18n("CAL_SA"), i18n("CAL_SU")];
+const monthName = [null, i18n("CAL_JAN"), i18n("CAL_FEB"), i18n("CAL_MAR"), i18n("CAL_APR"), i18n("CAL_MAY"), i18n("CAL_JUN"), i18n("CAL_JUL"), i18n("CAL_AUG"), i18n("CAL_SEP"), i18n("CAL_OCT"), i18n("CAL_NOV"), i18n("CAL_DEC")];
 
 function dayOfWeek(day,month,year)
 {
-    var dayOfWeek=year + (year>>2) + relDay4Month[month] + day;
+    let dayOfWeek = year + (year >> 2) + relDay4Month[month] + day;
     if ( isLeapYear(year) && month < 3)
     {
         dayOfWeek--;
@@ -38,7 +36,7 @@ function dayOfWeek(day,month,year)
 
 function twoDigits(s)
 {
-    if (typeof s == "string")
+    if (typeof s === "string")
     {
         s = +s;
     }
@@ -55,9 +53,9 @@ function twoDigits(s)
 
 function dayHeaders()
 {
-    var dayHeaders = [];
+    const dayHeaders = [];
 
-    for (var i=0; i < 7; i++)
+    for (let i=0; i < 7; i++)
     {
         dayHeaders.push(
             <th key={ i }>
@@ -70,7 +68,7 @@ function dayHeaders()
 
 function isLeapYear(year)
 {
-    return ((year & 3 === 0) && (year % 100 != 0)) || (year % 400 == 0);
+    return ((year & 3 === 0) && (year % 100 !== 0)) || (year % 400 === 0);
 }
 
 function internalDate(day, month,year)
@@ -82,16 +80,19 @@ function internalDate(day, month,year)
     }
 }
 
-/**
+const INITIAL_STATE = {
+    opened: false,
+    current: internalDate(),
+    selected: internalDate()
+};
+
+
+    /**
  * Internal calendar widget component used by Field
  */
 class CalendarField extends React.Component
 {
-    state = {
-        opened: false,
-        current: internalDate(),
-        selected: internalDate()
-    };
+    state = INITIAL_STATE;
 
     getInputField ()
     {
@@ -111,50 +112,50 @@ class CalendarField extends React.Component
 */
     calendarRows ()
     {
-        var current = this.state.current;
-        var selected = this.state.selected;
+        const current = this.state.current;
+        const selected = this.state.selected;
 
-        var month = current.month;
-        var year = current.year;
-        var day = current.day;
+        const month = current.month;
+        const year = current.year;
+        const day = current.day;
 
-        var date=new Date();
-        var todayMonth = date.getMonth()+1;
-        var todayYear = date.getFullYear();
-        var todayDay = date.getDate();
+        const date = new Date();
+        const todayMonth = date.getMonth() + 1;
+        const todayYear = date.getFullYear();
+        const todayDay = date.getDate();
 
-        var firstDay = dayOfWeek(1, month, year);
+        const firstDay = dayOfWeek(1, month, year);
 
-        var correctMonth = selected.month == month && selected.year == year;
-        var currentMonth = todayMonth == month && todayYear == year;
+        const correctMonth = selected.month === month && selected.year === year;
+        const currentMonth = todayMonth === month && todayYear === year;
 
-        var days=daysInMonth[month];
+        let days = daysInMonth[month];
 
-        if (isLeapYear(year) && month == 2)
+        if (isLeapYear(year) && month === 2)
         {
             days++;
         }
 
-        var currentDay = -(firstDay-1);
+        let currentDay = -(firstDay - 1);
 
 //        console.log("correctMonth", correctMonth);
 
-        var rows = [];
+        const rows = [];
         do
         {
-            var cells=[];
-            for (var i=0; i < 7; i++)
+            const cells = [];
+            for (let i=0; i < 7; i++)
             {
 
-                var content;
+                let content;
                 if (currentDay < 1 || currentDay > days)
                 {
                     content = "\u00a0";
                 }
                 else
                 {
-                    var isToday = currentMonth && currentDay == todayDay;
-                    var isSelectedDay = correctMonth && currentDay == selected.day;
+                    const isToday = currentMonth && currentDay === todayDay;
+                    const isSelectedDay = correctMonth && currentDay === selected.day;
                     content = (
                         <a
                             className={
@@ -192,23 +193,23 @@ class CalendarField extends React.Component
         return rows;
     }
 
-    onClickDay (ev)
+    onClickDay = (ev) =>
     {
-        var clickedDay = +ev.target.dataset.day;
+        const clickedDay = +ev.target.dataset.day;
 
-        var selected = this.state.selected;
-        var current = this.state.current;
+        const selected = this.state.selected;
+        const current = this.state.current;
 
         //console.log(day, selected);
 
         this.setState({
             selected: internalDate( clickedDay, current.month, current.year)
         })
-    }
+    };
 
-    open ()
+    open = () =>
     {
-        var date = new Date(this.props.valueLink.value);
+        let date = new Date(this.props.value);
 
         if (isNaN(date.valueOf()))
         {
@@ -216,21 +217,21 @@ class CalendarField extends React.Component
             date = new Date();
         }
 
-        var selectedMonth = date.getMonth()+1;
-        var selectedYear = date.getFullYear();
-        var selectedDay = date.getDate();
+        const selectedMonth = date.getMonth() + 1;
+        const selectedYear = date.getFullYear();
+        const selectedDay = date.getDate();
 
         this.setState({
             current: internalDate(null, selectedMonth, selectedYear),
             selected: internalDate(selectedDay,selectedMonth,selectedYear),
             opened: true
         });
-    }
+    };
 
-    close ()
+    close = () =>
     {
-        this.setState(this.getInitialState());
-    }
+        this.setState(INITIAL_STATE);
+    };
 
     renderCalendar ()
     {
@@ -255,10 +256,10 @@ class CalendarField extends React.Component
 
     moveCurrent(monthDelta, yearDelta)
     {
-        var current = this.state.current;
+        const current = this.state.current;
 
-        var month = current.month + monthDelta;
-        var year = current.year + yearDelta;
+        let month = current.month + monthDelta;
+        let year = current.year + yearDelta;
 
         while (month > 12)
         {
@@ -280,7 +281,7 @@ class CalendarField extends React.Component
 
     renderControls ()
     {
-        var current = this.state.current;
+        const current = this.state.current;
         return (
                 <div className="controls">
                     <GlyphButton glyphicon="fast-backward" glyphOnly={ true } text={ i18n("Previous Year") } onClick={ (ev) => { this.moveCurrent(0, -1);} }/>
@@ -294,11 +295,11 @@ class CalendarField extends React.Component
         )
     }
 
-    select ()
+    select = () =>
     {
-        var date = new Date(this.props.valueLink.value);
+        const date = new Date(this.props.value);
 
-        var selected = this.state.selected;
+        const selected = this.state.selected;
 
         date.setDate(selected.day);
         date.setMonth(selected.month - 1);
@@ -308,19 +309,21 @@ class CalendarField extends React.Component
 
         this.props.onChange( date.toISOString() );
 
-    }
+    };
+
+    onChange = ev => this.props.onChange(ev.target.value);
 
     render ()
     {
-        var opened = this.state.opened;
+        const opened = this.state.opened;
         return (
             <div className="input-group">
                 <input
                     id={ this.props.id }
                     ref={ elem => this._input = elem}
                     className="form-control"
-                    value={ this.props.valueLink.value }
-                    onChange={ ev => this.props.valueLink.requestChange(ev.target.value) }
+                    value={ this.props.value }
+                    onChange={ this.onChange }
                     onBlur={ (ev) => {
                     this.props.onChange( ev.target.value)
                 } }

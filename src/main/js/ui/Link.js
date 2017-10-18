@@ -1,16 +1,17 @@
 import React from "react";
 import ActionComponent from "./ActionComponent";
+import PropTypes from 'prop-types'
 
 
 class Link extends React.Component
 {
 
     static propTypes = {
-        text: React.PropTypes.string,
-        icon: React.PropTypes.string,
-        href: React.PropTypes.string,
-        onClick: React.PropTypes.func,
-        progressive: React.PropTypes.bool
+        text: PropTypes.string,
+        icon: PropTypes.string,
+        href: PropTypes.string,
+        onClick: PropTypes.func,
+        progressive: PropTypes.bool
     }
 
     render()

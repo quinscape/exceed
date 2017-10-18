@@ -10,11 +10,14 @@ var pre = React.createFactory("pre");
 var ul = React.createFactory("ul");
 var li = React.createFactory("li");
 var a = React.createFactory("a");
+var span = React.createFactory("span");
 var p = React.createFactory("p");
 
 var ErrorStackParser = require("error-stack-parser");
 
-var ErrorReport = React.createClass({
+var createReactClass = require("create-react-class");
+
+var ErrorReport = createReactClass({
 
     getDefaultProps: function ()
     {
@@ -45,7 +48,7 @@ var ErrorReport = React.createClass({
                                 {
                                     key: index
                                 },
-                                a(
+                                span(
                                     {
                                         href: "view-source:" + entry.fileName,
                                         target: "exceed-source"

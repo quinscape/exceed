@@ -6,13 +6,14 @@
             "classes" : [ "element", "iterative-context", "model-aware"],
 
             "vars": {
-                "orderBy": "prop('orderBy')",
+                "orderBy": "props.orderBy",
                 "filter": "{}",
                 "offset": "0",
-                "limit": "prop('limit')"
+                "limit": "props.limit",
+                "params": "props.params"
             },
             "queries": {
-                "result": "query( prop('type').fields(childModelNames()) ).filter( prop('filter') && combineChildFilters() ).orderBy( var('orderBy') ).limit( var('limit') ).offset( var('offset'))"
+                "result": "query( prop('type').fields( childFieldRefs()) ).filter( prop('filter') && combineChildFilters() ).orderBy( var('orderBy') ).limit( var('limit') ).offset( var('offset')).params(var('params'))"
             },
             "propTypes": {
                 "type": {
@@ -38,7 +39,14 @@
                 "limit": {
                     "description" : "Maximum number of rows to display per page.",
                     "client": false,
-                    "type": "INTEGER"
+                    "type": "INTEGER",
+                    "defaultValue" : "10"
+                },
+                "params": {
+                    "description" : "SQL Parameters for query type queries",
+                    "client": false,
+                    "type": "MAP",
+                    "defaultValue" : "{}"
                 }
             },
             "propWizards" : {
@@ -48,16 +56,16 @@
                     "description": "Open Query join dialog for complex queries"
                 }
             },
-            "providesContext" : "DataListCursor",
+            "providesContext" : "DataCursor",
             "childRule" : "component('DataGrid.Column')",
             "parentRule" : "!parentHasClass('iterative-context')"
         },
         "DataGrid.Column": {
-            "providesContext" : "DataGrid.Field",
+            "providesContext" : "DataCursor",
             "propTypes": {
                 "name": {
                     "description" : "Field name for this column",
-
+                    "type" : "FIELD_REFERENCE",
                     "rule": "fieldOf(parent.prop('type'))",
                     "required" : true
                 },
@@ -75,8 +83,9 @@
                 },
 
                 "context" : {
-                    "context": "context.getCursor([props.name])",
-                    "contextType" : "DataListCursor"
+                    "type" : "CURSOR_EXPRESSION",
+                    "defaultValue" : "context[props.name]",
+                    "contextType" : "DataCursor"
                 }
             },
             "templates" : [{

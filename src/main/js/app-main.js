@@ -2,72 +2,78 @@
 // load our global-undo to patch MouseTrap
 //
 //noinspection JSUnusedLocalSymbols
-import MouseTrap from "./util/global-undo";
+
 import { Promise } from "es6-promise-polyfill"
 import { evaluateEmbedded, findBundles } from "./util/startup"
+import { hydrateAppState } from "./actions/reset"
+import rootReducer from "./reducers/index"
 
 import domready from "domready"
 
 import createStore from "./create-store"
 
 import StoreHolder from "./service/store";
+import {
+    getActionNames,
+    getAppName,
+    getAuthentication,
+    getConnectionId,
+    getContextPath,
+    getDomainData
+} from "./reducers"
+import security from "./service/security"
+import Services from "./services"
+import svgLayout from "./gfx/svg-layout"
+
 const initialState = evaluateEmbedded("root-data", "x-ceed/view-data");
 StoreHolder._init(null, initialState);
 
-import { getActionNames, getAppName, getAuthentication, getConnectionId, getContextPath, getDomain} from "./reducers"
-import security from "./service/security"
-
 //console.log("Initial state", initialState);
-
-import Services from "./services"
 
 const store = createStore(rootReducer, initialState);
 StoreHolder._init(store, null);
+
+const state = StoreHolder.getState();
+
+const sys = require("./sys");
+const domainService = require("./service/domain");
+const actionService = require("./service/action");
+
+sys.init( getContextPath(state), getAppName(state));
+domainService.init(getDomainData(state));
+
+const actions = getActionNames(state);
+//console.info("Server actions", actions);
+actionService.initServerActions(actions);
+actionService.registerFromRequireContext(
+    require.context("./action/", true, /\.js$/)
+);
+
+const componentService = require("./service/component");
+componentService.registerFromRequireContext(
+    require.context("./components/std/", true, /\.js(on)?$/)
+);
+
+store.dispatch(hydrateAppState(initialState));
 
 const auth = getAuthentication(initialState);
 security.init(auth.userName, auth.roles);
 
 const viewService = require("./service/view").default;
 
-const sys = require("./sys");
-
-const componentService = require("./service/component");
-const actionService = require("./service/action");
-
-const domainService = require("./service/domain");
 const hub = require("./service/hub");
 const appNavHistory = require("./service/app-history").default;
 
-import svgLayout from "./gfx/svg-layout"
-
-import hotReload from "./service/hotreload"
-
-import rootReducer from "./reducers"
-
-componentService.registerFromRequireContext(
-    require.context("./components/std/", true, /\.js(on)?$/)
-);
-
-actionService.registerFromRequireContext(
-    require.context("./action/", true, /\.js$/)
-);
 
 domready(function ()
 {
 
     //console.log("DOMREADY");
 
-    const state = StoreHolder.getState();
-
-    sys.init( getContextPath(state), getAppName(state));
-    domainService.init(getDomain(state));
-
-    const actions = getActionNames(state);
-    //console.info("Server actions", actions);
-    actionService.initServerActions(actions);
 
     // set correct public path for dynamic module loading.
     const scriptResourcePath = sys.contextPath + "/res/" + sys.appName + "/js/";
+    // noinspection JSUndeclaredVariable
     __webpack_public_path__ = scriptResourcePath;
 
     // async setup
@@ -76,21 +82,26 @@ domready(function ()
         hub.init(getConnectionId(state))
     ]).then(function ()
     {
+        console.log("enter main");
+
         appNavHistory.init();
         appNavHistory.update(store.getState());
         return viewService.render(store);
     })
-        .then(function ()
-        {
-            const scripts = findBundles(scriptResourcePath);
+    .then(function ()
+    {
+        console.log("init done");
+        const scripts = findBundles(scriptResourcePath);
 
-            console.info("READY: Loaded " + scripts.join(", "), "( "+ new Date().toISOString() +" )");
-        })
-    // .catch(function (e)
-    // {
-    //     console.error(e);
-    // });
+        console.info("READY: Loaded " + scripts.join(", "), "( "+ new Date().toISOString() +" )");
+    })
+    .catch(function (e)
+    {
+        console.error(e);
+    });
 });
 
-
-export default Services
+// This export will be available as "Exceed" in the browser environment of the runnign application
+// traditional export to not have a .default in the browser env
+// noinspection JSUnusedGlobalSymbols
+module.exports = Services;

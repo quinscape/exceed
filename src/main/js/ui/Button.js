@@ -1,14 +1,15 @@
 import React from "react";
 import ActionComponent from "./ActionComponent";
 
+import PropTypes from 'prop-types'
 
 class Button extends React.Component
 {
     static propTypes = {
-        text: React.PropTypes.string,
-        icon: React.PropTypes.string,
-        onClick: React.PropTypes.func
-    }
+        text: PropTypes.string,
+        icon: PropTypes.string,
+        onClick: PropTypes.func
+    };
 
     render()
     {

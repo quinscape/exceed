@@ -1,18 +1,22 @@
+import assign from "object-assign"
+
 import { combineReducers } from "redux"
 import { APP_RESET } from "../actions"
 
 import scope from "./scope";
 import component from "./component";
+import formState from "./form-state";
 import meta from "./meta";
 import inpage from "./inpage";
 
-import view from "./view";
+import resetReducer from "./reset"
 
 const appReducers = combineReducers({
 
     scope,
     component,
     inpage,
+    formState,
 
     // READ-ONLY STATE
     meta
@@ -23,20 +27,22 @@ const appReducers = combineReducers({
  */
 function rootReducer(state,action)
 {
-
-    const { type } = action;
-    // handle central view update replacement
-    if (type === APP_RESET)
+    if (action.type === APP_RESET)
     {
-        return view(state, action);
+        return resetReducer(state, action);
     }
 
-    return appReducers(state,action);
+    const newState = appReducers(state,action);
+
+    //console.log("NEW-STATE", newState);
+
+    return newState;
 }
 
 export * from "./component"
 export * from "./scope"
 export * from "./meta"
 export * from "./inpage"
+export * from "./form-state"
 
 export default rootReducer;

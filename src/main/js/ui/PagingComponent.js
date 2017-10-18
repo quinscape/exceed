@@ -1,8 +1,6 @@
 import React from "react";
 import hasClass from "../util/has-class";
-import classnames from "classnames";
-"use strict";
-
+import cx from "classnames";
 
 class PagingLink extends React.Component
 {
@@ -10,11 +8,11 @@ class PagingLink extends React.Component
     {
         // check disabled class to make sure we're not executing a link in case the CSS pointer event rule
         // doesn't catch
-        var classes = ev.target.className;
+        const classes = ev.target.className;
 
         if (!hasClass(classes, "disabled"))
         {
-            console.log("offsetLink", this.props.ctx.offsetLink);
+            console.log("offsetLink", this.props.ctx.offsetLink, this.props.newOffset);
             this.props.ctx.offsetLink.requestChange( this.props.newOffset );
         }
         ev.preventDefault();
@@ -23,16 +21,16 @@ class PagingLink extends React.Component
     render()
     {
 
-        var newOffset = this.props.newOffset;
+        let newOffset = this.props.newOffset;
 
-        var ctx = this.props.ctx;
-        var rowCount = ctx.rowCount;
-        var limit = ctx.limit;
-        var offsetLink = ctx.offsetLink;
-        var max = ctx.maxOffset;
+        const ctx = this.props.ctx;
+        const rowCount = ctx.rowCount;
+        const limit = ctx.limit;
+        const offsetLink = ctx.offsetLink;
+        const max = ctx.maxOffset;
 
-        var disabled = false;
-        var isCurrent = newOffset === offsetLink.value;
+        let disabled = false;
+        const isCurrent = newOffset === offsetLink.value;
         if (isCurrent)
         {
             disabled = true;
@@ -53,7 +51,7 @@ class PagingLink extends React.Component
         {
             return (
                 <span
-                    className={ classnames({
+                    className={ cx({
                         "btn": true,
                         "btn-link": true,
                         "disabled": true,
@@ -68,7 +66,7 @@ class PagingLink extends React.Component
             <a
                 onClick={ (e) => this.onClick(e) }
                 href={ "#jump-to-" + newOffset }
-                className={ classnames({
+                className={ cx({
                     "btn": true,
                     "btn-link": true,
                 }) }>
@@ -84,11 +82,11 @@ class PagingComponent extends React.Component
 
     render()
     {
-        var rowCount = this.props.rowCount;
-        var limit = this.props.limit;
-        var offset = this.props.offsetLink.value;
+        const rowCount = this.props.rowCount;
+        const limit = this.props.limit;
+        const offset = this.props.offsetLink.value;
 
-        var max = Math.floor((rowCount - 1) / limit) * this.props.limit;
+        const max = Math.floor((rowCount - 1) / limit) * this.props.limit;
 
         // if we have nothing to page, don't render anything
         if (max === 0)
@@ -96,26 +94,27 @@ class PagingComponent extends React.Component
             return false;
         }
 
-        var ctx = {
+        const ctx = {
             limit: this.props.limit,
             rowCount: this.props.rowCount,
             offsetLink: this.props.offsetLink,
             maxOffset: max
         };
 
-        var links = [
-            <PagingLink key={"first"} newOffset={0} label="|<" ctx={ ctx } />,
-            <PagingLink key={"prev"} newOffset={offset - limit} label="<" ctx={ ctx } />
+        const links = [
+            <PagingLink key={"first"} newOffset={0} label="|<" ctx={ctx}/>,
+            <PagingLink key={"prev"} newOffset={offset - limit} label="<" ctx={ctx}/>
         ];
 
-        var page, currentPage = ((offset/limit)|0) + 1;
-        for (var i = -2; i <= 2; i++)
+        let page;
+        const currentPage = ((offset / limit) | 0) + 1;
+        for (let i = -2; i <= 2; i++)
         {
             page = currentPage + i;
 
-            var newOffset = offset + i * limit;
+            const newOffset = offset + i * limit;
 
-            var label = page > 0 && newOffset >= 0 && newOffset <= max ? page : "\u00a0";
+            const label = page > 0 && newOffset >= 0 && newOffset <= max ? page : "\u00a0";
 
             links.push(
                 <PagingLink key={i} newOffset={ newOffset } label={ label } ctx={ ctx }/>

@@ -2,21 +2,7 @@
 //XXX: port 2 new version, only import fixed
 import DataGraph from "../../../domain/graph";
 import omit from "../../../util/omit";
-
-const React = require("react");
-const update = require("react-addons-update");
-const LinkedStateMixin = require("react-addons-linked-state-mixin");
-const assign = require("object-assign");
-
 import DomainEditorGraph from "./DomainEditorGraph";
-const DomainTypeForm = require("./DomainTypeForm");
-const EnumTypeForm = require("./EnumTypeForm");
-const NamedSelector = require("./NamedSelector");
-const MergeModal = require("./MergeModal");
-
-const SelectField = require("../../std/form/SelectField");
-const Toolbar = require("../../std/form/Toolbar");
-
 import actionService from "../../../service/action"
 import domainService from "../../../service/domain"
 import i18n from "../../../service/i18n"
@@ -28,12 +14,25 @@ import AutoHeight from "../../../ui/AutoHeight"
 
 import Dialog from "../../../util/dialog";
 import firstProp from "../../../util/firstProp"
-const keys = require("../../../util/keys");
 import notify from "../../../util/notify"
 import Settings from "../../../util/settings"
 import ValueLink from "../../../util/value-link"
-const values = require("../../../util/values");
 import Enum from "../../../util/enum";
+
+const React = require("react");
+const update = require("immutability-helper");
+const assign = require("object-assign");
+
+const DomainTypeForm = require("./DomainTypeForm");
+const EnumTypeForm = require("./EnumTypeForm");
+const NamedSelector = require("./NamedSelector");
+const MergeModal = require("./MergeModal");
+
+const SelectField = require("../../std/form/SelectField");
+const Toolbar = require("../../std/form/Toolbar");
+
+const keys = require("../../../util/keys");
+const values = require("../../../util/values");
 
 const EditingType = new Enum({
     NONE: true,
@@ -101,7 +100,7 @@ function mapToName(type)
 
 var DomainEditor = AutoHeight(class DomainEditor extends React.Component {
 
-    static mixins = [LinkedStateMixin];
+    //static mixins = [LinkedStateMixin];
 
     newUndoState(partial, cb)
     {

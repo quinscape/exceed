@@ -1,77 +1,28 @@
 import React from "react";
 import cx from "classnames";
 import DataCursor from "../../../domain/cursor"
-import DataGraph, { validateDataGraph } from "../../../domain/graph"
-
-import Scope from "../../../service/scope";
+import { validateDataGraph } from "../../../domain/graph"
+import { getFormConfig } from "../../../reducers/form-state"
 import domainService from "../../../service/domain"
-import FormContext from "../../../util/form-context";
-import LinkedStateMixin from "react-addons-linked-state-mixin";
+import store from "../../../service/store"
+
+import PropTypes from 'prop-types'
 
 import renderWithContext from "../../../util/render-with-context";
 
-function objectToDataGraph(input)
-{
-    const typeName = input._type;
-    const domainType = Scope.objectType(typeName);
-
-    const cols = {};
-    const obj = {};
-    for (let name in input)
-    {
-        if (input.hasOwnProperty(name))
-        {
-            if (name === "_type")
-            {
-                obj[name] = input[name];
-            }
-            else
-            {
-                const qualified = typeName + "." + name;
-                obj[qualified] = input[name];
-                cols[qualified] = {
-                    type: typeName,
-                    name: name
-                };
-            }
-        }
-    }
-
-    return {
-        type : "ARRAY",
-        types: {
-            [typeName] : domainType
-        },
-        columns: cols,
-        rootObject: [ obj ],
-        isMap: false,
-        count: 1
-    };
-}
 
 class Form extends React.Component
 {
-
-    static contextTypes = {
-        formContext: React.PropTypes.instanceOf(FormContext)
-    };
-
-    // childContextTypes: {
-    //     formContext: React.PropTypes.instanceOf(FormContext)
-    // },
-
     static propTypes = {
-        data: React.PropTypes.object.isRequired,
-        horizontal: React.PropTypes.bool,
-        labelClass: React.PropTypes.string,
-        wrapperClass: React.PropTypes.string,
-        path: React.PropTypes.array
+        data: PropTypes.object.isRequired,
+        horizontal: PropTypes.bool,
+        labelClass: PropTypes.string,
+        wrapperClass: PropTypes.string,
+        path: PropTypes.array
     };
 
     static defaultProps = {
         horizontal: true,
-        labelClass: "col-md-2",
-        wrapperClass: "col-md-4",
         path: [0]
     };
 
@@ -84,7 +35,7 @@ class Form extends React.Component
 
         if (validateDataGraph(data))
         {
-            return new DataCursor(domainService.getDomainTypes(), data, this.props.path);
+            return new DataCursor(domainService.getDomainData(), data, this.props.path);
         }
         else if (data instanceof DataCursor)
         {
@@ -92,7 +43,11 @@ class Form extends React.Component
         }
         else if (data._type)
         {
-                return new DataCursor(domainService.getDomainTypes(), objectToDataGraph(data), this.props.path);
+            return new DataCursor(
+                domainService.getDomainData(),
+                objectToDataGraph(data),
+                this.props.path
+            );
         }
         else
         {
@@ -129,10 +84,13 @@ class Form extends React.Component
 
     render()
     {
-        const ctx = this.context.formContext;
-        const cursor = this.cursorFromData(this.props.data);
+        const state = store.getState();
+
+        const cursor = DataCursor.from(this.props.data);
+        const cfg = getFormConfig(state, this.props.id);
+
         return (
-            <form className={ cx( ctx && ctx.horizontal ? "form-horizontal" : "form") } onSubmit={ this.onSubmit }>
+            <form className={ cx( cfg.horizontal ? "form-horizontal" : "form") } onSubmit={ this.onSubmit }>
                 { renderWithContext(this.props.children, cursor) }
             </form>
         );

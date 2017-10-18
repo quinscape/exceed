@@ -5,13 +5,19 @@
             "name": "name",
             "type": "PlainText",
             "domainType": "Foo",
-            "data": 1
+            "data": 1,
+            "config" : {
+                "queryName" : "q"
+            }
         },
         "num": {
             "name": "num",
             "type": "Integer",
             "domainType": "Foo",
-            "data": 2
+            "data": 2,
+            "config" : {
+                "queryName" : "q"
+            }
         }
     },
     "rootObject": [

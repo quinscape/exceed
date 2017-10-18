@@ -3,7 +3,6 @@
 //
 //noinspection JSUnusedLocalSymbols
 import aceLoader from "./editor/ace-loader"
-import MouseTrap from "./util/global-undo";
 import Event from "./util/event";
 import { Promise } from "es6-promise-polyfill"
 import { getEditorView } from "./reducers/editor/editorView"
@@ -21,18 +20,22 @@ import domready from "domready"
 import createStore from "./create-store"
 
 import StoreHolder from "./service/store";
-const initialState = evaluateEmbedded("root-data", "x-ceed/view-data");
-StoreHolder._init(null, initialState);
-
-import { getAppName, getAuthentication, getConnectionId, getContextPath, getDomain} from "./reducers"
+import { getAppName, getAuthentication, getConnectionId, getContextPath, getDomainData } from "./reducers"
 import { syncEditor } from "./actions/editor/editorView"
 import security from "./service/security"
 
 import UndoManager from "./editor/UndoManager"
+import Services from "./services"
+import sys from "./sys";
+
+import domainService from "./service/domain"
+import i18n from "./service/i18n"
+import svgLayout from "./gfx/svg-layout"
+
+const initialState = evaluateEmbedded("root-data", "x-ceed/view-data");
+StoreHolder._init(null, initialState);
 
 //console.log("Initial state", initialState);
-
-import Services from "./services"
 
 const store = createStore(rootReducer, initialState, [ UndoManager.middleWare ]);
 StoreHolder._init(store, null);
@@ -42,15 +45,8 @@ security.init(auth.userName, auth.roles);
 
 const Editor = require("./editor/Editor").default;
 
-import sys from "./sys";
-
-import domainService from "./service/domain"
 const hub = require("./service/hub");
-import i18n from "./service/i18n"
 const editorNavHistory = require("./editor/nav-history").default;
-
-import svgLayout from "./gfx/svg-layout"
-
 
 domready(function ()
 {
@@ -59,11 +55,12 @@ domready(function ()
     const state = StoreHolder.getState();
 
     sys.init( getContextPath(state), getAppName(state));
-    domainService.init(getDomain(state));
+    domainService.init(getDomainData(state));
 
     // set correct public path for dynamic module loading.
     const scriptResourcePath = sys.contextPath + "/res/" + sys.appName + "/js/";
-    var __webpack_public_path__ = scriptResourcePath;
+    // noinspection JSUndeclaredVariable
+    __webpack_public_path__ = scriptResourcePath;
 
     // async setup
     Promise.all([

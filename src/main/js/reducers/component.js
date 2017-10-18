@@ -1,6 +1,6 @@
 import assign from "object-assign";
 
-import { COMPONENT_UPDATE } from "../actions/view";
+import { COMPONENT_UPDATE } from "../actions/component";
 
 export default function(componentState = {}, action)
 {

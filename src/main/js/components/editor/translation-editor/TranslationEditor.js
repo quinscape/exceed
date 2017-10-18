@@ -1,6 +1,6 @@
 const React = require("react");
 
-const update = require("react-addons-update");
+const update = require("immutability-helper");
 const assign = require("object-assign");
 
 const keys = require("../../../util/keys");
@@ -29,6 +29,8 @@ const cx = require("classnames");
 const MAX = 20;
 
 const DEFAULT_SORT = "tag";
+
+const createReactClass = require("create-react-class");
 
 function mapTranslationEntryToName(entry)
 {
@@ -365,7 +367,7 @@ function mapByValues(values)
     }
     return map;
 }
-var TranslationEditor = React.createClass({
+var TranslationEditor = createReactClass({
 
     getInitialState: function ()
     {

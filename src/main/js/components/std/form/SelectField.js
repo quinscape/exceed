@@ -4,8 +4,7 @@ import { validateDataGraph } from "../../../domain/graph";
 import domainService from "../../../service/domain";
 import FormElement from "./FormElement";
 
-
-const SelectField = FormElement(class {
+const SelectField = FormElement(class extends React.PureComponent{
 
     static displayName = "SelectField";
 
@@ -22,7 +21,7 @@ const SelectField = FormElement(class {
         {
             //console.log("RENDER DATA LIST OPTIONS");
             array = new DataCursor(
-                    domainService.getDomainTypes(),
+                    domainService.getDomainData(),
                     input,
                     []
                 )
@@ -52,11 +51,11 @@ const SelectField = FormElement(class {
 
         if (array)
         {
-            //console.log("RENDER ARRAY");
 
             let firstElement = array[0];
             if (firstElement && typeof firstElement === "object")
             {
+                console.log("RENDER DISPLAY/VALUE", array);
                 return (
                     array.map(
                         (o, idx) => <option key={ idx } value={ o.value }>{ o.display }</option>
@@ -65,6 +64,7 @@ const SelectField = FormElement(class {
             }
             else
             {
+                console.log("RENDER VALUE", array);
                 return (
                     array.map(
                         (o, idx) => <option key={ idx } value={ o }>{ o }</option>
@@ -76,22 +76,26 @@ const SelectField = FormElement(class {
         throw new Error("Unhandled input: " + input);
     }
 
+    onChange = ev => this.props.onChange( ev.target.value);
+
     render()
     {
-        const value = this.props.valueLink.value;
+        const { value, id, disabled } = this.props;
 
         //console.log("SELECT VALUE", value);
 
         return (
             <select
-                id={ this.props.id }
-                ref={ elem => this._input = elem}
+                id={ id }
+                ref={ elem => this._input = elem }
                 className="form-control"
                 value ={ value }
-                disabled={ this.props.disabled }
-                onChange={ (ev) => this.props.onChange( ev.target.value) }
+                disabled={ disabled }
+                onChange={ this.onChange }
             >
-                { this.options(value) }
+            {
+                this.options(value)
+            }
             </select>
         )
     }

@@ -19,7 +19,7 @@ export default function (model)
 
     if (data instanceof DataCursor)
     {
-        model.object = data.getDomainObject(model.type);
+        model.object = data.extractObjects();
     }
     else if (data._type)
     {

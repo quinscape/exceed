@@ -1,5 +1,4 @@
-const immutableUpdate = require("react-addons-update");
-const assign = require("object-assign");
+import assign from "object-assign"
 
 let count = 0;
 
@@ -15,6 +14,8 @@ class FormContext {
      */
     constructor(horizontal, labelClass, wrapperClass, updateAction)
     {
+        //console.log("NEW FORM-CONTEXT");
+
         this.id = ++count;
         this.fieldIdCount = 0;
 
@@ -25,6 +26,8 @@ class FormContext {
         this._errorMessages = null;
 
         this.update = updateAction;
+
+        this.timerId = false;
     }
 
     nextId()
@@ -55,6 +58,8 @@ class FormContext {
         newErrors[id] = error;
         this.errors = newErrors;
 
+        //console.log("ERRORS", this.errors);
+
         if (this._errorMessages)
         {
             this._errorMessages.forceUpdate();
@@ -84,7 +89,11 @@ class FormContext {
     getErrorMessage(id)
     {
         const errors = this.errors;
-        return errors.hasOwnProperty(id) && errors[id];
+        const messages = errors.hasOwnProperty(id) && errors[id];
+
+        //console.log("getErrorMessage", id, messages);
+
+        return messages;
     }
 
     deregister(id)

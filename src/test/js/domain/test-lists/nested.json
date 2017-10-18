@@ -5,40 +5,62 @@
             "name": "name",
             "type": "PlainText",
             "domainType": "Foo",
-            "data": 1
+            "data": 1,
+            "config" : {
+                "queryName" : "q"
+            }
         },
         "num": {
             "name": "num",
             "type": "Integer",
             "domainType": "Foo",
-            "data": 2
+            "data": 2,
+            "config" : {
+                "queryName" : "q"
+            }
+
         },
         "embedded": {
             "name": "embedded",
             "type": "DomainType",
             "typeParam": "Embedded",
             "domainType": "Foo",
-            "data": 3
+            "data": 3,
+            "config" : {
+                "queryName" : "e"
+            }
+
         },
         "bars": {
             "name": "bars",
             "type": "List",
             "typeParam": "Bar",
             "domainType": "Foo",
-            "data": 4
+            "data": 4,
+            "config" : {
+                "queryName" : "bars"
+            }
+
         },
         "bazes": {
             "name": "bazes",
             "type": "Map",
             "typeParam": "Baz",
             "domainType": "Foo",
-            "data": 5
+            "data": 5,
+            "config" : {
+                "queryName" : "bazes"
+            }
+
         },
         "joinedName": {
             "name": "name",
             "type": "PlainText",
             "domainType": "Joined",
-            "data" : 9
+            "data" : 9,
+            "config" : {
+                "queryName" : "q2"
+            }
         }
     },
     "rootObject": [
@@ -55,7 +77,8 @@
             "bazes": {
                 "one": {"num": 1},
                 "two": {"num": 2}
-            }
+            },
+            "joinedName" : null
         },
         {
             "name": "TestFoo #2",
@@ -70,7 +93,8 @@
             "bazes": {
                 "three": {"num": 3},
                 "four": {"num": 4}
-            }
+            },
+            "joinedName" : null
         }
     ],
     "count" : 2

@@ -1,27 +1,26 @@
 import React from "react"
-import { Provider, connect } from 'react-redux'
+import { Provider } from 'react-redux'
 
 import { render } from "react-dom"
 import { Promise } from "es6-promise-polyfill"
 import security from "./security"
 import store from "./store"
+import { updateScopeCursor } from "../actions/scope"
+import { getComponentData, getScopeGraph, getViewModel, getFormState } from "../reducers"
+import { ThrobberComponent } from "../ui/throbber"
+import Dialog from "../util/dialog"
+import ComponentSubscription from "../util/ComponentSubscription"
+import RTView from "../service/runtime-view-api"
+import viewRenderer from "./view-renderer"
+import FormProvider from "../ui/FormProvider"
+
 var componentService = require("./component");
-
-import { setScopeValue } from "../actions/scope"
-import { getViewModel, getScopeGraph, getComponentData } from "../reducers"
-
 
 let InPageEditor = false;
 if (process.env.USE_EDITOR)
 {
     InPageEditor = require("../editor/InPageEditor");
 }
-
-import { ThrobberComponent } from "../ui/throbber"
-import Dialog from "../util/dialog"
-import ComponentSubscription from "../util/ComponentSubscription"
-import viewRenderer from "./view-renderer"
-import FormProvider from "../ui/FormProvider"
 
 // maps logical view names to view components. Used as a cache to make sure we only generate every view once per version
 // we encounter.
@@ -83,32 +82,44 @@ function getTitle(props)
     return props.model.title;
 }
 
-function viewStateSelector()
-{
-
-}
+let rtView = new RTView(null, store);
 
 const ViewComponent = ComponentSubscription(
     class ViewComponent extends React.Component
     {
         static displayName = "ViewComponent";
 
+        updateScope = (cursor,value) => {
+
+            store.dispatch(
+                updateScopeCursor(cursor, value)
+            );
+        };
+
         render()
         {
             const { store } = this.props;
-
+            
             return (
-                <FormProvider store={ store } update={ setScopeValue }>
-                    { lookupRenderFn(store)(this) }
+                <div>
+                    <ErrorBoundary>
+                    {
+                        lookupRenderFn(store)(this, rtView)
+                    }
                     <PreviewMarker store={ store }/>
-                </FormProvider>
+                </div>
             );
         }
     },
     (oldState, newState) =>
-        getViewModel(oldState) === getViewModel(newState) &&
-        getScopeGraph(oldState) === getScopeGraph(newState) &&
-        getComponentData(oldState) === getComponentData(newState)
+        (
+            getViewModel(oldState) === getViewModel(newState) &&
+            getScopeGraph(oldState) === getScopeGraph(newState) &&
+            getComponentData(oldState) === getComponentData(newState) &&
+            getFormState(oldState) === getFormState(newState)
+        ) ||
+        // we ignore updates without formState
+        getFormState(newState) === null
 );
 
 const viewService = {
@@ -134,7 +145,7 @@ const viewService = {
                 <Provider store={ store }>
                     <div>
                     <ViewComponent store={ store } />
-                    { security.hasRole("ROLE_EDITOR") && <InPageEditor store={ store } /> }
+                    { security.hasRole("ROLE_EDITOR") && InPageEditor && <InPageEditor store={ store } /> }
                     <ThrobberComponent/>
                     { Dialog.render() }
                     </div>

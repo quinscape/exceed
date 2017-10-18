@@ -1,6 +1,6 @@
 import store from "../service/store"
-import domainService from "../service/domain"
-import { getScopeGraph, getScopeDirty, getDomainTypes } from "../reducers"
+import { updateScope } from "../actions/scope"
+import { getDomainData, getScopeDirty, getScopeGraph } from "../reducers"
 
 import { DataGraph, getColumnType } from "../domain/graph"
 import DataCursor from "../domain/cursor"
@@ -27,7 +27,7 @@ const Scope = {
         const scope = DataGraph(
             getScopeGraph(state)
         );
-        return new DataCursor(domainService.getDomainTypes(), scope, [ name ]);
+        return new DataCursor(getDomainData(state), scope, typeof name === "string" ? [ name ] : name );
     },
 
     propertyType: function (name)
@@ -40,7 +40,7 @@ const Scope = {
         return getColumnType(scope, name);
     },
 
-    getScopeUpdate: function ()
+    getScopeDelta: function ()
     {
         const state = store.getState();
         const names = keys(getScopeDirty(state));
@@ -48,15 +48,21 @@ const Scope = {
         const values = {};
 
         const scope = getScopeGraph(state);
-        const domainTypes = getDomainTypes(state);
 
         for (let i = 0; i < names.length; i++)
         {
             const name = names[i];
-            values[name] = new DataCursor(domainTypes, scope, [ name ]).get();
+            values[name] = new DataCursor(getDomainData(state), scope, [ name ]).get();
         }
         return values;
+    },
+
+    update: function (path, value)
+    {
+        store.dispatch(
+            updateScope(path, value)
+        );
     }
-}
+};
 
 export default Scope
