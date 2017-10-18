@@ -1,4 +1,7 @@
 // shelljs ( https://github.com/shelljs/shelljs )
+
+import "./webpack"
+
 import React from "react"
 import shell from "shelljs"
 import fs from "fs"
@@ -8,6 +11,7 @@ import renderDoc from "./doc/renderDoc"
 import IndexPage from "./doc/IndexPage"
 import ModelDocs from "./doc/ModelDocs"
 import ComponentDocs from "./doc/ComponentDocs"
+import ExpressionDocs from "./doc/ExpressionDocs"
 import ComponentClassIndex from "./doc/ComponentClassIndex"
 
 const  MODEL_DOCS_PATH = "../src/main/base/resources/js/model-docs.json";
@@ -85,6 +89,11 @@ const content = [
         name: "component",
         title: "Component Docs",
         component: <ComponentDocs data={ componentData }/>
+    },
+    {
+        name: "expression",
+        title: "Expression Docs",
+        component: <ExpressionDocs definitions={ modelDocsData.definitions }/>
     },
     {
         name: "class-index",

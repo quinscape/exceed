@@ -4,6 +4,8 @@ import endsWith from "../../src/main/js/util/endsWith";
 import Icon from "../../src/main/js/ui/Icon";
 import cx from "classnames";
 
+import PropTypes from 'prop-types'
+
 import React from "react"
 
 function sortByName(a,b)
@@ -27,8 +29,13 @@ const getSortedProps = Memoizer(doc => {
 
 function Description({ value, prefix = "", className })
 {
+    if (!value && !prefix)
+    {
+        return false;
+    }
+
     return (
-        value && <div className={ cx("description", className) } dangerouslySetInnerHTML={{__html: prefix + value}} />
+        <div className={ cx("description", className) } dangerouslySetInnerHTML={{__html: prefix + value}} />
     )
 }
 
@@ -111,7 +118,9 @@ function Section(type, docs)
                             <tr key={ propDoc.name + "sub" } >
                                 <td colSpan={3}>
                                     {
-                                        propDoc.subTypeDocs.map(subType => Section(subType, docs))
+                                        propDoc.subTypeDocs.map(subType =>  {
+                                            return Section(subType, docs)
+                                        })
                                     }
                                 </td>
                             </tr>
@@ -154,8 +163,8 @@ function Navigation(props)
 class ModelDocs extends React.Component {
 
     static propTypes = {
-        locations: React.PropTypes.array.isRequired,
-        modelDocs: React.PropTypes.object.isRequired
+        locations: PropTypes.array.isRequired,
+        modelDocs: PropTypes.object.isRequired
     };
 
     render()

@@ -32,14 +32,16 @@ public class GenerateComponentClasses
         cu.accept(v, null);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("/**  \n" +
+        sb.append("/**\n" +
             " * These are special component descriptor signal classes that are used for purposes other than " +
             "completion checking.\n" +
-            " * \n" +
-            " * MODULE IS AUTO-GENERATED. DO NOT EDIT. \n" +
+            " *\n" +
+            " * MODULE IS AUTO-GENERATED. DO NOT EDIT.\n" +
             " * ( Edit de.quinscape.exceed.model.component.ComponentClasses instead )\n" +
+            " *\n" +
+            " * @type {{" + getJsDoc(v.getDefinitions()) + "}}\n" +
             " */\n" +
-            "module.exports = {\n");
+            "const ComponentClasses = {\n");
 
         for (Iterator<Definition> iterator = v.getDefinitions().iterator(); iterator.hasNext(); )
         {
@@ -59,7 +61,7 @@ public class GenerateComponentClasses
             sb.append("\n");
 
         }
-        sb.append("};\n");
+        sb.append("};\n\nexport default ComponentClasses\n");
 
         FileUtils.writeStringToFile(
             new File("./src/main/js/components/component-classes.js"),
@@ -68,6 +70,26 @@ public class GenerateComponentClasses
         );
 
     }
+
+
+    private String getJsDoc(List<Definition> definitions)
+    {
+        final StringBuilder sb = new StringBuilder();
+
+        for (Iterator<Definition> iterator = definitions.iterator(); iterator.hasNext(); )
+        {
+            Definition definition = iterator.next();
+            sb.append(definition.getName()).append(": string");
+
+            if (iterator.hasNext())
+            {
+                sb.append(", ");
+            }
+        }
+
+        return sb.toString();
+    }
+
 
     public static class Visitor
     extends VoidVisitorAdapter<Object>

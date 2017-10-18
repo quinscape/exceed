@@ -4,6 +4,9 @@
 // be providing these so it stops warning about undefined variables.
     window.__DEV = true;
     window.__PROD = false;
+    window.__SERVER = false;
+
+    window.__webpack_public_path__ = "";
 
     window.System = {
         /**

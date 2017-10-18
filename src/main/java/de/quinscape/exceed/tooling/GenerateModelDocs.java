@@ -2,6 +2,9 @@ package de.quinscape.exceed.tooling;
 
 import com.github.javaparser.ParseException;
 import de.quinscape.exceed.expression.ASTExpression;
+import de.quinscape.exceed.model.AbstractModel;
+import de.quinscape.exceed.model.AbstractTopLevelModel;
+import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.annotation.DocumentedMapKey;
@@ -12,7 +15,7 @@ import de.quinscape.exceed.model.component.ComponentPackageDescriptor;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.model.expression.ExpressionValueType;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
-import de.quinscape.exceed.runtime.config.ModelConfiguration;
+import de.quinscape.exceed.runtime.js.def.Definitions;
 import de.quinscape.exceed.runtime.model.ModelLocationRule;
 import de.quinscape.exceed.runtime.model.ModelLocationRules;
 import de.quinscape.exceed.runtime.util.JSONUtil;
@@ -21,6 +24,8 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.svenson.info.JSONClassInfo;
@@ -92,7 +97,7 @@ public class GenerateModelDocs
      */
     private Map<Class<?>, JavaDocs> docsMap = new HashMap<>();
 
-    private ModelLocationRules modelLocationRules;
+    private ModelLocationRules modelLocationRules = new ModelLocationRules();
 
 
     public ModelDocs getModelDocs()
@@ -126,7 +131,7 @@ public class GenerateModelDocs
     {
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(true);
         provider.addIncludeFilter(new AssignableTypeFilter(Object.class));
-        Set<BeanDefinition> candidates = provider.findCandidateComponents(Model.class.getPackage().getName());
+        Set<BeanDefinition> candidates = provider.findCandidateComponents(AbstractModel.class.getPackage().getName());
 
         Set<Class<? extends TopLevelModel>> topLevelModels = new TreeSet<>(new ClassComparator());
 
@@ -135,17 +140,17 @@ public class GenerateModelDocs
             Class<?> cls = Class.forName(definition.getBeanClassName());
             do
             {
-                if (TopLevelModel.class.isAssignableFrom(cls) && cls.getAnnotation(Internal.class) == null)
+                if (AbstractTopLevelModel.class.isAssignableFrom(cls) && cls.getAnnotation(Internal.class) == null)
                 {
                     topLevelModels.add((Class<? extends TopLevelModel>) cls);
                 }
                 collectJavadocs(cls);
 
-            } while ((cls = cls.getSuperclass()) != null && Model.class.isAssignableFrom(cls));
+            } while ((cls = cls.getSuperclass()) != null && AbstractModel.class.isAssignableFrom(cls));
         }
 
 
-        topLevelModels.remove(TopLevelModel.class);
+        topLevelModels.remove(AbstractTopLevelModel.class);
         return topLevelModels;
     }
 
@@ -154,7 +159,7 @@ public class GenerateModelDocs
     {
         try
         {
-            final String modelType = Model.getType(cls);
+            final String modelType = Model.findType(cls);
             if (modelType == null)
             {
                 return null;
@@ -193,7 +198,10 @@ public class GenerateModelDocs
 
             for (JSONPropertyInfo info : classInfo.getPropertyInfos())
             {
-                if (info == null || info.isIgnore() || (JSONUtil.findAnnotation(info, Internal.class) != null))
+                final String propName = info.getJsonName();
+
+                if (info == null || info.isIgnore() || (JSONUtil.findAnnotation(info, Internal.class) != null) || propName.equals(
+                    AutoVersionedModel.IDENTITY_GUID) || propName.equals(AutoVersionedModel.VERSION_GUID) )
                 {
                     continue;
                 }
@@ -202,7 +210,6 @@ public class GenerateModelDocs
                 final Class<Object> typeHint = info.getTypeHint();
 
 
-                final String propName = info.getJsonName();
 
                 String propertyDescription = cleanupDoc(findPropertyDoc(cls, (JavaObjectPropertyInfo) info));
 
@@ -406,7 +413,7 @@ public class GenerateModelDocs
         StringBuilder sb = new StringBuilder();
         for (ModelLocationRule rule : getModelLocationRules().getRules())
         {
-            if (rule.getType().equals(Model.getType(cls)))
+            if (rule.getType().equals(Model.findType(cls)))
             {
                 if (!first)
                 {
@@ -454,10 +461,6 @@ public class GenerateModelDocs
 
     public ModelLocationRules getModelLocationRules()
     {
-        if (modelLocationRules == null)
-        {
-            modelLocationRules = new ModelConfiguration().modelLocationRules();
-        }
         return modelLocationRules;
     }
 
@@ -478,6 +481,15 @@ public class GenerateModelDocs
         {
             throw new ExceedRuntimeException(e);
         }
+    }
+
+
+    public Definitions getExpressionDocs()
+    {
+        final ConfigurableApplicationContext ctx = SpringApplication.run(ExpressionDocBaseConfiguration.class);
+
+        return ctx.getBean(Definitions.class);
+
     }
 
 
@@ -517,6 +529,7 @@ public class GenerateModelDocs
         final String json = JSONBuilder.buildObject()
             .property("locations", generator.getModelLocationRules().getRules())
             .property("modelDocs", generator.getModelDocs())
+            .property("definitions", generator.getExpressionDocs())
             .output();
 
         FileUtils.writeStringToFile(new File(args[0]), json, "UTF-8");
