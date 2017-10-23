@@ -1,4 +1,10 @@
-export default function(propType)
+/**
+ *
+ * @param propType      property model structure
+ * @param [asClass]     {boolean} true if the ouput is to be embedded in a HTML class attribute
+ * @returns {*}
+ */
+export default function(propType, asClass)
 {
     const { type, typeParam } = propType;
 
@@ -12,7 +18,7 @@ export default function(propType)
             }
             else
             {
-                return type + "<" + typeParam + ">";
+                return type + ( asClass ? "-" + typeParam : "<" + typeParam + ">");
             }
 
         case "DomainType":
