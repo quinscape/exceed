@@ -103,6 +103,9 @@
     position: absolute;
     top: 0;
     left: -2000px;
+    overflow: hidden;
+    width: 100px;
+    height: 100px;
 }
 
 .entity thead tr {

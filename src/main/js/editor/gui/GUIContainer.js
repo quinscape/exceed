@@ -45,26 +45,24 @@ class GUIContainer extends React.Component
         height: PropTypes.number,
         style: PropTypes.object,
         zoom: PropTypes.bool,
+        pan: PropTypes.bool,
         onInteraction: PropTypes.func
-    }
+    };
 
     static childContextTypes = {
         containerContext: PropTypes.instanceOf(ContainerContext)
-    }
+    };
 
-    getDefaultProps()
-    {
-        return {
-            centerX : 0,
-            centerY : 0,
-            width: "100%",
-            height: 600,
-            style: null,
-            zoom: true,
-            onInteraction: null
-        };
-
-    }
+    static defaultProps = {
+        centerX : 0,
+        centerY : 0,
+        width: "100%",
+        height: 600,
+        style: null,
+        zoom: true,
+        pan: true,
+        onInteraction: null
+    };
 
     getChildContext()
     {
@@ -79,7 +77,7 @@ class GUIContainer extends React.Component
 
     componentDidMount()
     {
-        console.log("GUIContainer mount");
+        //console.log("GUIContainer mount");
 
         GUIContext.update();
 
@@ -212,20 +210,23 @@ class GUIContainer extends React.Component
         return Event.preventDefault(ev);
     }
 
-    onMouseDown(ev)
+    onMouseDown = ev =>
     {
         this.dragLocked = true;
 
-        var x = GUIContext.applyZoom(ev.pageX);
-        var y = GUIContext.applyZoom(ev.pageY);
+        if (this.props.pan)
+        {
+            var x = GUIContext.applyZoom(ev.pageX);
+            var y = GUIContext.applyZoom(ev.pageY);
 
-        this.offsetX = this.centerX + x;
-        this.offsetY = this.centerY + y;
+            this.offsetX = this.centerX + x;
+            this.offsetY = this.centerY + y;
+        }
 
         GlobalDrag.setActiveDrag(this);
 
         return Event.preventDefault(ev);
-    }
+    };
 
     onMouseMove(x, y)
     {
@@ -242,18 +243,18 @@ class GUIContainer extends React.Component
 
                 var dist = Math.sqrt( dx * dx + dy * dy);
 
-                console.log("LOCKED MOVE", dist);
+                //console.log("LOCKED MOVE", dist);
 
                 if (dist > 2)
                 {
-                    //console.log("ACTIVATE DRAG");
                     this.dragLocked = false;
+                    //console.log("ACTIVATE DRAG");
                 }
             }
 
             if (!this.dragLocked)
             {
-                console.log("CONTAINER MOVE", x,y);
+                //console.log("CONTAINER MOVE", x,y);
 
                 this.centerX = x;
                 this.centerY = y;
@@ -265,7 +266,7 @@ class GUIContainer extends React.Component
 
     onMouseUp(x, y)
     {
-        if (GlobalDrag.isActiveDrag(this))
+        if (GlobalDrag.isActiveDrag(this) || !this.props.pan)
         {
             x = this.offsetX - GUIContext.applyZoom(x);
             y = this.offsetY - GUIContext.applyZoom(y);
@@ -289,16 +290,17 @@ class GUIContainer extends React.Component
 
     render()
     {
-        var viewBox;
-        var width = this.props.width;
+        const { width, height, centerX, centerY, style, children, pan } = this.props;
+
+        let viewBox;
 
         if (typeof this.centerX === "number")
         {
-            viewBox = new ViewBox(this.centerX, this.centerY, this.props.height);
+            viewBox = new ViewBox(this.centerX, this.centerY, height);
         }
         else
         {
-            viewBox = new ViewBox(this.props.centerX, this.props.centerY, this.props.height);
+            viewBox = new ViewBox(centerX, centerY, height);
         }
 
         return (
@@ -306,8 +308,8 @@ class GUIContainer extends React.Component
                 <svg
                     ref={ elem => this.ctx.init(elem) }
                     width={ width }
-                    height={ this.props.height }
-                    style={ this.props.style }
+                    height={ height }
+                    style={ style }
                     viewBox={ viewBox.render() }
                     preserveAspectRatio="xMidYMid meet"
                 >
@@ -326,7 +328,7 @@ class GUIContainer extends React.Component
                         onMouseDown={ this.onMouseDown }
                         onTouchStart={ this.onMouseDown }
                     />
-                    { this.props.children }
+                    { children }
 
                 </svg>
             </div>

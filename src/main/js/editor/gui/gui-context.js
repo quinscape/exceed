@@ -1,6 +1,5 @@
-const assign = require("object-assign");
-const React = require("react");
-const ReactDOM = require("react-dom");
+import React from "react";
+import ReactDOM from "react-dom";
 
 import UIState from "./ui-state";
 
@@ -9,89 +8,12 @@ const elements = {};
 const CONTAINER_ID = "focus-proxy-container";
 const ZOOM_FACTOR = 8;
 
-var zoom = ZOOM_FACTOR;
+let zoom = ZOOM_FACTOR;
 
-var updateTimerId;
-var proxyContainer;
+let updateTimerId;
+let proxyContainer;
 
-class FocusProxies extends React.Component
-{
-    onFocus(ev)
-    {
-        var id = ev.target.dataset.id;
-        GUIContext._setElementState(id, UIState.FOCUSED);
-    }
-    onBlur(ev)
-    {
-        var id = ev.target.dataset.id;
-        GUIContext._setElementState(id, UIState.NORMAL);
-    }
-
-    onUpdate()
-    {
-        this.forceUpdate();
-    }
-
-    render()
-    {
-        //console.log("render proxies", this.props.elements);
-        var proxies = [];
-        var elements = this.props.elements;
-        for (var id in elements)
-        {
-            if (elements.hasOwnProperty(id))
-            {
-                var elem = elements[id];
-                var isDisabled = elem.uiState === UIState.DISABLED;
-                //console.log("render proxy", elem, isDisabled);
-                proxies.push(
-                    React.createElement(
-                        isDisabled ? "span" : "a", {
-                            key: id,
-                            href:"#",
-                            "data-id": id,
-                            onClick: isDisabled ? null : elem.onInteraction
-                        },
-                        id
-                    )
-                );
-            }
-        }
-
-
-        return (
-            <div onFocusCapture={ this.onFocus } onBlurCapture={ this.onBlur }>
-                { proxies }
-            </div>
-        );
-    }
-}
-
-function getProxyContainer()
-{
-    if (!proxyContainer)
-    {
-        proxyContainer = document.createElement("div");
-        proxyContainer.setAttribute("id", CONTAINER_ID);
-        document.body.appendChild(proxyContainer);
-    }
-    return proxyContainer;
-}
-
-function renderProxies()
-{
-    updateTimerId = null;
-    var proxyContainer = getProxyContainer();
-
-    ReactDOM.render(React.createElement(FocusProxies, {
-        elements: elements
-    }), proxyContainer/*, function ()
-    {
-        console.log("proxies updated");
-    }*/);
-}
-
-var GUIContext = {
+const GUIContext = {
     UIState : UIState,
     update: function ()
     {
@@ -104,18 +26,20 @@ var GUIContext = {
     },
     _register: function (guiElem)
     {
-        var id = guiElem.props.id;
+        const id = guiElem.props.id;
 
         //console.log("_register", id);
 
-        var elem = elements[id];
+        let elem = elements[id];
         if (!elem)
         {
             elem = {
                 id : guiElem.props.id,
                 uiState : guiElem.props.uiState,
                 onUpdate : guiElem.props.onUpdate,
-                onInteraction : guiElem.props.onInteraction
+                onFocus : guiElem.props.onFocus,
+                onInteraction : guiElem.props.onInteraction,
+                data : guiElem.props.data
             };
             elements[id] = elem;
 
@@ -127,11 +51,11 @@ var GUIContext = {
     },
     _deregister: function (guiElem)
     {
-        var id = guiElem.props.id;
+        const id = guiElem.props.id;
 
         //console.log("_deregister", id);
 
-        var elem = elements[id];
+        let elem = elements[id];
         if (!elem)
         {
             throw new Error("Id '" + id + "' is not registered");
@@ -146,7 +70,7 @@ var GUIContext = {
     },
     getElementState: function(id, defaultUiState)
     {
-        var elem = elements[id];
+        let elem = elements[id];
         if (!elem)
         {
             return defaultUiState;
@@ -156,7 +80,7 @@ var GUIContext = {
     },
     focus: function(id)
     {
-        var elem = proxyContainer.firstChild;
+        let elem = proxyContainer.firstChild;
         while (elem)
         {
             if (elem.getAttribute("data-id") === id)
@@ -175,17 +99,22 @@ var GUIContext = {
             throw new Error("Invalid ui state " + uiState);
         }
 
-        var elem = elements[id];
+        let elem = elements[id];
         if (!elem)
         {
             throw new Error("Id '" + id + "' is not registered");
+        }
+
+        if (uiState === UIState.FOCUSED && elem.onFocus)
+        {
+            elem.onFocus();
         }
 
         elem.uiState = uiState;
 
         if (!noUpdate)
         {
-            elem.onUpdate.call(null);
+            elem.onUpdate && elem.onUpdate.call(null);
         }
     },
     setZoom: function (newZoom)

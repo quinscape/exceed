@@ -15,14 +15,11 @@ import assign from "object-assign";
  */
 class GUIElement extends React.Component
 {
-    getDefaultProps()
-    {
-        return {
+    static defaultProps = {
             uiState: UIState.NORMAL,
             dragThreshold: 2,
             draggable: true
-        };
-    }
+    };
 
     static propTypes = {
         id: PropTypes.string.isRequired,
@@ -30,14 +27,16 @@ class GUIElement extends React.Component
         style: PropTypes.object,
         uiState: PropTypes.oneOf(UIState.values()),
         onInteraction: PropTypes.func,
-        onUpdate: PropTypes.func.isRequired,
+        onUpdate: PropTypes.func,
         draggable: PropTypes.bool,
-        dragThreshold: PropTypes.number
-    }
+        onFocus: PropTypes.func,
+        data: PropTypes.any,
+        dragThreshold: PropTypes.number,
+    };
 
     static contextTypes = {
         containerContext: PropTypes.instanceOf(ContainerContext)
-    }
+    };
 
 
     componentDidMount()
@@ -68,7 +67,7 @@ class GUIElement extends React.Component
         }
     }
 
-    onMouseDown(ev)
+    onMouseDown = ev =>
     {
         var layout = this.props.position;
 
@@ -89,7 +88,7 @@ class GUIElement extends React.Component
         return false;
     }
 
-    onMouseMove(x, y)
+    onMouseMove = (x, y) =>
     {
         if (GlobalDrag.isActiveDrag(this))
         {
