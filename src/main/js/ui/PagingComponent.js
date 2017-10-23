@@ -12,7 +12,7 @@ class PagingLink extends React.Component
 
         if (!hasClass(classes, "disabled"))
         {
-            console.log("offsetLink", this.props.ctx.offsetLink, this.props.newOffset);
+            //console.log("offsetLink", this.props.ctx.offsetLink, this.props.newOffset);
             this.props.ctx.offsetLink.requestChange( this.props.newOffset );
         }
         ev.preventDefault();

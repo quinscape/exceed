@@ -28,7 +28,7 @@ class ActionComponent extends Component {
     {
         const { text, onClick, disabled, href, progressive } = this.props;
 
-        console.log({ text, onClick, disabled, href, progressive });
+        //console.log({ text, onClick, disabled, href, progressive });
 
         try
         {
@@ -44,7 +44,7 @@ class ActionComponent extends Component {
             {
                 if (progressive)
                 {
-                    console.log("progressive link", href);
+                    //console.log("progressive link", href);
                     store.dispatch(
                         navigateView({
                             url: href

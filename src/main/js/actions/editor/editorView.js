@@ -31,7 +31,7 @@ export function searchModel(filter)
             searchTerm: filter
         }).then((results) =>
         {
-            console.log(results);
+//            console.log(results);
 
             dispatch({
                 type: EDITOR_MODEL_SEARCH_RESULT,

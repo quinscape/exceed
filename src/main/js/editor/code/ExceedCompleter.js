@@ -81,7 +81,7 @@ class ExceedCompleter
 
     insertMatch = (editor, completion) =>
     {
-        console.log("INSERT MATCH", completion);
+//        console.log("INSERT MATCH", completion);
 
         const completer = this;
 
@@ -174,7 +174,7 @@ class ExceedCompleter
         {
             const completion = completions[i];
 
-            console.log("PREPARE COMPLETION", completion);
+//            console.log("PREPARE COMPLETION", completion);
 
             const type = completion.type;
 
@@ -287,7 +287,7 @@ class ExceedCompleter
         const componentModel = walkComponent(model.content[contentName], indexPath);
 
         const componentName = componentModel.name;
-        console.log("loc", loc, loc.parentPath[0].model.name, componentName);
+//        console.log("loc", loc, loc.parentPath[0].model.name, componentName);
 
         const propName = loc.attr;
 

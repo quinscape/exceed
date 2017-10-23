@@ -237,7 +237,7 @@ var DomainEditor = AutoHeight(class DomainEditor extends React.Component {
 
     editType(name, index)
     {
-        console.log("editType", name, index);
+        //console.log("editType", name, index);
 
         this.setState({
             editing: name,
@@ -298,7 +298,7 @@ var DomainEditor = AutoHeight(class DomainEditor extends React.Component {
             }
         ]}).then((result) => {
 
-            console.log("Dialog result", result);
+            //console.log("Dialog result", result);
 
             if (result.choice)
             {
@@ -413,11 +413,11 @@ var DomainEditor = AutoHeight(class DomainEditor extends React.Component {
     {
         var actionModel = this.createUpdateActionModel();
 
-        console.log("UPDATE DOMAIN", actionModel);
+        //console.log("UPDATE DOMAIN", actionModel);
 
         actionService.execute(actionModel).then((result) =>
             {
-                console.log("UPDATE DOMAIN RESULT", result);
+//                console.log("UPDATE DOMAIN RESULT", result);
 
                 if (result.ok)
                 {
@@ -473,7 +473,7 @@ var DomainEditor = AutoHeight(class DomainEditor extends React.Component {
     {
         mergeLocations = mergeLocations || this.state.mergeLocations;
 
-        console.log("OPEN", isOpen, "MERGE LOCATIONS", mergeLocations);
+//        console.log("OPEN", isOpen, "MERGE LOCATIONS", mergeLocations);
 
         this.setState({
             mergeOpen: isOpen,
@@ -525,7 +525,7 @@ var DomainEditor = AutoHeight(class DomainEditor extends React.Component {
             }
         }
 
-        console.log("MERGED TYPES", withUpdatedVersion);
+//        console.log("MERGED TYPES", withUpdatedVersion);
 
         this.replaceUndoState({
             dataGraph: cursor.set(null, withUpdatedVersion),

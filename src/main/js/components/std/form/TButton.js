@@ -66,9 +66,6 @@ class TButton extends React.Component
                 transition,
                 objects
             )
-            .then(function () {
-                console.log("TRANSITION END")
-            })
             // .catch(function(err)
             // {
             //     console.log("TRANSITION FAIL");
@@ -99,7 +96,7 @@ class TButton extends React.Component
                 onClick={ this.onClick }
             >
 
-                { icon && <span className={ "glyphicon glyphicon-" + icon }></span>}
+                { icon && <span className={ "glyphicon glyphicon-" + icon }/> }
                 { " " + text }
             </button>
         );

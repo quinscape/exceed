@@ -69,7 +69,7 @@ domready(function ()
         hub.init(getConnectionId(state))
     ]).then(function ( [ ace ] )
     {
-        console.log(ace);
+//        console.log(ace);
 
         const state = store.getState();
         editorNavHistory.init();

@@ -14,7 +14,7 @@ class FormBlock extends React.Component
     {
         const { data, value, children} = this.props;
 
-        console.log({ data, value, children});
+//        console.log({ data, value, children});
 
         return (
             <div className="form-block">

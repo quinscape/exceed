@@ -12,7 +12,7 @@ export function restoreEditorState(state)
 
 export function resetEditorView(editorView)
 {
-    console.log("RESET TO", editorView);
+//    console.log("RESET TO", editorView);
 
     return {
         type: EDITOR_RESET_VIEW,

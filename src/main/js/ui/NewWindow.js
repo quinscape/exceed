@@ -18,7 +18,7 @@ class NewWindow extends React.Component {
         const wasOpened = prevState && prevState.opened;
         const isOpened = this.state && this.state.opened;
 
-        console.log("componentDidUpdate", wasOpened, isOpened);
+        //console.log("componentDidUpdate", wasOpened, isOpened);
 
         if (!wasOpened && isOpened)
         {

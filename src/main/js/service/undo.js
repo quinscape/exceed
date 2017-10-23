@@ -126,7 +126,7 @@ UndoHandler.prototype.newState = function (state, done)
 
 UndoHandler.prototype.replaceState = function (state, done)
 {
-    console.log("REPLACE STATE", state);
+    //console.log("REPLACE STATE", state);
     this.states[this.ptr] = state;
     this.stateCallback(state, done || noOp);
 

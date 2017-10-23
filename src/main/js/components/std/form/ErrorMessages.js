@@ -14,7 +14,7 @@ class ErrorMessages extends React.Component
         const formComponent = findParent(this.props.model, isFormComponent);
 
         const errors = getFormErrors(state, formComponent ? formComponent.attrs.id : null);
-        console.log("ERRORS", errors);
+//        console.log("ERRORS", errors);
 
         return (
             !!errors.length &&

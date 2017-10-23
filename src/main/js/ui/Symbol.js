@@ -75,7 +75,7 @@ class Symbol extends React.Component
         const symbol = this.props.symbols[symbolName];
         const layer = this.props.layer;
 
-        console.log("SYMBOL", symbol);
+        //console.log("SYMBOL", symbol);
 
         const effectiveStyle = !this.props.style ? symbol.styles[symbolName] : assign(
             {},

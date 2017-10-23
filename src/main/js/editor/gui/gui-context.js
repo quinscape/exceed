@@ -203,4 +203,80 @@ var GUIContext = {
 
 };
 
+class FocusProxies extends React.Component
+{
+    onFocus(ev)
+    {
+        const id = ev.target.dataset.id;
+        GUIContext._setElementState(id, UIState.FOCUSED);
+    }
+    onBlur(ev)
+    {
+        const id = ev.target.dataset.id;
+        GUIContext._setElementState(id, UIState.NORMAL);
+    }
+
+    onUpdate()
+    {
+        this.forceUpdate();
+    }
+
+    render()
+    {
+        //console.log("render proxies", this.props.elements);
+        const proxies = [];
+        const elements = this.props.elements;
+        for (let id in elements)
+        {
+            if (elements.hasOwnProperty(id))
+            {
+                const elem = elements[id];
+                const isDisabled = elem.uiState === UIState.DISABLED;
+                //console.log("render proxy", elem, isDisabled);
+                proxies.push(
+                    React.createElement(
+                        isDisabled ? "span" : "a", {
+                            key: id,
+                            href:"#",
+                            "data-id": id,
+                            onClick: isDisabled ? null : elem.onInteraction
+                        },
+                        id
+                    )
+                );
+            }
+        }
+
+        return (
+            <div onFocusCapture={ this.onFocus } onBlurCapture={ this.onBlur }>
+                { proxies }
+            </div>
+        );
+    }
+}
+
+function getProxyContainer()
+{
+    if (!proxyContainer)
+    {
+        proxyContainer = document.createElement("div");
+        proxyContainer.setAttribute("id", CONTAINER_ID);
+        document.body.appendChild(proxyContainer);
+    }
+    return proxyContainer;
+}
+
+function renderProxies()
+{
+    updateTimerId = null;
+    const proxyContainer = getProxyContainer();
+
+    ReactDOM.render(React.createElement(FocusProxies, {
+        elements: elements
+    }), proxyContainer/*, function ()
+    {
+//        console.log("proxies updated");
+    }*/);
+}
+
 export default GUIContext

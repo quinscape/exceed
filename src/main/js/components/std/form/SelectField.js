@@ -55,7 +55,7 @@ const SelectField = FormElement(class extends React.PureComponent{
             let firstElement = array[0];
             if (firstElement && typeof firstElement === "object")
             {
-                console.log("RENDER DISPLAY/VALUE", array);
+//                console.log("RENDER DISPLAY/VALUE", array);
                 return (
                     array.map(
                         (o, idx) => <option key={ idx } value={ o.value }>{ o.display }</option>
@@ -64,7 +64,7 @@ const SelectField = FormElement(class extends React.PureComponent{
             }
             else
             {
-                console.log("RENDER VALUE", array);
+//                console.log("RENDER VALUE", array);
                 return (
                     array.map(
                         (o, idx) => <option key={ idx } value={ o }>{ o }</option>

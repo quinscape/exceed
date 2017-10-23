@@ -17,7 +17,7 @@ class XMLEditor extends React.Component {
         Tokens.syncSession(store, session);
         const loc = Tokens.currentLocation(session, pos.row, pos.column, model);
 
-        console.log("intention", loc);
+//        console.log("intention", loc);
     };
 
     componentDidMount()

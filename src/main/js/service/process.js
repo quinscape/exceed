@@ -50,7 +50,7 @@ const processService = {
 
         return promise.then(function(result)
             {
-                console.log("CONFIRMATION", result);
+                //console.log("CONFIRMATION", result);
 
                 if (result && result.choice !== 1)
                 {

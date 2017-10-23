@@ -76,7 +76,7 @@ class MergeModal extends React.Component
         if (!this.props.openLink.value && nextProps.openLink.value)
         {
             var newLocations = nextProps.locationsLink.value;
-            console.log("received", newLocations);
+//            console.log("received", newLocations);
             this.setState({
                 locations: convertLocationsToInternal(newLocations)
             });

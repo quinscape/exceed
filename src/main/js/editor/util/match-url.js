@@ -10,7 +10,7 @@ import { DEFAULT_NAME, DEFAULT_TYPE} from "../editor-defaults"
  */
 export default function matchUrl(location)
 {
-    console.log("MATCH URL", location);
+//    console.log("MATCH URL", location);
 
     const current = url.parse(location, true);
 

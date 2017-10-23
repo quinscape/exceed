@@ -76,12 +76,12 @@ const Editor = ComponentSubscription(
 
         open(type,path)
         {
-            console.log({type,path});
+//            console.log({type,path});
         }
 
         save = ev =>
         {
-            console.log("SAVE");
+//            console.log("SAVE");
         };
 
 

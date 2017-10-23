@@ -159,7 +159,7 @@ class EditorViewDocument {
         {
             const newContentNames = CONTENT_NAMES(contentModel);
 
-            console.log({newContentNames});
+//            console.log({newContentNames});
             copy.contentNames = newContentNames;
 
             const newEditSessions = {
@@ -172,12 +172,12 @@ class EditorViewDocument {
 
                 if (editSession)
                 {
-                    console.log("copy session for ", name);
+//                    console.log("copy session for ", name);
                     newEditSessions[name] = editSession;
                 }
                 else
                 {
-                    console.log("new session for ", name);
+//                    console.log("new session for ", name);
                     if (!copy.model.content[name])
                     {
                         copy.model = update(copy.model, {
@@ -204,7 +204,7 @@ class EditorViewDocument {
             });
             copy.editSessions = newEditSessions;
 
-            console.log({copy});
+//            console.log({copy});
         }
 
         copy.model = update(copy.model, {

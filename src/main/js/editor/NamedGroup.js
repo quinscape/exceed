@@ -25,7 +25,7 @@ const getSortedModels = Memoizer( (map, type, icon) => {
 
 const getSortedModelsAndSubs = Memoizer( (map, type, icon, subType, subItems, subIcon) => {
 
-    console.log({type,subType,subItems});
+//    console.log({type,subType,subItems});
 
     let entries = keys(map).map(name => ({
         name,

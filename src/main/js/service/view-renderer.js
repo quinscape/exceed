@@ -417,7 +417,7 @@ export default {
     createRenderFunction : function(viewModel, components)
     {
         const code = renderViewComponentSource(viewModel, components);
-        console.log("\nRENDER-FN:\n", code);
+        //console.log("\nRENDER-FN:\n", code);
 
         try
         {
