@@ -1,6 +1,5 @@
 const PRODUCTION = (process.env.NODE_ENV === "production");
 const USE_EDITOR = (process.env.USE_EDITOR !== "false");
-const REACT_CATCH_ERRORS = !PRODUCTION && !process.env.NO_CATCH_ERRORS;
 
 const path = require("path");
 const fs = require("fs");
@@ -55,38 +54,6 @@ const babelConfig =(
         }
     )();
 
-if (REACT_CATCH_ERRORS)
-{
-    babelConfig.plugins.push(
-        ["react-transform", {
-            "transforms": [{
-                "transform": "react-transform-catch-errors",
-                // now go the imports!
-                "imports": [
-
-                    // the first import is your React distribution
-                    // (if you use React Native, pass "react-native" instead)
-                    "react",
-
-                    // the second import is the React component to render error
-                    // (it can be a local path too, like "./src/ErrorReporter")
-
-                    path.resolve("./src/main/js/ui/ErrorReport.es5.js")
-                    // the third import is OPTIONAL!
-                    // when specified, its export is used as options to the reporter.
-                    // see specific reporter's docs for the options it needs.
-
-                    // it will be imported from different files so it either has to be a Node module
-                    // or a file that you configure with Webpack/Browserify/SystemJS to resolve correctly.
-                    // for example, see https://github.com/gaearon/babel-plugin-react-transform/pull/28#issuecomment-144536185
-
-                    // , "my-reporter-options"
-                ]
-            }]
-        }]
-    );
-}
-
 
 module.exports = [
     // CLIENT SIDE CONFIGURATION
@@ -122,8 +89,7 @@ module.exports = [
                 "__PROD": PRODUCTION,
                 "__DEV": !PRODUCTION,
                 "process.env": {
-                    "USE_EDITOR": USE_EDITOR,
-                    "NO_CATCH_ERRORS": !REACT_CATCH_ERRORS
+                    "USE_EDITOR": USE_EDITOR
                 }
             }),
             new TrackUsagePlugin({
@@ -200,8 +166,7 @@ module.exports = [
                 "__DEV": !PRODUCTION,
                 "__SERVER": true,
                 "process.env": {
-                    "USE_EDITOR": USE_EDITOR,
-                    "NO_CATCH_ERRORS": !REACT_CATCH_ERRORS
+                    "USE_EDITOR": USE_EDITOR
                 }
             }),
             new webpack.IgnorePlugin(/(node-libs-browser|process|timers-browserify)/)

@@ -2,13 +2,14 @@
  * Test helper module for js dom integration. Must be required before react.
  *
  */
-var jsdom = require('jsdom');
+import { JSDOM } from "jsdom";
 
 var testDom = {
     setup: function ()
     {
         // must happen before react inclusion
-        global.document = jsdom.jsdom('<!doctype html><html><body><div class="root"></div></body></html>');
+        const dom = new JSDOM('<!doctype html><html><body><div class="root"></div></body></html>');
+        global.document = dom.window.document;
         global.window = document.defaultView;
         global.navigator = {userAgent: 'node.js', "platform" : "node.js", appName: "mocha test"};
 

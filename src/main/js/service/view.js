@@ -13,6 +13,7 @@ import ComponentSubscription from "../util/ComponentSubscription"
 import RTView from "../service/runtime-view-api"
 import viewRenderer from "./view-renderer"
 import FormProvider from "../ui/FormProvider"
+import ErrorBoundary from "../ui/ErrorBoundary"
 
 var componentService = require("./component");
 
@@ -106,6 +107,7 @@ const ViewComponent = ComponentSubscription(
                     {
                         lookupRenderFn(store)(this, rtView)
                     }
+                    </ErrorBoundary>
                     <PreviewMarker store={ store }/>
                 </div>
             );
