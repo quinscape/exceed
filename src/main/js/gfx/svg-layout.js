@@ -1,6 +1,7 @@
-var React = require("react");
-var ReactDOM = require("react-dom");
-var Promise = require("es6-promise-polyfill").Promise;
+import React from "react";
+import ReactDOM from "react-dom";
+import { Promise } from "es6-promise-polyfill";
+
 import Enum from "./../util/enum";
 
 const TEST_PHRASE = "THEqUICKbROWNFOXjUMpSOVERTHELAZydOg";
@@ -13,35 +14,44 @@ const FONT_SIZES = {
     TINY: 10
 };
 
-var createReactClass = require("create-react-class");
+const createReactClass = require("create-react-class");
 
 /**
  * Symbolic text size constants
  *
  * @type TextSize
  */
-var TextSize = new Enum(FONT_SIZES);
+const TextSize = new Enum(FONT_SIZES);
 
-var exampleTextSizes = {};
+let exampleTextSizes = {};
 
-/**
- * Our impromptu layout model for text
- *
- * @param ppc       average pixels per character for the example phrase
- * @param height    pixel height of the text element containing the test phrase
- * @constructor
- */
-function Size(ppc,height)
-{
-    this.height = height;
-    this.ppc = ppc;
+class Size {
+    /**
+     * Our impromptu layout model for text
+     *
+     * @param ppc       average pixels per character for the example phrase
+     * @param height    pixel height of the text element containing the test phrase
+     * @constructor
+     */
+    constructor(ppc,height)
+    {
+        this.height = height;
+        this.ppc = ppc;
+    }
+
+    estimateWidth(text)
+    {
+        return text.length * this.ppc;
+    }
+
 }
 
-var start;
 
-var initPromise;
+let start;
 
-var probeElems = {};
+let initPromise;
+
+const probeElems = {};
 
 /**
  * Helper module for SVG Text layout. It measures a test phrase in several sizes so that we have a rough guess what size a text is in vector units.
@@ -50,6 +60,11 @@ var probeElems = {};
  */
 export default {
     TextSize: TextSize,
+
+    /**
+     *
+     * @returns {Map.<Size>} sizes
+     */
     getExampleTextSizes: function()
     {
         return exampleTextSizes;
@@ -71,23 +86,22 @@ export default {
             {
                 try
                 {
-                    var container = document.createElement("div");
+                    const container = document.createElement("div");
                     container.style.position = "absolute";
                     container.style.left = "-2000px";
                     document.body.appendChild(container);
 
-                    var SvgLayout = createReactClass({
+                    const SvgLayout = createReactClass({
 
-                        componentDidMount: function ()
-                        {
-                            var sizes = {};
-                            var sizeNames = TextSize.values();
+                        componentDidMount: function () {
+                            const sizes = {};
+                            const sizeNames = TextSize.values();
 
-                            for (var i = 0; i < sizeNames.length; i++)
+                            for (let i = 0; i < sizeNames.length; i++)
                             {
-                                var name = sizeNames[i];
+                                const name = sizeNames[i];
 
-                                var bBox = probeElems[name].getBBox();
+                                const bBox = probeElems[name].getBBox();
                                 sizes[name] = new Size(bBox.width / TEST_PHRASE.length, bBox.height);
                             }
 
@@ -98,19 +112,18 @@ export default {
                             resolve(exampleTextSizes = sizes);
                         },
 
-                        text: function(name, idx, size)
-                        {
+                        text: function (name, idx, size) {
                             return (
-                                <text ref={ e => probeElems[name] = e } key={ idx } x="10" y={ 20 + idx * 20} fontSize={ size }>{ TEST_PHRASE }</text>
+                                <text ref={e => probeElems[name] = e} key={idx} x="10" y={20 + idx * 20}
+                                      fontSize={size}>{TEST_PHRASE}</text>
                             )
                         },
 
-                        render: function ()
-                        {
-                            var probes = [];
+                        render: function () {
+                            const probes = [];
 
-                            var idx = 0;
-                            for (var name in FONT_SIZES)
+                            let idx = 0;
+                            for (let name in FONT_SIZES)
                             {
                                 if (FONT_SIZES.hasOwnProperty(name))
                                 {
@@ -118,10 +131,9 @@ export default {
                                 }
                             }
 
-
                             return (
                                 <svg width="400" height="100">
-                                    { probes }
+                                    {probes}
                                 </svg>
                             )
                         }
