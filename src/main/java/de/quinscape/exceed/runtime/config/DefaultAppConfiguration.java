@@ -147,14 +147,14 @@ public class DefaultAppConfiguration
     {
         String contextPath = servletContext.getContextPath();
 
-        if (contextPath == null)
+        if (contextPath == null || contextPath.length() == 0)
         {
             return ROOT_NAME;
         }
 
         if (!contextPath.startsWith("/"))
         {
-            throw new IllegalStateException("Context-path must start with /");
+            throw new IllegalStateException("Context-path must start with /: " + contextPath);
         }
 
         String defaultApplicationName = contextPath.substring(1).replace('/', '_');
