@@ -6,11 +6,12 @@ package de.quinscape.exceed.domain.tables.pojos;
 
 import de.quinscape.exceed.runtime.domain.GeneratedDomainObject;
 
+import java.io.Serializable;
+import java.sql.Timestamp;
+
 import javax.annotation.Generated;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.io.Serializable;
-import java.sql.Timestamp;
 
 
 /**

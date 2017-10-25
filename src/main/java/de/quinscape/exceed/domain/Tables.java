@@ -7,8 +7,6 @@ package de.quinscape.exceed.domain;
 import de.quinscape.exceed.domain.tables.AppState;
 import de.quinscape.exceed.domain.tables.AppTranslation;
 import de.quinscape.exceed.domain.tables.AppUser;
-import de.quinscape.exceed.domain.tables.Bar;
-import de.quinscape.exceed.domain.tables.Foo;
 import de.quinscape.exceed.domain.tables.PersistentLogins;
 
 import javax.annotation.Generated;
@@ -41,16 +39,6 @@ public class Tables {
 	 * The table public.app_user
 	 */
 	public static final AppUser APP_USER = de.quinscape.exceed.domain.tables.AppUser.APP_USER;
-
-	/**
-	 * The table public.bar
-	 */
-	public static final Bar BAR = de.quinscape.exceed.domain.tables.Bar.BAR;
-
-	/**
-	 * The table public.foo
-	 */
-	public static final Foo FOO = de.quinscape.exceed.domain.tables.Foo.FOO;
 
 	/**
 	 * The table public.persistent_logins
