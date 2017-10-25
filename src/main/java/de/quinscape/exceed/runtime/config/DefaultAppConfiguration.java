@@ -85,17 +85,18 @@ public class DefaultAppConfiguration
 
         componentRegistry.registerComponents(baseComponentRoot);
 
-        String realPath = servletContext.getRealPath("/components");
-        if (realPath != null)
-        {
-            log.info("Using file access for local components");
-            componentRegistry.registerComponents(new FileResourceRoot(new File(realPath), true));
-        }
-        else
-        {
-            log.info("Using servlet resource access for local components");
-            componentRegistry.registerComponents(new ServletResourceRoot(servletContext, "/components"));
-        }
+//      XXX: disable local components for now
+//        String realPath = servletContext.getRealPath("/components");
+//        if (realPath != null)
+//        {
+//            log.info("Using file access for local components");
+//            componentRegistry.registerComponents(new FileResourceRoot(new File(realPath), true));
+//        }
+//        else
+//        {
+//            log.info("Using servlet resource access for local components");
+//            componentRegistry.registerComponents(new ServletResourceRoot(servletContext, "/components"));
+//        }
 
     }
 
