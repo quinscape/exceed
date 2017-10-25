@@ -1,3 +1,7 @@
+import hub from "../service/hub"
+import store from "../service/store"
+
+import { getConnectionId } from "../reducers/meta"
 
 let theAPI;
 
@@ -19,10 +23,16 @@ const AceAPI = {
             return Promise.resolve(theAPI);
         }
 
-        return System.import(/* webpackChunkName: "ace" */ "./ace-api")
-            .then((module) =>
+        const state = store.getState();
+
+        return Promise.all([
+
+                System.import(/* webpackChunkName: "ace" */ "./ace-api"),
+                hub.init(getConnectionId(state))
+            ])
+            .then((data) =>
             {
-                return theAPI = module;
+                return theAPI = data[0];
             });
     }
 };

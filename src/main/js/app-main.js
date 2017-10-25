@@ -61,7 +61,6 @@ security.init(auth.userName, auth.roles);
 
 const viewService = require("./service/view").default;
 
-const hub = require("./service/hub");
 const appNavHistory = require("./service/app-history").default;
 
 
@@ -78,27 +77,22 @@ domready(function ()
 
     // async setup
     Promise.all([
-        svgLayout.init(),
-        hub.init(getConnectionId(state))
+        svgLayout.init()
     ]).then(function ()
     {
-        console.log("enter main");
-
         appNavHistory.init();
         appNavHistory.update(store.getState());
         return viewService.render(store);
     })
     .then(function ()
     {
-        console.log("init done");
         const scripts = findBundles(scriptResourcePath);
-
         console.info("READY: Loaded " + scripts.join(", "), "( "+ new Date().toISOString() +" )");
     })
-    .catch(function (e)
-    {
-        console.error(e);
-    });
+    // .catch(function (e)
+    // {
+    //     console.error(e);
+    // });
 });
 
 // This export will be available as "Exceed" in the browser environment of the runnign application
