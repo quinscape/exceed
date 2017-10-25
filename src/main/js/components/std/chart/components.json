@@ -1,0 +1,42 @@
+{
+    "components": {
+        "RadarChart": {
+
+            "description" : "Radar chart component.",
+
+            "classes": ["element"],
+
+            "queries": {
+                "queries": "prop('queries')"
+            },
+
+            "propTypes": {
+                "queries": {
+                    "description" : "Complex query expression.",
+
+                    "client": false,
+                    "type" : "QUERY_EXPRESSION"
+                }
+            }
+        },
+        "BarChart": {
+
+            "description" : "Bar chart component.",
+
+            "classes": ["element"],
+
+            "queries": {
+                "queries": "prop('queries')"
+            },
+
+            "propTypes": {
+                "queries": {
+                    "description" : "Complex query expression.",
+
+                    "client": false,
+                    "type" : "QUERY_EXPRESSION"
+                }
+            }
+        }
+    }
+}

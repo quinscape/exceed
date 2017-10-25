@@ -1,0 +1,45 @@
+
+.chart-grid
+{
+    stroke: #ddd;
+    fill: transparent;
+}
+
+.chart-grid text
+{
+    stroke: #666;
+}
+
+.radar-chart .grid.focused
+{
+    stroke: #444;
+    fill: transparent;
+}
+
+.radar-chart .point-info
+{
+    stroke: transparent;
+    fill: transparent;
+}
+
+.radar-chart .point-info:hover
+{
+    stroke: #bbb;
+    fill: transparent;
+}
+
+.radar-chart .point-info.focused
+{
+    stroke: #888;
+    fill: transparent;
+}
+
+.radar-chart .point-info .info
+{
+    opacity: 0;
+}
+
+.radar-chart .point-info:hover .info
+{
+    opacity: 1;
+}
