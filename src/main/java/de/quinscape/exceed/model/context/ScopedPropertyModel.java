@@ -230,6 +230,9 @@ public class ScopedPropertyModel
     }
 
 
+    /**
+     * Property type config
+     */
     @JSONProperty(ignoreIfNull = true)
     public Map<String, Object> getConfig()
     {
@@ -237,6 +240,10 @@ public class ScopedPropertyModel
     }
 
 
+    /**
+     * Set  to <code>true</code> for a requires / not nullable property.
+     * @return
+     */
     public boolean isRequired()
     {
         return required;

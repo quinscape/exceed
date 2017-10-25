@@ -12,7 +12,7 @@ import org.svenson.JSONProperty;
 import javax.annotation.PostConstruct;
 
 /**
- * Declares a reusable and composable domain rule. 
+ * Declares a reusable and composable domain rule. WIP
  *
  */
 public class DomainRule

@@ -254,6 +254,10 @@ public class ApplicationConfig
     }
 
 
+    /**
+     * Default currency for the application (three letter code)
+     * @return
+     */
     public String getDefaultCurrency()
     {
         return defaultCurrency;

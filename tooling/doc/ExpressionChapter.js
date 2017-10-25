@@ -59,6 +59,7 @@ class ExpressionChapter extends React.Component {
                             return (
                                 <div key={ idx }>
                                     <h2>Function { def.name }</h2>
+                                    <em className="muted">Type: { def.definitionType }</em>
                                     <pre>
                                     { describeProperty(def.returnType ) + " " + def.name + "(" + paramList(def)  + ")" }
                                     </pre>

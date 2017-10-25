@@ -124,7 +124,6 @@ public class DecimalFormat
      * 
      * @return grouping size for the fractional part
      */
-
     public int getFractionGroupSize()
     {
         return fractionGroupSize;

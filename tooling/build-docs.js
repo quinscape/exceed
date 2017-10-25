@@ -13,6 +13,7 @@ import ModelDocs from "./doc/ModelDocs"
 import ComponentDocs from "./doc/ComponentDocs"
 import ExpressionDocs from "./doc/ExpressionDocs"
 import ComponentClassIndex from "./doc/ComponentClassIndex"
+import Markdown from "./doc/Markdown"
 
 const  MODEL_DOCS_PATH = "../src/main/base/resources/js/model-docs.json";
 /**
@@ -74,6 +75,26 @@ shell.mkdir("doc/fonts");
 shell.cp("src/main/base/resources/css/*.min.css", "doc/css");
 shell.cp("src/main/base/resources/fonts/*", "doc/fonts");
 
+
+const markDownData = [];
+
+/**
+ * Read markdown docs
+ */
+shell.find( "src/main/doc/**/*.md").forEach(file => {
+
+    const content = fs.readFileSync(file, "UTF-8");
+
+    const title = /(.*)\n/.exec(content)[1];
+
+    markDownData.push({
+        name: path.basename(file, ".md"),
+        title: title,
+        component: <Markdown data={ content }/>
+    });
+});
+
+
 const content = [
     {
         name: "index",
@@ -101,6 +122,8 @@ const content = [
         component: <ComponentClassIndex descriptors={ componentData.descriptors }/>
     }
 ];
+
+Array.prototype.splice.apply(content, [1,0].concat(markDownData));
 
 for (let i = 0; i < content.length; i++)
 {
