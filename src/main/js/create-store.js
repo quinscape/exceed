@@ -1,16 +1,17 @@
-import { createStore, applyMiddleware } from 'redux'
+import { createStore, applyMiddleware } from "redux"
+import history from "./util/history-middleware"
 
 import thunk from 'redux-thunk'
 
-function logger(store)
-{
-    return next => action => {
-
-        console.log(action.type, {action});
-
-        return next(action);
-    }
-}
+// function logger(store)
+// {
+//     return next => action => {
+//
+//         console.log(action.type, {action});
+//
+//         return next(action);
+//     }
+// }
 
 /**
  * Creates a redux store with the given root reducer, initial state and API object
@@ -47,7 +48,8 @@ export default function(rootReducer, initialState, middleWare = [])
         };
 
         middleWare.push(
-            logger,
+//            logger,
+            history,
             checkUnhandledActions
         );
     }

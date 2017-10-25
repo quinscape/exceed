@@ -5,6 +5,7 @@ import { updateScope } from "./actions/scope"
 import { getComponentData } from "./reducers/component"
 import { getViewModel } from "./reducers/meta"
 import { findComponents } from "./util/component-util"
+import { HISTORY } from "./util/history-middleware"
 
 import { evaluateEmbedded } from "./util/startup"
 
@@ -62,9 +63,17 @@ const Services = {
             return componentData;
         }
     },
+
     findComponents: function (predicate) {
         return findComponents( getViewModel(this.state()) , predicate);
-    }};
+    },
+
+    history: function () {
+        console.group("Redux history");
+        console.table(HISTORY);
+        console.groupEnd();
+    }
+};
 
 const instances = {};
 
@@ -76,7 +85,6 @@ function lazyInit(name, fn)
 
         if (!instance)
         {
-            console.log("LAZY INIT", name);
             return instances[name] = fn()
         }
         return instance;
