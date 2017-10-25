@@ -1,31 +1,15 @@
 package de.quinscape.exceed.runtime.config;
 
-import de.quinscape.exceed.domain.tables.pojos.AppUser;
-import de.quinscape.exceed.domain.tables.records.AppUserRecord;
-import de.quinscape.exceed.runtime.domain.DomainObject;
-import de.quinscape.exceed.runtime.domain.GenericDomainObject;
 import org.jooq.DSLContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.ResultSetExtractor;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.UUID;
-
-import static de.quinscape.exceed.domain.Tables.*;
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)

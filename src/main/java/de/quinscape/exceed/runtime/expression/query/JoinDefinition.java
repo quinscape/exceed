@@ -1,7 +1,5 @@
 package de.quinscape.exceed.runtime.expression.query;
 
-import org.jooq.Condition;
-
 public class JoinDefinition
 {
     private final String joinType;

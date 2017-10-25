@@ -1,10 +1,9 @@
 package de.quinscape.exceed.runtime.domain;
 
-import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 public class DefaultNamingStrategyTest
 {

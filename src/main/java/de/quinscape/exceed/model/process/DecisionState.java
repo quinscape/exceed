@@ -1,6 +1,5 @@
 package de.quinscape.exceed.model.process;
 
-import de.quinscape.exceed.runtime.model.InconsistentModelException;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
 

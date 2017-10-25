@@ -3,7 +3,6 @@ package de.quinscape.exceed.runtime.expression.query;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.Node;
-import de.quinscape.exceed.model.component.ComponentClasses;
 import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.view.ComponentModel;

@@ -2,9 +2,7 @@ package de.quinscape.exceed.runtime.domain.property;
 
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataGraph;
-import de.quinscape.exceed.runtime.component.DataGraphType;
 import jdk.nashorn.api.scripting.JSObject;
-import netscape.javascript.JSUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;

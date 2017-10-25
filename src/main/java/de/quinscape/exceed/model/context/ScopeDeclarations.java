@@ -2,7 +2,6 @@ package de.quinscape.exceed.model.context;
 
 import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.model.meta.ApplicationMetaData;
-import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.runtime.js.def.Definition;
 import de.quinscape.exceed.runtime.js.def.DefinitionType;
 import de.quinscape.exceed.runtime.js.def.Definitions;

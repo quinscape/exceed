@@ -1,8 +1,8 @@
 package de.quinscape.exceed.runtime.editor.completion.expression;
 
+import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.component.ComponentDescriptor;
 import de.quinscape.exceed.model.component.ComponentPropWizard;
-import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;

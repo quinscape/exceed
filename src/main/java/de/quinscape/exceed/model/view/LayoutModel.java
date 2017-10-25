@@ -5,7 +5,7 @@ import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.context.ContextModel;
 import org.svenson.JSONProperty;
 
-import static de.quinscape.exceed.model.view.ComponentModelBuilder.component;
+import static de.quinscape.exceed.model.view.ComponentModelBuilder.*;
 
 /**
  * Reusable top level layout definition model. The default layout for the application is defined in the application model.

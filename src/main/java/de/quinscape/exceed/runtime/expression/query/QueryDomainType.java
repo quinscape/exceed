@@ -3,13 +3,11 @@ package de.quinscape.exceed.runtime.expression.query;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.runtime.component.QueryPreparationException;
-import de.quinscape.exceed.runtime.domain.DomainObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.svenson.JSONProperty;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;

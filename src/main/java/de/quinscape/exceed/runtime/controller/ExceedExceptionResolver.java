@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.controller;
 
 import com.google.common.util.concurrent.UncheckedExecutionException;
-import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.application.ApplicationNotFoundException;
 import de.quinscape.exceed.runtime.application.StateNotFoundException;
 import de.quinscape.exceed.runtime.resource.ResourceNotFoundException;
@@ -12,7 +11,6 @@ import org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;

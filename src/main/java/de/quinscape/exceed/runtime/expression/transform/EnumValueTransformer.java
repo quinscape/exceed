@@ -8,7 +8,6 @@ import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.domain.type.EnumType;
 import de.quinscape.exceed.runtime.js.InvalidExpressionException;
 import de.quinscape.exceed.runtime.util.ExpressionUtil;
-import de.quinscape.exceed.runtime.util.SingleQuoteJSONGenerator;
 
 import java.util.List;
 import java.util.Map;

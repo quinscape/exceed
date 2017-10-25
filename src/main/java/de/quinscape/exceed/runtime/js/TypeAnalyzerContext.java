@@ -11,7 +11,6 @@ import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.meta.PropertyType;
-import de.quinscape.exceed.runtime.expression.transform.ScopeExpressionTransformer;
 import de.quinscape.exceed.runtime.expression.transform.StateMachineValueTransformer;
 import de.quinscape.exceed.runtime.js.def.Definitions;
 import de.quinscape.exceed.runtime.model.ExpressionModelContext;

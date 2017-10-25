@@ -16,12 +16,11 @@ import de.quinscape.exceed.domain.tables.records.AppUserRecord;
 import de.quinscape.exceed.domain.tables.records.BarRecord;
 import de.quinscape.exceed.domain.tables.records.FooRecord;
 import de.quinscape.exceed.domain.tables.records.PersistentLoginsRecord;
-
-import javax.annotation.Generated;
-
 import org.jooq.ForeignKey;
 import org.jooq.UniqueKey;
 import org.jooq.impl.AbstractKeys;
+
+import javax.annotation.Generated;
 
 
 /**

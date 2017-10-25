@@ -1,9 +1,9 @@
 package de.quinscape.exceed.runtime.service.client.provider.editor;
 
 import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.model.translation.TranslationRuleLocation;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.model.translation.TranslationRuleLocation;
 import de.quinscape.exceed.runtime.service.client.ClientData;
 import de.quinscape.exceed.runtime.service.client.ClientStateProvider;
 import de.quinscape.exceed.runtime.service.client.ClientStateScope;

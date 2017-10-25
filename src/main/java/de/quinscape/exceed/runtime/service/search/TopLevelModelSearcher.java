@@ -1,6 +1,5 @@
 package de.quinscape.exceed.runtime.service.search;
 
-import de.quinscape.exceed.model.DomainEditorViews;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.config.ApplicationConfig;

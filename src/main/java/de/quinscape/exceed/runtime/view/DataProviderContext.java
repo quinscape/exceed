@@ -1,13 +1,7 @@
 package de.quinscape.exceed.runtime.view;
 
 import de.quinscape.exceed.expression.ASTExpression;
-import de.quinscape.exceed.model.TopLevelModel;
-import de.quinscape.exceed.model.domain.property.DomainProperty;
-import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
-import de.quinscape.exceed.model.domain.type.EnumType;
-import de.quinscape.exceed.model.meta.PropertyType;
-import de.quinscape.exceed.model.state.StateMachine;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
@@ -15,11 +9,8 @@ import de.quinscape.exceed.runtime.component.ComponentInstanceRegistration;
 import de.quinscape.exceed.runtime.process.ProcessExecutionState;
 import de.quinscape.exceed.runtime.scope.ScopedContext;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Encapsulates the necessary context for a view data provisioning invocation for

@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.controller;
 
 import com.google.common.cache.LoadingCache;
-import com.google.common.util.concurrent.UncheckedExecutionException;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.service.CachedResource;

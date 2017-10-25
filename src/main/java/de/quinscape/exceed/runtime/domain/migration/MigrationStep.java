@@ -2,7 +2,6 @@ package de.quinscape.exceed.runtime.domain.migration;
 
 import de.quinscape.exceed.model.domain.DomainVersion;
 import de.quinscape.exceed.model.domain.MigrationStepModel;
-import de.quinscape.exceed.runtime.RuntimeContext;
 
 public interface MigrationStep<T extends MigrationStepModel>
 {

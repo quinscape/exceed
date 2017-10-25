@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.model;
 
 import de.quinscape.exceed.model.ApplicationModel;
-import de.quinscape.exceed.model.DomainEditorViews;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.config.ApplicationConfig;

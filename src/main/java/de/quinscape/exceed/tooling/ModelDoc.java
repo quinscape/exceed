@@ -1,7 +1,5 @@
 package de.quinscape.exceed.tooling;
 
-import org.svenson.JSONParameter;
-
 import java.util.List;
 
 public class ModelDoc

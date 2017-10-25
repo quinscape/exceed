@@ -2,20 +2,17 @@ package de.quinscape.exceed.model.routing;
 
 import de.quinscape.exceed.runtime.application.MappingNotFoundException;
 import de.quinscape.exceed.runtime.application.RoutingResult;
-import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.svenson.JSON;
 import org.svenson.JSONParser;
-import org.svenson.tokenize.InputStreamSource;
 
 import java.io.File;
 import java.io.IOException;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 public class RoutingTableTest
 {

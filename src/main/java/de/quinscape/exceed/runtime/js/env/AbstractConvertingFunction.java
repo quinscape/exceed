@@ -2,7 +2,6 @@ package de.quinscape.exceed.runtime.js.env;
 
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.ApplicationModel;
-import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.meta.PropertyType;

@@ -7,7 +7,6 @@ import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.annotation.Internal;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
-import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.model.meta.PropertyType;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import org.slf4j.Logger;

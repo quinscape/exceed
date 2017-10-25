@@ -1,7 +1,6 @@
 package de.quinscape.exceed.model.meta;
 
 import de.quinscape.exceed.expression.ASTExpression;
-import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.runtime.model.ExpressionModelContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

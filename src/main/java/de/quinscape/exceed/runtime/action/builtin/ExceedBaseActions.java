@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.action.builtin;
 
 import de.quinscape.exceed.expression.ASTExpression;
-import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.action.Action;
@@ -9,7 +8,6 @@ import de.quinscape.exceed.runtime.action.ActionEnvironment;
 import de.quinscape.exceed.runtime.action.CustomLogic;
 import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
-import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.GenericDomainObject;
 import de.quinscape.exceed.runtime.expression.query.QueryContext;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;

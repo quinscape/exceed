@@ -4,9 +4,6 @@ import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 
-import java.util.Map;
-import java.util.WeakHashMap;
-
 public class DefaultExpressionService
     implements JsExpressionService
 {

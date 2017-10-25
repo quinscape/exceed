@@ -4,13 +4,11 @@ import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.util.ExpressionUtil;
 import jdk.nashorn.api.scripting.JSObject;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
 public class TimestampConverter
     implements PropertyConverter<Timestamp, String, JSObject>

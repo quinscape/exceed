@@ -2,9 +2,9 @@ package de.quinscape.exceed.runtime.config;
 
 import de.quinscape.exceed.model.AbstractModel;
 import de.quinscape.exceed.model.Model;
-import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.expression.ExpressionValueType;
+import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.model.ModelJSONService;

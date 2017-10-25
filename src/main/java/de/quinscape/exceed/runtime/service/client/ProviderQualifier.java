@@ -1,7 +1,5 @@
 package de.quinscape.exceed.runtime.service.client;
 
-import org.springframework.stereotype.Component;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

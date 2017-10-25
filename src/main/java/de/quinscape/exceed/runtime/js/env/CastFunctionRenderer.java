@@ -3,7 +3,6 @@ package de.quinscape.exceed.runtime.js.env;
 import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.model.domain.property.PropertyModel;
-import de.quinscape.exceed.model.meta.PropertyType;
 import de.quinscape.exceed.runtime.expression.transform.ExpressionTransformationContext;
 import de.quinscape.exceed.runtime.js.InvalidExpressionException;
 import de.quinscape.exceed.runtime.js.def.DefinitionRenderer;

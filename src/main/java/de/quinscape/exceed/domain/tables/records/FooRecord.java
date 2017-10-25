@@ -5,18 +5,16 @@ package de.quinscape.exceed.domain.tables.records;
 
 
 import de.quinscape.exceed.domain.tables.Foo;
-
-import java.sql.Timestamp;
-
-import javax.annotation.Generated;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-
 import org.jooq.Field;
 import org.jooq.Record1;
 import org.jooq.Record8;
 import org.jooq.Row8;
 import org.jooq.impl.UpdatableRecordImpl;
+
+import javax.annotation.Generated;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.sql.Timestamp;
 
 
 /**

@@ -2,7 +2,6 @@ package de.quinscape.exceed.model.config;
 
 import de.quinscape.exceed.runtime.model.InconsistentModelException;
 import de.quinscape.exceed.runtime.util.JSONUtil;
-import org.svenson.JSON;
 import org.svenson.JSONProperty;
 
 import javax.annotation.PostConstruct;

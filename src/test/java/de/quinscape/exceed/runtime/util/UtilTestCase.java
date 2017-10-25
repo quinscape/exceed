@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.regex.Pattern;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 public class UtilTestCase
 {

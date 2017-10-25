@@ -6,8 +6,8 @@ import org.junit.Test;
 
 import java.sql.Date;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 public class DateConverterTest
 {

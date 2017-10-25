@@ -1,6 +1,5 @@
 package de.quinscape.exceed.runtime.process;
 
-import com.google.common.collect.Maps;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.type.DomainType;

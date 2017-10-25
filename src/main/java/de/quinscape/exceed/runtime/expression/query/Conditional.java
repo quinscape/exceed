@@ -1,7 +1,5 @@
 package de.quinscape.exceed.runtime.expression.query;
 
-import de.quinscape.exceed.expression.Node;
-
 public class Conditional
 {
     private final boolean condition;

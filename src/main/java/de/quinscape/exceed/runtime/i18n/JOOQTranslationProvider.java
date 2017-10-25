@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static de.quinscape.exceed.domain.Tables.APP_TRANSLATION;
+import static de.quinscape.exceed.domain.Tables.*;
 
 @Transactional
 public class JOOQTranslationProvider

@@ -1,20 +1,15 @@
 package de.quinscape.exceed.nashorn;
 
 import de.quinscape.exceed.runtime.util.SetImmediateFunction;
-import jdk.nashorn.api.scripting.AbstractJSObject;
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.Invocable;
-import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.script.SimpleScriptContext;
 import java.io.FileReader;
-import java.util.Arrays;
 
 public class BundleTest
 {

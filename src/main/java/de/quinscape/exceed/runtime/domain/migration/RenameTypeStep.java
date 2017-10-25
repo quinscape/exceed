@@ -2,7 +2,6 @@ package de.quinscape.exceed.runtime.domain.migration;
 
 import de.quinscape.exceed.model.domain.DomainVersion;
 import de.quinscape.exceed.model.domain.migration.RenameTypeModel;
-import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.schema.DDLOperations;
 

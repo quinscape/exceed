@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.service;
 
 import de.quinscape.dss.DSSConfig;
-import de.quinscape.dss.FunctionExecutor;
 import de.quinscape.dss.ValueFactory;
 import de.quinscape.dss.runtime.DynamicStylesheetsChassis;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;

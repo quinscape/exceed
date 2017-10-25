@@ -3,7 +3,6 @@ package de.quinscape.exceed.runtime.scope;
 import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 
 import java.util.HashMap;

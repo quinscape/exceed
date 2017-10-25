@@ -10,7 +10,6 @@ import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
-import de.quinscape.exceed.runtime.js.env.SvensonJsAdapter;
 import de.quinscape.exceed.runtime.util.ExpressionUtil;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.slf4j.Logger;

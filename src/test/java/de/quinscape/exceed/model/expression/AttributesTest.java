@@ -2,8 +2,8 @@ package de.quinscape.exceed.model.expression;
 
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 public class AttributesTest
 {

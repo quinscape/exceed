@@ -7,7 +7,6 @@ import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.config.WebpackConfig;
-import de.quinscape.exceed.runtime.controller.ApplicationController;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.ResourceChangeListener;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
@@ -40,7 +39,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Resolves the react.js client side view identifiers to an {@link ExceedView}.

@@ -5,10 +5,9 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.Matchers.*;
+import static de.quinscape.exceed.model.view.ComponentModelBuilder.*;
 import static org.hamcrest.MatcherAssert.*;
-
-import static de.quinscape.exceed.model.view.ComponentModelBuilder.component;
+import static org.hamcrest.Matchers.*;
 
 public class ComponentModelBuilderTest
 {

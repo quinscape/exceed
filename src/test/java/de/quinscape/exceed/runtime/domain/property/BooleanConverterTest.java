@@ -1,12 +1,11 @@
 package de.quinscape.exceed.runtime.domain.property;
 
-import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.TestApplication;
 import de.quinscape.exceed.runtime.TestApplicationBuilder;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 public class BooleanConverterTest
 {

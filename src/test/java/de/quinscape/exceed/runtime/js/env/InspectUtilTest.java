@@ -5,9 +5,9 @@ import org.junit.Test;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static de.quinscape.exceed.runtime.js.env.InspectUtil.inspect;
-import static org.hamcrest.Matchers.*;
+import static de.quinscape.exceed.runtime.js.env.InspectUtil.*;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 public class InspectUtilTest
 {

@@ -4,11 +4,10 @@ import de.quinscape.exceed.runtime.TestApplication;
 import de.quinscape.exceed.runtime.TestApplicationBuilder;
 import org.junit.Test;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 public class TimestampConverterTest
 {

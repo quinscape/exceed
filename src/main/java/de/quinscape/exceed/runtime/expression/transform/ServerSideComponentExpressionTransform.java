@@ -1,9 +1,7 @@
 package de.quinscape.exceed.runtime.expression.transform;
 
-import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.ASTIdentifier;
 import de.quinscape.exceed.expression.ASTPropertyChain;
-import de.quinscape.exceed.expression.ASTString;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.runtime.js.InvalidExpressionException;
 import de.quinscape.exceed.runtime.util.ExpressionUtil;

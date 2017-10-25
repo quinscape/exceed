@@ -5,8 +5,8 @@ import org.svenson.JSONParser;
 
 import java.util.Arrays;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 public class ComponentPathTest
 {

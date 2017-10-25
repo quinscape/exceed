@@ -9,7 +9,6 @@ import de.quinscape.exceed.runtime.service.client.ExceedEditorProvider;
 import de.quinscape.exceed.runtime.service.client.JSONData;
 import de.quinscape.exceed.runtime.view.ViewData;
 import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.stereotype.Service;
 import org.svenson.util.JSONBuilder;
 
 import javax.servlet.http.HttpServletRequest;
