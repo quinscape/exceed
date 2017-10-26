@@ -593,6 +593,25 @@
                         </goals>
                         <configuration>
                             <mainClass>de.quinscape.exceed.tooling.GenerateLibraryResourceLists</mainClass>
+                            <arguments>
+                                <argument>src/main/base;src/main/js/components</argument>
+                                <argument>target/classes/de/quinscape/exceed/base/resource.lst;target/classes/de/quinscape/exceed/components/resource.lst</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-model-docs</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>
+                                java
+                            </goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>de.quinscape.exceed.tooling.GenerateModelDocs</mainClass>
+                            <arguments>
+                                <argument>src/main/base/resources/js/model-docs.json</argument>
+                            </arguments>
                         </configuration>
                     </execution>
                 </executions>
