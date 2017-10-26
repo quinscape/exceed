@@ -65,15 +65,17 @@ shell.find( "src/main/js/components/std/**/components.json").forEach(file => {
 
 componentData.names = componentData.names.sort();
 
-if (shell.test("-d", "doc"))
+const OUTPUT = "target/classes/exceed-docs";
+
+if (shell.test("-d", OUTPUT))
 {
-    shell.rm("-R", "doc");
+    shell.rm("-R", OUTPUT);
 }
-shell.mkdir("doc");
-shell.mkdir("doc/css");
-shell.mkdir("doc/fonts");
-shell.cp("src/main/base/resources/css/*.min.css", "doc/css");
-shell.cp("src/main/base/resources/fonts/*", "doc/fonts");
+
+shell.mkdir("-p", OUTPUT + "/css");
+shell.mkdir("-p", OUTPUT + "/fonts");
+shell.cp("src/main/base/resources/css/*.min.css", OUTPUT + "/css");
+shell.cp("src/main/base/resources/fonts/*", OUTPUT + "/fonts");
 
 
 const markDownData = [];
@@ -127,6 +129,6 @@ Array.prototype.splice.apply(content, [1,0].concat(markDownData));
 
 for (let i = 0; i < content.length; i++)
 {
-    renderDoc(content, i);
+    renderDoc(OUTPUT, content, i);
 }
 

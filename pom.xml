@@ -339,7 +339,52 @@
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
-            </plugin>                                                 
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
+                <executions>
+                    <!-- default jar execution for the normal exceed jar -->
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>exceed-docs/**/*</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+
+                    <!-- docs jar without manifest -->
+                    <execution>
+                        <id>docs-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>docs</classifier>
+
+                            <includes>
+                                <include>exceed-docs/**/*</include>
+                            </includes>
+
+                            <archive>
+                                <addMavenDescriptor>false</addMavenDescriptor>
+                                <manifest>
+                                    <addClasspath>false</addClasspath>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>properties-maven-plugin</artifactId>
@@ -489,6 +534,21 @@
                             you can remove this whole <configuration> section.
                             -->
                             <arguments>run dist</arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>yarn docs</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <!-- optional: The default argument is actually
+                            "install", so unless you need to run some other npm command,
+                            you can remove this whole <configuration> section.
+                            -->
+                            <arguments>run docs</arguments>
                         </configuration>
                     </execution>
 

@@ -9,9 +9,7 @@ import DocNav from "./DocNav"
 const html = fs.readFileSync(path.join(__dirname, "doc-template.html"), "UTF-8");
 const template = new Template(html);
 
-const docDir = path.join(__dirname, "../../doc");
-
-export default function(docs, index)
+export default function(docDir, docs, index)
 {
     const doc = docs[index];
 
