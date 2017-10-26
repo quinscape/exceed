@@ -14,8 +14,12 @@ import org.springframework.context.annotation.Import;
 
 import java.util.Set;
 
+/**
+ * Entry point of a special spring context for model docs generation. Mocks some beans
+ * referenced in {@link ExpressionConfiguration} but not really needed for docs generation.
+ */
 @Configuration
-@Import(ExpressionConfiguration.class)
+@Import( ExpressionConfiguration.class )
 public class ExpressionDocBaseConfiguration
 {
     @Bean
