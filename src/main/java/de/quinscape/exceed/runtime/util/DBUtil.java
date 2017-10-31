@@ -13,8 +13,10 @@ public class DBUtil
     public static Table<Record> jooqTableFor(DomainType type, String alias)
     {
         DomainService domainService = type.getDomainService();
-        String schema = domainService.getSchema();
-        NamingStrategy namingStrategy = type.getDomainService().getStorageConfiguration(type.getName())
+
+
+        String schema = AppAuthentication.isAuthType(type) ? domainService.getAuthSchema() : domainService.getSchema();
+        NamingStrategy namingStrategy = domainService.getStorageConfiguration(type.getName())
             .getNamingStrategy();
         Table<Record> table = DSL.table(DSL.name(schema, namingStrategy.getTableName(type.getName())));
 

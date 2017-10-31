@@ -23,6 +23,12 @@
             "maxLength": 255
         },
         {
+            "name": "disabled",
+            "description" : "can be used to disable a default user",
+            "type": "Boolean",
+            "defaultValue" : "false"
+        },
+        {
             "description" : "creation timestamp",
             "name": "created",
             "required": true,

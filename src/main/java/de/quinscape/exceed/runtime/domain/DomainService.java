@@ -12,7 +12,7 @@ import de.quinscape.exceed.runtime.schema.StorageConfiguration;
 public interface DomainService
     extends DomainTypesRegistry
 {
-    void init(RuntimeApplication runtimeApplication, String schema);
+    void init(RuntimeApplication runtimeApplication);
 
     String toJSON(Object domainObject);
 
@@ -21,6 +21,8 @@ public interface DomainService
     DomainType getDomainType(String name);
 
     String getSchema();
+
+    String getAuthSchema();
 
     DomainObject create(RuntimeContext runtimeContext, String type, String id);
 

@@ -1,11 +1,11 @@
 package de.quinscape.exceed;
 
 import de.quinscape.exceed.expression.ASTExpression;
+import de.quinscape.exceed.model.domain.EnumType;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
-import de.quinscape.exceed.model.domain.EnumType;
-import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
@@ -28,7 +28,7 @@ public class TestDomainServiceBase
 
 
     @Override
-    public void init(RuntimeApplication runtimeApplication, String schema)
+    public void init(RuntimeApplication runtimeApplication)
     {
 
         this.runtimeApplication = runtimeApplication;
@@ -58,6 +58,13 @@ public class TestDomainServiceBase
 
     @Override
     public String getSchema()
+    {
+        return "test";
+    }
+
+
+    @Override
+    public String getAuthSchema()
     {
         return "test";
     }

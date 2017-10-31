@@ -4,12 +4,12 @@ import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.model.domain.DomainRule;
+import de.quinscape.exceed.model.domain.EnumType;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.domain.type.DomainTypeModel;
-import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.process.Process;
-import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.view.ComponentModelBuilder;
 import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
@@ -382,7 +382,7 @@ public class TestApplicationBuilder
         svc.postprocess(applicationModel);
 
         final TestApplication testApplication = new TestApplication(applicationModel, domainService);
-        domainService.init(testApplication, "test");
+        domainService.init(testApplication);
 
         return testApplication;
     }

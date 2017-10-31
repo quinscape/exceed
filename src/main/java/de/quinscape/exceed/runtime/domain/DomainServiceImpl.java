@@ -1,11 +1,12 @@
 package de.quinscape.exceed.runtime.domain;
 
 import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.model.config.ApplicationConfig;
+import de.quinscape.exceed.model.domain.EnumType;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
-import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.type.QueryTypeModel;
-import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.datalist.DataGraphService;
@@ -42,6 +43,8 @@ public class DomainServiceImpl
 
     private Map<String, DomainType> domainTypes;
 
+    private String authSchema;
+
 
     public DomainServiceImpl(
         StorageConfigurationRepository storageConfigurationRepository
@@ -64,10 +67,13 @@ public class DomainServiceImpl
     }
 
 
-    public void init(RuntimeApplication runtimeApplication, String schema)
+    public void init(RuntimeApplication runtimeApplication)
     {
         this.runtimeApplication = runtimeApplication;
-        this.schema = schema;
+        final ApplicationConfig configModel = runtimeApplication.getApplicationModel().getConfigModel();
+
+        this.schema = configModel.getSchema();
+        this.authSchema = configModel.getAuthSchema();
 
         final ApplicationModel applicationModel = runtimeApplication.getApplicationModel();
         final Map<String, DomainType> domainTypes = new HashMap<>(applicationModel.getDomainTypes());
@@ -115,6 +121,13 @@ public class DomainServiceImpl
     public String getSchema()
     {
         return schema;
+    }
+
+
+    @Override
+    public String getAuthSchema()
+    {
+        return authSchema;
     }
 
 

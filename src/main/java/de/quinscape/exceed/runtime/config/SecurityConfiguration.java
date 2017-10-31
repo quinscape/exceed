@@ -17,16 +17,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 
+import javax.servlet.ServletContext;
+
 @EnableWebMvcSecurity
 @Configuration
 public class SecurityConfiguration
     extends WebSecurityConfigurerAdapter
 {
-    @Autowired
-    private DSLContext dslContext;
-
-    @Autowired
-    private JdbcTokenRepositoryImpl jdbcTokenRepository;
 
     private final static String[] PUBLIC_URIS = new String[]
         {
@@ -40,6 +37,38 @@ public class SecurityConfiguration
             //"/signup",
             "/"
         };
+
+    private final DSLContext dslContext;
+
+    private final ApplicationService applicationService;
+
+    private final JdbcTokenRepositoryImpl jdbcTokenRepository;
+
+    private final ServletContext servletContext;
+
+    private final DomainServiceRepository domainServiceRepository;
+
+    private final RuntimeContextFactory runtimeContextFactory;
+
+
+    @Autowired
+    public SecurityConfiguration(
+        DSLContext dslContext,
+        ApplicationService applicationService,
+        JdbcTokenRepositoryImpl jdbcTokenRepository,
+        ServletContext servletContext,
+        DomainServiceRepository domainServiceRepository,
+        RuntimeContextFactory runtimeContextFactory
+    )
+    {
+        this.dslContext = dslContext;
+        this.applicationService = applicationService;
+        this.jdbcTokenRepository = jdbcTokenRepository;
+        this.servletContext = servletContext;
+        this.domainServiceRepository = domainServiceRepository;
+        this.runtimeContextFactory = runtimeContextFactory;
+    }
+
 
     @Override
     protected void configure(HttpSecurity http) throws Exception
@@ -84,7 +113,14 @@ public class SecurityConfiguration
     protected void configure(AuthenticationManagerBuilder auth) throws Exception
     {
         auth
-            .userDetailsService(new ApplicationUserDetailsService(dslContext))
+            .userDetailsService(
+                new ApplicationUserDetailsService(
+                    dslContext,
+                    servletContext,
+                    applicationService,
+                    domainServiceRepository,
+                    runtimeContextFactory
+            ))
             .passwordEncoder(new BCryptPasswordEncoder());
 
     }

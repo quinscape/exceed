@@ -35,7 +35,7 @@ public class TestApplication
         this.applicationModel = applicationModel;
         this.domainService = domainService;
 
-        this.domainService.init(this, "test");
+        this.domainService.init(this);
     }
 
 

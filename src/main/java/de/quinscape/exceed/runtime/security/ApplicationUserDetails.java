@@ -1,7 +1,9 @@
 package de.quinscape.exceed.runtime.security;
 
 import com.google.common.collect.ImmutableSet;
-import de.quinscape.exceed.domain.tables.pojos.AppUser;
+import de.quinscape.exceed.runtime.application.ApplicationSecurityException;
+import de.quinscape.exceed.runtime.domain.DomainObject;
+import de.quinscape.exceed.runtime.util.AppAuthentication;
 import de.quinscape.exceed.runtime.util.Util;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,18 +27,45 @@ public class ApplicationUserDetails
 
     private final Set<String> roles;
 
+    private final Boolean disabled;
 
-    public ApplicationUserDetails(AppUser appUser)
+
+    public ApplicationUserDetails(String schema, DomainObject appUser)
     {
-        username = appUser.getLogin();
-        password = appUser.getPassword();
+        username = (String) appUser.getProperty("login");
+        password = (String) appUser.getProperty("password");
+        rolesString = (String) appUser.getProperty("roles");
+        disabled = (Boolean) appUser.getProperty("disabled");
 
-        rolesString = appUser.getRoles();
-        roles = ImmutableSet.copyOf(Util.splitToSet(rolesString, ","));
+        // first we take the user roles and filter out all schema roles
+        final Set<String> userRoles = Util.splitToSet(rolesString, ",");
+
+        ensureNoSchemaRolesInUserRoles(userRoles);
+
+        // then we add the one correct schema role
+        userRoles.add(AppAuthentication.SCHEMA_ROLE_PREFIX + schema);
+
+        // and remember the roles ..
+        roles = ImmutableSet.copyOf(userRoles);
+
+        // and map them to GrantedAuthority instances
         authorities = roles.stream()
             .map(SimpleGrantedAuthority::new)
             .collect(Collectors.toList());
     }
+
+
+    private void ensureNoSchemaRolesInUserRoles(Set<String> set)
+    {
+        for (String role : set)
+        {
+            if (role.startsWith(AppAuthentication.SCHEMA_ROLE_PREFIX))
+            {
+                throw new ApplicationSecurityException("User object contains schema role.");
+            }
+        }
+    }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities()
@@ -77,7 +106,7 @@ public class ApplicationUserDetails
     @Override
     public boolean isEnabled()
     {
-        return true;
+        return disabled == null || !disabled;
     }
 
 

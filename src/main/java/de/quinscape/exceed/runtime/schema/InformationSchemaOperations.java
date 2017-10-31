@@ -1,11 +1,13 @@
 package de.quinscape.exceed.runtime.schema;
 
+import de.quinscape.exceed.model.config.ApplicationConfig;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.property.ForeignKeyDefinition;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
+import de.quinscape.exceed.runtime.util.AppAuthentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -85,7 +87,7 @@ public class InformationSchemaOperations
     @Override
     public void createTable(RuntimeContext runtimeContext, DomainType type)
     {
-        final String schemaName = runtimeContext.getRuntimeApplication().getApplicationModel().getConfigModel().getSchema();
+        final String schemaName = getSchemaName(runtimeContext, type);
         final String tableName = namingStrategy.getTableName(type.getName());
 
         StringBuilder sql = new StringBuilder();
@@ -174,7 +176,7 @@ public class InformationSchemaOperations
     @Override
     public void updateTable(RuntimeContext runtimeContext, DomainType type)
     {
-        final String schemaName = runtimeContext.getRuntimeApplication().getApplicationModel().getConfigModel().getSchema();
+        final String schemaName = getSchemaName(runtimeContext, type);
         final String tableName = namingStrategy.getTableName(type.getName());
 
         Map<String, DatabaseColumn> columnsMap = listColumns(schemaName, tableName);
@@ -242,7 +244,7 @@ public class InformationSchemaOperations
     @Override
     public void dropKeys(RuntimeContext runtimeContext, DomainType type)
     {
-        final String schemaName = runtimeContext.getRuntimeApplication().getApplicationModel().getConfigModel().getSchema();
+        final String schemaName = getSchemaName(runtimeContext, type);
         final String tableName = namingStrategy.getTableName(type.getName());
 
         List<DatabaseKey> keys = keysMap(schemaName, tableName);
@@ -259,7 +261,7 @@ public class InformationSchemaOperations
     @Override
     public void createPrimaryKey(RuntimeContext runtimeContext, DomainType type)
     {
-        final String schemaName = runtimeContext.getRuntimeApplication().getApplicationModel().getConfigModel().getSchema();
+        final String schemaName = getSchemaName(runtimeContext, type);
         final String tableName = namingStrategy.getTableName(type.getName());
 
         // add primary key
@@ -277,14 +279,26 @@ public class InformationSchemaOperations
     @Override
     public void createForeignKeys(RuntimeContext runtimeContext, DomainType type, DomainProperty domainProperty)
     {
-        final String schemaName = runtimeContext.getRuntimeApplication().getApplicationModel().getConfigModel().getSchema();
+        final String schemaName = getSchemaName(runtimeContext, type);
         final String tableName = namingStrategy.getTableName(type.getName());
 
         final String alterTableRoot = "ALTER TABLE " + schemaName + "." + tableName + " ";
 
-        template.execute(alterTableRoot + "ADD " + fkConstraint(runtimeContext, schemaName, type, domainProperty,
+        final DomainType targetType = runtimeContext.getDomainService().getDomainType(
+            domainProperty.getForeignKey().getType());
+
+        final String targetSchema = getSchemaName(runtimeContext, targetType);
+
+        template.execute(alterTableRoot + "ADD " + fkConstraint(runtimeContext, targetSchema, type, domainProperty,
             domainProperty.getForeignKey()));
 
+    }
+
+
+    private String getSchemaName(RuntimeContext runtimeContext, DomainType type)
+    {
+        final ApplicationConfig configModel = runtimeContext.getApplicationModel().getConfigModel();
+        return AppAuthentication.isAuthType(type) ? configModel.getAuthSchema() : configModel.getSchema();
     }
 
 

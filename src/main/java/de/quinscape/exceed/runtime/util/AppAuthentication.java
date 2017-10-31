@@ -1,22 +1,29 @@
 package de.quinscape.exceed.runtime.util;
 
+import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.security.ApplicationUserDetails;
 import de.quinscape.exceed.runtime.security.Roles;
+import org.jooq.Condition;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Collections;
-import java.util.Set;
+import java.util.Set;                                                                                                      
 
 public class AppAuthentication
 {
+    public final static String USER_TYPE = "AppUser";
+
     public static final AppAuthentication ANONYMOUS = new AppAuthentication("Anonymous", Roles.ANONYMOUS);
+
+    public final static String SCHEMA_ROLE_PREFIX = "SCHEMA_";
 
     private final String userName;
     private final String rolesString;
     private final Set<String> roles;
-
 
     public AppAuthentication(String userName, String rolesString, Set<String> roles)
     {
@@ -27,7 +34,6 @@ public class AppAuthentication
 
     private AppAuthentication(String name, String role)
     {
-
         this(name, role, Collections.singleton(role));
     }
 
@@ -77,5 +83,40 @@ public class AppAuthentication
         {
             return AppAuthentication.ANONYMOUS;
         }
+    }
+
+    public boolean canAccess(String authSchema)
+    {
+        return roles.contains(SCHEMA_ROLE_PREFIX + authSchema);
+    }
+
+    @Override
+    public String toString()
+    {
+        return super.toString() + ": "
+            + "userName = '" + userName + '\''
+            + ", roles = " + roles
+            ;
+    }
+
+
+    public static DataGraph queryUsers(
+        RuntimeContext runtimeContext,
+        Condition condition
+    )
+    {
+        return DomainUtil.query(runtimeContext, USER_TYPE, condition);
+    }
+
+
+    public static boolean isAuthType(DomainType type)
+    {
+        return type != null && type.getName().equals(USER_TYPE);
+    }
+
+
+    public boolean isAnonymous()
+    {
+        return this.userName.equals(ANONYMOUS.getUserName());
     }
 }

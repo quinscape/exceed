@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.controller;
 
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.application.ApplicationNotFoundException;
+import de.quinscape.exceed.runtime.application.ApplicationSecurityException;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.application.MappingNotFoundException;
 import de.quinscape.exceed.runtime.application.StateNotFoundException;
@@ -78,15 +79,19 @@ public class ApplicationController
         }
         catch(MappingNotFoundException e)
         {
-            sendNotFoundError(request, response, e, "Mapping not found");
+            sendError(HttpServletResponse.SC_NOT_FOUND, request, response, e, "Mapping not found");
         }
         catch(ApplicationNotFoundException e)
         {
-            sendNotFoundError(request, response, e, "Application '" + appName + "' not found");
+            sendError(HttpServletResponse.SC_NOT_FOUND, request, response, e, "Application '" + appName + "' not found");
+        }
+        catch(ApplicationSecurityException e)
+        {
+            sendError(HttpServletResponse.SC_FORBIDDEN, request, response, e, "Application security error");
         }
         catch(StateNotFoundException e)
         {
-            sendNotFoundError(request, response, e, "State not found");
+            sendError(HttpServletResponse.SC_NOT_FOUND, request, response, e, "State not found");
         }
         catch(Exception e)
         {
@@ -100,7 +105,11 @@ public class ApplicationController
         return null;
     }
 
-    private void sendNotFoundError(HttpServletRequest request, HttpServletResponse response, Exception e, String message) throws IOException
+
+    private void sendError(
+        int code,
+        HttpServletRequest request, HttpServletResponse response, Exception e, String message
+    ) throws IOException
     {
         if (RequestUtil.isAjaxRequest(request))
         {
@@ -109,7 +118,7 @@ public class ApplicationController
         }
         else
         {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, message);
+            response.sendError(code, message);
         }
     }
 }

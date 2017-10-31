@@ -25,7 +25,9 @@ import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.component.ComponentRegistration;
+import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.component.DataProviderPreparationException;
+import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.js.def.Definitions;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
@@ -53,6 +55,7 @@ import de.quinscape.exceed.runtime.service.StyleService;
 import de.quinscape.exceed.runtime.service.client.ClientStateProvider;
 import de.quinscape.exceed.runtime.service.client.ClientStateService;
 import de.quinscape.exceed.runtime.template.TemplateVariables;
+import de.quinscape.exceed.runtime.util.AppAuthentication;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
 import de.quinscape.exceed.runtime.util.FileExtension;
 import de.quinscape.exceed.runtime.util.JSONUtil;
@@ -62,8 +65,10 @@ import de.quinscape.exceed.runtime.view.ComponentData;
 import de.quinscape.exceed.runtime.view.ViewData;
 import de.quinscape.exceed.runtime.view.ViewDataService;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.svenson.JSON;
 import org.svenson.JSONParseException;
 
@@ -71,8 +76,11 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -81,6 +89,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * The application at runtime. Goes beyond what is included in the {@link RuntimeApplication} interface which is mostly
@@ -151,6 +160,7 @@ public class DefaultRuntimeApplication
 
     private ResourceInjector resourceInjector = new ResourceInjector(ApplicationMetaData.class);
 
+
     public DefaultRuntimeApplication(
         ServletContext servletContext,
         ViewDataService viewDataService,
@@ -206,7 +216,7 @@ public class DefaultRuntimeApplication
         RuntimeContext systemContext = createSystemContext();
         RuntimeContextHolder.register(systemContext, null);
         scopedContextFactory.initializeContext(applicationModel.getMetaData().getJsEnvironment(), systemContext, applicationContext);
-        domainService.init(this, applicationModel.getConfigModel().getSchema());
+        domainService.init(this);
 
         for (ResourceRoot root : resourceLoader.getExtensions())
         {
@@ -223,8 +233,77 @@ public class DefaultRuntimeApplication
         }
 
         synchronizeDomainTypeSchemata(systemContext, storageConfigurationRepository);
+        ensureBaseRoles(systemContext);
 
-        this.nashorn = nashorn;     
+        this.nashorn = nashorn;
+    }
+
+    private void ensureBaseRoles(
+        RuntimeContext systemContext
+    )
+    {
+        final Map<String, String> defaultUsers = applicationModel.getConfigModel().getDefaultUsers();
+
+        final DataGraph graph = AppAuthentication.queryUsers(
+            systemContext,
+            DSL.field("login").in(defaultUsers.keySet())
+        );
+
+        BCryptPasswordEncoder encoder = null;
+
+        for (Map.Entry<String, String> e : defaultUsers.entrySet())
+        {
+            final String name = e.getKey();
+            final String roles = e.getValue();
+
+            DomainObject user = findUser(graph, name);
+            if (user == null)
+            {
+                if (encoder == null)
+                {
+                    encoder = new BCryptPasswordEncoder();
+                }
+
+                createDefaultUser(systemContext, encoder, name, roles);
+            }
+        }
+    }
+
+
+    private void createDefaultUser(
+        RuntimeContext systemContext,
+        BCryptPasswordEncoder encoder,
+        String name,
+        String roles
+    )
+    {
+        DomainObject user;
+        log.info("Creating default user '" + name + "'");
+
+        final Timestamp now = Timestamp.from(Instant.now());
+
+        user = domainService.create(systemContext, AppAuthentication.USER_TYPE, UUID.randomUUID().toString());
+        user.setProperty("login", name);
+        user.setProperty("password", encoder.encode(name));
+        user.setProperty("roles", roles);
+        user.setProperty("created", now);
+        user.setProperty("last_login", now);
+        user.setProperty("disabled", false);
+        user.insert(systemContext);
+    }
+
+
+    private DomainObject findUser(DataGraph graph, String name)
+    {
+        for (DomainObject user : (Collection<DomainObject>)graph.getRootCollection())
+        {
+            if (user.getProperty("login").equals(name))
+            {
+                return user;
+            }
+
+        }
+        return null;
     }
 
 
@@ -325,6 +404,19 @@ public class DefaultRuntimeApplication
                     )
                     , applicationModel.getMetaData().getScopeMetaModel(), null),
                 domainService);
+
+
+            final AppAuthentication auth = runtimeContext.getAuthentication();
+            final String appAuth = applicationModel.getConfigModel().getAuthSchema();
+            if (!auth.isAnonymous() && !auth.canAccess(appAuth))
+            {
+                throw new ApplicationSecurityException(
+                    "Authentication schema does not match the application's authSchema. " +
+                    "User was authenticated for another application. " +
+                    "Make applications share an authSchema if shared access desired: " +
+                    "auth = " + auth + ", app auth = " + appAuth
+                );
+            }
 
             RuntimeContextHolder.register(runtimeContext, request);
             scopedContextFactory.initializeContext(runtimeContext.getJsEnvironment(), runtimeContext, sessionContext);

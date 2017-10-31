@@ -6,6 +6,7 @@ import de.quinscape.exceed.model.domain.property.ForeignKeyDefinition;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
+import de.quinscape.exceed.runtime.util.AppAuthentication;
 
 import java.util.List;
 
@@ -32,20 +33,24 @@ public class DefaultSchemaService
     public void synchronizeSchema(RuntimeContext runtimeContext, List<DomainType> domainTypes)
     {
         final ApplicationModel applicationModel = runtimeContext.getRuntimeApplication().getApplicationModel();
-        final String schemaName = applicationModel.getConfigModel().getSchema();
+        final String schema = applicationModel.getConfigModel().getSchema();
+        final String authSchema = applicationModel.getConfigModel().getAuthSchema();
 
         List<String> schemata = op.listSchemata();
-        if (!schemata.contains(schemaName))
+        if (!schemata.contains(schema))
         {
-            op.createSchema(schemaName);
+            op.createSchema(schema);
         }
 
-        List<String> tables = op.listTables(schemaName);
+        List<String> tables = op.listTables(schema);
+        List<String> authTables = op.listTables(authSchema);
 
         for (DomainType type : domainTypes)
         {
             String tableName = namingStrategy.getTableName(type.getName());
-            if (tables.contains(tableName))
+
+            final boolean isAuthType = AppAuthentication.isAuthType(type);
+            if (isAuthType ? authTables.contains(tableName) : tables.contains(tableName))
             {
                 op.dropKeys(runtimeContext, type);
             }
@@ -55,7 +60,8 @@ public class DefaultSchemaService
         {
 
             String tableName = namingStrategy.getTableName(type.getName());
-            if (tables.contains(tableName))
+            final boolean isAuthType = AppAuthentication.isAuthType(type);
+            if (isAuthType ? authTables.contains(tableName) : tables.contains(tableName))
             {
                 op.updateTable(runtimeContext, type);
             }

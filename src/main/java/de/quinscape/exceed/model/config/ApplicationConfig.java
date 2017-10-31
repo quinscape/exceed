@@ -20,6 +20,12 @@ import java.util.Map;
 public class ApplicationConfig
     extends AbstractTopLevelModel
 {
+    private final static Map<String,String> DEFAULT_USERS = ImmutableMap.of(
+        "admin", "ROLE_ADMIN,ROLE_EDITOR,ROLE_USER",
+        "editor", "ROLE_EDITOR,ROLE_USER",
+        "user", "ROLE_USER"
+    );
+
     public static final int DECIMAL_PLACES_DEFAULT = 3;
 
     private List<String> supportedLocales = Collections.singletonList("en_US");
@@ -41,6 +47,11 @@ public class ApplicationConfig
     private ComponentConfig componentConfig = new ComponentConfig();
 
     private String defaultCurrency = "EUR";
+
+    private String authSchema;
+
+    private Map<String,String> defaultUsers = DEFAULT_USERS;
+
 
     /**
      * Database schema for this application
@@ -272,5 +283,39 @@ public class ApplicationConfig
         }
 
         this.defaultCurrency = defaultCurrency;
+    }
+
+
+    /**
+     * Schema to store the application users for this app in. Defaults to the same as the schema property.
+     *
+     * Can be used to have multiple applications that share the user pool.
+     * 
+     */
+    public String getAuthSchema()
+    {
+        return authSchema != null ? authSchema : schema;
+    }
+
+
+    public void setAuthSchema(String authSchema)
+    {
+        this.authSchema = authSchema;
+    }
+
+
+    /**
+     * Configuration for the default user accounts. Maps user names to a comma-separated list of roles.
+     * Default is {@link #DEFAULT_USERS}
+     */
+    public Map<String, String> getDefaultUsers()
+    {
+        return defaultUsers;
+    }
+
+
+    public void setDefaultUsers(Map<String, String> defaultUsers)
+    {
+        this.defaultUsers = defaultUsers;
     }
 }
