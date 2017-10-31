@@ -29,6 +29,9 @@ public class DomainPropertyBuilder
 
     private ForeignKeyDefinition key;
 
+    private String description;
+
+
     public DomainPropertyBuilder withName(String name)
     {
         this.name = name;
@@ -127,6 +130,7 @@ public class DomainPropertyBuilder
         );
         property.setConfig(config);
         property.setForeignKey(key);
+        property.setDescription(description);
         return property;
     }
 
@@ -140,6 +144,7 @@ public class DomainPropertyBuilder
         property.setDefaultValue(defaultValue);
         property.setConfig(config);
         property.setMaxLength(maxLength);
+        property.setDescription(description);
 
         return property;
     }
@@ -261,6 +266,15 @@ public class DomainPropertyBuilder
                 this.config.put(name, config.getMember(name));
             }
         }
+        return this;
+    }
+
+
+    public DomainPropertyBuilder withDescription(String description)
+    {
+
+        this.description = description;
+
         return this;
     }
 }

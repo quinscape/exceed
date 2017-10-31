@@ -31,5 +31,12 @@ public @interface Operation
     Class<?> context() default void.class;
 
     String name() default "";
+
+    /**
+     * Defines the parameters to document for this operation
+     *
+     * @return
+     */
+    OperationParam[] params() default {};
 }
 

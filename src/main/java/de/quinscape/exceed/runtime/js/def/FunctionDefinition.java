@@ -47,6 +47,8 @@ public class FunctionDefinition
 
     private final boolean embedsForeignExpression;
 
+    private final Class<?> context;
+
 
     public FunctionDefinition(
         String name,
@@ -57,10 +59,23 @@ public class FunctionDefinition
         DefinitionRenderer functionRenderer,
         boolean isVarArgs,
         DefinitionType type,
-        String chapter
+        String chapter,
+        Class<?> context
     )
     {
-        this(name, propertyType, null, description, restrictedTo, parameterModels, functionRenderer, isVarArgs, type, chapter);
+        this(
+            name,
+            propertyType,
+            null,
+            description,
+            restrictedTo,
+            parameterModels,
+            functionRenderer,
+            isVarArgs,
+            type,
+            chapter,
+            context
+        );
 
         if (propertyType == null)
         {
@@ -77,10 +92,23 @@ public class FunctionDefinition
         DefinitionRenderer functionRenderer,
         boolean isVarArgs,
         DefinitionType type,
-        String chapter
+        String chapter,
+        Class<?> context
     )
     {
-        this(name, null, returnTypeResolver, description, restrictedTo, parameterModels, functionRenderer, isVarArgs, type, chapter);
+        this(
+            name,
+            null,
+            returnTypeResolver,
+            description,
+            restrictedTo,
+            parameterModels,
+            functionRenderer,
+            isVarArgs,
+            type,
+            chapter,
+            context
+        );
 
         if (returnTypeResolver == null)
         {
@@ -99,7 +127,8 @@ public class FunctionDefinition
         DefinitionRenderer functionRenderer,
         boolean isVarArgs,
         DefinitionType type,
-        String chapter
+        String chapter,
+        Class<?> context
     )
     {
         if (chapter == null)
@@ -117,6 +146,7 @@ public class FunctionDefinition
         this.isVarArgs = isVarArgs;
         this.type = type;
         this.chapter = chapter;
+        this.context = context != null && context.equals(void.class) ? null: context;
 
         embedsForeignExpression = this.parameterModels.indexOf(ExpressionUtil.EXPRESSION_TYPE) >= 0;
     }
@@ -279,5 +309,11 @@ public class FunctionDefinition
     public String getChapter()
     {
         return chapter;
+    }
+
+
+    public Class<?> getContext()
+    {
+        return context;
     }
 }

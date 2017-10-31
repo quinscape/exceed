@@ -4,6 +4,7 @@ import com.esotericsoftware.reflectasm.MethodAccess;
 import de.quinscape.exceed.expression.ASTFunction;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.expression.annotation.OperationParam;
 import de.quinscape.exceed.runtime.util.ExpressionUtil;
 
 public final class OperationRegistration
@@ -16,20 +17,34 @@ public final class OperationRegistration
 
     private final Class<?>[] parameterTypes;
 
-    private final String desc;
+    private final String description;
+
+    private final Class<?> returnType;
+
+    private final OperationParam[] params;
 
     private final Class<?> contextClass;
 
 
-    public OperationRegistration(Object bean, MethodAccess access, int index, Class<?>[] parameterTypes, Class<?>
-        contextClass, String desc)
+    public OperationRegistration(
+        Object bean,
+        MethodAccess access,
+        int index,
+        Class<?>[] parameterTypes,
+        Class<?> contextClass,
+        String description,
+        Class<?> returnType,
+        OperationParam[] params
+    )
     {
         this.bean = bean;
         this.access = access;
         this.index = index;
         this.parameterTypes = parameterTypes;
         this.contextClass = contextClass;
-        this.desc = desc;
+        this.description = description;
+        this.returnType = returnType;
+        this.params = params;
     }
 
 
@@ -42,7 +57,13 @@ public final class OperationRegistration
         }
         catch(Exception e)
         {
-            throw new ExceedRuntimeException("Error invoking operation: " + ExpressionUtil.renderExpressionOf(node) + ": context = " + context + ", env = " + ctx.getEnv(), e);
+            throw new ExceedRuntimeException(
+                "Error invoking operation: " +
+                    ExpressionUtil.renderExpressionOf(node) +
+                    ": context = " + context +
+                    ", env = " + ctx.getEnv() +
+                    ", method =" + bean.getClass().getName() + "." + description, e
+            );
         }
     }
 
@@ -56,14 +77,14 @@ public final class OperationRegistration
         {
             if (context != null)
             {
-                throw new IllegalArgumentException("Context must be null for " + desc);
+                throw new IllegalArgumentException("Context must be null for " + description);
             }
         }
         else
         {
             if (!contextClass.isInstance(context))
             {
-                throw new IllegalArgumentException("Context is not assignable to " + contextClass + ": " + desc);
+                throw new IllegalArgumentException("Context is not assignable to " + contextClass + ": " + bean.getClass().getName() + "." + description);
             }
         }
 
@@ -89,6 +110,36 @@ public final class OperationRegistration
 //            }
             params[i + paramOffset] = param;
         }
+        return params;
+    }
+
+
+    public Object getBean()
+    {
+        return bean;
+    }
+
+
+    public String getTypeDescription()
+    {
+        return description;
+    }
+
+
+    public Class<?>[] getParameterTypes()
+    {
+        return parameterTypes;
+    }
+
+
+    public Class<?> getReturnType()
+    {
+        return returnType;
+    }
+
+
+    public OperationParam[] getOperationParams()
+    {
         return params;
     }
 }

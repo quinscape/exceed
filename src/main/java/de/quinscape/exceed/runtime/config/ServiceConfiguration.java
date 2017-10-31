@@ -4,11 +4,7 @@ import de.quinscape.exceed.runtime.domain.migration.MigrationStep;
 import de.quinscape.exceed.runtime.domain.migration.MigrationStepRepository;
 import de.quinscape.exceed.runtime.editor.completion.CompletionService;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
-import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
-import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
 import de.quinscape.exceed.runtime.expression.query.ComponentQueryTransformer;
-import de.quinscape.exceed.runtime.expression.query.QueryFilterOperations;
-import de.quinscape.exceed.runtime.expression.query.QueryTransformerOperations;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.resource.DefaultResourceCacheFactory;
 import de.quinscape.exceed.runtime.resource.ResourceCacheFactory;
@@ -26,7 +22,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.HashSet;
 import java.util.Map;
 
 @Configuration
@@ -101,23 +96,6 @@ public class ServiceConfiguration
     {
         final Map<String, MigrationStep> beansOfType = applicationContext.getBeansOfType(MigrationStep.class);
         return new MigrationStepRepository(beansOfType);
-    }
-
-    @Bean
-    public ExpressionService expressionService()
-    {
-        HashSet<Object> operationBeans = new HashSet<>(applicationContext.getBeansWithAnnotation(ExpressionOperations
-            .class).values());
-        log.info("Operations in spring context: {}", operationBeans);
-
-        QueryTransformerOperations queryTransformerOperations = new QueryTransformerOperations();
-        operationBeans.add(queryTransformerOperations);
-        operationBeans.add(new QueryFilterOperations());
-
-        ExpressionServiceImpl svc = new ExpressionServiceImpl(operationBeans);
-        queryTransformerOperations.setExpressionService(svc);
-
-        return svc;
     }
 
     @Bean

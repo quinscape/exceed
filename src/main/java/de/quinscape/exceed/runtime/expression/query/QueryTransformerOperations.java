@@ -35,6 +35,7 @@ import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
 import de.quinscape.exceed.runtime.expression.annotation.Operation;
+import de.quinscape.exceed.runtime.expression.annotation.OperationParam;
 import de.quinscape.exceed.runtime.js.InvalidExpressionException;
 import de.quinscape.exceed.runtime.js.def.Definition;
 import de.quinscape.exceed.runtime.js.def.DefinitionType;
@@ -55,7 +56,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 
 @ExpressionOperations(environment = QueryTransformerEnvironment.class)
 public class QueryTransformerOperations
@@ -79,19 +79,34 @@ public class QueryTransformerOperations
         this.expressionService = expressionService;
     }
 
+
+    /**
+     * Returns the location parameter with the given name.
+     */
     @Operation
     public Object param(ExpressionContext<QueryTransformerEnvironment> ctx, String name)
     {
         return ctx.getEnv().getRuntimeContext().getLocationParams().get(name);
     }
 
+
+    /**
+     * Returns the component variable with the given name. Only valid in a component context.
+     */
     @Operation
     public Object var(ExpressionContext<QueryTransformerEnvironment> ctx, String name)
     {
         return ctx.getEnv().getVar(name);
     }
 
-    @Operation
+    /**
+     * Returns the component attribute with the given name. Only valid in a component context.
+     */
+    @Operation(
+        params = {
+            @OperationParam(type = "String", name = "name", description = "The name of the component attribute to read")
+        }
+    )
     public Object prop(ExpressionContext<QueryTransformerEnvironment> ctx, String name)
     {
         if (ctx.getEnv().getComponentModel() == null)
@@ -130,6 +145,10 @@ public class QueryTransformerOperations
         }
     }
 
+    /**
+     * Returns a list of all child components field referenec attributes ( attributes with prop type FIELD_REFERENCE).
+     * Only valid in a component context.
+     */
     @Operation
     public List<String> childFieldRefs(ExpressionContext<QueryTransformerEnvironment> ctx)
     {
@@ -139,7 +158,6 @@ public class QueryTransformerOperations
         return new ArrayList<>(names);
 
     }
-
 
     private void findFieldRefs(Set<String> names, ComponentModel componentModel)
     {
@@ -174,47 +192,9 @@ public class QueryTransformerOperations
     }
 
 
-//    public List<String> childAttrs(ExpressionContext<QueryTransformerEnvironment> ctx)
-//    {
-//        final ASTFunction fn = ctx.getASTFunction();
-//
-//        String attrName;
-//        if (fn.jjtGetNumChildren() == 1)
-//        {
-//            attrName = (String) fn.jjtGetChild(0).jjtAccept(ctx.getEnv(), null);
-//        }
-//        else
-//        {
-//            attrName = "name";
-//        }
-//
-//        QueryTransformerEnvironment env = ctx.getEnv();
-//        List<String> names = new ArrayList<>();
-//        for (ComponentModel kid : env.getComponentModel().children())
-//        {
-//            ExpressionValue attrVal = kid.getAttribute(attrName);
-//            if (attrVal != null)
-//            {
-//                names.add(attrVal.getValue());
-//            }
-//        }
-//        return names;
-//    }
-//
-//
-//    @Operation
-//    public List<String> childAttributes(ExpressionContext<QueryTransformerEnvironment> ctx, String cls, String attr)
-//    {
-//        if (attr == null)
-//        {
-//            attr = "name";
-//        }
-//        List<String> values = new ArrayList<>();
-//        attributeValueForClass(values, ctx.getEnv().getComponentModel(), cls, attr);
-//        return values;
-//
-//    }
-
+    /**
+     * Returns the name of the current application.
+     */
     @Operation
     public String appName(ExpressionContext<QueryTransformerEnvironment> ctx)
     {
@@ -244,6 +224,9 @@ public class QueryTransformerOperations
         }
     }
 
+    /**
+     * Constructs a query definition for this query domain type definition.
+     */
     @Operation(context = QueryDomainType.class)
     public QueryDefinition query(ExpressionContext<QueryTransformerEnvironment> ctx, QueryDomainType queryDomainType)
     {
@@ -251,55 +234,119 @@ public class QueryTransformerOperations
     }
 
 
-    @Operation(context = QueryDomainType.class)
+    /**
+     * Joins the current domain type with another query domain type given as argument.
+     */
+    @Operation(
+        context = QueryDomainType.class,
+        params = {
+            @OperationParam(type = "QueryDomainType", name = "other", description = "Query domain type definition to join")
+        }
+    )
     public JoinDefinition join(ExpressionContext<QueryTransformerEnvironment> ctx, QueryDomainType queryDomainType)
     {
         return joinInternal(ctx, queryDomainType);
     }
 
 
-    @Operation(context = QueryDomainType.class)
+    /**
+     * Cross-joins the current domain type with another query domain type given as argument.
+     */
+    @Operation(
+        context = QueryDomainType.class,
+        params = {
+            @OperationParam(type = "QueryDomainType", name = "other", description = "Query domain type definition to cross join")
+        }
+    )
     public JoinDefinition crossJoin(ExpressionContext<QueryTransformerEnvironment> ctx, QueryDomainType queryDomainType)
     {
         return joinInternal(ctx, queryDomainType);
     }
 
-
-    @Operation(context = QueryDomainType.class)
+    /**
+     * Full-outer-joins the current domain type with another query domain type given as argument.
+     */
+    @Operation(
+        context = QueryDomainType.class,
+        params = {
+            @OperationParam(type = "QueryDomainType", name = "other", description = "Query domain type definition to full outer join")
+        }
+    )
     public JoinDefinition fullOuterJoin(ExpressionContext<QueryTransformerEnvironment> ctx, QueryDomainType queryDomainType)
     {
         return joinInternal(ctx, queryDomainType);
     }
 
 
-    @Operation(context = QueryDomainType.class)
+    /**
+     * Left-outer-joins the current domain type with another query domain type given as argument.
+     */
+    @Operation(
+        context = QueryDomainType.class,
+        params = {
+            @OperationParam(type = "QueryDomainType", name = "other", description = "Query domain type definition to left outer join")
+        }
+    )
     public JoinDefinition leftOuterJoin(ExpressionContext<QueryTransformerEnvironment> ctx, QueryDomainType queryDomainType)
     {
         return joinInternal(ctx, queryDomainType);
     }
 
 
-    @Operation(context = QueryDomainType.class)
+    /**
+     * Right-outer-joins the current domain type with another query domain type given as argument.
+     */
+    @Operation(
+        context = QueryDomainType.class,
+        params = {
+            @OperationParam(type = "QueryDomainType", name = "other", description = "Query domain type definition to right outer join")
+        }
+    )
     public JoinDefinition rightOuterJoin(ExpressionContext<QueryTransformerEnvironment> ctx, QueryDomainType queryDomainType)
     {
         return joinInternal(ctx, queryDomainType);
     }
 
 
-    @Operation(context = QueryDomainType.class)
+    /**
+     * Natural-joins the current domain type with another query domain type given as argument.
+     */
+    @Operation(
+        context = QueryDomainType.class,
+        params = {
+            @OperationParam(type = "QueryDomainType", name = "other", description = "Query domain type definition to natural join")
+        }
+    )
     public JoinDefinition naturalJoin(ExpressionContext<QueryTransformerEnvironment> ctx, QueryDomainType queryDomainType)
     {
         return joinInternal(ctx, queryDomainType);
     }
 
 
-    @Operation(context = QueryDomainType.class)
+    /**
+     * Natural-Left-Outer-joins the current domain type with another query domain type given as argument.
+     */
+    @Operation(
+        context = QueryDomainType.class,
+        params = {
+            @OperationParam(type = "QueryDomainType", name = "other", description = "Query domain type definition to natural left outer join")
+        }
+    )
     public JoinDefinition naturalLeftOuterJoin(ExpressionContext<QueryTransformerEnvironment> ctx, QueryDomainType queryDomainType)
     {
         return joinInternal(ctx, queryDomainType);
     }
 
-    @Operation(context = QueryDomainType.class)
+
+    /**
+     * Natural-Right-Outer-joins the current domain type with another query domain type given as argument.
+     */
+    @Operation(
+        context = QueryDomainType.class,
+        params = {
+            @OperationParam(type = "QueryDomainType", name = "other", description = "Query domain type definition to natural right outer join")
+        }
+    )
     public JoinDefinition naturalRightOuterJoin(ExpressionContext<QueryTransformerEnvironment> ctx, QueryDomainType queryDomainType)
     {
         return joinInternal(ctx, queryDomainType);
@@ -332,7 +379,15 @@ public class QueryTransformerOperations
     }
 
 
-    @Operation(context = JoinDefinition.class)
+    /**
+     * Defines the query condition for a join definition. The argument will be transformed as filter expression.
+     */
+    @Operation(
+        context = JoinDefinition.class,
+        params = {
+        @OperationParam(type = "Expression", name = "expr", description = "Join condition expression")
+    }
+    )
     public QueryDomainType on(ExpressionContext<QueryTransformerEnvironment> ctx, JoinDefinition joinDefinition)
     {
         SimpleNode n = ExpressionUtil.expectChildOf(ctx.getASTFunction(), ASTEquality.class, ASTRelational.class, ASTLogicalAnd
@@ -344,7 +399,15 @@ public class QueryTransformerOperations
         return joinDefinition.getLeft();
     }
 
-    @Operation(context = QueryDomainType.class)
+    /**
+     * Selects the given fields for the current query domain type definition.
+     */
+    @Operation(
+        context = QueryDomainType.class,
+        params = {
+            @OperationParam(type = "Field...", name = "fields", description = "Fields to select")
+        }
+    )
     public QueryDomainType fields(ExpressionContext<QueryTransformerEnvironment> ctx, QueryDomainType queryDomainType)
     {
         List<String> fields = new ArrayList<>();
@@ -377,7 +440,16 @@ public class QueryTransformerOperations
         return queryDomainType;
     }
 
-    @Operation(context = QueryDomainType.class)
+
+    /**
+     * Defines an alias for the current query domain type definition.
+     */
+    @Operation(
+        context = QueryDomainType.class,
+        params = {
+            @OperationParam(type = "String", name = "alias", description = "Alias for the query domain type in this query. Used to both shorten queries and to disambiguate multiple occurrences of the same type.")
+        }
+    )
     public QueryDomainType as(ExpressionContext<QueryTransformerEnvironment> ctx, QueryDomainType queryDomainType)
     {
         ASTFunction node = ctx.getASTFunction();
@@ -400,7 +472,15 @@ public class QueryTransformerOperations
     }
 
 
-    @Operation(context = QueryDefinition.class)
+    /**
+     * Sets the limit for the current query definition.
+     */
+    @Operation(
+        context = QueryDefinition.class,
+        params = {
+            @OperationParam(type = "int", name = "limit", description = "Sets the limit for the number of queries rows, activates query pagination")
+        }
+    )
     public QueryDefinition limit(ExpressionContext<QueryTransformerEnvironment> ctx, QueryDefinition queryDefinition)
     {
         QueryTransformerEnvironment env = ctx.getEnv();
@@ -429,8 +509,15 @@ public class QueryTransformerOperations
         return queryDefinition;
     }
 
-
-    @Operation(context = QueryDefinition.class)
+    /**
+     * Sets the offset for the current query definition.
+     */
+    @Operation(
+        context = QueryDefinition.class,
+        params = {
+            @OperationParam(type = "int", name = "limit", description = "Sets the offset for the number of queries rows")
+        }
+    )
     public QueryDefinition offset(ExpressionContext<QueryTransformerEnvironment> ctx, QueryDefinition queryDefinition)
     {
         QueryTransformerEnvironment env = ctx.getEnv();
@@ -456,7 +543,15 @@ public class QueryTransformerOperations
     }
 
 
-    @Operation(context = QueryDefinition.class)
+    /**
+     * Defines the order for the current query definition.
+     */
+    @Operation(
+        context = QueryDefinition.class,
+        params = {
+            @OperationParam(type = "Field...", name = "fields", description = "Sets the field by which the query is ordered")
+        }
+    )
     public QueryDefinition orderBy(ExpressionContext<QueryTransformerEnvironment> ctx, QueryDefinition queryDefinition)
     {
         QueryTransformerEnvironment env = ctx.getEnv();
@@ -473,8 +568,6 @@ public class QueryTransformerOperations
         else
         {
             fields = new ArrayList<>(len);
-
-
             for (int i = 0; i < len; i++)
             {
 
@@ -492,7 +585,15 @@ public class QueryTransformerOperations
     }
 
 
-    @Operation(context = QueryDefinition.class)
+    /**
+     * Defines parameters for the current query definition. Takes a map mapping paramtern names to parameter values.
+     */
+    @Operation(
+        context = QueryDefinition.class,
+        params = {
+            @OperationParam(type = "Map", name = "params", description = "Sets query parameters for this query definition")
+        }
+    )
     public QueryDefinition params(ExpressionContext<QueryTransformerEnvironment> ctx, QueryDefinition queryDefinition)
     {
         final Object value = ctx.getASTFunction().jjtGetChild(0).jjtAccept(ctx.getEnv(), null);
@@ -508,7 +609,17 @@ public class QueryTransformerOperations
 
         return queryDefinition;
     }
-    @Operation(context = QueryDefinition.class)
+
+
+    /**
+     * Defines the filter for the current query definition. The argument will be transformed as filter expression.
+     */
+    @Operation(
+        context = QueryDefinition.class,
+        params = {
+            @OperationParam(type = "Expression", name = "expr", description = "Filter expression")
+        }
+    )
     public QueryDefinition filter(ExpressionContext<QueryTransformerEnvironment> ctx, QueryDefinition queryDefinition)
     {
         QueryTransformerEnvironment env = ctx.getEnv();
@@ -603,7 +714,15 @@ public class QueryTransformerOperations
         }
     }
 
-    @Operation
+
+    /**
+     * Constructs a query definition taking a  query domain type definition as argument.
+     */
+    @Operation(
+        params = {
+            @OperationParam(type = "QueryDomainType", name = "queryDomainType", description = "Query domain type definition to query")
+        }
+    )
     public QueryDefinition query(ExpressionContext<QueryTransformerEnvironment> ctx)
     {
         Object result = ExpressionUtil.visitOneChildOf(ctx.getEnv(), ctx.getASTFunction(), ASTFunction.class, ASTPropertyChain.class, ASTIdentifier.class);
@@ -623,7 +742,20 @@ public class QueryTransformerOperations
         return new QueryDefinition((QueryDomainType) result);
     }
 
-    @Operation
+
+    /**
+     * Conditional query function.
+     * <pre class="text-info"> when( <em>condition</em> ).then( <em>queryDefinition</em> ) </pre>
+     *
+     * or
+
+     * <pre class="text-info"> when( <em>condition</em> ).then( <em>queryDefinition</em> ).else( <em>queryDefinition</em> ) </pre>
+     */
+    @Operation(
+        params = {
+            @OperationParam(type = "boolean", name = "condition", description = "Condition for the conditional query")
+        }
+    )
     public Conditional when(ExpressionContext<QueryTransformerEnvironment> ctx)
     {
         final ASTFunction astFunction = ctx.getASTFunction();
@@ -642,7 +774,16 @@ public class QueryTransformerOperations
         return new Conditional((Boolean) conditionResult);
     }
 
-    @Operation(context = Conditional.class)
+
+    /**
+     * Then branch in a conditional query definition. Takes a query definition as argument.
+     */
+    @Operation(
+        context = Conditional.class,
+        params = {
+            @OperationParam(type = "Object", name = "thenValue", description = "Value to use when the condition is true")
+        }
+    )
     public Object then(ExpressionContext<QueryTransformerEnvironment> ctx, Conditional conditional)
     {
         final ASTFunction thenFn = ctx.getASTFunction();
@@ -663,7 +804,16 @@ public class QueryTransformerOperations
         }
     }
 
-    @Operation(name = "else", context = Conditional.class)
+    /**
+     * Else branch in a conditional query definition. Takes a query definition as argument.
+     */
+    @Operation(
+        name = "else",
+        context = Conditional.class,
+        params = {
+            @OperationParam(type = "Object", name = "elseValue", description = "Value to use when the condition is false")
+        }
+    )
     public Object elseOperation(ExpressionContext<QueryTransformerEnvironment> ctx, Conditional conditional)
     {
         if (conditional.isTrue())
@@ -675,7 +825,20 @@ public class QueryTransformerOperations
         return elseFn.jjtGetChild(0).jjtAccept(ctx.getEnv(), null);
     }
 
-    @Operation
+    /**
+     * Returns a query domain type definition for the given name argument. This is a generic function and equivalent
+     * to just using the name of the domain type as Identifier.
+     *
+     * <pre class="text-info"> domainType('Foo') </pre> is the same as
+     * 
+     * <pre class="text-info"> Foo </pre>
+     *
+     */
+    @Operation(
+        params = {
+            @OperationParam(type = "String", name = "domainType", description = "Name of the domain type")
+        }
+    )
     public QueryDomainType domainType(ExpressionContext<QueryTransformerEnvironment> ctx)
     {
         final ASTFunction astFunction = ctx.getASTFunction();
@@ -690,6 +853,10 @@ public class QueryTransformerOperations
         return new QueryDomainType(domainType);
     }
 
+
+    /**
+     * Returns the property type of a form field component. Only valid in a form field component context.
+     */
     @Operation
     public PropertyModel formFieldType(ExpressionContext<QueryTransformerEnvironment> ctx)
     {
@@ -744,7 +911,16 @@ public class QueryTransformerOperations
         }
     }
 
-    @Operation
+
+    /**
+     * Executes a query definition and returns the result value. Normally this will be a data graph.
+     *
+     */
+    @Operation(
+        params = {
+            @OperationParam(type = "QueryDefinition", name = "queryDefinition", description = "Query definition to execute")
+        }
+    )
     public Object exec(ExpressionContext<QueryTransformerEnvironment> ctx)
     {
         final ASTFunction astFunction = ctx.getASTFunction();
@@ -770,7 +946,16 @@ public class QueryTransformerOperations
         return ctx.getEnv().executeQuery(queryDefinition);
     }
 
-    @Operation
+
+    /**
+     * Executes an action and returns the result. Can be used to implement Java-Based DataGraph returning actions.
+     */
+    @Operation(
+        params = {
+            @OperationParam(type = "String", name = "actionName", description = "Action to execute"),
+            @OperationParam(type = "Object...", name = "actionParams", description = "Parameters that must valid for the action being executed"),
+        }
+    )
     public Object actionQuery(ExpressionContext<QueryTransformerEnvironment> ctx)
     {
         final ASTFunction astFunction = ctx.getASTFunction();
@@ -922,17 +1107,5 @@ public class QueryTransformerOperations
         }
 
         return null;
-    }
-
-
-    private static class ComponentWithDataCursorPredicate
-            implements Predicate<ComponentModel>
-    {
-        @Override
-        public boolean test(ComponentModel c)
-        {
-            return c.getComponentRegistration() != null &&
-                DATA_CURSOR.equals(c.getComponentRegistration().getDescriptor().getProvidesContext());
-        }
     }
 }

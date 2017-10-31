@@ -53,7 +53,7 @@ public class ExpressionServiceImpl
             final String methodName = m.getName();
             if (anno != null)
             {
-                Class<?> context = anno.context();
+                Class<?> context = anno.context().equals(void.class) ? null : anno.context();
                 final String operationName = anno.name().length() > 0 ? anno.name() : methodName;
 
                 OperationKey key = new OperationKey(envClass, context, operationName);
@@ -71,8 +71,10 @@ public class ExpressionServiceImpl
                     access,
                     access.getIndex(methodName, m.getParameterTypes()),
                     parameterTypes,
-                    context.equals(void.class) ? null : context,
-                    m.toString()
+                    context,
+                    renderMethodDesc(m),
+                    m.getReturnType(),
+                    anno.params()
                 );
                 operationLookup.put(
                     key,
@@ -116,6 +118,26 @@ public class ExpressionServiceImpl
     }
 
 
+    public static String renderMethodDesc(Method m)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(m.getName());
+        sb.append("(");
+
+        Class<?>[] parameterTypes = m.getParameterTypes();
+        for (int i = 0; i < parameterTypes.length; i++)
+        {
+            if (i > 0)
+            {
+                sb.append(",");
+            }
+            Class<?> cls = parameterTypes[i];
+            sb.append(cls.getSimpleName());
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
 
     @Override
     public Object resolveIdentifier(ExpressionEnvironment env, String name)
@@ -138,7 +160,7 @@ public class ExpressionServiceImpl
         OperationRegistration registration = lookupRegistration(expressionEnvironment, context, operationName);
         if (registration == null)
         {
-            return expressionEnvironment.undefinedOperation(ctx, node, context);
+            return expressionEnvironment.undefinedOperation(node, context);
         }
         return registration.invoke(ctx, node, context);
     }
@@ -150,7 +172,7 @@ public class ExpressionServiceImpl
     {
         final OperationKey key = new OperationKey(
             expressionEnvironment.getClass(),
-            context == null ? void.class : context.getClass(),
+            context == null ? null : context.getClass(),
             operationName
         );
 
@@ -171,153 +193,14 @@ public class ExpressionServiceImpl
     }
 
 
-    private static final class OperationKey
+    public Map<OperationKey, OperationRegistration> getOperationLookup()
     {
-
-        private final Class<? extends ExpressionEnvironment> envClass;
-
-        private final Class<?> context;
-
-        private final String name;
-
-
-        public OperationKey(Class<? extends ExpressionEnvironment> envClass, Class<?> context, String name)
-        {
-            if (envClass == null)
-            {
-                throw new IllegalArgumentException("envClass can't be null");
-            }
-
-            if (context == null)
-            {
-                throw new IllegalArgumentException("context can't be null");
-            }
-
-            if (name == null)
-            {
-                throw new IllegalArgumentException("name can't be null");
-            }
-
-
-            this.envClass = envClass;
-            this.context = context;
-            this.name = name;
-        }
-
-
-        public Class<? extends ExpressionEnvironment> getEnvClass()
-        {
-            return envClass;
-        }
-
-
-        public Class<?> getContext()
-        {
-            return context;
-        }
-
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            if (obj == this)
-            {
-                return true;
-            }
-
-            if (obj instanceof OperationKey)
-            {
-                OperationKey that = (OperationKey) obj;
-                return this.name.equals(that.name) && this.envClass.getName().equals(that.envClass.getName()) && this.context.equals(that.context);
-            }
-            return false;
-        }
-
-
-        @Override
-        public int hashCode()
-        {
-            return (envClass.hashCode() * 37 + context.hashCode()) * 17 + name.hashCode();
-        }
-
-
-        @Override
-        public String toString()
-        {
-            return super.toString() + ": "
-                + "envClass = " + envClass
-                + ", context = " + context
-                + ", name = '" + name + '\''
-                ;
-        }
+        return operationLookup;
     }
 
-    private static final class IdentifierKey
+
+    public Map<IdentifierKey, IdentifierRegistration> getIdentifierLookup()
     {
-        private final Class<? extends ExpressionEnvironment> envClass;
-
-        private final String name;
-
-
-        private IdentifierKey(Class<? extends ExpressionEnvironment> envClass, String name)
-        {
-
-            if (envClass == null)
-            {
-                throw new IllegalArgumentException("envClass can't be null");
-            }
-
-            if (name == null)
-            {
-                throw new IllegalArgumentException("name can't be null");
-            }
-
-            this.envClass = envClass;
-            this.name = name;
-        }
-
-        public Class<? extends ExpressionEnvironment> getEnvClass()
-        {
-            return envClass;
-        }
-
-
-        public String getName()
-        {
-            return name;
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            if (obj == this)
-            {
-                return true;
-            }
-
-            if (obj instanceof IdentifierKey)
-            {
-                IdentifierKey that = (IdentifierKey) obj;
-                return this.envClass.equals(that.envClass) && this.name.equals(that.name);
-            }
-            return false;
-        }
-
-
-        @Override
-        public int hashCode()
-        {
-            return (envClass.hashCode() * 37) + name.hashCode();
-        }
-
-
-        @Override
-        public String toString()
-        {
-            return super.toString() + ": "
-                + "envClass = " + envClass
-                + ", name = '" + name + '\''
-                ;
-        }
+        return identifierLookup;
     }
 }

@@ -16,6 +16,9 @@ public final class FunctionDefinitionBuilder
 
     private boolean isVarArgs;
 
+    private Class<?> context;
+
+
     public FunctionDefinitionBuilder(DefinitionsBuilder parent, String name)
     {
         super(parent, name);
@@ -39,7 +42,8 @@ public final class FunctionDefinitionBuilder
                 definitionRenderer,
                 isVarArgs,
                 type,
-                chapter != null ? chapter : root.getChapter()
+                chapter != null ? chapter : root.getChapter(),
+                context
             );
         }
         else
@@ -53,7 +57,8 @@ public final class FunctionDefinitionBuilder
                 definitionRenderer,
                 isVarArgs,
                 type,
-                chapter != null ? chapter : root.getChapter()
+                chapter != null ? chapter : root.getChapter(),
+                context
             );
         }
 
@@ -193,4 +198,9 @@ public final class FunctionDefinitionBuilder
     }
 
 
+    public FunctionDefinitionBuilder asOperationFor(Class<?> cls)
+    {
+        this.context = cls;
+        return this;
+    }
 }

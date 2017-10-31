@@ -75,6 +75,9 @@ public interface Model
     @Internal
     String getType();
 
+    /**
+     * Arbitrary JSON user data field. Not used by the system. Can be used for user annotate meta data annotation.
+     */
     @JSONProperty(value = "_", ignoreIfNull = true, priority = 100)
     @Internal
     Object getAnnotation();

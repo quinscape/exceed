@@ -131,13 +131,12 @@ public abstract class ExpressionEnvironment
      * The default implementation just throws an UnknownOperationException
      *
      *
-     * @param ctx
      * @param node              function node
      * @param chainObject       current context
      *
      * @return  value of the unknown operation
      */
-    public Object undefinedOperation(ExpressionContext<ExpressionEnvironment> ctx, ASTFunction node, Object chainObject)
+    public Object undefinedOperation(ASTFunction node, Object chainObject)
     {
         throw new UnknownOperationException("Unknown operation '" + node.getName() + "' for environment " + this.environmentName + " and context = " + chainObject);
     }

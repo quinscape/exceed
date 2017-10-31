@@ -12,7 +12,6 @@ import de.quinscape.exceed.expression.ASTRelational;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
-import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
 import de.quinscape.exceed.runtime.js.InvalidExpressionException;
 import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
@@ -297,7 +296,8 @@ public class QueryFilterEnvironment
 
             if (childNode instanceof ASTFunction)
             {
-                throw new UnsupportedOperationException(((ASTFunction) childNode).getName());
+                final Field<Object> queryField = resolveDSLField(sb.toString());
+                return undefinedOperation((ASTFunction) childNode, queryField);
             }
             if (i > 0)
             {
@@ -332,22 +332,33 @@ public class QueryFilterEnvironment
 
 
     @Override
-    public Object undefinedOperation(ExpressionContext<ExpressionEnvironment> ctx, ASTFunction node, Object chainObject)
+    public Object undefinedOperation(ASTFunction node, Object chainObject)
     {
         String operationName = node.getName();
 
         log.debug("Undefined in filter env: {} ({})", operationName, chainObject);
 
-        if (chainObject instanceof Field && FieldOperations.contains(operationName) && node.jjtGetNumChildren() == 1)
+        if (chainObject instanceof Field && FieldOperations.contains(operationName))
         {
-            return FieldOperations.execute(operationName, (Field)chainObject, node.jjtGetChild(0).jjtAccept(this, null));
+            if (node.jjtGetNumChildren() == 0)
+            {
+                return FieldOperations.execute(operationName, (Field)chainObject, null);
+            }
+            else if (node.jjtGetNumChildren() == 1)
+            {
+                return FieldOperations.execute(operationName, (Field)chainObject, node.jjtGetChild(0).jjtAccept(this, null));
+            } 
+            else
+            {
+                throw new IllegalStateException("Invalid number of arguments for field operation: " + ExpressionUtil.renderExpressionOf(node));
+            }
         }
 
         if (transformerEnvironment != null)
         {
             return operationService.evaluate(transformerEnvironment, node, chainObject);
         }
-        return super.undefinedOperation(ctx, node, chainObject);
+        return super.undefinedOperation(node, chainObject);
     }
 
 

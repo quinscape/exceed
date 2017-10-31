@@ -12,6 +12,11 @@ import de.quinscape.exceed.runtime.action.MethodAccessRegistration;
 import de.quinscape.exceed.runtime.action.ParameterProviderFactory;
 import de.quinscape.exceed.runtime.action.param.ContextPropertyValueProviderFactory;
 import de.quinscape.exceed.runtime.action.param.RuntimeContextProviderFactory;
+import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
+import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
+import de.quinscape.exceed.runtime.expression.query.QueryFilterOperations;
+import de.quinscape.exceed.runtime.expression.query.QueryTransformerOperations;
 import de.quinscape.exceed.runtime.expression.transform.ActionExpressionTransformer;
 import de.quinscape.exceed.runtime.expression.transform.ComponentExpressionTransformer;
 import de.quinscape.exceed.runtime.js.DefaultExpressionCompiler;
@@ -52,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 @ComponentScan(value = {
@@ -400,4 +406,20 @@ public class ExpressionConfiguration
         return JsUtil.createEngine();
     }
 
+    @Bean
+    public ExpressionService expressionService()
+    {
+        HashSet<Object> operationBeans = new HashSet<>(applicationContext.getBeansWithAnnotation(ExpressionOperations
+            .class).values());
+        log.info("Operations in spring context: {}", operationBeans);
+
+        QueryTransformerOperations queryTransformerOperations = new QueryTransformerOperations();
+        operationBeans.add(queryTransformerOperations);
+        operationBeans.add(new QueryFilterOperations());
+
+        ExpressionServiceImpl svc = new ExpressionServiceImpl(operationBeans);
+        queryTransformerOperations.setExpressionService(svc);
+
+        return svc;
+    }
 }

@@ -1,5 +1,6 @@
 package de.quinscape.exceed.model.state;
 
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.runtime.domain.InvalidMachineStateException;
 import org.junit.Test;
 import org.svenson.JSON;

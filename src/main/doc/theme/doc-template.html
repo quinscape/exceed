@@ -9,7 +9,8 @@
 
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+    <link href="css/readable-bootstrap.min.css" rel="stylesheet">
+    <link href="css/exceed-docs.css" rel="stylesheet">
 
     <link rel="stylesheet"
           href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
@@ -17,41 +18,25 @@
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
-    <script src="../../src/main/base/resources/js/html5shiv.min.js"></script>
-    <script src="../../src/main/base/resources/js/respond.min.js"></script>
+    <script src="../../base/resources/js/html5shiv.min.js"></script>
+    <script src="../../base/resources/js/respond.min.js"></script>
     <![endif]-->
-
-    <style type="text/css">
-
-        ul.no-bullet
-        {
-            list-style: none;
-        }
-
-        .doc-nav
-        {
-            width: 30ex;
-            border: 1px solid #666;
-            background: #f0f0f0;
-            display: block;
-            position: fixed;
-            top: 1ex;
-            right: 1ex;
-            list-style: none;
-            padding: 0;
-        }
-    </style>
 
 </head>
 <body>
 <div id="root">
-    <div class="container">
+    <div class="container-fluid">
+        $CONTENT
         <div class="row">
             <div class="col-md-12">
-                $CONTENT
+                <hr>
+                <small class="muted">
+                    Exceed &copy; 2017 Quinscape GmbH
+                </small>
             </div>
         </div>
     </div>
 </div>
 </body>
 </html>
+

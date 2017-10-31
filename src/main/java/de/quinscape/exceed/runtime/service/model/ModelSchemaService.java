@@ -9,7 +9,7 @@ import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.property.DomainPropertyBuilder;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.domain.type.DomainTypeModel;
-import de.quinscape.exceed.model.domain.type.EnumType;
+import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.meta.PropertyType;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.component.DataGraph;

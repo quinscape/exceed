@@ -11,6 +11,7 @@ import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
 import de.quinscape.exceed.runtime.expression.annotation.Operation;
+import de.quinscape.exceed.runtime.expression.annotation.OperationParam;
 import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -28,8 +29,14 @@ public class QueryFilterOperations
 {
     private static Logger log = LoggerFactory.getLogger(QueryFilterOperations.class);
 
-
-    @Operation
+    /**
+     * Returns a component attribute value. Only valid in component contexts.
+     */
+    @Operation(
+        params = {
+            @OperationParam(type = "String", name = "name", description = "Component attribute to read")
+        }
+    )
     public Condition prop(ExpressionContext<QueryFilterEnvironment> ctx, String name)
     {
         QueryTransformerEnvironment tEnv = ctx.getEnv().getTransformerEnvironment();
@@ -59,6 +66,10 @@ public class QueryFilterOperations
         return (Condition) astExpression.jjtAccept(ctx.getEnv(), null);
     }
 
+    /**
+     * Returns a new condition combining child filter values. This is used e.g. to combine all the user-input controlled
+     * filters of a data grid columns.
+     */
     @Operation
     public Condition combineChildFilters(ExpressionContext<QueryFilterEnvironment> ctx)
     {
@@ -110,7 +121,22 @@ public class QueryFilterOperations
         }
     }
 
-    @Operation
+
+    /**
+     * Resolves the field with the given name. This is equivalent to just using the field name as identifier.
+     * 
+     * <pre class="text-info"> field('name') == 0 </pre>
+     *
+     * is the same as
+     *
+     * <pre class="text-info"> name == 0 </pre>
+     *
+     */
+    @Operation(
+        params = {
+            @OperationParam(type = "String", name = "name", description = "Field name")
+        }
+    )
     public Field field(ExpressionContext<QueryFilterEnvironment> ctx)
     {
         QueryFilterEnvironment env = ctx.getEnv();
@@ -138,6 +164,11 @@ public class QueryFilterOperations
         return DSL.field(DSL.name(dataField.getNameFromStrategy(namingStrategy)));
     }
 
+
+    /**
+     * Returns the current filter value for the current column/field component context. Useful for component filters or
+     * filter templates.
+     */
     @Operation
     public Field filterValue(ExpressionContext<QueryFilterEnvironment> ctx)
     {

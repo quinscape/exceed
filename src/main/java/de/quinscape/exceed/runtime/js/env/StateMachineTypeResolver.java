@@ -8,7 +8,7 @@ import de.quinscape.exceed.expression.ResolvableNode;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.model.meta.PropertyType;
-import de.quinscape.exceed.model.state.StateMachine;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.runtime.expression.transform.StateMachineValueTransformer;
 import de.quinscape.exceed.runtime.js.InvalidExpressionException;
 import de.quinscape.exceed.runtime.js.TypeAnalyzerContext;

@@ -1,6 +1,6 @@
 package de.quinscape.exceed.runtime.domain.property;
 
-import de.quinscape.exceed.model.state.StateMachine;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.runtime.RuntimeContext;
 
 public class StateConverter

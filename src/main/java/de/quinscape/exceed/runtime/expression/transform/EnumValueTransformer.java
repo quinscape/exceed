@@ -5,7 +5,7 @@ import de.quinscape.exceed.expression.ASTPropertyChain;
 import de.quinscape.exceed.expression.ASTPropertyChainDot;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.model.ApplicationModel;
-import de.quinscape.exceed.model.domain.type.EnumType;
+import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.runtime.js.InvalidExpressionException;
 import de.quinscape.exceed.runtime.util.ExpressionUtil;
 

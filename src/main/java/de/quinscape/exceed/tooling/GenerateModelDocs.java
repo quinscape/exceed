@@ -13,14 +13,27 @@ import de.quinscape.exceed.model.annotation.DocumentedSubTypes;
 import de.quinscape.exceed.model.annotation.Internal;
 import de.quinscape.exceed.model.component.ComponentPackageDescriptor;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.expression.ExpressionValueType;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
+import de.quinscape.exceed.runtime.domain.QueryTypeOperations;
+import de.quinscape.exceed.runtime.expression.ExpressionService;
+import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
+import de.quinscape.exceed.runtime.expression.OperationKey;
+import de.quinscape.exceed.runtime.expression.OperationRegistration;
+import de.quinscape.exceed.runtime.expression.annotation.OperationParam;
+import de.quinscape.exceed.runtime.expression.query.FieldOperations;
+import de.quinscape.exceed.runtime.expression.query.QueryFilterOperations;
+import de.quinscape.exceed.runtime.js.def.Definition;
+import de.quinscape.exceed.runtime.js.def.DefinitionType;
 import de.quinscape.exceed.runtime.js.def.Definitions;
+import de.quinscape.exceed.runtime.js.def.DefinitionsBuilder;
 import de.quinscape.exceed.runtime.model.ModelLocationRule;
 import de.quinscape.exceed.runtime.model.ModelLocationRules;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import de.quinscape.exceed.runtime.util.Util;
 import org.apache.commons.io.FileUtils;
+import org.jooq.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -43,6 +56,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,7 +72,6 @@ import java.util.stream.Collectors;
  * @see DocumentedSubTypes
  * @see Internal
  *
- * @see de.quinscape.exceed.runtime.service.client.provider.docs.ModelDocsProvider
  *
  */
 public class GenerateModelDocs
@@ -67,6 +80,10 @@ public class GenerateModelDocs
 
     private final static String DEFAULT_KEY_NAME = "key";
     private  final static Map<Class<?>, String> PROPERTY_TYPE_NAMES;
+
+    private static final String VOID = "void";
+
+
     static
     {
         final HashMap<Class<?>, String> map = new HashMap<>();
@@ -449,13 +466,19 @@ public class GenerateModelDocs
                 log.debug("hit");
             }
 
-            File sourceDir = Util.getExceedLibrarySource();
 
-            javaDocs = readJavadocs(new File(sourceDir, "./src/main/java/".replace('/', File.separatorChar)),cls);
+            javaDocs = readJavadocs(getSourceBaseDir(),cls);
             docsMap.put(cls, javaDocs);
         }
 
         return javaDocs;
+    }
+
+
+    private File getSourceBaseDir()
+    {
+        File sourceDir = Util.getExceedLibrarySource();
+        return new File(sourceDir, "./src/main/java/".replace('/', File.separatorChar));
     }
 
 
@@ -484,12 +507,10 @@ public class GenerateModelDocs
     }
 
 
-    public Definitions getExpressionDocs()
+
+    private ConfigurableApplicationContext getExpressionContext()
     {
-        final ConfigurableApplicationContext ctx = SpringApplication.run(ExpressionDocBaseConfiguration.class);
-
-        return ctx.getBean(Definitions.class);
-
+        return SpringApplication.run(ExpressionDocBaseConfiguration.class);
     }
 
 
@@ -524,14 +545,193 @@ public class GenerateModelDocs
             System.exit(1);
         }
 
-        final GenerateModelDocs generator = new GenerateModelDocs();
+        new GenerateModelDocs().main(args[0]);
 
-        final String json = JSONBuilder.buildObject()
-            .property("locations", generator.getModelLocationRules().getRules())
-            .property("modelDocs", generator.getModelDocs())
-            .property("definitions", generator.getExpressionDocs())
-            .output();
+    }
 
-        FileUtils.writeStringToFile(new File(args[0]), json, "UTF-8");
+
+    private void main(String target) throws IOException
+    {
+        final ConfigurableApplicationContext ctx = getExpressionContext();
+
+        final List<ModelLocationRule> rules = getModelLocationRules().getRules()
+            .stream()
+            .filter(
+                rule ->
+                    Model.getType(rule.getType()).getAnnotation(Internal.class) == null
+            )
+            .collect(Collectors.toList());
+        
+        final JSONBuilder builder = JSONBuilder.buildObject()
+            .property("locations", rules)
+            .property("modelDocs", getModelDocs())
+            .property("definitions", ctx.getBean(Definitions.class));
+
+        addQueryExprDefinitions(ctx, builder);
+
+        final String json = builder.output();
+
+        FileUtils.writeStringToFile(
+            new File(target),
+            json,
+            "UTF-8"
+        );
+    }
+
+
+    private void addQueryExprDefinitions(ConfigurableApplicationContext ctx, JSONBuilder jsonBuilder) throws IOException
+    {
+        final ExpressionServiceImpl service = (ExpressionServiceImpl)ctx.getBean(ExpressionService.class);
+
+
+        final Map<OperationKey, OperationRegistration> ops = service.getOperationLookup();
+
+        Set<Class<?>> opClasses = findOperationBeans(ops.values());
+
+        final Map<Class<?>, JavaDocs> javaDocs = getJavaDocs(opClasses);
+
+
+        for (Class<?> cls : opClasses)
+        {
+            final boolean isQueryTypeOperations = cls.equals(QueryTypeOperations.class);
+            final boolean isQueryFilterOperations = cls.equals(QueryFilterOperations.class);
+
+            final DefinitionsBuilder builder = Definition.builder();
+            for (Map.Entry<OperationKey, OperationRegistration> e : ops.entrySet())
+            {
+                final OperationKey key = e.getKey();
+                final OperationRegistration registration = e.getValue();
+
+                final Class<?> cur = registration.getBean().getClass();
+                if (cur.equals(cls))
+                {
+                    final JavaDocs javaDoc = javaDocs.get(cur);
+
+                    final Class<?> context = key.getContext();
+                    final String contextName = context == null ? null : context.getSimpleName();
+
+                    final String returnType = registration.getReturnType().getSimpleName();
+                    final String operationName = key.getName();
+                    builder.function(contextName != null ? contextName +  "." + operationName : operationName)
+                        .withType(isQueryTypeOperations ? DefinitionType.QUERY : DefinitionType.QUERY_FILTER)
+                        .chapter(contextName)
+                        .asOperationFor(context)
+                        .withDescription(javaDoc.getPropertyDocs().get(registration.getTypeDescription()))
+                        .withParameterModels(
+                            getQueryPropModels(
+                                registration.getParameterTypes(),
+                                context == null ? 1 : 2,
+                                registration.getOperationParams()
+                            )
+                        )
+                        .withReturnType(returnType.equals(VOID) ? null : returnType)
+                        .build();
+                }
+            }
+
+            if (isQueryFilterOperations)
+            {
+                final String contextName = "Field";
+
+                for (String operationName : FieldOperations.getOperationNames())
+                {
+                    builder.function(contextName != null ? contextName +  "." + operationName : operationName)
+                        .withType(isQueryTypeOperations ? DefinitionType.QUERY : DefinitionType.QUERY_FILTER)
+                        .chapter(contextName)
+                        .asOperationFor(Field.class)
+                        .withDescription("JOOQ Field method " + operationName)
+                        .withParameterModels(
+                            getQueryPropModels(
+                                FieldOperations.getParameterTypes(operationName),
+                                0,
+                                null
+                            )
+                        )
+                        .withReturnType("Condition")
+                        .build();
+
+                }
+
+            }
+
+            jsonBuilder.property(cls.getSimpleName(), builder.build());
+        }
+    }
+
+
+    private Set<Class<?>> findOperationBeans(Collection<OperationRegistration> values)
+    {
+        Set<Class<?>> set = new HashSet<>();
+
+        for (OperationRegistration registration : values)
+       {
+            final Class<?> cls = registration.getBean().getClass();
+            if (!set.contains(cls))
+            {
+                set.add(cls);
+            }
+        }
+        return set;
+    }
+
+
+    /**
+     * Creates a list of documentation property models for the given parameter types.
+     *
+     * @param parameterTypes    parameter types;
+     * @param start             numbers of parameters to ignore at the beginning
+     * @param operationParams   @OperationParam annotations
+     *
+     * @return List of documentation property models
+     */
+    private List<DomainProperty> getQueryPropModels(
+        Class<?>[] parameterTypes, int start,
+        OperationParam[] operationParams
+    )
+    {
+
+        final List<DomainProperty> list = new ArrayList<>();
+
+        if (operationParams != null && operationParams.length > 0)
+        {
+            for (OperationParam param : operationParams)
+            {
+                list.add(
+                    DomainProperty.builder()
+                        .withName(param.name())
+                        .withType(param.type())
+                        .withDescription(param.description())
+                        .build()
+                );
+            }
+        }
+        else
+        {
+            for (int i = start; i < parameterTypes.length; i++)
+            {
+                Class<?> cls = parameterTypes[i];
+                list.add(
+                    DomainProperty.builder().withType(cls.getSimpleName()).build()
+                );
+            }
+        }
+
+        return list;
+    }
+
+
+    private Map<Class<?>, JavaDocs> getJavaDocs(Set<Class<?>> values) throws IOException
+    {
+        Map<Class<?>, JavaDocs> javaDocs = new HashMap<>();
+
+        File sourceDir = getSourceBaseDir();
+        for (Class<?> cls : values)
+        {
+            if (javaDocs.get(cls) == null)
+            {
+                javaDocs.put(cls, readJavadocs( sourceDir, cls));
+            }
+        }
+        return javaDocs;
     }
 }

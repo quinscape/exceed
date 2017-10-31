@@ -7,7 +7,7 @@ import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.model.meta.PropertyType;
-import de.quinscape.exceed.model.state.StateMachine;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.runtime.js.InvalidExpressionException;
 import de.quinscape.exceed.runtime.model.InconsistentModelException;
 import de.quinscape.exceed.runtime.util.ExpressionUtil;

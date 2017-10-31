@@ -4,16 +4,16 @@ import Icon from "../../../ui/Icon";
 class InfoBlock extends React.Component {
     render ()
     {
-        const { heading, text } = this.props;
+        const { heading, text, children } = this.props;
 
         return (
-            <div className="info-block text-info">
-                <h5>
+            <div className="info-block">
+                <h5 className="text-info">
                     <Icon className="glyphicon-info-sign"/>
-                    { heading }
+                    { " " + heading }
                 </h5>
                 <p>
-                    { text }
+                    { text || children }
                 </p>
             </div>
         );

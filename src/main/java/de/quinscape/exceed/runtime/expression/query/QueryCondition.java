@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.expression.query;
 
 import org.jooq.Condition;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class QueryCondition
@@ -11,6 +12,12 @@ public class QueryCondition
     private final Set<DataField> fieldReferences;
 
 
+    public QueryCondition(
+        Condition condition
+    )
+    {
+        this(condition, new HashSet<>());
+    }
     public QueryCondition(
         Condition condition, Set<DataField> fieldReferences
     )

@@ -107,7 +107,8 @@ public class ActionExpressionTest
                 null,
                 false,
                 DefinitionType.BUILTIN,
-                "test"
+                "test",
+                null
             )
         );
 
@@ -144,7 +145,8 @@ public class ActionExpressionTest
                 null,
                 false,
                 name.equals("clientOnly") ? DefinitionType.CLIENT_SIDE_ACTION : DefinitionType.ACTION,
-                "test"
+                "test",
+                null
             ));
         }
 

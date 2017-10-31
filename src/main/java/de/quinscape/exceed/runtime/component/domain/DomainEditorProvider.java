@@ -65,8 +65,6 @@ public class DomainEditorProvider
                 .collect(Collectors.toList())
         );
         map.put("storageOptions", options);
-        map.put("domainEditorViews", applicationModel.getMetaData().getDomainEditorViews()
-            .getViews());
         map.put("domainVersion", applicationService.getApplicationState(appName).getDomainVersion());
         return map;
     }

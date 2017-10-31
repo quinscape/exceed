@@ -4,7 +4,7 @@ import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.meta.PropertyType;
-import de.quinscape.exceed.model.state.StateMachine;
+import de.quinscape.exceed.model.domain.StateMachine;
 
 import java.util.Map;
 

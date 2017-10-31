@@ -1,4 +1,4 @@
-package de.quinscape.exceed.model.domain.type;
+package de.quinscape.exceed.model.domain;
 
 import de.quinscape.exceed.model.AbstractTopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;

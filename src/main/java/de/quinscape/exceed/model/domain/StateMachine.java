@@ -1,4 +1,4 @@
-package de.quinscape.exceed.model.state;
+package de.quinscape.exceed.model.domain;
 
 import com.google.common.collect.Maps;
 import de.quinscape.exceed.model.AbstractTopLevelModel;
@@ -47,6 +47,9 @@ public class StateMachine
     private String description;
 
 
+    /**
+     * Name of the state machine
+     */
     @Override
     @JSONProperty(priority = 100, ignoreIfNull = true)
     public String getName()
@@ -64,8 +67,6 @@ public class StateMachine
 
     /**
      * Returns the map of all states to valid state names to transition to.
-     *
-     * @return map of all states
      */
     @JSONProperty(priority = 70)
     public Map<String, List<String>> getStates()
@@ -76,8 +77,6 @@ public class StateMachine
 
     /**
      * Sets the map of all states to valid state names to transition to.
-     *
-     * @param states map of all states
      */
     @JSONTypeHint(List.class)
     public void setStates(Map<String, List<String>> states)
@@ -207,6 +206,9 @@ public class StateMachine
     }
 
 
+    /**
+     * Description of this state machine
+     */
     @JSONProperty(priority = 90, ignoreIfNull = true)
     public String getDescription()
     {

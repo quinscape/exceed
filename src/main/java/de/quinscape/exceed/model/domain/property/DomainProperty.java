@@ -6,7 +6,7 @@ import de.quinscape.exceed.model.annotation.Internal;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.meta.PropertyType;
-import de.quinscape.exceed.model.state.StateMachine;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.runtime.util.Util;
 import org.svenson.JSONProperty;
 
@@ -14,6 +14,10 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Property within a domain type. A field in a database table if the domain storage is a database storage.
+ * Might be something else.
+ */
 public final class DomainProperty
     implements PropertyModel
 {
@@ -69,8 +73,6 @@ public final class DomainProperty
 
     /**
      * Name of the property.
-     *
-     * @return
      */
     @JSONProperty(priority = 100)
     public String getName()
@@ -79,6 +81,9 @@ public final class DomainProperty
     }
 
 
+    /**
+     * Description of the property.
+     */
     @Override
     public String getDescription()
     {
@@ -86,6 +91,9 @@ public final class DomainProperty
     }
 
 
+    /**
+     * Extended parameter type configuration map.
+     */
     @JSONProperty(ignoreIfNull = true)
     public Map<String, Object> getConfig()
     {
@@ -131,8 +139,6 @@ public final class DomainProperty
 
     /**
      * Type parameter for the property. Set for List, Map, Enum.
-     *
-     * @return
      */
     @JSONProperty(ignoreIfNull = true, priority = 80)
     public String getTypeParam()
@@ -149,8 +155,6 @@ public final class DomainProperty
 
     /**
      * Set true if this property is required.
-     *
-     * @return
      */
     @JSONProperty(priority = 70)
     public boolean isRequired()
@@ -167,8 +171,6 @@ public final class DomainProperty
 
     /**
      * Maximum length for this property if applicable.
-     *
-     * @return
      */
     @JSONProperty(ignoreIfNull = true, priority = 60)
     public int getMaxLength()
@@ -184,9 +186,7 @@ public final class DomainProperty
 
 
     /**
-     * Default value for this property.
-     *
-     * @return
+     * Default value expression for this property.
      */
     @JSONProperty(ignoreIfNull = true, priority = 50)
     public String getDefaultValue()
@@ -209,7 +209,7 @@ public final class DomainProperty
 
 
     /**
-     * User data field. Not used by the system.
+     * Arbitrary JSON user data field. Not used by the system. Can be used to link source ids for model generation.
      *
      * @return
      */

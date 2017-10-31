@@ -30,8 +30,6 @@ public class PropertyTypeModel
 
     private Map<String,Object> defaultConfig = Collections.emptyMap();
 
-    private String fieldType;
-
 
     /**
      * Returns the class name of either a {@link PropertyConverter} or {@link PropertyConverterFactory} implementation.
@@ -136,6 +134,9 @@ public class PropertyTypeModel
     }
 
 
+    /**
+     * Default configuration map for this property type model.
+     */
     public Map<String, Object> getDefaultConfig()
     {
         return defaultConfig;
@@ -153,17 +154,4 @@ public class PropertyTypeModel
             this.defaultConfig = Collections.emptyMap();
         }
     }
-
-
-    public String getFieldType()
-    {
-        return fieldType;
-    }
-
-
-    public void setFieldType(String fieldType)
-    {
-        this.fieldType = fieldType;
-    }
-
 }

@@ -1,5 +1,7 @@
 package de.quinscape.exceed.runtime.js.def;
 
+import de.quinscape.exceed.model.domain.EnumType;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.runtime.action.CustomLogic;
 
 /**
@@ -35,16 +37,26 @@ public enum DefinitionType
     /**
      * Identifier is a enum type map.
      *
-     * @see de.quinscape.exceed.model.domain.type.EnumType
+     * @see EnumType
      */
     ENUM,
 
     /**
      * Identifier is a state machine map.
      *
-     * @see de.quinscape.exceed.model.state.StateMachine
+     * @see StateMachine
      */
     STATE_MACHINE,
+
+    /**
+     * Operation is a query expression operation. Used for documentation purposes only.
+     */
+    QUERY,
+
+    /**
+     * Operation is a filter expression operation. Used for documentation purposes only.
+     */
+    QUERY_FILTER,
 
     /**
      * Function is a client-side only function. will be disallowed in server-side action contexts.

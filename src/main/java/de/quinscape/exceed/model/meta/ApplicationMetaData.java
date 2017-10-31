@@ -1,7 +1,6 @@
 package de.quinscape.exceed.model.meta;
 
 import de.quinscape.exceed.model.ApplicationModel;
-import de.quinscape.exceed.model.DomainEditorViews;
 import de.quinscape.exceed.model.annotation.InjectResource;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.context.ScopeDeclarations;
@@ -12,9 +11,9 @@ import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
-import de.quinscape.exceed.model.domain.type.EnumType;
+import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.process.Process;
-import de.quinscape.exceed.model.state.StateMachine;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.domain.property.DecimalConverter;
@@ -66,8 +65,6 @@ public class ApplicationMetaData
 
     private StaticFunctionReferences staticFunctionReferences;
 
-    private DomainEditorViews domainEditorViews;
-
     private final ScopeMetaModel scopeMetaModel;
 
     private WebpackStats webpackStats;
@@ -91,9 +88,6 @@ public class ApplicationMetaData
         this.applicationModel = applicationModel;
         this.systemDefinitions = systemDefinitions;
 
-        domainEditorViews = new DomainEditorViews();
-        domainEditorViews.setName("domain");
-
         scopeMetaModel = new ScopeMetaModel(applicationModel, systemDefinitions);
     }
 
@@ -110,17 +104,6 @@ public class ApplicationMetaData
         this.staticFunctionReferences = staticFunctionReferences;
     }
 
-
-    public DomainEditorViews getDomainEditorViews()
-    {
-        return domainEditorViews;
-    }
-
-
-    public void setDomainEditorViews(DomainEditorViews domainEditorViews)
-    {
-        this.domainEditorViews = domainEditorViews;
-    }
 
 
     public ScopeMetaModel getScopeMetaModel()

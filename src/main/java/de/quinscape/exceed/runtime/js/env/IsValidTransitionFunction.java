@@ -1,7 +1,7 @@
 package de.quinscape.exceed.runtime.js.env;
 
 import de.quinscape.exceed.model.ApplicationModel;
-import de.quinscape.exceed.model.state.StateMachine;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import jdk.nashorn.api.scripting.AbstractJSObject;
 import jdk.nashorn.api.scripting.NashornScriptEngine;

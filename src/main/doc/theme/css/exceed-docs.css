@@ -1,0 +1,96 @@
+ul.no-bullet
+{
+    list-style: none;
+}
+
+ul.extension-struct, ul.extension-struct ul {
+    list-style-type: none;
+    background: url("./media/vline.png") repeat-y;
+    margin: 0;
+    padding: 0;
+}
+
+ul.extension-struct ul {
+    margin-left: 10px;
+}
+
+ul.extension-struct li {
+    margin: 0;
+    padding: 0 12px;
+    line-height: 20px;
+    background: url("./media/node.png") no-repeat;
+    font-weight: bold;
+}
+
+ul.extension-struct li.last {
+    background: #fff url("./media/lastnode.png") no-repeat;
+}
+
+ul.extension-struct .type-DomainTypeModel,ul.extension-struct .type-StateMachine, ul.extension-struct .type-EnumType, ul.extension-struct .type-QueryTypeModel, ul.extension-struct .type-PropertyTypeModel
+{
+    color: #4582ec;
+}
+
+ul.extension-struct .type-Process
+{
+    color: #3fad46;
+}
+
+ul.extension-struct .type-View
+{
+    color: #666;
+}
+
+ul.extension-struct .type-LayoutModel
+{
+    color: #666;
+}
+ul.extension-struct .type-View .glyphicon
+{
+    color: #f0ad4e;
+}
+
+ul.extension-struct .type-StateMachine .glyphicon
+{
+    color: #3fad46;
+}
+
+ul.extension-struct .type-PropertyTypeModel .glyphicon
+{
+    color: #666;
+}
+
+ul.extension-struct .type-LayoutModel .glyphicon
+{
+    background: #ffd399;
+    color: #b86e90;
+}
+
+ul.extension-struct .type-folder
+{
+    color: #666;
+    font-weight: normal;
+}
+
+ul.extension-struct .type-ApplicationConfig,ul.extension-struct .type-RoutingTable
+{
+    color: #b86e90;
+}
+
+.info-block
+{
+    border: 2px solid #5bb9d8;
+    padding: 1em 2ex;
+}
+
+/* halve navbar pill padding */
+.doc-nav>li>a {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+/* smaller font for json examples */
+pre code.lang-json
+{
+    font-size: 10pt;
+}

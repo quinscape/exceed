@@ -1,6 +1,5 @@
 package de.quinscape.exceed.runtime.model;
 
-import de.quinscape.exceed.model.DomainEditorViews;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.config.ApplicationConfig;
@@ -8,11 +7,11 @@ import de.quinscape.exceed.model.domain.DomainRule;
 import de.quinscape.exceed.model.domain.DomainVersion;
 import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
 import de.quinscape.exceed.model.domain.type.DomainTypeModel;
-import de.quinscape.exceed.model.domain.type.EnumType;
+import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.type.QueryTypeModel;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.routing.RoutingTable;
-import de.quinscape.exceed.model.state.StateMachine;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
 
@@ -47,15 +46,11 @@ public class ModelLocationRules
 
     public static final String PROCESS_VIEW_MODEL_PATTERN = "/models/process/*/view";
 
-    public static final String DOMAIN_LAYOUT_NAME = "/layout/domain.json";
-
     public static final String RULE_MODEL_PREFIX = "/models/domain/rule/";
 
-    public static final String DOMAIN_STATE_PREFIX = "/models/domain/state/";
-    
     public static final String QUERY_TYPE_PREFIX = "/models/domain/query/";
 
-    public static final String STATE_MACHINE_PREFIX = "/models/domain/state/";
+    public static final String STATE_MACHINE_PREFIX = "/models/domain/state-machine/";
 
     public ModelLocationRules()
     {
@@ -74,8 +69,7 @@ public class ModelLocationRules
                 new ModelLocationRule( VIEW_MODEL_PREFIX, Model.getType(View.class)),
                 new ModelLocationRule( LAYOUT_MODEL_PREFIX, Model.getType(LayoutModel.class)),
                 new ModelLocationRule( PROCESS_VIEW_MODEL_PATTERN, Model.getType(View.class)),
-                new ModelLocationRule( PROCESS_MODEL_PREFIX, Model.getType(Process.class)),
-                new ModelLocationRule( DOMAIN_LAYOUT_NAME, Model.getType(DomainEditorViews.class))
+                new ModelLocationRule( PROCESS_MODEL_PREFIX, Model.getType(Process.class))
             )
         );
     }

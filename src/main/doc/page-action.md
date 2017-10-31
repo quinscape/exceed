@@ -60,7 +60,7 @@ The rest of the parameters for which no special parameter providers exist make u
 the formal parameters of the action expression function corresponding to the 
 annotated java method.
 
-In our example case this is the parameter *number*.
+In our example case this is the parameter `number`.
 
 The parameters are subject to normal exceed parameter conversion rules. You can
 use the @ExceedPropertyType annotation to specify a property type in cases where
@@ -84,9 +84,9 @@ import com.myapp.domain.tables.pojos.Bar;
     }
 ```
 
-Here, the *fooObject* parameter is a GenericDomainObject, which could contain any domain 
+Here, the `fooObject` parameter is a GenericDomainObject, which could contain any domain 
 object value, but the annotation makes it clear that it is supposed to receive
-a domain object of the type *Foo*.
+a domain object of the type `Foo`.
 
 If you use JOOQ class generation with exceed's de.quinscape.exceed.tooling.GeneratorStrategy,
 it will create POJO implementations extending from de.quinscape.exceed.runtime.domain.GeneratedDomainObject.

@@ -4,9 +4,11 @@ import com.google.common.collect.Maps;
 import de.quinscape.exceed.model.AbstractTopLevelModel;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
+import de.quinscape.exceed.model.annotation.Internal;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.runtime.domain.DomainService;
+import de.quinscape.exceed.runtime.domain.QueryTypeUpdateHandler;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryDomainType;
 import de.quinscape.exceed.runtime.model.InconsistentModelException;
@@ -135,14 +137,16 @@ public class QueryTypeModel
     }
 
 
-    @JSONProperty(ignore = true)
+    /**
+     * Property type definitions for the columns of the SQL query.
+     */
     public List<DomainProperty> getColumnTypes()
     {
         return columnTypes;
     }
 
-
     @Override
+    @Internal
     public List<DomainProperty> getProperties()
     {
         return getColumnTypes();
@@ -184,6 +188,10 @@ public class QueryTypeModel
     }
 
 
+    /**
+     * Spring bean name of an implementation of {@link de.quinscape.exceed.runtime.schema.StorageConfiguration}.
+     * Default is "queryTypeStorageConfiguration" for query types.
+     */
     @Override
     public String getStorageConfiguration()
     {
@@ -192,6 +200,7 @@ public class QueryTypeModel
 
 
     @Override
+    @Internal
     public boolean isSystem()
     {
         return false;
@@ -204,6 +213,9 @@ public class QueryTypeModel
     }
 
 
+    /**
+     * Description for this query type.
+     */
     @Override
     public String getDescription()
     {
@@ -230,6 +242,10 @@ public class QueryTypeModel
     }
 
 
+    /**
+     * Spring bean name of an {@link QueryTypeUpdateHandler} implementation to use to update rows of this query type.
+     * Default if <code>null</code>, disabling updating.
+     */
     public String getUpdateHandlerName()
     {
         return updateHandlerName;
@@ -282,6 +298,10 @@ public class QueryTypeModel
     }
 
 
+    /**
+     * Spring bean name of a {@link de.quinscape.exceed.runtime.domain.QueryTypeParameterProvider} implementation.
+     * Default is <code>"defaultQueryParameterProvider"</code>
+     */
     public String getQueryParameterProvider()
     {
         return queryParameterProvider;
@@ -299,6 +319,9 @@ public class QueryTypeModel
     }
 
 
+    /**
+     * Query to provide the maximum unpaginated row count available to the main query.
+     */
     public String getCountQuery()
     {
         return countQuery;
@@ -311,6 +334,9 @@ public class QueryTypeModel
     }
 
 
+    /**
+     * Count expression to evaluate instead of executing a separate count query.
+     */
     public String getCount()
     {
         return count.getValue();

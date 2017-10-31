@@ -5,6 +5,7 @@ import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.comments.Comment;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import org.slf4j.Logger;
@@ -15,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -89,24 +91,61 @@ public class JavaDocs
 
 
         @Override
-        public void visit(MethodDeclaration n, Object arg)
+        public void visit(MethodDeclaration methodDecl, Object arg)
         {
-            Comment javadoc = n.getComment();
+            Comment javadoc = methodDecl.getComment();
             if (javadoc != null)
             {
-                String methodName = n.getName();
+                final String javaDocText = JavaSourceUtil.getJavaDocText(javadoc);
+
+                final String methodName = methodDecl.getName();
                 boolean getter = methodName.startsWith("get");
                 boolean setter = methodName.startsWith("set");
                 boolean isser = methodName.startsWith("is");
                 if (
-                    (n.getParameters().size() == 0 && getter || isser) ||
-                    (n.getParameters().size() == 1 && setter)
+                    (methodDecl.getParameters().size() == 0 && getter || isser) ||
+                    (methodDecl.getParameters().size() == 1 && setter)
                 )
                 {
                     String propName = Introspector.decapitalize(methodName.substring(isser ? 2 : 3));
-                    javaDocTexts.put(propName, JavaSourceUtil.getJavaDocText(javadoc));
+                    javaDocTexts.put(propName, javaDocText);
+                }
+                else
+                {
+                    final String key = getMethodKey(methodDecl, methodName);
+                    javaDocTexts.put(key, javaDocText);
                 }
             }
+        }
+
+
+        private String getMethodKey(MethodDeclaration methodDecl, String methodName)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append(methodName);
+            sb.append("(");
+            List<Parameter> parameters = methodDecl.getParameters();
+            for (int i = 0; i < parameters.size(); i++)
+            {
+                if (i > 0)
+                    sb.append(",");
+
+                Parameter parameter = parameters.get(i);
+                sb.append(degenerify(parameter.getType().toStringWithoutComments()));
+            }
+            sb.append(")");
+            return sb.toString();
+        }
+
+
+        private String degenerify(String type)
+        {
+            final int pos = type.indexOf('<');
+            if (pos >= 0)
+            {
+                return type.substring(0, pos);
+            }
+            return type;
         }
     }
 
@@ -127,4 +166,5 @@ public class JavaDocs
 
         return propertyDocs;
     }
+
 }

@@ -65,10 +65,10 @@ function Section(type, docs)
                     [
                         <h2 key="1">
                             { "Type: " + doc.type }
-
-                            <div className="byline">
+                           <br/>
+                            <small>
                                 Location: { doc.locationDescription }
-                            </div>
+                            </small>
                         </h2>,
                         <Description  key="2" value={ doc.classDescription }/>
                     ]

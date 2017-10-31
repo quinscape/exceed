@@ -5,7 +5,7 @@ import de.quinscape.exceed.runtime.resource.AppResource;
 import org.svenson.JSONProperty;
 
 public interface TopLevelModel
-    extends Model,AutoVersionedModel
+    extends Model, AutoVersionedModel
 {
     String getName();
 

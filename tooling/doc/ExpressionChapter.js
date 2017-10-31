@@ -1,6 +1,7 @@
 import React from "react"
 
 import describeProp from "../../src/main/js/util/describe-property"
+import Markdown from "./Markdown"
 
 function describeProperty(prop)
 {
@@ -32,6 +33,11 @@ function paramList(def)
 
         s += describeProperty(prop);
 
+        if (prop.name)
+        {
+            s += " " + prop.name;
+        }
+
     }
 
     if (def.varArgs)
@@ -46,11 +52,15 @@ class ExpressionChapter extends React.Component {
 
     render()
     {
-        const { name, definitions } = this.props;
+        const { name, definitions, noDefTypes, intro, expressionType } = this.props;
 
         return (
             <div>
                 <h1> { name } </h1>
+                {
+                    intro && <Markdown data={ intro }/>
+                        
+                }
                 {
                         definitions.map((def,idx) => {
 
@@ -58,15 +68,16 @@ class ExpressionChapter extends React.Component {
                         {
                             return (
                                 <div key={ idx }>
-                                    <h2>Function { def.name }</h2>
-                                    <em className="muted">Type: { def.definitionType }</em>
-                                    <pre>
-                                    { describeProperty(def.returnType ) + " " + def.name + "(" + paramList(def)  + ")" }
-                                    </pre>
-                                    <p>
-                                        { def.description}
-                                    </p>
+                                    <h2>
+                                        { def.name.indexOf(".") >= 0 ? def.name : "Function " + def.name }
+                                        <br/>
 
+                                        { !noDefTypes && <small>Type: { def.definitionType }</small> }
+                                    </h2>
+                                    <Markdown data={
+                                        "```" + expressionType + "\n" + describeProperty(def.returnType ) + " " + def.name + "(" + paramList(def)  + ")" + "\n```\n"
+                                    }/>
+                                    <p dangerouslySetInnerHTML={ { __html: def.description } } />
                                 </div>
                             );
                         }
@@ -76,16 +87,13 @@ class ExpressionChapter extends React.Component {
                                 <div key={ idx }>
                                     <h2>Identifier { def.name }</h2>
                                     { "Type: "+ describeProperty(def.propertyType ) }
-                                    <p>
-                                        { def.description}
-                                    </p>
+                                    <p dangerouslySetInnerHTML={ { __html: def.description } } />
                                 </div>
                             );
 
                         }
                     })
                 }
-                <hr/>
             </div>
         )
     }

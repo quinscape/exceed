@@ -125,7 +125,8 @@ public class DefaultActionService
                     null,
                     registration.isVarArgs(),
                     registration.isServerSide() ? DefinitionType.ACTION : DefinitionType.CLIENT_SIDE_ACTION,
-                    CHAPTER_ACTION
+                    CHAPTER_ACTION,
+                    null
                 )
             );
         }

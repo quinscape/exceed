@@ -4,9 +4,9 @@ import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
-import de.quinscape.exceed.model.domain.type.EnumType;
+import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.meta.PropertyType;
-import de.quinscape.exceed.model.state.StateMachine;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.QueryError;
 
