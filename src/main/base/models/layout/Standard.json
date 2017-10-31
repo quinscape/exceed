@@ -1,28 +1,13 @@
 {
     "context": {
         "properties": {
-            "layout": {
-                "type": "PlainText",
-                "defaultValue": "'Layout Property'"
-            }
         }
     },
     "root": {
         "name" : "div",
         "kids": [
             {
-                "name": "div",
-                "attrs": {
-                    "className": "page-decoration"
-                },
-                "kids": [
-                    {
-                        "name": "[String]",
-                        "attrs": {
-                            "value": "{ 'NAVIG '+ layout }"
-                        }
-                    }
-                ]
+                "name": "StandardNav"
             },
             {
                 "name": "Content"

@@ -1,10 +1,12 @@
 package de.quinscape.exceed.model.routing;
 
 
+import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.runtime.model.InconsistentModelException;
 import org.svenson.JSONProperty;
 
 import javax.annotation.PostConstruct;
+import java.util.Set;
 
 /**
  * A single routing table mapping.
@@ -16,6 +18,30 @@ public class Mapping
     private String processName;
 
     private Boolean disabled;
+
+    private Set<String> classes;
+
+    private ExpressionValue title;
+
+
+    public String getTitle()
+    {
+        return title != null ? title.getValue() : null;
+    }
+
+
+    public void setTitle(String title)
+    {
+        this.title = ExpressionValue.forValue(title, true);
+    }
+
+
+    @JSONProperty(ignore = true)
+    public ExpressionValue getTitleValue()
+    {
+        return title;
+    }
+
 
     /**
      * <code>true</code> if the mapping is currently disabled.
@@ -62,6 +88,21 @@ public class Mapping
     {
         this.processName = processName;
     }
+
+
+    public Set<String> getClasses()
+    {
+        return classes;
+    }
+
+
+    public void setClasses(Set<String> classes)
+    {
+        this.classes = classes;
+    }
+
+
+
 
 
     @JSONProperty(ignore = true)

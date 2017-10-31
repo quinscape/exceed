@@ -128,6 +128,11 @@ export function getViewModel(state)
     return getMeta(state).model;
 }
 
+export function getRoutingTable(state)
+{
+    return getMeta(state).routing;
+}
+
 export function getComponentConfig(state, name)
 {
     const config = getMeta(state).config.component;
