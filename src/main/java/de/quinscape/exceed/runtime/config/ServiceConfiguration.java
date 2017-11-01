@@ -1,7 +1,5 @@
 package de.quinscape.exceed.runtime.config;
 
-import de.quinscape.exceed.runtime.domain.migration.MigrationStep;
-import de.quinscape.exceed.runtime.domain.migration.MigrationStepRepository;
 import de.quinscape.exceed.runtime.editor.completion.CompletionService;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.query.ComponentQueryTransformer;
@@ -90,14 +88,7 @@ public class ServiceConfiguration
     {
         return new ProcessService(scopedContextFactory);
     }
-
-    @Bean
-    public MigrationStepRepository migrationStepRepository()
-    {
-        final Map<String, MigrationStep> beansOfType = applicationContext.getBeansOfType(MigrationStep.class);
-        return new MigrationStepRepository(beansOfType);
-    }
-
+    
     @Bean
     public ComponentQueryTransformer componentQueryTransformer(
         ExpressionService expressionService,

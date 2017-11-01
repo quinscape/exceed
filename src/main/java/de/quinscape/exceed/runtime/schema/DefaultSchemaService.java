@@ -41,6 +41,10 @@ public class DefaultSchemaService
         {
             op.createSchema(schema);
         }
+        if (!schemata.contains(authSchema))
+        {
+            op.createSchema(authSchema);
+        }
 
         List<String> tables = op.listTables(schema);
         List<String> authTables = op.listTables(authSchema);
