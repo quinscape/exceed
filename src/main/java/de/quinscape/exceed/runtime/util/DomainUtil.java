@@ -4,11 +4,17 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
+import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
+import de.quinscape.exceed.runtime.expression.query.QueryCondition;
+import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
+import de.quinscape.exceed.runtime.expression.query.QueryDomainType;
+import org.jooq.Condition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DomainUtil
 {
@@ -219,4 +226,34 @@ public class DomainUtil
         return partialDomainObject;
     }
 
+    public static DataGraph query(RuntimeContext runtimeContext, String domainTypeName, Condition condition)
+    {
+        final DomainService domainService = runtimeContext.getDomainService();
+
+        final DomainType domainType = domainService.getDomainType(domainTypeName);
+        final QueryDomainType queryDomainType = new QueryDomainType(domainType);
+
+        final List<String> fields = domainType.getProperties()
+            .stream()
+            .map(PropertyModel::getName)
+            .collect(Collectors.toList());
+
+        queryDomainType.selectedFields(
+            fields
+        );
+
+        QueryDefinition queryDefinition = new QueryDefinition(queryDomainType);
+
+        queryDefinition.setFilter(
+            new QueryCondition(
+                condition
+            )
+        );
+
+        return domainService.getStorageConfiguration(domainTypeName).getDomainOperations().query(
+            runtimeContext,
+            domainService,
+            queryDefinition
+        );
+    }
 }
