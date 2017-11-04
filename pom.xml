@@ -5,7 +5,7 @@
 
     <groupId>de.quinscape</groupId>
     <artifactId>exceed</artifactId>
-    <version>0.3.2</version>
+    <version>0.3.3</version>
     <packaging>jar</packaging>
 
     <name>exceed application engine</name>
