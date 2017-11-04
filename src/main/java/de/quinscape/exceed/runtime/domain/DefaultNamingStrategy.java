@@ -48,6 +48,13 @@ public class DefaultNamingStrategy
 
 
     @Override
+    public String getUniqueConstraintName(String typeName, String propertyName)
+    {
+        return "uc_" + camelCaseToUnderline(typeName + "_" + propertyName);
+    }
+
+
+    @Override
     public String getPrimaryKeyName(String typeName)
     {
         return "pk_" + camelCaseToUnderline(typeName);

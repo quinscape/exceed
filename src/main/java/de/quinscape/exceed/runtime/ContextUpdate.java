@@ -22,8 +22,8 @@ public class ContextUpdate
         RuntimeContext runtimeContext, Process process, View view, Map<String, Object> contextUpdate
     ) throws ParseException
     {
-        final ContextModel applicationContext = runtimeContext.getApplicationModel().getApplicationContextModel();
-        final ContextModel sessionContext = runtimeContext.getApplicationModel().getSessionContextModel();
+        final ContextModel applicationContext = runtimeContext.getApplicationModel().getConfigModel().getApplicationContextModel();
+        final ContextModel sessionContext = runtimeContext.getApplicationModel().getConfigModel().getSessionContextModel();
         final ContextModel viewContextModel = view.getContextModel();
 
         convertContextUpdateToJava(runtimeContext, contextUpdate, applicationContext);

@@ -11,7 +11,7 @@ import renderDoc from "./doc/renderDoc"
 import ModelDocs from "./doc/ModelDocs"
 import ComponentDocs from "./doc/ComponentDocs"
 import ExpressionDocs from "./doc/ExpressionDocs"
-import ExtensionDir, { makeTree } from "./doc/ExtensionDir"
+import ExtensionStructure from "./doc/ExtensionStructure"
 import ComponentClassIndex from "./doc/ComponentClassIndex"
 import Markdown from "./doc/Markdown"
 import InfoBlock from "../src/main/js/components/std/common/InfoBlock";
@@ -82,22 +82,6 @@ shell.find( "src/main/js/components/std/**/components.json").forEach(file => {
 componentData.names = componentData.names.sort();
 
 
-function ExtensionStructure(props)
-{
-    const { locations, filter } = props;
-
-    const tree = makeTree(locations, filter);
-
-    const last = tree.kids[tree.kids.length-1];
-
-    return(
-        <ul className="extension-struct">
-            {
-                tree.kids && tree.kids.map( kid => <ExtensionDir key={ kid.name } {...kid} last={ kid === last} filter={ filter }/> )
-            }
-        </ul>
-    );
-}
 
 const markDownPages = [];
 

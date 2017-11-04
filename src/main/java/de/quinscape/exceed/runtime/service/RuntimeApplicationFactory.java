@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.service;
 
 import com.google.common.cache.LoadingCache;
-import de.quinscape.exceed.domain.tables.pojos.AppState;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DomainService;
@@ -18,6 +17,7 @@ import de.quinscape.exceed.runtime.service.client.ClientStateProvider;
 import de.quinscape.exceed.runtime.service.client.ClientStateService;
 import de.quinscape.exceed.runtime.service.client.ExceedAppProvider;
 import de.quinscape.exceed.runtime.service.model.ModelSchemaService;
+import de.quinscape.exceed.model.startup.AppState;
 import de.quinscape.exceed.runtime.util.Util;
 import de.quinscape.exceed.runtime.view.ViewDataService;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
@@ -35,7 +34,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 @Service
 public class RuntimeApplicationFactory
@@ -133,7 +131,24 @@ public class RuntimeApplicationFactory
 
         domainServiceRepository.register(appName, domainService);
 
-        return new DefaultRuntimeApplication( servletContext, viewDataService, componentRegistry, styleService,  modelCompositionService, resourceLoader, domainService, clientStateService, processService, appName, runtimeContextFactory, scopedContextFactory, storageConfigurationRepository, clientStateProviders, nashorn, systemDefinitions);
+        return new DefaultRuntimeApplication(
+            viewDataService,
+            componentRegistry,
+            styleService,
+            modelCompositionService,
+            clientStateService,
+            processService,
+            runtimeContextFactory,
+            scopedContextFactory,
+            storageConfigurationRepository,
+            clientStateProviders,
+            nashorn,
+            systemDefinitions,
+            servletContext,
+            resourceLoader,
+            domainService,
+            appName
+        );
     }
 
     private List<ResourceRoot> configureExtensions(ServletContext servletContext, AppState state)
@@ -143,32 +158,26 @@ public class RuntimeApplicationFactory
             List<ResourceRoot> resourceRoots = new ArrayList<>();
             String appName = state.getName();
             String extensionPath = state.getPath();
-            String extensionNames = state.getExtensions();
+            List<String> extensionNames = state.getExtensions();
             resourceRoots.add(getBaseExtension(appName));
 
             boolean extensionsInClasspath = extensionPath.startsWith("classpath:");
 
-            if (StringUtils.hasText(extensionNames))
+            for (String extension : extensionNames)
             {
-                StringTokenizer tokenizer = new StringTokenizer(extensionNames, ",");
-                while (tokenizer.hasMoreElements())
+                if (extensionsInClasspath)
                 {
-                    String extension = tokenizer.nextToken().trim();
-
-                    if (extensionsInClasspath)
-                    {
-                        String base = extensionPath.substring(CLASSPATH_PREFIX.length());
-                        resourceRoots.add(new ClassPathResourceRoot(base + "/" + extension));
-                    }
-                    else
-                    {
-                        resourceRoots.add(
-                            new FileResourceRoot(
-                                new File(servletContext.getRealPath(extensionPath + "/" + extension)),
-                                true
-                            )
-                        );
-                    }
+                    final String base = extensionPath.substring(CLASSPATH_PREFIX.length());
+                    resourceRoots.add(new ClassPathResourceRoot(base + "/" + extension));
+                }
+                else
+                {
+                    resourceRoots.add(
+                        new FileResourceRoot(
+                            new File(servletContext.getRealPath(extensionPath + "/" + extension)),
+                            true
+                        )
+                    );
                 }
             }
             return resourceRoots;

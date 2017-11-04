@@ -1,5 +1,6 @@
 import i18n from "../../src/main/js/service/i18n"
 import Memoizer from "../../src/main/js/util/memoizer";
+import ExtensionStructure from "./ExtensionStructure";
 import endsWith from "../../src/main/js/util/endsWith";
 import Icon from "../../src/main/js/ui/Icon";
 import cx from "classnames";
@@ -57,6 +58,31 @@ function Section(type, docs)
                 <div>
                     <br/>
                     <h1>Components</h1>
+                    <hr/>
+                </div>
+            }
+            {
+                type === "xcd.startup.ExceedConfig" &&
+                <div>
+                    <br/>
+                    <h1>Startup Configuration</h1>
+                    <hr/>
+                </div>
+            }
+            {
+                type === "xcd.config.ApplicationConfig" &&
+                <div>
+                    <br/>
+                    <h1>Application Models</h1>
+
+                    <p>
+                        Each section listed here corresponds to a top level model equivalent to a JSON file at the relative
+                        locations listed above. The type names of both top level models and nested models correspond to the
+                        Java class model hierarchy. The prefix "xcd" gets replaced with the base package of the Java class model
+                        hierarchy ( de.quinscape.exceed.model ). So "xcd.view.View" maps to "de.quinscape.exceed.model.view.View"
+                        etc.
+                    </p>
+
                     <hr/>
                 </div>
             }
@@ -176,20 +202,7 @@ class ModelDocs extends React.Component {
         return (
             <div className="model-docs">
                 <h1>Model Locations</h1>
-                <Navigation modelLocations={ locations }/>
-
-                <h1>Application Models</h1>
-
-                <p>
-                    Each section listed here corresponds to a top level model equivalent to a JSON file at the relative
-                    locations listed above. The type names of both top level models and nested models correspond to the
-                    Java class model hierarchy. The prefix "xcd" gets replaced with the base package of the Java class model
-                    hierarchy ( de.quinscape.exceed.model ). So "xcd.view.View" maps to "de.quinscape.exceed.model.view.View"
-                    etc.
-                </p>
-
-                <hr/>
-
+                <ExtensionStructure { ... this.props } extra={ true }/>
                 {
                     modelDocs.topLevelTypes.map(type => Section(type, docs) )
                 }

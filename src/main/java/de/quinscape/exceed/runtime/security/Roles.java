@@ -6,6 +6,7 @@ package de.quinscape.exceed.runtime.security;
 public interface Roles
 {
     String EDITOR = "ROLE_EDITOR";
-    String ANONYMOUS = "ROLE_ANONYMOUS";
+    String USER = "ROLE_USER";
     String ADMIN = "ROLE_ADMIN";
+    String ANONYMOUS = "ROLE_ANONYMOUS";
 }

@@ -2,18 +2,19 @@ package de.quinscape.exceed.model.meta;
 
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.annotation.InjectResource;
+import de.quinscape.exceed.model.config.ApplicationConfig;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.context.ScopeDeclarations;
 import de.quinscape.exceed.model.context.ScopeMetaModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.model.domain.DomainRule;
+import de.quinscape.exceed.model.domain.EnumType;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
-import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.process.Process;
-import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.domain.property.DecimalConverter;
@@ -244,8 +245,10 @@ public class ApplicationMetaData
 
     public void postProcess()
     {
-        createPropertyTypes(applicationModel.getConfigModel().getApplicationContextModel());
-        createPropertyTypes(applicationModel.getConfigModel().getSessionContextModel());
+        final ApplicationConfig configModel = applicationModel.getConfigModel();
+        createPropertyTypes(configModel.getApplicationContextModel());
+        createPropertyTypes(configModel.getSessionContextModel());
+        createPropertyTypes(configModel.getUserContextModel());
 
         for (Process process : applicationModel.getProcesses().values())
         {
@@ -414,8 +417,8 @@ public class ApplicationMetaData
     {
         int max = -1;
 
-        max = Math.max(max, getMaxDecimalPlaces(applicationModel.getApplicationContextModel()));
-        max = Math.max(max, getMaxDecimalPlaces(applicationModel.getSessionContextModel()));
+        max = Math.max(max, getMaxDecimalPlaces(applicationModel.getConfigModel().getApplicationContextModel()));
+        max = Math.max(max, getMaxDecimalPlaces(applicationModel.getConfigModel().getSessionContextModel()));
 
 
         for (DomainType domainType : applicationModel.getDomainTypes().values())

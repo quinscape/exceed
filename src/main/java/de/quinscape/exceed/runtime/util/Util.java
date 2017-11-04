@@ -1,10 +1,8 @@
 package de.quinscape.exceed.runtime.util;
 
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -343,18 +341,18 @@ public final class Util
 
     public static <K,V> Map<K, V> immutableMap(Map<K, V> map)
     {
-        return map != null ? ImmutableMap.copyOf(map) : Collections.emptyMap() ;
+        return map != null ? Collections.unmodifiableMap(map) : Collections.emptyMap() ;
     }
 
     public static <V> List<V> immutableList(List<V> list)
     {
-        return list != null ? ImmutableList.copyOf(list) : Collections.emptyList() ;
+        return list != null ? Collections.unmodifiableList(list) : Collections.emptyList() ;
     }
 
 
-    public static Set<String> immutableSet(List<String> set)
+    public static Set<String> immutableSet(Set<String> set)
     {
-        return set != null ? ImmutableSet.copyOf(set) : Collections.emptySet();
+        return set != null ? Collections.unmodifiableSet(set) : Collections.emptySet();
     }
 
     public static <T> List<T> listOrEmpty(List<T> in)
@@ -431,6 +429,19 @@ public final class Util
             inverted.put(e.getValue(), e.getKey());
         }
         return inverted;
+    }
+
+
+    public static Set<String> immutableSet(List<String> classes)
+    {
+        if (classes == null)
+        {
+            return Collections.emptySet();
+        }
+
+        final HashSet<String> set = Sets.newHashSetWithExpectedSize(classes.size());
+        set.addAll(classes);
+        return Collections.unmodifiableSet(set);
     }
 }
 

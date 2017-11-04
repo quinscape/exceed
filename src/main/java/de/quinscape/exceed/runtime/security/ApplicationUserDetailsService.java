@@ -1,14 +1,13 @@
 package de.quinscape.exceed.runtime.security;
 
-import de.quinscape.exceed.domain.tables.pojos.AppState;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
-import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.service.DomainServiceRepository;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
+import de.quinscape.exceed.model.startup.AppState;
 import de.quinscape.exceed.runtime.util.AppAuthentication;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.jooq.DSLContext;
@@ -67,19 +66,19 @@ public class ApplicationUserDetailsService
 
             final RuntimeContext systemContext = runtimeApplication.createSystemContext();
 
-            final DataGraph graph = AppAuthentication.queryUsers(
+            final List<DomainObject> domainObjects = AppAuthentication.queryUsers(
                 systemContext,
                 DSL.field("login").eq(username)
             );
 
-            if (graph.getCount() > 1)
+            if (domainObjects.size() > 1)
             {
-                throw new UsernameNotFoundException("AppUser-query returned more than one result: " + JSONUtil.DEFAULT_GENERATOR.forValue(graph));
+                throw new UsernameNotFoundException("AppUser-query returned more than one result: " + JSONUtil.DEFAULT_GENERATOR.forValue(domainObjects));
             }
 
-            if (graph.getCount() == 1)
+            if (domainObjects.size() == 1)
             {
-                user = (DomainObject) graph.getRootCollection().iterator().next();
+                user = domainObjects.get(0);
                 schema = domainService.getAuthSchema();
                 break;
             }

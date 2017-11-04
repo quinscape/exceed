@@ -1,15 +1,15 @@
 package de.quinscape.exceed.runtime.config;
 
-import de.quinscape.exceed.domain.tables.pojos.AppState;
 import de.quinscape.exceed.model.meta.ApplicationError;
+import de.quinscape.exceed.model.startup.ExceedConfig;
 import de.quinscape.exceed.runtime.application.ApplicationStatus;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.stream.ClassPathResourceRoot;
-import de.quinscape.exceed.runtime.resource.stream.ServletResourceRoot;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.service.ComponentRegistryImpl;
+import de.quinscape.exceed.model.startup.AppState;
 import de.quinscape.exceed.runtime.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +40,7 @@ public class DefaultAppConfiguration
 {
     private final static Logger log = LoggerFactory.getLogger(DefaultAppConfiguration.class);
 
+    public static final String EXCEED_DEFAULT_CONFIG = "/WEB-INF/cfg/exceed-config.json";
 
     private final static String ROOT_NAME = "exceed-root";
 
@@ -48,16 +49,25 @@ public class DefaultAppConfiguration
     private final ApplicationService applicationService;
 
     private final ComponentRegistryImpl componentRegistry;
+    
+    private final ExceedConfig exceedConfig;
 
     private final Environment env;
 
 
     @Autowired
-    public DefaultAppConfiguration(ServletContext servletContext, ApplicationService applicationService, ComponentRegistryImpl componentRegistry, Environment env)
+    public DefaultAppConfiguration(
+        ServletContext servletContext,
+        ApplicationService applicationService,
+        ComponentRegistryImpl componentRegistry,
+        ExceedConfig exceedConfig,
+        Environment env
+    )
     {
         this.servletContext = servletContext;
         this.applicationService = applicationService;
         this.componentRegistry = componentRegistry;
+        this.exceedConfig = exceedConfig;
         this.env = env;
     }
 
@@ -66,7 +76,7 @@ public class DefaultAppConfiguration
     public void initialize() throws IOException
     {
         registerComponents();
-        initializeDefaultApp();
+        initializeApps();
     }
 
     private void registerComponents() throws IOException
@@ -100,71 +110,10 @@ public class DefaultAppConfiguration
 
     }
 
-    private void initializeDefaultApp()
+    private void initializeApps()
     {
-        String defaultAppName = getDefaultApplicationName();
+        applicationService.update(servletContext, exceedConfig);
 
-        String extensionPath = getExtensionBasePath();
-
-        String extensions = env.getProperty("exceed.application.extensions");
-
-        AppState applicationState = applicationService.getApplicationState(defaultAppName);
-
-        log.info("Initializing exceed application '{}' ( extensions: {} )", defaultAppName, extensions);
-
-        if (applicationState == null)
-        {
-            log.debug("Activating default application");
-            // if no application state exists, we activate this app
-            applicationService.activateApplication(servletContext, defaultAppName, extensionPath, extensions);
-        }
-        else
-        {
-            log.debug("Updating default application");
-            applicationService.updateApplication(servletContext, defaultAppName, extensionPath, extensions);
-        }
-    }
-
-    private String getExtensionBasePath()
-    {
-        String configPath = servletContext.getRealPath("/WEB-INF/cfg/exceed-app.properties");
-        String extensionPath;
-        boolean runningFromFileSystem = configPath != null;
-        if (runningFromFileSystem)
-        {
-            extensionPath = "/WEB-INF/extensions";
-        }
-        else
-        {
-            extensionPath = "classpath:/WEB-INF/extensions";
-        }
-
-        log.debug("Starting default application from config {}", extensionPath);
-        return extensionPath;
-    }
-
-    public String getDefaultApplicationName()
-    {
-        String contextPath = servletContext.getContextPath();
-
-        if (contextPath == null || contextPath.length() == 0)
-        {
-            return ROOT_NAME;
-        }
-
-        if (!contextPath.startsWith("/"))
-        {
-            throw new IllegalStateException("Context-path must start with /: " + contextPath);
-        }
-
-        String defaultApplicationName = contextPath.substring(1).replace('/', '_');
-
-        if (defaultApplicationName.equals(ROOT_NAME))
-        {
-            throw new IllegalStateException("Invalid context-path " + contextPath + ", the resulting application name" +
-                " " + ROOT_NAME + " is reserved for the empty context path.");
-        }
-        return defaultApplicationName;
     }
 
     @EventListener(ContextRefreshedEvent.class)
@@ -189,7 +138,7 @@ public class DefaultAppConfiguration
             {
                 log.error("{} Errors in application '{}':\n{}", numberOfErrors, appName, Util.join(errors, "\n"));
 
-                final ApplicationStatus status = ApplicationStatus.from(state);
+                final ApplicationStatus status = state.getStatus();
                 if (status == ApplicationStatus.PRODUCTION)
                 {
                     //applicationService.setStatus(servletContext, appName, ApplicationStatus.OFFLINE);

@@ -1,0 +1,38 @@
+{
+    "description" : "Contains persistent login data. Will only be used for the default application which will contain all tokens",
+
+    "name": "AppLogin",
+
+    "properties": [
+
+        {
+            "name": "id",
+            "type": "UUID",
+            "maxLength": 36
+        },
+        {
+            "name": "username",
+            "type": "PlainText",
+            "required": true,
+            "maxLength": 64
+        },
+        {
+            "name": "series",
+            "type": "PlainText",
+            "required": true,
+            "unique": true,
+            "maxLength": 64
+        },
+        {
+            "name": "token",
+            "type": "PlainText",
+            "required": true,
+            "maxLength": 64
+        },
+        {
+            "name": "lastUsed",
+            "type": "Timestamp",
+            "required": true
+        }
+    ]
+}

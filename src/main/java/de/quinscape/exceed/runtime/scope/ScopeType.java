@@ -20,6 +20,11 @@ public enum ScopeType
     PROCESS,
 
     /**
+     * User context defined by the application model's "userContext" property. Contains per user/login configuration.
+     */
+    USER,
+
+    /**
      * Per-User Session context defined by the application model's "sessionContext" property.
      */
     SESSION,
@@ -28,11 +33,6 @@ public enum ScopeType
      * Application context defined by the application model's "applicationContext" property. Contains general application configuration.
      */
     APPLICATION,
-
-    /**
-     * Transition level context containing context parameters for transitions.
-     */
-    TRANSITION,
 
     /**
      * Prototypic base scope for layout properties. Gets mixed into the the scope definitions for the views that use the layout.

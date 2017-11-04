@@ -3,6 +3,7 @@ package de.quinscape.exceed.runtime.config;
 import de.quinscape.exceed.domain.tables.pojos.AppUser;
 import de.quinscape.exceed.domain.tables.records.AppUserRecord;
 import org.jooq.DSLContext;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -29,6 +30,9 @@ import static org.hamcrest.Matchers.*;
     ServiceConfiguration.class,
 })
 @Transactional
+// the database tables in the public schema this test used no longer exist as such.
+// we keep this test around as an example of how to setup a larger test scenario
+@Ignore
 public class DomainConfigurationTest
 {
     private final static Logger log = LoggerFactory.getLogger(DomainConfigurationTest.class);

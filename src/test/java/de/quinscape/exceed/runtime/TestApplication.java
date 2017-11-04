@@ -92,8 +92,8 @@ public class TestApplication
     {
         final ScopedContext viewContext = view != null ? new ViewContext(view.getContextModel(), view.getName()) :
             null;
-        final ContextModel applicationContextModel = applicationModel.getApplicationContextModel();
-        final ContextModel sessionContextModel = applicationModel.getSessionContextModel();
+        final ContextModel applicationContextModel = applicationModel.getConfigModel().getApplicationContextModel();
+        final ContextModel sessionContextModel = applicationModel.getConfigModel().getSessionContextModel();
 
         final ApplicationContext applicationContext = applicationContextModel != null ? new ApplicationContext(applicationContextModel) : null;
         final SessionContext sessionContext = sessionContextModel != null ? new SessionContext(sessionContextModel) : null;

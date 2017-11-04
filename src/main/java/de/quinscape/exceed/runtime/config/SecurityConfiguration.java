@@ -11,15 +11,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.annotation.web.servlet.configuration.EnableWebMvcSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 import javax.servlet.ServletContext;
 
-@EnableWebMvcSecurity
+@EnableWebSecurity
 @Configuration
 public class SecurityConfiguration
     extends WebSecurityConfigurerAdapter
@@ -42,7 +42,7 @@ public class SecurityConfiguration
 
     private final ApplicationService applicationService;
 
-    private final JdbcTokenRepositoryImpl jdbcTokenRepository;
+    private final PersistentTokenRepository persistentTokenRepository;
 
     private final ServletContext servletContext;
 
@@ -55,7 +55,7 @@ public class SecurityConfiguration
     public SecurityConfiguration(
         DSLContext dslContext,
         ApplicationService applicationService,
-        JdbcTokenRepositoryImpl jdbcTokenRepository,
+        PersistentTokenRepository persistentTokenRepository,
         ServletContext servletContext,
         DomainServiceRepository domainServiceRepository,
         RuntimeContextFactory runtimeContextFactory
@@ -63,7 +63,7 @@ public class SecurityConfiguration
     {
         this.dslContext = dslContext;
         this.applicationService = applicationService;
-        this.jdbcTokenRepository = jdbcTokenRepository;
+        this.persistentTokenRepository = persistentTokenRepository;
         this.servletContext = servletContext;
         this.domainServiceRepository = domainServiceRepository;
         this.runtimeContextFactory = runtimeContextFactory;
@@ -95,7 +95,7 @@ public class SecurityConfiguration
             .and()
                 .rememberMe()
                     .key("@7J@v9,.qDss*yR@g/SL")
-                    .tokenRepository(jdbcTokenRepository)
+                    .tokenRepository(persistentTokenRepository)
                     .userDetailsService(userDetailsServiceBean());
 
     }

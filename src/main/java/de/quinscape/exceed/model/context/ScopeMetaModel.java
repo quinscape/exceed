@@ -81,7 +81,8 @@ public class ScopeMetaModel
             applicationDefinitions,
             null,
             null,
-            applicationModel.getApplicationContextModel()
+            null,
+            applicationModel.getConfigModel().getApplicationContextModel()
         );
 
 
@@ -89,8 +90,10 @@ public class ScopeMetaModel
             ACTION,
             applicationDefinitions,
             null,
-            applicationModel.getSessionContextModel(),
-            applicationModel.getApplicationContextModel()
+            null,
+            applicationModel.getConfigModel().getUserContextModel(),
+            applicationModel.getConfigModel().getSessionContextModel(),
+            applicationModel.getConfigModel().getApplicationContextModel()
         );
 
         for (Process process : applicationModel.getProcesses().values())
@@ -98,10 +101,12 @@ public class ScopeMetaModel
             final String key = process.getScopeLocation();
             addDeclarations(
                 key,
-                applicationDefinitions, null,
+                applicationDefinitions,
+                null,
                 process.getContextModel(),
-                applicationModel.getSessionContextModel(),
-                applicationModel.getApplicationContextModel()
+                applicationModel.getConfigModel().getUserContextModel(),
+                applicationModel.getConfigModel().getSessionContextModel(),
+                applicationModel.getConfigModel().getApplicationContextModel()
             );
             
             for (ProcessState processState : process.getStates().values())
@@ -159,8 +164,9 @@ public class ScopeMetaModel
             applicationDefinitions,
             processState instanceof ViewState ? process.getView(processState.getName()).getContextModel() : null,
             process.getContextModel(),
-            applicationModel.getSessionContextModel(),
-            applicationModel.getApplicationContextModel()
+            applicationModel.getConfigModel().getUserContextModel(),
+            applicationModel.getConfigModel().getSessionContextModel(),
+            applicationModel.getConfigModel().getApplicationContextModel()
         );
     }
 
@@ -184,8 +190,9 @@ public class ScopeMetaModel
             scopeLocation,
             applicationDefinitions, view.getContextModel(),
             null,
-            applicationModel.getSessionContextModel(),
-            applicationModel.getApplicationContextModel()
+            applicationModel.getConfigModel().getUserContextModel(),
+            applicationModel.getConfigModel().getSessionContextModel(),
+            applicationModel.getConfigModel().getApplicationContextModel()
         );
     }
 

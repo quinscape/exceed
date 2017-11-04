@@ -72,11 +72,15 @@ public class DefaultExpressionCompiler
         final Definitions systemRoleDefinitions = applicationModel.lookup(ScopeMetaModel.SYSTEM).getLocalDefinitions();
 
         compileDefaults(
-            applicationModel, scriptBuffer, systemDefinitions, "app", applicationModel.getApplicationContextModel(),
+            applicationModel, scriptBuffer, systemDefinitions, "app", applicationModel.getConfigModel().getApplicationContextModel(),
             applicationModel.getConfigModel()
         );
         compileDefaults(
-            applicationModel, scriptBuffer, systemDefinitions, "session", applicationModel.getSessionContextModel(),
+            applicationModel, scriptBuffer, systemDefinitions, "session", applicationModel.getConfigModel().getSessionContextModel(),
+            applicationModel.getConfigModel()
+        );
+        compileDefaults(
+            applicationModel, scriptBuffer, systemDefinitions, "user", applicationModel.getConfigModel().getUserContextModel(),
             applicationModel.getConfigModel()
         );
 

@@ -1,21 +1,20 @@
 package de.quinscape.exceed.model;
 
 import de.quinscape.exceed.model.config.ApplicationConfig;
-import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.context.ScopeDeclarations;
 import de.quinscape.exceed.model.context.ScopeMetaModel;
 import de.quinscape.exceed.model.domain.DomainRule;
 import de.quinscape.exceed.model.domain.DomainVersion;
+import de.quinscape.exceed.model.domain.EnumType;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.domain.type.DomainTypeModel;
-import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.type.QueryTypeModel;
 import de.quinscape.exceed.model.meta.ApplicationMetaData;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.routing.RoutingTable;
-import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.domain.DomainTypesRegistry;
@@ -347,20 +346,7 @@ public class ApplicationModel
     {
         return configModel;
     }
-
-
-    public ContextModel getApplicationContextModel()
-    {
-        return configModel.getApplicationContextModel();
-    }
-
-
-    public ContextModel getSessionContextModel()
-    {
-        return configModel.getSessionContextModel();
-    }
-
-
+    
     public void setVersion(String version)
     {
         this.version = version;

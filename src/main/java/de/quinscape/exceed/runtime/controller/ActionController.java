@@ -11,9 +11,11 @@ import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.scope.SessionContext;
+import de.quinscape.exceed.runtime.scope.UserContext;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.service.DomainServiceRepository;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
+import de.quinscape.exceed.runtime.util.AppAuthentication;
 import de.quinscape.exceed.runtime.util.ContentType;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.slf4j.Logger;
@@ -94,8 +96,19 @@ public class ActionController
             );
         }
 
+        final AppAuthentication auth = AppAuthentication.get();
+
         final ApplicationModel applicationModel = runtimeApplication.getApplicationModel();
-        SessionContext sessionContext = scopedContextFactory.getSessionContext(request, appName, applicationModel.getSessionContextModel());
+        SessionContext sessionContext = scopedContextFactory.getSessionContext(
+            request,
+            appName,
+            applicationModel.getConfigModel().getSessionContextModel()
+        );
+
+        final UserContext userContext = scopedContextFactory.createUserContext(
+            applicationModel.getConfigModel().getUserContextModel(),
+            auth.getUserName()
+        );
 
         final ScopedContextChain scopedContextChain = new ScopedContextChain(
             Arrays.asList(
@@ -114,6 +127,7 @@ public class ActionController
         );
 
         RuntimeContextHolder.register(runtimeContext, request);
+        scopedContextFactory.initializeContext(runtimeContext.getJsEnvironment(), runtimeContext, userContext);
         scopedContextFactory.initializeContext(runtimeContext.getJsEnvironment(), runtimeContext, sessionContext);
 
         try

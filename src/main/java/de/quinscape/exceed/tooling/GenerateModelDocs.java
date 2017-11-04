@@ -15,6 +15,7 @@ import de.quinscape.exceed.model.component.ComponentPackageDescriptor;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.expression.ExpressionValueType;
+import de.quinscape.exceed.model.startup.ExceedConfig;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.domain.QueryTypeOperations;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
@@ -540,15 +541,18 @@ public class GenerateModelDocs
         }
 
 
-        private String getName(Class<?> o2)
+        private String getName(Class<?> cls)
         {
-            // sort the component package descriptor last
-            if (o2.equals(ComponentPackageDescriptor.class))
+            if (cls.equals(ExceedConfig.class))
             {
-                return "zzz";
+                return "AAAA";
+            }
+            else if (cls.equals(ComponentPackageDescriptor.class))
+            {
+                return "AAAB";
             }
 
-            return o2.getSimpleName();
+            return cls.getSimpleName();
         }
     }
 

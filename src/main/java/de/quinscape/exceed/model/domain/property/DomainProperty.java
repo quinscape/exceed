@@ -3,10 +3,10 @@ package de.quinscape.exceed.model.domain.property;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.annotation.Internal;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.meta.PropertyType;
-import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.runtime.util.Util;
 import org.svenson.JSONProperty;
 
@@ -44,6 +44,8 @@ public final class DomainProperty
     private Map<String, Object> config;
 
     private PropertyType propertyType;
+
+    private boolean unique;
 
 
     public DomainProperty()
@@ -275,6 +277,19 @@ public final class DomainProperty
             + ", data = " + data
             ;
     }
+
+
+    public boolean isUnique()
+    {
+        return unique;
+    }
+
+
+    public void setUnique(boolean unique)
+    {
+        this.unique = unique;
+    }
+
 
     @JSONProperty(ignore = true)
     public String getTranslationTag()

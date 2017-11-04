@@ -294,7 +294,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
+                <version>3.7.0</version>
 
                 <executions>
                     <!--
@@ -413,6 +413,7 @@
                 <artifactId>jooq-codegen-maven</artifactId>
                 <version>3.6.2</version>
 
+                <!--
                 <executions>
                     <execution>
                         <goals>
@@ -420,6 +421,7 @@
                         </goals>
                     </execution>
                 </executions>
+                -->
 
                 <dependencies>
                     <dependency>

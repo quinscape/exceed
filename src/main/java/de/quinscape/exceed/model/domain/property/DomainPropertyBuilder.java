@@ -31,6 +31,8 @@ public class DomainPropertyBuilder
 
     private String description;
 
+    private boolean unique;
+
 
     public DomainPropertyBuilder withName(String name)
     {
@@ -131,8 +133,18 @@ public class DomainPropertyBuilder
         property.setConfig(config);
         property.setForeignKey(key);
         property.setDescription(description);
+        property.setUnique(unique);
         return property;
     }
+
+
+    public DomainPropertyBuilder setUnique(boolean unique)
+    {
+        this.unique = unique;
+
+        return this;
+    }
+
 
     public ScopedPropertyModel buildScoped()
     {
@@ -172,16 +184,22 @@ public class DomainPropertyBuilder
     }
 
 
-    public DomainPropertyBuilder fromProperty(DomainProperty domainProperty)
+    public DomainPropertyBuilder fromProperty(PropertyModel propertyModel)
     {
-        name = domainProperty.getName();
-        type = domainProperty.getType();
-        defaultValue = domainProperty.getDefaultValue();
-        required = domainProperty.isRequired();
-        typeParam = domainProperty.getTypeParam();
-        maxLength = domainProperty.getMaxLength();
-        domainType = domainProperty.getDomainType();
-        key = domainProperty.getForeignKey();
+        name = propertyModel.getName();
+        type = propertyModel.getType();
+        defaultValue = propertyModel.getDefaultValue();
+        typeParam = propertyModel.getTypeParam();
+        maxLength = propertyModel.getMaxLength();
+
+        if (propertyModel instanceof DomainProperty)
+        {
+            DomainProperty domainProperty = (DomainProperty)propertyModel;
+            required = domainProperty.isRequired();
+            domainType = domainProperty.getDomainType();
+            key = domainProperty.getForeignKey();
+            unique = domainProperty.isUnique();
+        }
 
         // config is part of the configuration happening here, so we copy the config map
         if (this.config == null)
@@ -189,7 +207,7 @@ public class DomainPropertyBuilder
             this.config = new HashMap<>();
         }
 
-        final Map<String, Object> config = domainProperty.getConfig();
+        final Map<String, Object> config = propertyModel.getConfig();
         if (config != null)
         {
             this.config.putAll(config);
@@ -207,11 +225,13 @@ public class DomainPropertyBuilder
         typeParam = (String) map.get("typeParam");
         domainType = (String) map.get("domainType");
         key = (ForeignKeyDefinition) map.get("foreignKey");
-
+        
+        final Object uniqueValue = map.get("unique");
         final Object requiredValue = map.get("required");
         final Object max = map.get("maxLength");
         this.required = requiredValue instanceof Boolean && (Boolean) requiredValue;
         this.maxLength = max instanceof Integer ? (Integer) max : -1;
+        this.unique = uniqueValue instanceof Boolean && (Boolean) uniqueValue;
 
         // config is part of the configuration happening here, so we copy the config map
         if (this.config == null)
@@ -249,7 +269,9 @@ public class DomainPropertyBuilder
 
         final Object requiredValue = map.getMember("required");
         final Object max = map.getMember("maxLength");
+        final Object unique = map.getMember("unique");
         this.required = requiredValue instanceof Boolean && (Boolean) requiredValue;
+        this.unique = requiredValue instanceof Boolean && (Boolean) requiredValue;
         this.maxLength = max instanceof Integer ? (Integer) max : -1;
 
         // config is part of the configuration happening here, so we copy the config map

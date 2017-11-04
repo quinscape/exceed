@@ -21,7 +21,7 @@ import de.quinscape.exceed.runtime.domain.SystemStorageOperations;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.query.ComponentQueryTransformer;
 import de.quinscape.exceed.runtime.i18n.DefaultTranslator;
-import de.quinscape.exceed.runtime.i18n.JOOQTranslationProvider;
+import de.quinscape.exceed.runtime.i18n.ExceedAppTranslationProvider;
 import de.quinscape.exceed.runtime.i18n.TranslationProvider;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.schema.DefaultSchemaService;
@@ -30,6 +30,8 @@ import de.quinscape.exceed.runtime.schema.DefaultStorageConfigurationRepository;
 import de.quinscape.exceed.runtime.schema.InformationSchemaOperations;
 import de.quinscape.exceed.runtime.schema.StorageConfiguration;
 import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
+import de.quinscape.exceed.runtime.security.ExceedTokenRepository;
+import de.quinscape.exceed.runtime.service.ApplicationService;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DataSourceConnectionProvider;
@@ -45,10 +47,10 @@ import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
-import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -132,11 +134,12 @@ public class DomainConfiguration
 
 
     @Bean
-    public JdbcTokenRepositoryImpl tokenRepository(DataSource dataSource)
+    public ExceedTokenRepository tokenRepository(
+        ServletContext servletContext,
+        ApplicationService applicationService
+    )
     {
-        JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
-        tokenRepository.setDataSource(dataSource);
-        return tokenRepository;
+        return new ExceedTokenRepository(servletContext, applicationService);
     }
 
 
@@ -236,9 +239,9 @@ public class DomainConfiguration
     }
 
     @Bean
-    public TranslationProvider jooQTranslationProvider(DSLContext dslContext)
+    public TranslationProvider jooQTranslationProvider()
     {
-        return new JOOQTranslationProvider(dslContext);
+        return new ExceedAppTranslationProvider();
     }
 
 

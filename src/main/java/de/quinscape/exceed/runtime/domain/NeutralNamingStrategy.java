@@ -29,6 +29,13 @@ public class NeutralNamingStrategy
 
 
     @Override
+    public String getUniqueConstraintName(String typeName, String propertyName)
+    {
+        return "uc_" + typeName + "_" + propertyName;
+    }
+
+
+    @Override
     public String getPrimaryKeyName(String typeName)
     {
         return "pk_" + typeName;

@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.domain;
 
 import de.quinscape.exceed.runtime.RuntimeContext;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -72,4 +73,6 @@ public interface DomainObject
     {
         return getDomainService().delete(runtimeContext, this);
     }
+
+    Map<String,Object> asMap();
 }

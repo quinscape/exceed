@@ -10,6 +10,7 @@ import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
+import de.quinscape.exceed.runtime.domain.GeneratedDomainObject;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.expression.query.QueryCondition;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
@@ -226,21 +227,14 @@ public class DomainUtil
         return partialDomainObject;
     }
 
-    public static DataGraph query(RuntimeContext runtimeContext, String domainTypeName, Condition condition)
+    public static List<DomainObject> query(RuntimeContext runtimeContext, String domainTypeName, Condition condition)
     {
         final DomainService domainService = runtimeContext.getDomainService();
 
-        final DomainType domainType = domainService.getDomainType(domainTypeName);
+        final DomainType domainType = runtimeContext.getApplicationModel().getDomainType(domainTypeName);
         final QueryDomainType queryDomainType = new QueryDomainType(domainType);
 
-        final List<String> fields = domainType.getProperties()
-            .stream()
-            .map(PropertyModel::getName)
-            .collect(Collectors.toList());
-
-        queryDomainType.selectedFields(
-            fields
-        );
+        selectDomainTypeFields(queryDomainType, domainType);
 
         QueryDefinition queryDefinition = new QueryDefinition(queryDomainType);
 
@@ -250,10 +244,70 @@ public class DomainUtil
             )
         );
 
-        return domainService.getStorageConfiguration(domainTypeName).getDomainOperations().query(
+        final DataGraph graph = domainService.getStorageConfiguration(domainTypeName).getDomainOperations().query(
             runtimeContext,
             domainService,
             queryDefinition
         );
+
+        setDomainTypeInGraphResults(graph, domainTypeName);
+
+        return (List<DomainObject>) graph.getRootCollection();
+    }
+
+
+    /**
+     * Makes sure all domain objects in the given array graph have a "_type" field which they normally
+     * don't have. This is a shortcut to use the graph objects as full domain objects without extraction.
+     *
+     * @param graph             array data graph
+     * @param domainTypeName    domain type name
+     */
+    private static void setDomainTypeInGraphResults(DataGraph graph, String domainTypeName)
+    {
+        final List<DomainObject> domainObjects = (List<DomainObject>) graph.getRootCollection();
+        for (DomainObject domainObject : domainObjects)
+        {
+            if (!(domainObject instanceof GeneratedDomainObject))
+            {
+                domainObject.setDomainType(domainTypeName);
+            }
+        }
+    }
+
+
+    /**
+     * Selects all properties of the given domain type model in the given query domain type.
+     * <p>
+     *     By default, the query mechanism will select all fields, but it will select them as
+     *     "Type.field" or "alias.field", we need the orignal property names.
+     * </p>
+     *
+     * @param queryDomainType   query domain type
+     * @param domainType        domain type model
+     */
+    public static void selectDomainTypeFields(QueryDomainType queryDomainType, DomainType domainType)
+    {
+        final List<String> fields = domainType.getProperties()
+            .stream()
+            .map(PropertyModel::getName)
+            .collect(Collectors.toList());
+
+        queryDomainType.selectedFields(
+            fields
+        );
+    }
+
+
+    public static DomainObject queryOne(RuntimeContext runtimeContext, String domainTypeName, Condition condition)
+    {
+        final List<DomainObject> rows = query(runtimeContext, domainTypeName, condition);
+
+        if (rows.size() > 1)
+        {
+            throw new IllegalStateException("More than one result: " + rows);
+        }
+
+        return rows.size() > 0 ? rows.get(0): null;
     }
 }

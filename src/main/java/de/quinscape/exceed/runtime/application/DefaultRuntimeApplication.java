@@ -25,7 +25,6 @@ import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.component.ComponentRegistration;
-import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.component.DataProviderPreparationException;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
@@ -47,6 +46,7 @@ import de.quinscape.exceed.runtime.scope.ApplicationContext;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.scope.SessionContext;
+import de.quinscape.exceed.runtime.scope.UserContext;
 import de.quinscape.exceed.runtime.scope.ViewContext;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.service.ProcessService;
@@ -61,6 +61,7 @@ import de.quinscape.exceed.runtime.util.FileExtension;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import de.quinscape.exceed.runtime.util.LocationUtil;
 import de.quinscape.exceed.runtime.util.RequestUtil;
+import de.quinscape.exceed.runtime.util.Util;
 import de.quinscape.exceed.runtime.view.ComponentData;
 import de.quinscape.exceed.runtime.view.ViewData;
 import de.quinscape.exceed.runtime.view.ViewDataService;
@@ -80,7 +81,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -162,22 +162,15 @@ public class DefaultRuntimeApplication
 
 
     public DefaultRuntimeApplication(
+        ViewDataService viewDataService, ComponentRegistry componentRegistry, StyleService styleService,
+        ModelCompositionService modelCompositionService, ClientStateService clientStateService,
+        ProcessService processService, RuntimeContextFactory runtimeContextFactory,
+        ScopedContextFactory scopedContextFactory, StorageConfigurationRepository storageConfigurationRepository,
+        Set<ClientStateProvider> clientStateProviders, NashornScriptEngine nashorn, Definitions definitions,
         ServletContext servletContext,
-        ViewDataService viewDataService,
-        ComponentRegistry componentRegistry,
-        StyleService styleService,
-        ModelCompositionService modelCompositionService,
         ResourceLoader resourceLoader,
         DomainService domainService,
-        ClientStateService clientStateService,
-        ProcessService processService,
-        String appName,
-        RuntimeContextFactory runtimeContextFactory,
-        ScopedContextFactory scopedContextFactory,
-        StorageConfigurationRepository storageConfigurationRepository,
-        Set<ClientStateProvider> clientStateProviders,
-        NashornScriptEngine nashorn,
-        Definitions definitions
+        String appName
     )
     {
         if (servletContext == null)
@@ -204,7 +197,7 @@ public class DefaultRuntimeApplication
         this.domainService = domainService;
         applicationModel = modelCompositionService.compose(resourceLoader.getAllResources().values(), domainService, systemDefinitions, appName);
 
-        ContextModel context = applicationModel.getApplicationContextModel();
+        ContextModel context = applicationModel.getConfigModel().getApplicationContextModel();
 
         this.applicationContext = scopedContextFactory.createApplicationContext(context, appName);
 
@@ -215,7 +208,6 @@ public class DefaultRuntimeApplication
         
         RuntimeContext systemContext = createSystemContext();
         RuntimeContextHolder.register(systemContext, null);
-        scopedContextFactory.initializeContext(applicationModel.getMetaData().getJsEnvironment(), systemContext, applicationContext);
         domainService.init(this);
 
         for (ResourceRoot root : resourceLoader.getExtensions())
@@ -234,6 +226,7 @@ public class DefaultRuntimeApplication
 
         synchronizeDomainTypeSchemata(systemContext, storageConfigurationRepository);
         ensureBaseRoles(systemContext);
+        scopedContextFactory.initializeContext(applicationModel.getMetaData().getJsEnvironment(), systemContext, applicationContext);
 
         this.nashorn = nashorn;
     }
@@ -242,21 +235,21 @@ public class DefaultRuntimeApplication
         RuntimeContext systemContext
     )
     {
-        final Map<String, String> defaultUsers = applicationModel.getConfigModel().getDefaultUsers();
+        final Map<String, Set<String>> defaultUsers = applicationModel.getConfigModel().getDefaultUsers();
 
-        final DataGraph graph = AppAuthentication.queryUsers(
+        final List<DomainObject> domainObjects = AppAuthentication.queryUsers(
             systemContext,
             DSL.field("login").in(defaultUsers.keySet())
         );
 
         BCryptPasswordEncoder encoder = null;
 
-        for (Map.Entry<String, String> e : defaultUsers.entrySet())
+        for (Map.Entry<String, Set<String>> e : defaultUsers.entrySet())
         {
             final String name = e.getKey();
-            final String roles = e.getValue();
+            final Set<String> roles = e.getValue();
 
-            DomainObject user = findUser(graph, name);
+            DomainObject user = findUser(domainObjects, name);
             if (user == null)
             {
                 if (encoder == null)
@@ -274,7 +267,7 @@ public class DefaultRuntimeApplication
         RuntimeContext systemContext,
         BCryptPasswordEncoder encoder,
         String name,
-        String roles
+        Set<String> roles
     )
     {
         DomainObject user;
@@ -285,7 +278,7 @@ public class DefaultRuntimeApplication
         user = domainService.create(systemContext, AppAuthentication.USER_TYPE, UUID.randomUUID().toString());
         user.setProperty("login", name);
         user.setProperty("password", encoder.encode(name));
-        user.setProperty("roles", roles);
+        user.setProperty("roles", Util.join(roles,","));
         user.setProperty("created", now);
         user.setProperty("last_login", now);
         user.setProperty("disabled", false);
@@ -293,9 +286,9 @@ public class DefaultRuntimeApplication
     }
 
 
-    private DomainObject findUser(DataGraph graph, String name)
+    private DomainObject findUser(List<DomainObject> domainObjects, String name)
     {
-        for (DomainObject user : (Collection<DomainObject>)graph.getRootCollection())
+        for (DomainObject user : domainObjects)
         {
             if (user.getProperty("login").equals(name))
             {
@@ -382,33 +375,51 @@ public class DefaultRuntimeApplication
     }
 
 
-    public boolean  processView(HttpServletRequest request, HttpServletResponse response, Map<String, Object> model,
-                               String inAppURI, Map<String, String> variables, String template, final String viewName, final String processName) throws IOException, ParseException
+    public boolean  processView(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Map<String, Object> model,
+            String inAppURI,
+            Map<String, String> variables,
+            String template,
+            final String viewName,
+            final String processName
+        ) throws IOException, ParseException
     {
+        final AppAuthentication auth = AppAuthentication.get();
+
+        UserContext userContext= null;
         SessionContext sessionContext = null;
+        RuntimeContext runtimeContext = null;
         try
         {
             sessionContext = scopedContextFactory.getSessionContext(
                 request,
                 applicationModel.getName(),
-                applicationModel.getSessionContextModel()
+                applicationModel.getConfigModel().getSessionContextModel()
             );
-            
-            RuntimeContext runtimeContext = runtimeContextFactory.create(
+
+
+            userContext = scopedContextFactory.createUserContext(
+                applicationModel.getConfigModel().getUserContextModel(),
+                auth.getUserName()
+            );
+
+            runtimeContext = runtimeContextFactory.create(
                 this, inAppURI,
                 request.getLocale(),
                 new ScopedContextChain(
                     Arrays.asList(
                         applicationContext,
-                        sessionContext
+                        sessionContext,
+                        userContext
                     )
                     , applicationModel.getMetaData().getScopeMetaModel(), null),
                 domainService);
 
 
-            final AppAuthentication auth = runtimeContext.getAuthentication();
             final String appAuth = applicationModel.getConfigModel().getAuthSchema();
-            if (!auth.isAnonymous() && !auth.canAccess(appAuth))
+            if (!auth.isAnonymous() && !auth.isAdmin() && !auth.canAccess(appAuth))
             {
                 throw new ApplicationSecurityException(
                     "Authentication schema does not match the application's authSchema. " +
@@ -419,6 +430,7 @@ public class DefaultRuntimeApplication
             }
 
             RuntimeContextHolder.register(runtimeContext, request);
+            scopedContextFactory.initializeContext(runtimeContext.getJsEnvironment(), runtimeContext, userContext);
             scopedContextFactory.initializeContext(runtimeContext.getJsEnvironment(), runtimeContext, sessionContext);
 
 
@@ -623,8 +635,12 @@ public class DefaultRuntimeApplication
         }
         finally
         {
-            scopedContextFactory.updateSessionContext(request, applicationModel.getName(), sessionContext);
-            scopedContextFactory.updateApplicationContext(applicationModel.getName(), applicationContext, domainService);
+            if (runtimeContext != null)
+            {
+                scopedContextFactory.updateUserContext(runtimeContext, userContext);
+                scopedContextFactory.updateSessionContext(request, applicationModel.getName(), sessionContext);
+                scopedContextFactory.updateApplicationContext(runtimeContext, applicationModel.getName(), applicationContext);
+            }
         }
     }
 

@@ -7,10 +7,11 @@ import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.model.domain.DomainRule;
 import de.quinscape.exceed.model.domain.DomainVersion;
+import de.quinscape.exceed.model.domain.EnumType;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
 import de.quinscape.exceed.model.domain.type.DomainTypeModel;
-import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.type.QueryTypeModel;
 import de.quinscape.exceed.model.meta.PropertyType;
 import de.quinscape.exceed.model.process.DecisionModel;
@@ -21,7 +22,6 @@ import de.quinscape.exceed.model.process.Transition;
 import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.model.routing.Mapping;
 import de.quinscape.exceed.model.routing.RoutingTable;
-import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
@@ -141,8 +141,9 @@ class TopLevelModelSearcher
     @Override
     public List<SearchResult> visit(ApplicationConfig configModel, Object o)
     {
-        searchContext(configModel, configModel.getApplicationContextModel(), searchOperation, "application");
-        searchContext(configModel, configModel.getSessionContextModel(), searchOperation, "session");
+        searchContext(configModel, configModel.getApplicationContextModel(), searchOperation, "applicationContext");
+        searchContext(configModel, configModel.getSessionContextModel(), searchOperation, "sessionContext");
+        searchContext(configModel, configModel.getUserContextModel(), searchOperation, "userContext");
 
         return null;
     }

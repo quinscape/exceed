@@ -8,5 +8,7 @@ public interface NamingStrategy
 
     String getForeignKeyName(String typeName, String propertyName, String targetType, String targetProperty);
 
+    String getUniqueConstraintName(String typeName, String propertyName);
+
     String getPrimaryKeyName(String typeName);
 }

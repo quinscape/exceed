@@ -8,7 +8,7 @@ import de.quinscape.exceed.runtime.application.MappingNotFoundException;
 import de.quinscape.exceed.runtime.application.StateNotFoundException;
 import de.quinscape.exceed.runtime.config.WebpackConfig;
 import de.quinscape.exceed.runtime.service.ApplicationService;
-import de.quinscape.exceed.runtime.service.websocket.MessageHubRegistry;
+import de.quinscape.exceed.runtime.service.ServiceNotReadyException;
 import de.quinscape.exceed.runtime.template.TemplateVariables;
 import de.quinscape.exceed.runtime.util.ContentType;
 import de.quinscape.exceed.runtime.util.JSONUtil;
@@ -38,17 +38,33 @@ public class ApplicationController
 
     private final ApplicationService applicationService;
 
-    private final MessageHubRegistry messageHubRegistry;
-
-
     @Autowired
-    public ApplicationController(ServletContext servletContext, ApplicationService applicationService, MessageHubRegistry messageHubRegistry)
+    public ApplicationController(ServletContext servletContext, ApplicationService applicationService)
     {
         this.servletContext = servletContext;
         this.applicationService = applicationService;
-        this.messageHubRegistry = messageHubRegistry;
     }
 
+
+    /**
+     * Redirect a request to servlet context root to our default app.
+     */
+    @RequestMapping("/")
+    public String redirectToDefault(
+        HttpServletRequest request, HttpServletResponse response) throws IOException
+    {
+        try
+        {
+            final String defaultApp = applicationService.getDefaultApplication();
+            response.sendRedirect(request.getContextPath() + "/app/" + defaultApp + "/");
+            return null;
+        }
+        catch(ServiceNotReadyException e)
+        {
+            sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, request, response, null, "Application service not ready. Try again.");
+            return null;
+        }
+    }
 
     @RequestMapping("/app/{name}/**")
     public String showApplicationView(
@@ -93,6 +109,10 @@ public class ApplicationController
         {
             sendError(HttpServletResponse.SC_NOT_FOUND, request, response, e, "State not found");
         }
+        catch(ServiceNotReadyException e)
+        {
+            sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, request, response, null, "Application service not ready. Try again.");
+        }
         catch(Exception e)
         {
             log.error("Error rendering application view", e);
@@ -108,13 +128,16 @@ public class ApplicationController
 
     private void sendError(
         int code,
-        HttpServletRequest request, HttpServletResponse response, Exception e, String message
+        HttpServletRequest request,
+        HttpServletResponse response,
+        Exception e,
+        String message
     ) throws IOException
     {
         if (RequestUtil.isAjaxRequest(request))
         {
             response.setContentType(ContentType.JSON);
-            RequestUtil.sendJSON(response, JSONUtil.error(message + ": " + e.getMessage()));
+            RequestUtil.sendJSON(response, JSONUtil.error(message + ( e != null ? ": " + e.getMessage() : "")));
         }
         else
         {

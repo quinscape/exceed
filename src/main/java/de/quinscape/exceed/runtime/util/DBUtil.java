@@ -33,10 +33,26 @@ public class DBUtil
 
     public static Field<Object> jooqField(DomainType type, String propertyName)
     {
-        DomainService domainService = type.getDomainService();
-        NamingStrategy namingStrategy = type.getDomainService().getStorageConfiguration(type.getName())
+        final String domainTypeName = type.getName();
+        NamingStrategy namingStrategy = type.getDomainService().getStorageConfiguration(domainTypeName)
             .getNamingStrategy();
-        return DSL.field(DSL.name(namingStrategy.getFieldName(type.getName(), propertyName)));
+        return field(namingStrategy, domainTypeName, propertyName);
+    }
+
+
+    private static Field<Object> field(
+        NamingStrategy namingStrategy, String domainTypeName, String propertyName
+    )
+    {
+        return DSL.field(DSL.name(namingStrategy.getFieldName(domainTypeName, propertyName)));
+    }
+
+
+    public static Field<Object> jooqField(DomainService domainService, String domainType, String propertyName)
+    {
+        NamingStrategy namingStrategy = domainService.getStorageConfiguration(domainType)
+            .getNamingStrategy();
+        return field(namingStrategy, domainType, propertyName);
     }
 
 }

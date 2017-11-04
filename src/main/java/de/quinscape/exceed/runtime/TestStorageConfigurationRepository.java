@@ -66,6 +66,13 @@ public class TestStorageConfigurationRepository
 
 
                 @Override
+                public String getUniqueConstraintName(String typeName, String propertyName)
+                {
+                    return "uc_" + typeName.toLowerCase() + "_" + propertyName.toLowerCase();
+                }
+
+
+                @Override
                 public String getPrimaryKeyName(String typeName)
                 {
                     return "pk_" + typeName.toLowerCase();

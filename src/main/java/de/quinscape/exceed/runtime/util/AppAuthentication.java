@@ -2,7 +2,7 @@ package de.quinscape.exceed.runtime.util;
 
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.runtime.RuntimeContext;
-import de.quinscape.exceed.runtime.component.DataGraph;
+import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.security.ApplicationUserDetails;
 import de.quinscape.exceed.runtime.security.Roles;
 import org.jooq.Condition;
@@ -11,11 +11,14 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Collections;
-import java.util.Set;                                                                                                      
+import java.util.List;
+import java.util.Set;
 
 public class AppAuthentication
 {
     public final static String USER_TYPE = "AppUser";
+    
+    public final static String LOGINS_TYPE = "AppLogin";
 
     public static final AppAuthentication ANONYMOUS = new AppAuthentication("Anonymous", Roles.ANONYMOUS);
 
@@ -100,7 +103,7 @@ public class AppAuthentication
     }
 
 
-    public static DataGraph queryUsers(
+    public static List<DomainObject> queryUsers(
         RuntimeContext runtimeContext,
         Condition condition
     )
@@ -111,12 +114,21 @@ public class AppAuthentication
 
     public static boolean isAuthType(DomainType type)
     {
-        return type != null && type.getName().equals(USER_TYPE);
+        return type != null && (
+            type.getName().equals(USER_TYPE) ||
+            type.getName().equals(LOGINS_TYPE)
+        );
     }
 
 
     public boolean isAnonymous()
     {
         return this.userName.equals(ANONYMOUS.getUserName());
+    }
+
+
+    public boolean isAdmin()
+    {
+        return this.roles.contains(Roles.ADMIN);
     }
 }

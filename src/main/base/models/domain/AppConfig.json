@@ -1,0 +1,19 @@
+{
+    "description" : "Storage for the application context, model gets updated by model composition with the full fields",
+
+    "name": "AppConfig",
+    "properties": [
+        {
+            "name": "id",
+            "type": "UUID",
+            "maxLength": 36
+        },
+        {
+            "description" : "app name",
+            "name": "appName",
+            "type": "PlainText",
+            "required": true,
+            "maxLength": 64
+        }
+    ]
+}

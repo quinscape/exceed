@@ -97,12 +97,13 @@ const ICON_NAME = {
 };
 
 
-export function makeTree(locations, filter)
+export function makeTree(locations, filter, extra)
 {
     let tree = {
         name : "root",
         kids: []
     };
+
 
     if (!filter)
     {
@@ -191,6 +192,26 @@ export function makeTree(locations, filter)
     }
 
     sortRecursive(tree);
+
+    if (extra)
+    {
+        tree.kids.unshift(
+            {
+                name : "Startup Configuration",
+                type : "ExceedConfig",
+                modelType: "xcd.startup.ExceedConfig",
+                icon: "wrench",
+                kids: []
+            },
+            {
+                name : "Components",
+                type : "ComponentPackageDescriptor",
+                modelType: "xcd.component.ComponentPackageDescriptor",
+                icon: "gift",
+                kids: []
+            }
+        );
+    }
 
     return tree;
 }

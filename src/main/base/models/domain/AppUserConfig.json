@@ -1,0 +1,24 @@
+{
+    "description" : "Storage for the user context, model gets updated by model composition with the full fields",
+
+    "name": "AppUserConfig",
+    "properties": [
+        {
+            "name": "id",
+            "type": "UUID",
+            "maxLength": 36
+        },
+        {
+            "description" : "login name",
+            "name": "login",
+            "type": "PlainText",
+            "unique" : true,
+            "required": true,
+            "maxLength": 64,
+            "foreignKey":{
+                "type":"AppUser",
+                "property":"login"
+            }
+        }
+    ]
+}

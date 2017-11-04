@@ -102,4 +102,10 @@ public class GenericDomainObject
 
         return getClass().getName() + "@" + Integer.toHexString(hashCode()) + ":\n" + sb;
     }
+
+
+    public Map<String, Object> asMap()
+    {
+        return content;
+    }
 }

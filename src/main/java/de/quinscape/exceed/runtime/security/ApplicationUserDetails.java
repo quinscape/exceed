@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.security;
 
 import com.google.common.collect.ImmutableSet;
-import de.quinscape.exceed.runtime.application.ApplicationSecurityException;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.util.AppAuthentication;
 import de.quinscape.exceed.runtime.util.Util;
@@ -40,7 +39,7 @@ public class ApplicationUserDetails
         // first we take the user roles and filter out all schema roles
         final Set<String> userRoles = Util.splitToSet(rolesString, ",");
 
-        ensureNoSchemaRolesInUserRoles(userRoles);
+//        ensureNoSchemaRolesInUserRoles(userRoles);
 
         // then we add the one correct schema role
         userRoles.add(AppAuthentication.SCHEMA_ROLE_PREFIX + schema);
@@ -54,17 +53,17 @@ public class ApplicationUserDetails
             .collect(Collectors.toList());
     }
 
-
-    private void ensureNoSchemaRolesInUserRoles(Set<String> set)
-    {
-        for (String role : set)
-        {
-            if (role.startsWith(AppAuthentication.SCHEMA_ROLE_PREFIX))
-            {
-                throw new ApplicationSecurityException("User object contains schema role.");
-            }
-        }
-    }
+//
+//    private void ensureNoSchemaRolesInUserRoles(Set<String> set)
+//    {
+//        for (String role : set)
+//        {
+//            if (role.startsWith(AppAuthentication.SCHEMA_ROLE_PREFIX))
+//            {
+//                throw new ApplicationSecurityException("User object contains schema role.");
+//            }
+//        }
+//    }
 
 
     @Override

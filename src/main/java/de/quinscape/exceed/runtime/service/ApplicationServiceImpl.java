@@ -1,33 +1,26 @@
 package de.quinscape.exceed.runtime.service;
 
-import de.quinscape.exceed.domain.tables.pojos.AppState;
-import de.quinscape.exceed.domain.tables.records.AppStateRecord;
+import de.quinscape.exceed.model.startup.ExceedConfig;
 import de.quinscape.exceed.runtime.application.ApplicationNotFoundException;
 import de.quinscape.exceed.runtime.application.ApplicationStatus;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
-import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.service.client.ClientStateService;
-import org.jooq.DSLContext;
+import de.quinscape.exceed.model.startup.AppState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.ServletContext;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static de.quinscape.exceed.domain.Tables.*;
+import java.util.stream.Collectors;
 
 @Service
-@Transactional
 public class ApplicationServiceImpl
     implements ApplicationService
 {
@@ -35,113 +28,64 @@ public class ApplicationServiceImpl
 
     private final static Logger log = LoggerFactory.getLogger(ApplicationServiceImpl.class);
 
-    private ApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
 
-    private DSLContext dslContext;
+    private final RuntimeApplicationFactory runtimeApplicationFactory;
 
-    private RuntimeApplicationFactory runtimeApplicationFactory;
+    private final ClientStateService clientStateService;
 
-    private ClientStateService clientStateService;
+    private final ConcurrentMap<String, ApplicationHolder> applications = new ConcurrentHashMap<>();
 
+    private volatile ExceedConfig exceedConfig;
 
     @Autowired
-    public void setApplicationContext(ApplicationContext applicationContext)
+    public ApplicationServiceImpl(
+        ApplicationContext applicationContext,
+        RuntimeApplicationFactory runtimeApplicationFactory,
+        ClientStateService clientStateService
+    )
     {
         this.applicationContext = applicationContext;
-    }
-
-
-    @Autowired
-    public void setDslContext(DSLContext dslContext)
-    {
-        this.dslContext = dslContext;
-    }
-
-
-    @Autowired
-    public void setRuntimeApplicationFactory(RuntimeApplicationFactory runtimeApplicationFactory)
-    {
         this.runtimeApplicationFactory = runtimeApplicationFactory;
-    }
-
-
-    @Autowired
-    public void setClientStateService(ClientStateService clientStateService)
-    {
         this.clientStateService = clientStateService;
     }
-
-
-    private ConcurrentMap<String, ApplicationHolder> applications = new ConcurrentHashMap<>();
 
 
     @Override
     public AppState getApplicationState(String name)
     {
-        return dslContext.select().from(APP_STATE).where(APP_STATE.NAME.eq(name)).fetchOneInto(AppState.class);
+        return holder(name).getState();
     }
 
-    @Override
-    @Transactional(propagation = Propagation.NESTED)
-    public void activateApplication(ServletContext servletContext, String name, String path, String extensions)
+
+    private ApplicationHolder holder(String name)
     {
-        if (servletContext == null)
+        final ApplicationHolder h = applications.get(name);
+        if (h == null)
         {
-            throw new IllegalArgumentException("servletContext can't be null");
+            throw new IllegalArgumentException("Application '" + name + "' not found");
         }
-
-        AppState appState = new AppState();
-        appState.setId(UUID.randomUUID().toString());
-        appState.setName(name);
-        appState.setPath(path);
-        appState.setStatus(ApplicationStatus.PRODUCTION.ordinal());
-        appState.setExtensions(extensions);
-
-        AppStateRecord record = dslContext.newRecord(APP_STATE, appState);
-        record.store();
-
-        updateApplicationsInternal(servletContext, name, ApplicationStatus.PRODUCTION);
+        return h;
     }
 
-    @Override
-    @Transactional(propagation = Propagation.NESTED)
-    public int dropApplication(String name)
-    {
-        return dslContext.deleteFrom(APP_STATE).where(APP_STATE.NAME.eq(name)).execute();
-    }
 
     @Override
-    @Transactional(propagation = Propagation.NESTED)
     public void setStatus(ServletContext servletContext, String appName, ApplicationStatus status)
     {
-        if (servletContext == null)
-        {
-            throw new IllegalArgumentException("servletContext can't be null");
-        }
-
-        AppState applicationState = getApplicationState(appName);
-
-        if (applicationState == null)
-        {
-            throw new IllegalArgumentException("Application '" + appName + "' not found.");
-        }
-
-        ApplicationStatus current =  ApplicationStatus.from(applicationState);
-        if (!current.hasValidTransitionTo(status))
-        {
-            throw new IllegalStateException("Error updating '" + appName + "': Cannot go from " + current + " to " + status);
-        }
-
-        dslContext.update(APP_STATE)
-            .set(APP_STATE.STATUS, status.ordinal())
-            .where(APP_STATE.NAME.eq(appName))
-            .execute();
-
-        updateApplicationsInternal(servletContext, appName, status);
+        final AppState state = holder(appName).getState().buildCopy()
+            .withStatus(status)
+            .build();
+        
+        updateApplication(servletContext, state);
     }
 
-    private void updateApplicationsInternal(ServletContext servletContext, String appName, ApplicationStatus status)
+
+    @Override
+    public void updateApplication(ServletContext servletContext, AppState appState)
     {
+        final String appName = appState.getName();
+
+        final ApplicationStatus status = appState.getStatus();
         if (status == ApplicationStatus.OFFLINE)
         {
             log.info("Stopping application '{}'", appName);
@@ -150,62 +94,39 @@ public class ApplicationServiceImpl
             ApplicationHolder removed = applications.remove(appName);
             if (removed != null)
             {
-                removed.setStatus(status);
+                removed.setState(appState);
             }
         }
         else
         {
             log.info("Starting application '{}'", appName);
 
-            ApplicationHolder holder = new ApplicationHolder(appName);
+            ApplicationHolder holder = new ApplicationHolder(appState);
             ApplicationHolder existing = applications.putIfAbsent(appName, holder);
             if (existing != null)
             {
                 holder = existing;
             }
+            holder.setState(appState);
 
-            holder.setStatus(status);
-            RuntimeApplication runtimeApplication = holder.getRuntimeApplication(servletContext, false);
+            holder.getRuntimeApplication(servletContext, false);
         }
     }
 
     @Override
-    @Transactional(propagation = Propagation.NESTED)
-    public void updateApplication(ServletContext servletContext, String appName, String path, String extensions)
-    {
-        AppState applicationState = getApplicationState(appName);
-        if (applicationState == null)
-        {
-            throw new IllegalArgumentException("Application '" + appName + "' not found.");
-        }
-
-        applicationState.setPath(path);
-        applicationState.setExtensions(extensions);
-
-        AppStateRecord record = dslContext.newRecord(APP_STATE, applicationState);
-        dslContext.executeUpdate(record);
-
-        updateApplicationsInternal(servletContext, appName, ApplicationStatus.from(applicationState));
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.NESTED)
     public List<AppState> getActiveApplications()
     {
-        return dslContext.select().from(APP_STATE)
-            .where(
-                APP_STATE.STATUS.in(
-                    ApplicationStatus.PREVIEW.ordinal(),
-                    ApplicationStatus.PRODUCTION.ordinal()
-                )
-            )
-            .orderBy(APP_STATE.NAME)
-            .fetchInto(AppState.class);
+        return applications.values()
+            .stream()
+            .map(ApplicationHolder::getState)
+            .collect(Collectors.toList());
     }
 
     @Override
     public DefaultRuntimeApplication getRuntimeApplication(ServletContext servletContext, String appName)
     {
+        ensureReady();
+
         ApplicationHolder applicationHolder = applications.get(appName);
         if (applicationHolder == null)
         {
@@ -271,20 +192,6 @@ public class ApplicationServiceImpl
 
     }
 
-
-    @Override
-    @Transactional(propagation = Propagation.NESTED)
-    public void updateApplicationContext(String appName, String json)
-    {
-        log.info("Updating scoped context for {}", json);
-
-        dslContext.update(APP_STATE)
-            .set(APP_STATE.CONTEXT, json)
-            .where(APP_STATE.NAME.eq(appName))
-            .execute();
-    }
-
-
     @Override
     public void onApplicationEvent(ContextClosedEvent contextClosedEvent)
     {
@@ -302,17 +209,22 @@ public class ApplicationServiceImpl
     private class ApplicationHolder
     {
         private final String name;
-        private volatile DefaultRuntimeApplication runtimeApplication;
-        private volatile ApplicationStatus status;
 
-        public ApplicationHolder(String name)
+        private volatile AppState appState;
+        private volatile DefaultRuntimeApplication runtimeApplication;
+
+        private AppState state;
+
+
+        public ApplicationHolder(AppState appState)
         {
-            this.name = name;
+            this.name = appState.getName();
+            this.appState = appState;
         }
 
         public DefaultRuntimeApplication getRuntimeApplication(ServletContext servletContext, boolean forceRefresh)
         {
-            if (status == ApplicationStatus.OFFLINE || servletContext == null)
+            if (appState.getStatus() == ApplicationStatus.OFFLINE || servletContext == null)
             {
                 return runtimeApplication;
             }
@@ -337,46 +249,48 @@ public class ApplicationServiceImpl
             return runtimeApplication;
         }
 
-        public void setStatus(ApplicationStatus status)
+        public AppState getState()
         {
-            this.status = status;
+            return state;
+        }
+
+
+        public void setState(AppState state)
+        {
+            this.state = state;
         }
     }
 
 
-    private volatile String defaultApp;
-
-    public String getDefaultApplication()
+    public synchronized String getDefaultApplication()
     {
-        if (defaultApp == null)
-        {
-            synchronized (this)
-            {
-                if (defaultApp == null)
-                {
-                    final String defaultAppFromProperty = applicationContext.getEnvironment().getProperty
-                        (DEFAULT_APP_PROPERTY);
+        ensureReady();
+        return exceedConfig.getDefaultApp();
+    }
 
-                    if (defaultAppFromProperty != null)
-                    {
-                        defaultApp = defaultAppFromProperty;
-                        log.info("Using default application '{}' from enviroment property {}'", defaultApp,
-                            DEFAULT_APP_PROPERTY);
-                    }
-                    else
-                    {
-                        final List<AppState> activeApplications = getActiveApplications();
-                        if (activeApplications.size() == 0)
-                        {
-                            throw new IllegalStateException("No active applications");
-                        }
-                        defaultApp = activeApplications.get(0).getName();
-                        log.info("Using first active application '{}' as default application", defaultApp);
-                    }
-                }
-            }
+
+    private void ensureReady()
+    {
+        if (exceedConfig == null)
+        {
+            throw new ServiceNotReadyException("Application service not updated with exceed config yet");
         }
-        return defaultApp;
+    }
+
+
+    @Override
+    public void update(ServletContext servletContext, ExceedConfig exceedConfig)
+    {
+        for (AppState appState : exceedConfig.getApps())
+        {
+            final String appName = appState.getName();
+
+            log.info("Initializing exceed application '{}' ( extensions: {} )", appName, appState.getExtensions());
+
+            updateApplication(servletContext, appState);
+        }
+        
+        this.exceedConfig = exceedConfig;
     }
 
 }

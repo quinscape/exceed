@@ -115,7 +115,7 @@ public class InformationSchemaOperations
         final FieldType sqlType = getSQLType(runtimeContext, domainProperty);
         String typeExpr = sqlType.getSqlExpression(runtimeContext, domainProperty);
         final String[] fieldName = namingStrategy.getFieldName(type.getName(), domainProperty.getName());
-        return fieldName[1] + " " + typeExpr + (domainProperty.isRequired() ? " NOT NULL" : "");
+        return fieldName[1] + " " + typeExpr + (domainProperty.isRequired() ? " NOT NULL" : "") + (domainProperty.isUnique() ? " UNIQUE" : "");
     }
 
 
@@ -180,6 +180,7 @@ public class InformationSchemaOperations
         final String tableName = namingStrategy.getTableName(type.getName());
 
         Map<String, DatabaseColumn> columnsMap = listColumns(schemaName, tableName);
+        List<DatabaseKey> keys = keysMap(schemaName, tableName);
 
         Set<String> updatedColumns = new HashSet<>();
 
@@ -190,12 +191,15 @@ public class InformationSchemaOperations
             final FieldType fieldType = getSQLType(runtimeContext, domainProperty);
             final String name = namingStrategy.getFieldName(type.getName(), domainProperty.getName())[1];
             final boolean nullable = !domainProperty.isRequired();
+            final boolean unique = domainProperty.isUnique();
 
             final String sqlType = fieldType.getSqlExpression(runtimeContext,domainProperty);
 
             updatedColumns.add(name);
 
             DatabaseColumn info = columnsMap.get(name);
+
+
             if (info == null)
             {
                 // -> create column
@@ -204,12 +208,32 @@ public class InformationSchemaOperations
             else
             {
                 // -> update column
-                boolean dbIsNullable = info.isNullable();
+                final boolean dbIsNullable = info.isNullable();
                 if (nullable != dbIsNullable)
                 {
                     template.execute(alterTableRoot + "ALTER COLUMN " + name + (nullable ? " DROP NOT NULL" : " SET " +
                         "NOT NULL"));
                 }
+
+                final DatabaseKey uniqueConstraint = findUniqueConstraint(keys, name);
+
+                final boolean dbIsUnique = uniqueConstraint != null;
+                if (unique && !dbIsUnique)
+                {
+                    final String uniqueConstraintName = namingStrategy.getUniqueConstraintName(type.getName(), domainProperty.getName());
+                    template.execute(alterTableRoot + "ADD CONSTRAINT " + uniqueConstraintName + " UNIQUE (" + name + ");");
+                }
+                else if (!unique && dbIsUnique)
+                {
+                    template.execute(alterTableRoot + "DROP CONSTRAINT " + uniqueConstraint.name);
+                }
+
+//                boolean dbIsUnique = info.isNullable()
+//                if (nullable != dbIsNullable)
+//                {
+//                    template.execute(alterTableRoot + "ALTER COLUMN " + name + (nullable ? " DROP NOT NULL" : " SET " +
+//                        "NOT NULL"));
+//                }
                 Integer dbLength = info.getCharacterMaximumLength();
 
                 String dbType;
@@ -238,6 +262,19 @@ public class InformationSchemaOperations
         {
             template.execute(alterTableRoot + "DROP COLUMN " + name + " CASCADE");
         }
+    }
+
+
+    private DatabaseKey findUniqueConstraint(List<DatabaseKey> keys, String name)
+    {
+        for (DatabaseKey key : keys)
+        {
+            if (key.column.equals(name) && !key.fk)
+            {
+                return key;
+            }
+        }
+        return null;
     }
 
 
@@ -324,9 +361,10 @@ public class InformationSchemaOperations
         String targetName = namingStrategy.getTableName(targetType.getName());
 
         final String[] fieldName = namingStrategy.getFieldName(type.getName(), domainProperty.getName());
+        final String[] targetField = namingStrategy.getFieldName(targetType.getName(), foreignKeyDefinition.getProperty());
         return "CONSTRAINT " + keyName +
             " FOREIGN KEY (" + fieldName[1] + ") REFERENCES " + schemaName + "." + targetName +
-            " (id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION";
+            " (" + targetField[1] + ") MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION";
     }
 
 

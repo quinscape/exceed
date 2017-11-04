@@ -8,6 +8,7 @@ import de.quinscape.exceed.runtime.component.DataGraphQualifier;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.expression.query.DataField;
 import de.quinscape.exceed.runtime.expression.query.JoinDefinition;
+import de.quinscape.exceed.runtime.expression.query.QueryCondition;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryDomainType;
 import de.quinscape.exceed.runtime.expression.query.QueryMapping;
@@ -348,15 +349,19 @@ public class JOOQDomainOperations
         }
 
 
-        Condition condition = queryDefinition.getFilter().getCondition();
-        Condition whereCondition = null;
-        if (condition != null)
+        final QueryCondition filter = queryDefinition.getFilter();
+        if (filter != null)
         {
-            whereCondition = condition;
-            query.addConditions(whereCondition);
-            if (countQuery != null)
+            Condition condition = filter.getCondition();
+            Condition whereCondition = null;
+            if (condition != null)
             {
-                countQuery.addConditions(whereCondition);
+                whereCondition = condition;
+                query.addConditions(whereCondition);
+                if (countQuery != null)
+                {
+                    countQuery.addConditions(whereCondition);
+                }
             }
         }
 

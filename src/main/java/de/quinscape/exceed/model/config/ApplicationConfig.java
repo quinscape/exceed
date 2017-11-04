@@ -1,10 +1,12 @@
 package de.quinscape.exceed.model.config;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.model.AbstractTopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.annotation.DocumentedCollection;
 import de.quinscape.exceed.model.context.ContextModel;
+import de.quinscape.exceed.runtime.security.Roles;
 import org.springframework.util.StringUtils;
 import org.svenson.JSONProperty;
 import org.svenson.JSONTypeHint;
@@ -14,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Encapsulates general application configuration. Corresponds to the "/models/config.json" resource.
@@ -21,10 +24,19 @@ import java.util.Map;
 public class ApplicationConfig
     extends AbstractTopLevelModel
 {
-    private final static Map<String,String> DEFAULT_USERS = ImmutableMap.of(
-        "admin", "ROLE_ADMIN,ROLE_EDITOR,ROLE_USER",
-        "editor", "ROLE_EDITOR,ROLE_USER",
-        "user", "ROLE_USER"
+    /**
+     * The default defaultUsers to use.
+     */
+    private final static Map<String,Set<String>> DEFAULT_USERS = ImmutableMap.of(
+        "admin", ImmutableSet.of(
+            Roles.ADMIN, Roles.EDITOR, Roles.USER
+        ),
+        "editor", ImmutableSet.of(
+            Roles.EDITOR, Roles.USER
+        ),
+        "user", ImmutableSet.of(
+            Roles.USER
+        )
     );
 
     public static final int DECIMAL_PLACES_DEFAULT = 3;
@@ -41,6 +53,8 @@ public class ApplicationConfig
 
     private ContextModel sessionContextModel;
 
+    private ContextModel userContextModel;
+
     private String defaultLayout = "Standard";
 
     private DecimalConfig decimalConfig = new DecimalConfig();
@@ -51,7 +65,7 @@ public class ApplicationConfig
 
     private String authSchema;
 
-    private Map<String,String> defaultUsers = DEFAULT_USERS;
+    private Map<String, Set<String>> defaultUsers = DEFAULT_USERS;
 
 
     /**
@@ -122,6 +136,22 @@ public class ApplicationConfig
     public void setSessionContextModel(ContextModel sessionContext)
     {
         this.sessionContextModel = sessionContext;
+    }
+
+
+    /**
+     * The user context model. Each property will exists once for every user / login.
+     */
+    public ContextModel getUserContextModel()
+    {
+        return userContextModel;
+    }
+
+
+    @JSONProperty("userContext")
+    public void setUserContextModel(ContextModel userContextModel)
+    {
+        this.userContextModel = userContextModel;
     }
 
 

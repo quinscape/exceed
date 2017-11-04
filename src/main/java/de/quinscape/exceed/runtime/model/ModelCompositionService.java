@@ -9,10 +9,12 @@ import de.quinscape.exceed.model.context.ScopeMetaModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.model.domain.DomainRule;
 import de.quinscape.exceed.model.domain.DomainVersion;
+import de.quinscape.exceed.model.domain.EnumType;
+import de.quinscape.exceed.model.domain.StateMachine;
+import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.domain.type.DomainTypeModel;
-import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.type.QueryTypeModel;
 import de.quinscape.exceed.model.meta.ApplicationMetaData;
 import de.quinscape.exceed.model.process.Process;
@@ -20,7 +22,6 @@ import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.process.Transition;
 import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.model.routing.RoutingTable;
-import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
@@ -30,6 +31,7 @@ import de.quinscape.exceed.runtime.js.JsEnvironmentFactory;
 import de.quinscape.exceed.runtime.js.def.Definitions;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.file.PathResources;
+import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.service.model.ModelSchemaService;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
@@ -307,6 +309,8 @@ public class ModelCompositionService
      */
     public void postprocess(ApplicationModel applicationModel)
     {
+        updateConfigType(ScopedContextFactory.APP_CONFIG_TYPE, applicationModel, applicationModel.getConfigModel().getApplicationContextModel());
+        updateConfigType(ScopedContextFactory.USER_CONFIG_TYPE, applicationModel, applicationModel.getConfigModel().getUserContextModel());
 
         for (DomainType domainType : modelSchemaService.getModelDomainTypes().values())
         {
@@ -361,6 +365,28 @@ public class ModelCompositionService
     }
 
 
+    private void updateConfigType(
+        String configType, ApplicationModel applicationModel, ContextModel contextModel
+    )
+    {
+        if (contextModel == null)
+        {
+            return;
+        }
+        final DomainTypeModel domainType = (DomainTypeModel) applicationModel.getDomainType(configType);
+
+        final List<DomainProperty> properties = new ArrayList<>(domainType.getProperties());
+        for (ScopedPropertyModel propertyModel : contextModel.getProperties().values())
+        {
+            properties.add(
+                DomainProperty.builder()
+                    .fromProperty(propertyModel)
+                    .build()
+            );
+        }
+
+        domainType.setProperties(properties);
+    }
 
     private void validateProcesses(ApplicationModel applicationModel)
     {

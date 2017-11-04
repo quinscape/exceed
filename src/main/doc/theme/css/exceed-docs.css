@@ -72,6 +72,11 @@ ul.extension-struct .type-folder
     font-weight: normal;
 }
 
+ul.extension-struct .type-ComponentPackageDescriptor,ul.extension-struct .type-ExceedConfig
+{
+    color: #666;
+}
+
 ul.extension-struct .type-ApplicationConfig,ul.extension-struct .type-RoutingTable
 {
     color: #b86e90;
@@ -93,4 +98,11 @@ ul.extension-struct .type-ApplicationConfig,ul.extension-struct .type-RoutingTab
 pre code.lang-json
 {
     font-size: 10pt;
+}
+
+.model-docs .extra
+{
+    display: block;
+    font-weight: bold;
+    text-align: left;
 }

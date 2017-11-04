@@ -21,11 +21,12 @@ public final class ScopedContextChain
 {
     private final List<ScopedContext> chainedScopes;
 
-    private final static Map<Class<? extends ScopedContext>, ScopeType> scopeIndexMap = ImmutableMap.of(
+    private final static Map<Class<? extends ScopedContext>, ScopeType> scopeTypeMap = ImmutableMap.of(
         ApplicationContext.class, ScopeType.APPLICATION,
         SessionContext.class, ScopeType.SESSION,
         ProcessContext.class, ScopeType.PROCESS,
-        ViewContext.class, ScopeType.VIEW
+        ViewContext.class, ScopeType.VIEW,
+        UserContext.class, ScopeType.USER
     );
 
     private final ScopeMetaModel scopeMetaModel;
@@ -62,7 +63,7 @@ public final class ScopedContextChain
         {
             if (context != null)
             {
-                final ScopeType scopeType = scopeIndexMap.get(context.getClass());
+                final ScopeType scopeType = scopeTypeMap.get(context.getClass());
                 if (scopeType == null)
                 {
                     throw new IllegalArgumentException("Unknown scope type " + context);
@@ -170,7 +171,7 @@ public final class ScopedContextChain
      */
     public void update(ScopedContext scopedContext, String scopeLocation)
     {
-        final ScopeType scopeType = scopeIndexMap.get(scopedContext.getClass());
+        final ScopeType scopeType = scopeTypeMap.get(scopedContext.getClass());
         if (scopeType == null)
         {
             throw new IllegalStateException("Unhandled scope type: " + scopedContext);

@@ -41,7 +41,7 @@ public class DefaultSchemaService
         {
             op.createSchema(schema);
         }
-        if (!schemata.contains(authSchema))
+        if (!schema.equals(authSchema) && !schemata.contains(authSchema))
         {
             op.createSchema(authSchema);
         }

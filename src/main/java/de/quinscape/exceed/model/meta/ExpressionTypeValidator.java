@@ -40,8 +40,8 @@ public class ExpressionTypeValidator
     @Override
     public void validate(ModelValidationContext ctx, ApplicationModel applicationModel)
     {
-        validateDefaults(ctx, applicationModel, applicationModel.getApplicationContextModel(), applicationModel.getConfigModel());
-        validateDefaults(ctx, applicationModel, applicationModel.getSessionContextModel(), applicationModel
+        validateDefaults(ctx, applicationModel, applicationModel.getConfigModel().getApplicationContextModel(), applicationModel.getConfigModel());
+        validateDefaults(ctx, applicationModel, applicationModel.getConfigModel().getSessionContextModel(), applicationModel
             .getConfigModel());
 
         for (Process process : applicationModel.getProcesses().values())
