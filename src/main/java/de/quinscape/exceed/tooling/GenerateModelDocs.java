@@ -7,7 +7,7 @@ import de.quinscape.exceed.model.AbstractTopLevelModel;
 import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
-import de.quinscape.exceed.model.annotation.DocumentedMapKey;
+import de.quinscape.exceed.model.annotation.DocumentedCollection;
 import de.quinscape.exceed.model.annotation.DocumentedModelType;
 import de.quinscape.exceed.model.annotation.DocumentedSubTypes;
 import de.quinscape.exceed.model.annotation.Internal;
@@ -67,7 +67,7 @@ import java.util.stream.Collectors;
 /**
  * Auto-generates {@link ModelDocs} from the current model classes annotated with a few extra documentation annotations.
  *
- * @see DocumentedMapKey
+ * @see DocumentedCollection
  * @see DocumentedModelType
  * @see DocumentedSubTypes
  * @see Internal
@@ -230,10 +230,11 @@ public class GenerateModelDocs
 
                 String propertyDescription = cleanupDoc(findPropertyDoc(cls, (JavaObjectPropertyInfo) info));
 
-                final DocumentedMapKey keyAnno = JSONUtil.findAnnotation(info, DocumentedMapKey.class);
+                final DocumentedCollection mapAnno = JSONUtil.findAnnotation(info, DocumentedCollection.class);
                 final DocumentedModelType typeAnno = JSONUtil.findAnnotation(info, DocumentedModelType.class);
                 final DocumentedSubTypes subTypesAnno = JSONUtil.findAnnotation(info, DocumentedSubTypes.class);
-                String keyName = keyAnno != null ? keyAnno.value() : DEFAULT_KEY_NAME;
+                final String keyName = mapAnno != null && mapAnno.keyDesc().length() > 0 ? mapAnno.keyDesc() : DEFAULT_KEY_NAME;
+                final String valueName = mapAnno != null && mapAnno.valueDesc().length() > 0 ? mapAnno.valueDesc() : null;
 
 
                 String propTypeDescription;
@@ -241,43 +242,58 @@ public class GenerateModelDocs
                 List<String> subTypeDocs = null;
                 if (Collection.class.isAssignableFrom(type))
                 {
-                    final String desc = getTypeDescription(typeHint);
-                    if (desc != null )
+                    if (valueName != null)
                     {
-                        propTypeDescription = typeAnno != null ? typeAnno.value() : "Array of " + desc;
+                        propTypeDescription = "Array of " + valueName;
                     }
                     else
                     {
-                        if (typeHint == null)
+                        final String desc = getTypeDescription(typeHint);
+                        if (desc != null )
                         {
-                            propTypeDescription = typeAnno != null ? typeAnno.value() : "Array";
+                            propTypeDescription = typeAnno != null ? typeAnno.value() : "Array of " + desc;
                         }
                         else
                         {
-                            propTypeDescription = typeAnno != null ? typeAnno.value() : "Array of " + typeHint.getSimpleName();
-                            subTypeDocs = toSingletonTypeList(createModelDoc(typeHint, visited));
+                            if (typeHint == null || typeHint.equals(Object.class))
+                            {
+                                propTypeDescription = typeAnno != null ? typeAnno.value() : "Array";
+                            }
+                            else
+                            {
+                                propTypeDescription = typeAnno != null ? typeAnno.value() : "Array of " + typeHint.getSimpleName();
+                                subTypeDocs = toSingletonTypeList(createModelDoc(typeHint, visited));
+                            }
                         }
                     }
                 }
                 else if (Map.class.isAssignableFrom(type))
                 {
-                    final String desc = getTypeDescription(typeHint);
-                    if (desc != null )
+                    if (valueName != null)
                     {
-                        propTypeDescription = typeAnno != null ? typeAnno.value() : "Map " + keyName + " ->  " + desc;
+                        propTypeDescription = "Map " + keyName + " ->  " + valueName;
                     }
                     else
                     {
-                        if (typeHint == null)
+                        final String desc = getTypeDescription(typeHint);
+                        if (desc != null )
                         {
-                            propTypeDescription = typeAnno != null ? typeAnno.value() : "Map " + keyName + " ->  Object";
+                            propTypeDescription = typeAnno != null ? typeAnno.value() : "Map " + keyName + " ->  " + desc;
                         }
                         else
                         {
-                            propTypeDescription = typeAnno != null ? typeAnno.value() : "Map " + keyName + " -> " + typeHint.getSimpleName();
-                            subTypeDocs = toSingletonTypeList(createModelDoc(typeHint, visited));
+                            if (typeHint == null || typeHint.equals(Object.class))
+                            {
+                                propTypeDescription = typeAnno != null ? typeAnno.value() : "Map " + keyName + " ->  " + type.getSimpleName();
+                            }
+                            else
+                            {
+                                propTypeDescription = typeAnno != null ? typeAnno.value() : "Map " + keyName + " -> " + typeHint.getSimpleName();
+                                subTypeDocs = toSingletonTypeList(createModelDoc(typeHint, visited));
+                            }
                         }
                     }
+
                 }
                 else if (Enum.class.isAssignableFrom(type))
                 {

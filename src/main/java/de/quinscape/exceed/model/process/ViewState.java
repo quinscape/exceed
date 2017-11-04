@@ -1,6 +1,6 @@
 package de.quinscape.exceed.model.process;
 
-import de.quinscape.exceed.model.annotation.DocumentedMapKey;
+import de.quinscape.exceed.model.annotation.DocumentedCollection;
 import de.quinscape.exceed.runtime.model.InconsistentModelException;
 import org.svenson.JSONTypeHint;
 
@@ -25,7 +25,7 @@ public class ViewState
      *
      */
     @JSONTypeHint(Transition.class)
-    @DocumentedMapKey("transitionName")
+    @DocumentedCollection(keyDesc = "transitionName")
     public void setTransitions(Map<String, Transition> transitions)
     {
         this.transitions = transitions;

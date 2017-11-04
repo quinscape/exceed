@@ -1,6 +1,6 @@
 package de.quinscape.exceed.model.view;
 
-import de.quinscape.exceed.model.annotation.DocumentedMapKey;
+import de.quinscape.exceed.model.annotation.DocumentedCollection;
 import de.quinscape.exceed.model.annotation.DocumentedModelType;
 import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.model.component.PropType;
@@ -68,7 +68,7 @@ public class ComponentModel
      */
     @JSONProperty(ignoreIfNull = true, priority = 5)
     @DocumentedModelType("Map attributeName -> Attribute")
-    @DocumentedMapKey("attributeName")
+    @DocumentedCollection(keyDesc = "attributeName")
     public Attributes getAttrs()
     {
         return attrs;

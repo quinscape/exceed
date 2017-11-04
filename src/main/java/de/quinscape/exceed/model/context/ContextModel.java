@@ -1,6 +1,6 @@
 package de.quinscape.exceed.model.context;
 
-import de.quinscape.exceed.model.annotation.DocumentedMapKey;
+import de.quinscape.exceed.model.annotation.DocumentedCollection;
 import de.quinscape.exceed.model.domain.property.PropertyModel;
 import org.svenson.JSONTypeHint;
 
@@ -36,7 +36,7 @@ public class ContextModel
      * List of properties for this context.
      */
     @JSONTypeHint(ScopedPropertyModel.class)
-    @DocumentedMapKey("propertyName")
+    @DocumentedCollection(keyDesc = "propertyName")
     public Map<String, ScopedPropertyModel> getProperties()
     {
         if (properties == null)

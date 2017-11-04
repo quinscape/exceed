@@ -3,7 +3,7 @@ package de.quinscape.exceed.model.component;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.expression.ExpressionParser;
 import de.quinscape.exceed.expression.ParseException;
-import de.quinscape.exceed.model.annotation.DocumentedMapKey;
+import de.quinscape.exceed.model.annotation.DocumentedCollection;
 import de.quinscape.exceed.model.annotation.DocumentedModelType;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.component.DataProvider;
@@ -147,7 +147,7 @@ public class ComponentDescriptor
      * Maps prop names to {@link PropDeclaration}s for this component.
      */
     @JSONTypeHint(PropDeclaration.class)
-    @DocumentedMapKey("propName")
+    @DocumentedCollection(keyDesc = "propName")
     public Map<String, PropDeclaration> getPropTypes()
     {
         return propTypes;

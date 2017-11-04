@@ -2,7 +2,7 @@ package de.quinscape.exceed.model.component;
 
 import de.quinscape.exceed.model.AbstractTopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
-import de.quinscape.exceed.model.annotation.DocumentedMapKey;
+import de.quinscape.exceed.model.annotation.DocumentedCollection;
 import org.svenson.JSONTypeHint;
 
 import java.util.Map;
@@ -36,7 +36,7 @@ public class ComponentPackageDescriptor
     }
 
     @JSONTypeHint(ComponentDescriptor.class)
-    @DocumentedMapKey("componentName")
+    @DocumentedCollection(keyDesc = "componentName")
     public void setComponents(Map<String, ComponentDescriptor> components)
     {
         this.components = components;

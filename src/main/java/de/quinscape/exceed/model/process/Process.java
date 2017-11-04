@@ -4,7 +4,7 @@ import de.quinscape.exceed.model.AbstractTopLevelModel;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.AutoVersionedModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
-import de.quinscape.exceed.model.annotation.DocumentedMapKey;
+import de.quinscape.exceed.model.annotation.DocumentedCollection;
 import de.quinscape.exceed.model.annotation.DocumentedSubTypes;
 import de.quinscape.exceed.model.annotation.Internal;
 import de.quinscape.exceed.model.context.ContextModel;
@@ -47,7 +47,7 @@ public class Process
      *
      * @return
      */
-    @DocumentedMapKey("stateName")
+    @DocumentedCollection(keyDesc = "stateName")
     @DocumentedSubTypes({
         ViewState.class,
         DecisionState.class

@@ -3,6 +3,7 @@ package de.quinscape.exceed.model.config;
 import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.model.AbstractTopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
+import de.quinscape.exceed.model.annotation.DocumentedCollection;
 import de.quinscape.exceed.model.context.ContextModel;
 import org.springframework.util.StringUtils;
 import org.svenson.JSONProperty;
@@ -305,16 +306,20 @@ public class ApplicationConfig
 
 
     /**
-     * Configuration for the default user accounts. Maps user names to a comma-separated list of roles.
-     * Default is {@link #DEFAULT_USERS}
+     * Configuration for the default user accounts. Maps user names to a set of role names.
+     *
      */
-    public Map<String, String> getDefaultUsers()
+    @DocumentedCollection(
+        keyDesc = "userName",
+        valueDesc = "Set of role string"
+    )
+    public Map<String, Set<String>> getDefaultUsers()
     {
         return defaultUsers;
     }
 
 
-    public void setDefaultUsers(Map<String, String> defaultUsers)
+    public void setDefaultUsers(Map<String, Set<String>> defaultUsers)
     {
         this.defaultUsers = defaultUsers;
     }
