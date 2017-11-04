@@ -4,9 +4,15 @@ import de.quinscape.exceed.model.annotation.Internal;
 import de.quinscape.exceed.runtime.resource.AppResource;
 import org.svenson.JSONProperty;
 
+/**
+ * A model that is contained in its own file resource.
+ */
 public interface TopLevelModel
     extends Model, AutoVersionedModel
 {
+    /**
+     * Returns the name of the top level model.
+     */
     String getName();
 
     void setName(String name);

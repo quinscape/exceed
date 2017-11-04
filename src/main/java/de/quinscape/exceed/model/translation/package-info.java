@@ -1,4 +1,4 @@
 /**
- * Contains POJOs encapsulating the translation editor state.
+ * Contains models encapsulating the application translations.
  */
 package de.quinscape.exceed.model.translation;

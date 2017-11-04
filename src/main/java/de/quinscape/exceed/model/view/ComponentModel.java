@@ -279,7 +279,7 @@ public class ComponentModel
 
     public static boolean isTextNode(ComponentModel componentModel)
     {
-        return componentModel instanceof TextNode;
+        return componentModel.getName().equals(STRING_MODEL_NAME);
     }
 
 
