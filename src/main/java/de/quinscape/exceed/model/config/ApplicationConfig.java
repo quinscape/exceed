@@ -67,7 +67,6 @@ public class ApplicationConfig
 
     private Map<String, Set<String>> defaultUsers = DEFAULT_USERS;
 
-
     /**
      * Database schema for this application
      *

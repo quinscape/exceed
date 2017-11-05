@@ -16,20 +16,16 @@
     <script src="$CONTEXT_PATH/res/$APP_NAME/js/html5shiv.min.js"></script>
     <script src="$CONTEXT_PATH/res/$APP_NAME/js/respond.min.js"></script>
     <![endif]-->
-    <meta name="token" content="$CSRF_TOKEN"/>
-    <meta name="token-header" content="$CSRF_HEADER_NAME"/>
-    <meta name="token-param" content="$CSRF_PARAMETER_NAME"/>
-
-<script id="root-data" type="x-ceed/view-data">
-$VIEW_DATA
-</script>
+    <script id="root-data" type="x-ceed/view-data">
+        $VIEW_DATA
+    </script>
 $SCRIPTS
 $HEAD
 </head>
 <body>
 $CONTENT_BEFORE
 <div id="root">
-$CONTENT
+    $CONTENT
 </div>
 $CONTENT_AFTER
 </body>

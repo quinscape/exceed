@@ -1,5 +1,7 @@
 package de.quinscape.exceed.model.config;
 
+import org.svenson.JSONProperty;
+
 /**
  * Contains component configurations for the components within an exceed applications. Is embedded in
  * {@link ApplicationConfig}
@@ -18,6 +20,7 @@ public class ComponentConfig
      */
     private boolean instantTextFields = true;
 
+    private BaseTemplateConfig baseTemplateConfig;
 
     public boolean isInstantTextFields()
     {
@@ -28,5 +31,17 @@ public class ComponentConfig
     public void setInstantTextFields(boolean instantTextFields)
     {
         this.instantTextFields = instantTextFields;
+    }
+
+    @JSONProperty("baseTemplate")
+    public BaseTemplateConfig getBaseTemplateConfig()
+    {
+        return baseTemplateConfig;
+    }
+
+
+    public void setBaseTemplateConfig(BaseTemplateConfig baseTemplateConfig)
+    {
+        this.baseTemplateConfig = baseTemplateConfig;
     }
 }

@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.spring;
 
 import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.model.config.BaseTemplateConfig;
 import de.quinscape.exceed.model.meta.WebpackEntryPoint;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
@@ -223,6 +224,15 @@ public class ExceedViewResolver
                 }
 
                 model.put(TemplateVariables.SCRIPTS, scriptsBuilder.toString());
+
+                final BaseTemplateConfig baseTemplateConfig = appModel.getConfigModel().getComponentConfig().getBaseTemplateConfig();
+                if (baseTemplateConfig != null)
+                {
+                    for (String name : baseTemplateConfig.propertyNames())
+                    {
+                        model.put(name, baseTemplateConfig.getProperty(name));
+                    }
+                }
 
                 if (templateVariablesProviders.size() > 0)
                 {
