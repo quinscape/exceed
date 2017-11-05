@@ -207,28 +207,26 @@ support. Over time we might write other schema synchronization implementations.
 For now, the best tested Database to use with exceed is clearly Postgresql. Over time we will add tests for more databases
 but we will clearly be in a situation for a while were we have two different classes of support for databases:
 
- * "Gold" level where the database supports the full-range of functionality including schema management 
- * "Silver" level for databases that can be made compatible by providing the just the kind of schema that corresponds
-   through the model so we can run exceed application without neccessarily being able to create the schemas for all 
-   database types.
+ * "Gold" level where the database supports the full-range of functionality including schema management
+  
+ * "Silver" level for databases for which the schema management support is either not automatic or not present at all. In
+   some use cases we might just generate an SQL-script a DevOps person can customize and apply, in other we might just 
+   connect to an existing application schema. 
 
 
-Models as Domain Types
-----------------------
+Model/Domain Equivalence
+------------------------
 
-The models are parsed into a hierarchy of java POJOs which are then composed to the final application model in memory as
-java objects including an internal meta model containing prepared working data based on the analysis of the models. Each
-of this models has a natural JSON structure corresponding to the Java structure defining its schema.
+The models are parsed into a [hierarchy of java POJOs](./model-reference.html) which are then composed to the final 
+application model in memory as java objects including an internal meta model containing prepared working-data based on 
+the analysis of the other models. Each of this models has a natural JSON structure corresponding to the Java structure 
+defining its schema.
 
 For model editing purposes, there exists another view on the model hierarchy as domain objects. Each domain type model
 has a system domain type definition equivalent within the exceed system.
 
-The type corresponds to the relative package path to *de.quinscape.exceed.model* with an constant "xcd." prefix.
+The type corresponds to the relative package path to *de.quinscape.exceed.model* with a constant "xcd." prefix.
 
 
  * Java class de.quinscape.exceed.model.view.View -> Domain type `xcd.view.View` 
  * Java class de.quinscape.exceed.model.routing.RoutingTable -> Domain type `xcd.routing.RoutingTable` 
-
-
-
-

@@ -82,14 +82,28 @@ class Markdown extends React.Component {
             /**
              * Repurpose "del" text with embedded components
              *
-             * @param header
-             * @param body
-             * @returns {string}
              */
             renderer.del = (text) =>
             {
                 const Component = this.props.components[text];
                 return ReactDOMServer.renderToStaticMarkup(Component);
+            };
+
+
+            /**
+             * Provide headings with anchor-target links on hover
+             *
+             */
+            renderer.heading = (text, level) =>
+            {
+                const escapedText = text.toLowerCase().replace(/[^\w]+/g, '-');
+
+                return '<h' + level + '><span class="md-heading"><a name="' +
+                    escapedText +
+                    '" class="anchor" href="#' +
+                    escapedText +
+                    '"><span class="header-link">#</span></a>' +
+                    text + '</span> </h' + level + '>';
             };
 
 

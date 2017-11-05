@@ -97,6 +97,10 @@ accepts a `name` attribute which defaults to `"main"`.
 A layout can define multiple `Content` slots to be used by views. `"main"` is just the default name for the single content
 slot. We recommend that you keep it that way and add others as needed.
 
+You can define your own layout in your application extension and either 
+[reference them in individual views](./model-reference.html#xcd.view.View) or change the 
+[application default layout](./model-reference.html#xcd.config.ApplicationConfig).
+
  
 Process Views vs Standalone Views
 ---------------------------------

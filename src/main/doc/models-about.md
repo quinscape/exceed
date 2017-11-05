@@ -9,10 +9,12 @@ An extension is directory with a standardized layout.
 Here we see an example application with one model of each type being present. The type of the JSON model is determined
 by its relative location in the extension folder and the name of it is taken from the file name.  
 
+
 Standardized Extension layout
 -----------------------------
 
 ~~ExtensionStructure~~
+
 
 Model Composition
 -----------------
@@ -28,3 +30,9 @@ case of a collision one of three things happen:
  * The model overwrites the existing model  
  * An error occurs
  
+ 
+Merging
+-------
+ 
+WIP
+

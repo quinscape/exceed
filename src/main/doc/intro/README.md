@@ -1,5 +1,5 @@
 The markdown files in the doc root are automatically added as documentation
-pages (in alphabetically order for now).
+pages (in priority modified alphabetical order).
 
 The markdown snippets in this directory are used as introductions for the "chapters" and are not
 read automatically.

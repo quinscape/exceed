@@ -239,7 +239,7 @@ public class View
     }
 
     /**
-     * Layout to use for this view. If not set, the application default layout will be used.
+     * Name of the layout to use for this view. If not set, the application default layout will be used.
      */
     public String getLayout()
     {

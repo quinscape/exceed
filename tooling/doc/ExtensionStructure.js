@@ -1,5 +1,5 @@
 import React from "react"
-import ExtensionDir, { makeTree } from "./ExtensionDir"
+import ExtensionLocation, { makeTree } from "./ExtensionLocation"
 
 function ExtensionStructure(props)
 {
@@ -12,7 +12,7 @@ function ExtensionStructure(props)
     return(
         <ul className="extension-struct">
             {
-                tree.kids && tree.kids.map( kid => <ExtensionDir key={ kid.name } {...kid} last={ kid === last} filter={ filter }/> )
+                tree.kids && tree.kids.map( kid => <ExtensionLocation key={ kid.name } {...kid} last={ kid === last} filter={ filter }/> )
             }
         </ul>
     );

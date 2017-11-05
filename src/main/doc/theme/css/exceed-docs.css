@@ -72,7 +72,7 @@ ul.extension-struct .type-folder
     font-weight: normal;
 }
 
-ul.extension-struct .type-ComponentPackageDescriptor,ul.extension-struct .type-ExceedConfig
+ul.extension-struct .type-ComponentPackageDescriptor,ul.extension-struct .type-ExceedConfig,ul.extension-struct .type-template
 {
     color: #666;
 }
@@ -105,4 +105,23 @@ pre code.lang-json
     display: block;
     font-weight: bold;
     text-align: left;
+}
+
+.md-heading
+{
+    position: relative;
+    margin-left: -1ex;
+    padding-left: 1ex;
+}
+
+.md-heading .header-link
+{
+    display: none;
+    position: absolute;
+    left: -1ex;
+}
+
+.md-heading:hover span.header-link
+{
+    display: inline;
 }
