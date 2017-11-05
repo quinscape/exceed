@@ -1,5 +1,7 @@
 package de.quinscape.exceed.runtime.resource.stream;
 
+import de.quinscape.exceed.runtime.util.Util;
+
 import java.io.InputStream;
 
 public class ClassPathResource
@@ -17,6 +19,6 @@ public class ClassPathResource
     @Override
     protected InputStream openStream()
     {
-        return classLoader.getResourceAsStream(path);
+        return classLoader.getResourceAsStream(Util.stripLeadingSlash(path));
     }
 }

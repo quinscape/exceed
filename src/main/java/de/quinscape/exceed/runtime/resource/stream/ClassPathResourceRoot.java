@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.resource.stream;
 
 import de.quinscape.exceed.runtime.resource.AppResource;
 import de.quinscape.exceed.runtime.resource.ResourceWatcher;
+import de.quinscape.exceed.runtime.util.Util;
 
 import java.io.InputStream;
 
@@ -18,7 +19,7 @@ public class ClassPathResourceRoot
     @Override
     protected InputStream openStream(String path)
     {
-        return this.getClass().getClassLoader().getResourceAsStream(path);
+        return this.getClass().getClassLoader().getResourceAsStream(Util.stripLeadingSlash(path));
     }
 
 

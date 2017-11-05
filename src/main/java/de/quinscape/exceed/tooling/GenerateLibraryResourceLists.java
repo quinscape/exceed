@@ -66,7 +66,7 @@ public class GenerateLibraryResourceLists
                     tool.generateResourceList(
                         path,
                         target,
-                        NonJsComponentFileFilter.INSTANCE
+                        TrueFileFilter.INSTANCE
                     );
                 }
             }
@@ -75,7 +75,8 @@ public class GenerateLibraryResourceLists
                 tool.generateResourceList(
                     sourceDir,
                     targetFile,
-                    NonJsComponentFileFilter.INSTANCE);
+                    TrueFileFilter.INSTANCE
+                );
 
             }
         }
@@ -99,28 +100,6 @@ public class GenerateLibraryResourceLists
         FileUtils.writeStringToFile(targetFile, sb.toString(), "UTF-8");
     }
 
-    private static class NonJsComponentFileFilter
-        implements IOFileFilter
-    {
-        private final static NonJsComponentFileFilter INSTANCE = new NonJsComponentFileFilter();
-
-        @Override
-        public boolean accept(File file)
-        {
-            return match(file.getName());
-        }
-
-        private boolean match(String name)
-        {
-            return name.endsWith(FileExtension.CSS) || name.endsWith(FileExtension.JSON);
-        }
-
-        @Override
-        public boolean accept(File dir, String name)
-        {
-            return match(name);
-        }
-    }
 
     private static class SubDirFilter
         implements IOFileFilter

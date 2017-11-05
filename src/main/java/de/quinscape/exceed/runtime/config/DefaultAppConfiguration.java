@@ -30,10 +30,9 @@ import java.util.Set;
 
 /**
  * Executes the default application setup.
- *
+ * <p>
  * The webapp's /WEB-INF/extension dir is set up as only application with the context path
  * being used as application name.
- *
  */
 @Configuration
 public class DefaultAppConfiguration
@@ -49,7 +48,7 @@ public class DefaultAppConfiguration
     private final ApplicationService applicationService;
 
     private final ComponentRegistryImpl componentRegistry;
-    
+
     private final ExceedConfig exceedConfig;
 
     private final Environment env;
@@ -79,6 +78,7 @@ public class DefaultAppConfiguration
         initializeApps();
     }
 
+
     private void registerComponents() throws IOException
     {
         File exceedLibrarySource = Util.getExceedLibrarySource();
@@ -86,7 +86,8 @@ public class DefaultAppConfiguration
         ResourceRoot baseComponentRoot;
         if (exceedLibrarySource != null)
         {
-            baseComponentRoot = new FileResourceRoot(new File(exceedLibrarySource, Util.toSlashPath("src/main/js/components")), true);
+            baseComponentRoot = new FileResourceRoot(
+                new File(exceedLibrarySource, Util.toSlashPath("src/main/js/components")), true);
         }
         else
         {
@@ -110,14 +111,17 @@ public class DefaultAppConfiguration
 
     }
 
+
     private void initializeApps()
     {
         applicationService.update(servletContext, exceedConfig);
 
     }
 
+
     @EventListener(ContextRefreshedEvent.class)
-    void contextRefreshedEvent() {
+    public void contextRefreshedEvent()
+    {
 
         final List<AppState> activeApplications = applicationService.getActiveApplications();
 

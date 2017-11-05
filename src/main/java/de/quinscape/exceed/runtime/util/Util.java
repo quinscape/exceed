@@ -443,6 +443,21 @@ public final class Util
         set.addAll(classes);
         return Collections.unmodifiableSet(set);
     }
+
+
+    public static String stripLeadingSlash(String path)
+    {
+        if (path == null)
+        {
+            throw new IllegalArgumentException("path can't be null");
+        }
+
+        if (path.startsWith("/"))
+        {
+            return path.substring(1);
+        }
+        return path;
+    }
 }
 
 
