@@ -83,7 +83,7 @@ class StandardNav extends React.Component {
                         <Navbar.Brand>
                             {
                                 React.Children.count(children) === 0 ?
-                                    <a href={ uri("/") }> { sys.appName }</a> :
+                                    <a href={ uri( "/app/" + sys.appName ) }> { sys.appName }</a> :
                                     { children }
                             }
                         </Navbar.Brand>
