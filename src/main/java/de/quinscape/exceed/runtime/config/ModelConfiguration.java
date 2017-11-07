@@ -19,6 +19,9 @@ import org.springframework.context.annotation.Import;
 @Import(ExpressionConfiguration.class)
 public class ModelConfiguration
 {
+    public final static String MERGE_REPLACE_STRATEGY_NAME = "mergeReplaceStrategy";
+    public final static String MERGE_DEEP_STRATEGY_NAME = "mergeDeepStrategy";
+
     @Bean
     public ModelJSONService modelJSONService(ClientViewJSONGenerator clientViewJSONGenerator)
     {

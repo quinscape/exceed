@@ -38,6 +38,25 @@ public class ApplicationModel
     extends AbstractModel
     implements DomainTypesRegistry
 {
+
+    private final static Map<Class<? extends TopLevelModel>, TopLevelModelExtractor<? extends TopLevelModel>> EXTRACTORS;
+
+    static
+    {
+        Map<Class<? extends TopLevelModel>, TopLevelModelExtractor<? extends TopLevelModel>> map = new HashMap<>();
+        map.put(DomainType.class, ApplicationModel::getDomainType);
+        map.put(View.class, ApplicationModel::getView);
+        map.put(Process.class, ApplicationModel::getProcess);
+        map.put(EnumType.class, ApplicationModel::getEnum);
+        map.put(StateMachine.class, (app,name) -> app.getStateMachines().get(name));
+        map.put(RoutingTable.class, (app,name) -> app.getRoutingTable());
+        map.put(DomainRule.class, (app,name) -> app.getDomainRules().get(name));
+        map.put(LayoutModel.class, ApplicationModel::getLayout);
+        map.put(QueryTypeModel.class, (app,name) -> app.getQueryTypes().get(name));
+        map.put(PropertyTypeModel.class, ApplicationModel::getPropertyType);
+        EXTRACTORS = map;
+    }
+
     private RoutingTable routingTable;
 
     private Map<String, DomainType> domainTypes = new HashMap<>();
@@ -433,5 +452,17 @@ public class ApplicationModel
     public Map<String, StateMachine> getStateMachines()
     {
         return stateMachinesRO;
+    }
+
+    public <T extends TopLevelModel> T getNamedDependent(Class<T> type, String name)
+    {
+        final TopLevelModelExtractor<? extends TopLevelModel> extractor = EXTRACTORS.get(type);
+
+        if (extractor == null)
+        {
+            throw new IllegalStateException("Cannot find extrator for " + type);
+        }
+
+        return (T) extractor.get(this, name);
     }
 }

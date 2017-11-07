@@ -1,5 +1,7 @@
 package de.quinscape.exceed.model.config;
 
+import de.quinscape.exceed.model.annotation.MergeStrategy;
+import de.quinscape.exceed.model.merge.MergeType;
 import de.quinscape.exceed.runtime.model.InconsistentModelException;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.svenson.JSONProperty;
@@ -14,6 +16,7 @@ import java.util.Arrays;
  * <p>
  * <a href="http://mikemcl.github.io/bignumber.js/#config">Bignumber.js config documentation</a>
  */
+@MergeStrategy(MergeType.DEEP)
 public class DecimalConfig
 {
     /**

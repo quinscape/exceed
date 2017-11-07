@@ -1,5 +1,7 @@
 package de.quinscape.exceed.model.config;
 
+import de.quinscape.exceed.model.annotation.MergeStrategy;
+import de.quinscape.exceed.model.merge.MergeType;
 import org.svenson.JSONProperty;
 
 /**
@@ -9,6 +11,7 @@ import org.svenson.JSONProperty;
  * This is were app-level configuration for components is stored. Is provided
  * </p>
  */
+@MergeStrategy(MergeType.DEEP)
 public class ComponentConfig
 {
     /**

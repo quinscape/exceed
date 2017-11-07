@@ -1,7 +1,9 @@
 package de.quinscape.exceed.model.routing;
 
 
+import de.quinscape.exceed.model.annotation.MergeStrategy;
 import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.merge.MergeType;
 import de.quinscape.exceed.runtime.model.InconsistentModelException;
 import org.svenson.JSONProperty;
 
@@ -11,6 +13,7 @@ import java.util.Set;
 /**
  * A single routing table mapping.
  */
+@MergeStrategy(MergeType.REPLACE)
 public class Mapping
 {
     private String viewName;
@@ -22,6 +25,19 @@ public class Mapping
     private Set<String> classes;
 
     private ExpressionValue title;
+
+    public Mapping()
+    {
+        this(null, null);
+    }
+
+    public Mapping(
+        String viewName, String processName
+    )
+    {
+        this.viewName = viewName;
+        this.processName = processName;
+    }
 
 
     public String getTitle()

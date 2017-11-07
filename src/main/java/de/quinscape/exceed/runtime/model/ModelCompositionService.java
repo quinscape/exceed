@@ -2,17 +2,13 @@ package de.quinscape.exceed.runtime.model;
 
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.TopLevelModel;
-import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.config.ApplicationConfig;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.context.ScopeMetaModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.model.domain.DomainRule;
-import de.quinscape.exceed.model.domain.DomainVersion;
 import de.quinscape.exceed.model.domain.EnumType;
-import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
-import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.domain.type.DomainTypeModel;
 import de.quinscape.exceed.model.domain.type.QueryTypeModel;
@@ -21,7 +17,6 @@ import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.process.Transition;
 import de.quinscape.exceed.model.process.ViewState;
-import de.quinscape.exceed.model.routing.RoutingTable;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
@@ -30,6 +25,8 @@ import de.quinscape.exceed.runtime.domain.DomainServiceImpl;
 import de.quinscape.exceed.runtime.js.JsEnvironmentFactory;
 import de.quinscape.exceed.runtime.js.def.Definitions;
 import de.quinscape.exceed.runtime.resource.AppResource;
+import de.quinscape.exceed.runtime.resource.ResourceLoader;
+import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.PathResources;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
@@ -42,7 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +79,7 @@ public class ModelCompositionService
      *  graph. 
      * </p>
      *
-     * @param resourceLocations        resource loader
+     * @param resourceLoader        resource loader
      * @param domainService         domain service of the application
      * @param systemDefinitions     Base system definitions
      * @param appName               application name
@@ -91,7 +87,7 @@ public class ModelCompositionService
      * @return assembled application model.
      */
     public ApplicationModel compose(
-        Collection<PathResources> resourceLocations,
+        ResourceLoader resourceLoader,
         DomainService domainService,
         Definitions systemDefinitions,
         String appName
@@ -101,11 +97,11 @@ public class ModelCompositionService
         applicationModel.setName(appName);
         applicationModel.setVersion(UUID.randomUUID().toString());
 
-        for (PathResources resource : resourceLocations)
+        for (PathResources resource : resourceLoader.getAllResources().values())
         {
             if (resource.getRelativePath().endsWith(FileExtension.JSON))
             {
-                updateInternal(applicationModel, domainService, resource.getHighestPriorityResource());
+                updateInternal(applicationModel, domainService, null, resource);
             }
         }
 
@@ -118,14 +114,17 @@ public class ModelCompositionService
      *
      * @param applicationModel      application model
      * @param domainService         domain service
-     * @param resource              resource that has changed content
-     *
-     * @return top level model that has been created for the resource contents.
+     * @param resourceLoader        application resource loader
+     * @param changedRoot           file root in which the changed happened
+     *@param resource              resource that has changed content
+     *  @return top level model that has been created for the resource contents.
      */
     public TopLevelModel update(
         ApplicationModel applicationModel,
         DomainService domainService,
-        AppResource resource
+        ResourceLoader resourceLoader,
+        FileResourceRoot changedRoot,
+        PathResources resource
     )
     {
         String path = resource.getRelativePath();
@@ -135,7 +134,7 @@ public class ModelCompositionService
             throw new IllegalArgumentException(resource + " is not a JSON resource");
         }
 
-        TopLevelModel topLevelModel = updateInternal(applicationModel, domainService, resource);
+        TopLevelModel topLevelModel = updateInternal(applicationModel, domainService, changedRoot, resource);
 
         applicationModel.setVersion(UUID.randomUUID().toString());
 
@@ -184,7 +183,12 @@ public class ModelCompositionService
                 final String layoutName = view.getLayout(applicationModel);
                 if (layoutName.equals(layout.getName()))
                 {
-                    final View newView = (View) updateInternal(applicationModel, domainService, view.getResource());
+                    final String viewPath = view.getResource().getRelativePath();
+                    final View newView = (View) updateInternal(
+                        applicationModel,
+                        domainService,
+                        changedRoot, resourceLoader.getResources(viewPath)
+                    );
                     postprocessView(applicationModel, newView);
                     scopeMetaModel.addDeclarations(newView);
                 }
@@ -212,41 +216,29 @@ public class ModelCompositionService
     private TopLevelModel updateInternal(
         ApplicationModel applicationModel,
         DomainService domainService,
-        AppResource resource
+        FileResourceRoot changedRoot,
+        PathResources resources
     )
     {
-        String path = resource.getRelativePath();
-        String json = new String(resource.read(), UTF8);
+        String path = resources.getRelativePath();
 
-        if (json.length() == 0)
+        final Class<? extends TopLevelModel> type = modelLocationRules.matchType(path);
+
+        if (type == null)
         {
+            log.debug("Unknown resource at path {}", path);
             return null;
         }
 
-        try
-        {
-            final Class<? extends TopLevelModel> type = modelLocationRules.matchType(path);
+        //final TopLevelModel topLevelModel = create(type, json, resource);
 
-            if (type == null)
-            {
-                log.debug("Unknown resource {} at path {}", resource, path);
-                return null;
-            }
-
-            final TopLevelModel topLevelModel = create(type, json, resource);
-
-            return topLevelModel.accept(new TopLevelModelMerger(applicationModel, path, domainService), null);
-        }
-        catch (Exception e)
-        {
-            throw new ModelLoadingException("Error loading model from " + resource, e);
-        }
+        return ModelMerger.merge(modelJSONService, applicationModel, domainService, type, changedRoot,resources);
     }
 
 
     public View createPreviewViewModel(AppResource resource, String json)
     {
-        View view = create(View.class, json, resource);
+        View view = create(modelJSONService, View.class, json, resource);
         view.setSynthetic(true);
 
         return view;
@@ -254,7 +246,7 @@ public class ModelCompositionService
 
     private final static Pattern PROCESS_PATH = Pattern.compile("^/models/process/(.*?)/view/");
 
-    private <M extends TopLevelModel> M create(Class<M> cls, String json, AppResource resource)
+    public static <M extends TopLevelModel> M create(ModelJSONService modelJSONService, Class<M> cls, String json, AppResource resource)
     {
         final String path = resource.getRelativePath();
 
@@ -263,30 +255,37 @@ public class ModelCompositionService
         model.setResource(resource);
         model.setExtension(resource.getResourceRoot().getExtensionIndex());
 
-        final String name = nameFromPath(path);
-        if (model instanceof View)
-        {
-            Matcher m = PROCESS_PATH.matcher(path);
-            if (m.find())
-            {
-                model.setName(Process.getProcessStateName( m.group(1), name));
-            }
-            else
-            {
-                model.setName(name);
-            }
-        }
-        else
-        {
-            model.setName(name);
-        }
-
+        final String name = getModelNameFromPath(model.getClass(), path);
+        model.setName(name);
         model.initializeGUIDs();
 
         return model;
     }
 
-    private String nameFromPath(String path)
+
+    public static String getModelNameFromPath(Class<? extends TopLevelModel> cls, String path)
+    {
+        final String name = nameFromPath(path);
+        if (View.class.isAssignableFrom(cls))
+        {
+            Matcher m = PROCESS_PATH.matcher(path);
+            if (m.find())
+            {
+                return Process.getProcessStateName( m.group(1), name);
+            }
+            else
+            {
+                return name;
+            }
+        }
+        else
+        {
+            return name;
+        }
+    }
+
+
+    private static String nameFromPath(String path)
     {
         int start = path.lastIndexOf('/');
         int end = path.lastIndexOf('.');
@@ -579,141 +578,4 @@ public class ModelCompositionService
     }
 
 
-    /**
-     * Visits top level models and merges them into the application model.
-     */
-    private static class TopLevelModelMerger
-        implements TopLevelModelVisitor<Object, TopLevelModel>
-    {
-        private final ApplicationModel applicationModel;
-
-        private final String path;
-
-        private final DomainService domainService;
-
-
-        public TopLevelModelMerger(ApplicationModel applicationModel, String path, DomainService domainService)
-        {
-            this.applicationModel = applicationModel;
-            this.path = path;
-            this.domainService = domainService;
-        }
-
-
-        @Override
-        public TopLevelModel visit(ApplicationConfig configModel, Object o)
-        {
-            applicationModel.setConfigModel(configModel);
-            return configModel;
-        }
-
-
-        @Override
-        public TopLevelModel visit(RoutingTable routingTable, Object o)
-        {
-            applicationModel.setRoutingTable(routingTable);
-            return routingTable;
-        }
-
-
-        @Override
-        public TopLevelModel visit(PropertyTypeModel propertyType, Object o)
-        {
-            applicationModel.addPropertyType(propertyType);
-            return propertyType;
-        }
-
-
-        @Override
-        public TopLevelModel visit(Process process, Object o)
-        {
-            int nameStart = ModelLocationRules.PROCESS_MODEL_PREFIX.length();
-            String processName = path.substring(nameStart, path.indexOf('/', nameStart));
-            process.setName(processName);
-            applicationModel.addProcess( process);
-            return process;
-        }
-
-
-        @Override
-        public TopLevelModel visit(View view, Object o)
-        {
-            if (path.startsWith(ModelLocationRules.PROCESS_MODEL_PREFIX))
-            {
-                view.setProcessName(path.substring(ModelLocationRules.PROCESS_MODEL_PREFIX.length(), path.indexOf("/view/")));
-                applicationModel.addView(view);
-                return view;
-            }
-
-            applicationModel.addView(view);
-            return view;
-        }
-
-
-        @Override
-        public TopLevelModel visit(DomainTypeModel domainType, Object o)
-        {
-            domainType.setDomainService(domainService);
-            applicationModel.addDomainType(domainType);
-            return domainType;
-        }
-
-
-        @Override
-        public TopLevelModel visit(DomainVersion domainVersion, Object o)
-        {
-            applicationModel.addDomainVersion(domainVersion);
-            return domainVersion;
-        }
-
-
-        @Override
-        public TopLevelModel visit(EnumType enumType, Object o)
-        {
-            applicationModel.addEnum(enumType);
-            return enumType;
-        }
-
-
-        @Override
-        public TopLevelModel visit(LayoutModel layoutModel, Object o)
-        {
-            applicationModel.addLayout(layoutModel);
-            return layoutModel;
-        }
-
-
-        @Override
-        public TopLevelModel visit(DomainRule domainRule, Object in)
-        {
-            applicationModel.addDomainRule(domainRule);
-            return domainRule;
-        }
-
-
-        @Override
-        public TopLevelModel visit(QueryTypeModel queryTypeModel)
-        {
-            queryTypeModel.setDomainService(domainService);
-            applicationModel.addDomainType(queryTypeModel);
-            return queryTypeModel;
-        }
-
-
-        @Override
-        public TopLevelModel visit(StateMachine stateMachine, Object in)
-        {
-            applicationModel.addStateMachine(stateMachine);
-            return stateMachine;
-        }
-
-
-//        @Override
-//        public TopLevelModel visit(DomainEditorViews domainEditorViews, Object o)
-//        {
-//            applicationModel.getMetaData().setDomainEditorViews(domainEditorViews);
-//            return domainEditorViews;
-//        }
-
-    }
 }

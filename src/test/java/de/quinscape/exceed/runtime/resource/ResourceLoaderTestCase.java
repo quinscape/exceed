@@ -31,7 +31,7 @@ public class ResourceLoaderTestCase
 
         List<ResourceRoot> resourceRoots = Arrays.asList(base,ext,ext2);
 
-        ResourceLoader resourceLoader = new ResourceLoader(resourceRoots);
+        ResourceLoader resourceLoader = new DefaultResourceLoader(resourceRoots);
 
         PathResources resource = resourceLoader.getResources("/a.json");
 

@@ -1,7 +1,9 @@
 package de.quinscape.exceed.model.context;
 
 import de.quinscape.exceed.model.annotation.DocumentedCollection;
+import de.quinscape.exceed.model.annotation.MergeStrategy;
 import de.quinscape.exceed.model.domain.property.PropertyModel;
+import de.quinscape.exceed.model.merge.MergeType;
 import org.svenson.JSONTypeHint;
 
 import java.util.Collections;
@@ -10,6 +12,7 @@ import java.util.Map;
 /**
  * Model for a scoped context (e.g. application context, session context, process context etc).
  */
+@MergeStrategy(MergeType.DEEP)
 public class ContextModel
 {
     private Map<String, ScopedPropertyModel> properties;

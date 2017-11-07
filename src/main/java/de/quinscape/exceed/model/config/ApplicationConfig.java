@@ -5,7 +5,9 @@ import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.model.AbstractTopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.annotation.DocumentedCollection;
+import de.quinscape.exceed.model.annotation.MergeStrategy;
 import de.quinscape.exceed.model.context.ContextModel;
+import de.quinscape.exceed.model.merge.MergeType;
 import de.quinscape.exceed.runtime.security.Roles;
 import org.springframework.util.StringUtils;
 import org.svenson.JSONProperty;
@@ -21,6 +23,7 @@ import java.util.Set;
 /**
  * Encapsulates general application configuration. Corresponds to the "/models/config.json" resource.
  */
+@MergeStrategy(MergeType.DEEP)
 public class ApplicationConfig
     extends AbstractTopLevelModel
 {
@@ -157,6 +160,7 @@ public class ApplicationConfig
     /**
      * Array of normalized locale specifications to support for this application.
      */
+    @MergeStrategy(MergeType.REPLACE)
     public List<String> getSupportedLocales()
     {
         if (supportedLocales == null)
@@ -342,6 +346,7 @@ public class ApplicationConfig
         keyDesc = "userName",
         valueDesc = "Set of role string"
     )
+    @MergeStrategy(MergeType.DEEP)
     public Map<String, Set<String>> getDefaultUsers()
     {
         return defaultUsers;

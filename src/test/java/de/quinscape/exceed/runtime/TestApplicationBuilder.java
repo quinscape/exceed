@@ -32,6 +32,7 @@ import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
 import de.quinscape.exceed.runtime.model.ModelLocationRules;
 import de.quinscape.exceed.runtime.model.TestRegistry;
+import de.quinscape.exceed.runtime.resource.DefaultResourceLoader;
 import de.quinscape.exceed.runtime.resource.ResourceLoader;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
@@ -280,8 +281,8 @@ public class TestApplicationBuilder
 
         if (extensions != null)
         {
-            final ResourceLoader resourceLoader = new ResourceLoader(extensions);
-            applicationModel = svc.compose(resourceLoader.getAllResources().values(), domainService, baseDefinitions, name);
+            final ResourceLoader resourceLoader = new DefaultResourceLoader(extensions);
+            applicationModel = svc.compose(resourceLoader, domainService, baseDefinitions, name);
         }
         else
         {

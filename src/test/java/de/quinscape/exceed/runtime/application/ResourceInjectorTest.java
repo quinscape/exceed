@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.application;
 
 import de.quinscape.exceed.model.annotation.InjectResource;
+import de.quinscape.exceed.runtime.resource.DefaultResourceLoader;
 import de.quinscape.exceed.runtime.resource.ResourceLoader;
 import de.quinscape.exceed.runtime.resource.stream.ClassPathResourceRoot;
 import de.quinscape.exceed.runtime.util.JsUtil;
@@ -25,7 +26,7 @@ public class ResourceInjectorTest
 
         assertThat(injector.getProperties().size(), is(3));
 
-        ResourceLoader resourceLoader = new ResourceLoader(Collections.singletonList(new ClassPathResourceRoot("injector-base")));
+        ResourceLoader resourceLoader = new DefaultResourceLoader(Collections.singletonList(new ClassPathResourceRoot("injector-base")));
 
         final TestInjectionTarget target = new TestInjectionTarget();
         final NashornScriptEngine engine = JsUtil.createEngine();
@@ -49,7 +50,7 @@ public class ResourceInjectorTest
     @Test(expected = IllegalArgumentException.class)
     public void testMismatch() throws Exception
     {
-        ResourceLoader resourceLoader = new ResourceLoader(Collections.singletonList(new ClassPathResourceRoot("injector-base")));
+        ResourceLoader resourceLoader = new DefaultResourceLoader(Collections.singletonList(new ClassPathResourceRoot("injector-base")));
         final NashornScriptEngine engine = JsUtil.createEngine();
         final ResourceInjector injector = new ResourceInjector(TestInjectionTarget.class);
         injector.injectResources(engine, resourceLoader, new TestInjectionSub());

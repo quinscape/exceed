@@ -3,8 +3,10 @@ package de.quinscape.exceed.model.context;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.model.annotation.DocumentedModelType;
 import de.quinscape.exceed.model.annotation.Internal;
+import de.quinscape.exceed.model.annotation.MergeStrategy;
 import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.model.expression.ExpressionValue;
+import de.quinscape.exceed.model.merge.MergeType;
 import de.quinscape.exceed.model.meta.PropertyType;
 import de.quinscape.exceed.runtime.util.ExpressionUtil;
 import org.svenson.JSONProperty;
@@ -14,6 +16,7 @@ import java.util.Map;
 /**
  * A single scoped property value within a scope.
  */
+@MergeStrategy(MergeType.REPLACE)
 public class ScopedPropertyModel
     implements PropertyModel
 {

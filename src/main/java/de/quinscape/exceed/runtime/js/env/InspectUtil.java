@@ -181,7 +181,7 @@ public class InspectUtil
                 }
                 else
                 {
-                    final JSONClassInfo classInfo = JSONUtil.OBJECT_SUPPORT.createClassInfo(value.getClass());
+                    final JSONClassInfo classInfo = JSONUtil.getClassInfo(value.getClass());
 
                     sb.append('{');
                     for (Iterator<JSONPropertyInfo> iterator = classInfo.getPropertyInfos().iterator(); iterator

@@ -1,13 +1,14 @@
 package de.quinscape.exceed.runtime.service;
 
 import com.google.common.cache.LoadingCache;
+import de.quinscape.exceed.model.startup.AppState;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.js.def.Definitions;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
+import de.quinscape.exceed.runtime.resource.DefaultResourceLoader;
 import de.quinscape.exceed.runtime.resource.ResourceCacheFactory;
-import de.quinscape.exceed.runtime.resource.ResourceLoader;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.stream.ClassPathResourceRoot;
@@ -17,7 +18,6 @@ import de.quinscape.exceed.runtime.service.client.ClientStateProvider;
 import de.quinscape.exceed.runtime.service.client.ClientStateService;
 import de.quinscape.exceed.runtime.service.client.ExceedAppProvider;
 import de.quinscape.exceed.runtime.service.model.ModelSchemaService;
-import de.quinscape.exceed.model.startup.AppState;
 import de.quinscape.exceed.runtime.util.Util;
 import de.quinscape.exceed.runtime.view.ViewDataService;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
@@ -120,7 +120,7 @@ public class RuntimeApplicationFactory
         final String appName = state.getName();
         log.info("Creating runtime application '{}', roots = {}", appName, resourceRoots);
 
-        ResourceLoader resourceLoader = new ResourceLoader(resourceRoots);
+        DefaultResourceLoader resourceLoader = new DefaultResourceLoader(resourceRoots);
         LoadingCache<String, CachedResource> cache = resourceCacheFactory.createCache(resourceLoader);
         if (cache != null)
         {

@@ -1,6 +1,8 @@
 package de.quinscape.exceed.model.config;
 
 
+import de.quinscape.exceed.model.annotation.MergeStrategy;
+import de.quinscape.exceed.model.merge.MergeType;
 import de.quinscape.exceed.runtime.template.TemplateVariables;
 import org.svenson.AbstractDynamicProperties;
 import org.svenson.JSONProperty;
@@ -10,6 +12,7 @@ import org.svenson.JSONProperty;
  * You can use arbitrary property names here for your own base templates.
  *
  */
+@MergeStrategy(MergeType.DEEP)
 public class BaseTemplateConfig
     extends AbstractDynamicProperties
     implements TemplateVariables

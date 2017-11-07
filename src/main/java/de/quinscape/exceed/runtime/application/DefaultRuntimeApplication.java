@@ -195,7 +195,7 @@ public class DefaultRuntimeApplication
         //boolean production = ApplicationStatus.from(state) == ApplicationStatus.PRODUCTION;
 
         this.domainService = domainService;
-        applicationModel = modelCompositionService.compose(resourceLoader.getAllResources().values(), domainService, systemDefinitions, appName);
+        applicationModel = modelCompositionService.compose(resourceLoader, domainService, systemDefinitions, appName);
 
         ContextModel context = applicationModel.getConfigModel().getApplicationContextModel();
 
@@ -874,63 +874,75 @@ public class DefaultRuntimeApplication
 
 
     @Override
-    public synchronized void onResourceChange(ModuleResourceEvent resourceEvent, FileResourceRoot root, String
-        modulePath)
+    public synchronized void onResourceChange(
+        ModuleResourceEvent resourceEvent,
+        FileResourceRoot root,
+        String path
+    )
     {
-        log.debug("onResourceChange:  {} {} ( ROOT {} ) ", resourceEvent, modulePath, root);
+        log.debug("onResourceChange:  {} {} ( ROOT {} ) ", resourceEvent, path, root);
 
-        PathResources resourceLocation = resourceLoader.getResources(modulePath);
+        PathResources pathResources = resourceLoader.getResources(path);
 
-        if (resourceLocation == null)
+        if (pathResources == null)
         {
             return;
         }
 
-        AppResource topResource = resourceLocation.getHighestPriorityResource();
-        ResourceRoot rootOfTopResource = topResource.getResourceRoot();
-        if (root.equals(rootOfTopResource))
+        if (path.endsWith(FileExtension.JSON))
         {
-            if (modulePath.endsWith(FileExtension.CSS))
-            {
-                if (applicationModel.getConfigModel().getStyleSheets().contains(modulePath))
-                {
-                    try
-                    {
-                        styleService.reload(root, modulePath);
-                    }
-                    catch (IOException e)
-                    {
-                        throw new ExceedRuntimeException(e);
-                    }
-                    notifyStyleChange();
-                }
-            }
-            else if (modulePath.endsWith(FileExtension.JSON))
-            {
-                TopLevelModel model = modelCompositionService.update(applicationModel, domainService, topResource);
-                if (model != null)
-                {
-                    notifyChange(model);
+            // for models we need to always update on any change to the path resources because merging means that
+            // lower priority models can still influence the final outcome
 
-                    if (model instanceof View)
-                    {
-                        clientStateService.flushViewScope((View) model);
-                    }
-                    clientStateService.flushModelVersionScope(getName());
-                }
+            TopLevelModel model = modelCompositionService.update(applicationModel, domainService, resourceLoader, root, pathResources);
+            if (model != null)
+            {
+                notifyChange(model);
 
-                resourceInjector.updateResource(nashorn, resourceLoader, applicationModel.getMetaData(), modulePath);
+                if (model instanceof View)
+                {
+                    clientStateService.flushViewScope((View) model);
+                }
+                clientStateService.flushModelVersionScope(getName());
             }
-            else if (modulePath.equals("/resources/js/main.js"))
-            {
-                log.debug("Reload js: {}", modulePath);
-                notifyCodeChange();
-            }
-            else
-            {
-                resourceInjector.updateResource(nashorn, resourceLoader, applicationModel.getMetaData(), modulePath);
-            }
+            resourceInjector.updateResource(nashorn, resourceLoader, applicationModel.getMetaData(), path);
         }
+        else
+        {
+            // for resources, we only care for changes in the top resource.
+
+            AppResource topResource = pathResources.getHighestPriorityResource();
+            ResourceRoot rootOfTopResource = topResource.getResourceRoot();
+            if (root.equals(rootOfTopResource))
+            {
+                if (path.endsWith(FileExtension.CSS))
+                {
+                    if (applicationModel.getConfigModel().getStyleSheets().contains(path))
+                    {
+                        try
+                        {
+                            styleService.reload(root, path);
+                        }
+                        catch (IOException e)
+                        {
+                            throw new ExceedRuntimeException(e);
+                        }
+                        notifyStyleChange();
+                    }
+                }
+                else if (path.equals("/resources/js/main.js"))
+                {
+                    log.debug("Reload js: {}", path);
+                    notifyCodeChange();
+                }
+                else
+                {
+                    resourceInjector.updateResource(nashorn, resourceLoader, applicationModel.getMetaData(), path);
+                }
+            }
+
+        }
+
     }
 
 
