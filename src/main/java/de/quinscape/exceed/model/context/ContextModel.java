@@ -4,6 +4,7 @@ import de.quinscape.exceed.model.annotation.DocumentedCollection;
 import de.quinscape.exceed.model.annotation.MergeStrategy;
 import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.model.merge.MergeType;
+import de.quinscape.exceed.runtime.model.InconsistentModelException;
 import org.svenson.JSONTypeHint;
 
 import java.util.Collections;
@@ -30,6 +31,14 @@ public class ContextModel
             final ScopedPropertyModel scopedPropertyModel = entry.getValue();
             PropertyModel.initDefaults(scopedPropertyModel);
 
+            final String existingName = scopedPropertyModel.getName();
+            if (existingName != null && !existingName.equals(name))
+            {
+                throw new InconsistentModelException(
+                    "Scoped property '" + name + "' declares a different name '" + existingName + "'. " +
+                    "You don't need to define name properties, they receive the name from their map key automatically." +
+                    "If you define a name is must be the same as the map key.");
+            }
             scopedPropertyModel.setName(name);
         }
     }
