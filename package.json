@@ -1,6 +1,6 @@
 {
     "name": "exceed",
-    "private": true,
+    "license": "Apache-2.0",
     "version": "0.0.1",
     "dependencies": {
         "bignumber.js": "^4.0.2",
