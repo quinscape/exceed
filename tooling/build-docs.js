@@ -22,6 +22,7 @@ const MODEL_DOCS_PATH = "../src/main/base/resources/js/model-docs.json";
 const DOC_SOURCE = "src/main/doc";
 
 const OUTPUT = "target/classes/exceed-docs";
+const GH_PAGES_DOCS = "docs";
 
 if (shell.test("-d", OUTPUT))
 {
@@ -197,3 +198,5 @@ for (let i = 0; i < content.length; i++)
 {
     renderDoc(OUTPUT, content, i);
 }
+
+shell.cp("-R", OUTPUT + "/*", GH_PAGES_DOCS);
