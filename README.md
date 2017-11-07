@@ -2,6 +2,8 @@
 
 Model-based application engine for editing and running applications defined in a JSON format.
 
+[Project documentation](https://quinscape.github.io/exceed/index.html)
+
 ## Development Install
 
 The project uses Java and maven for the java part and a nodejs build chain based on current nodejs/yarn/webpack 2.
