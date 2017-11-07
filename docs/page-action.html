@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Exceed Action System &ndash; Exceed Documentation</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/readable-bootstrap.min.css" rel="stylesheet">
+    <link href="css/exceed-docs.css" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="../../base/resources/js/html5shiv.min.js"></script>
+    <script src="../../base/resources/js/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+<div id="root">
+    <div class="container-fluid">
+        <div class="row"><div class="col-md-1"></div><div class="col-md-9"><div class="toolbar clearfix"><a class="btn btn-link" href="./models-process.html"><small>Previous :Process Models</small></a><a class="btn btn-link pull-right" href="./page-graph.html"><small>Next :DataGraph Structure</small></a></div><div><h1><span class="md-heading"><a name="exceed-action-system" class="anchor" href="#exceed-action-system"><span class="header-link">#</span></a>Exceed Action System</span> </h1><p>The action system of exceed allows the execution of Java methods within the context of
+an exceed application. This is used to implement basic exceed functionality and 
+can and should be used for application-specific extension.</p>
+<p>The exceed expression language is designed to not be overly complex, at most 
+action expression chains with conditionals. For anything more complex you should
+move that into an action / components / other extension points. </p>
+<h2><span class="md-heading"><a name="using-action-annotations" class="anchor" href="#using-action-annotations"><span class="header-link">#</span></a>Using action annotations</span> </h2><p>The action system works with a set of annotations on classes and methods. We define
+a spring meta annotation @CustomLogic. Using that annotation on a class will make spring
+automatically detect our class in component scans.</p>
+<p>The custom logic classes can be spring bean autowiring targets just like any other spring
+service.</p>
+<p>The @Action annotation marks java methods within @CustomLogic annoated classes as 
+being action methods. Here we see an example of such a method </p>
+<pre><code><span class="hljs-meta">@CustomLogic</span>
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ApplicationSpecificLogic</span>
+</span>{
+    <span class="hljs-meta">@Action</span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">boolean</span> <span class="hljs-title">myBusinessAction</span><span class="hljs-params">(
+        RuntimeContext runtimeContext,
+        <span class="hljs-keyword">int</span> number
+    )</span>
+    </span>{
+        …
+    }
+}
+</code></pre><p>This action method then can be accessed inside an action expression (for example a transition action expression).</p>
+<pre><code>    <span class="hljs-selector-tag">myBusinessAction</span>(<span class="hljs-number">123</span>)
+</code></pre><p>The action methods can receive parameters that are either provided by the system or
+by the action usage in an expression.</p>
+<p>The runtime context parameter for example automatically provides access to the context of the 
+application the action is happening in.</p>
+<p>Currently the system by default automatically provides:</p>
+<ul>
+<li>RuntimeContext </li>
+<li>Parameters annotated with @ExceedContext receive the current value of a context variable </li>
+</ul>
+<p>The rest of the parameters for which no special parameter providers exist make up
+the formal parameters of the action expression function corresponding to the 
+annotated java method.</p>
+<p>In our example case this is the parameter <code>number</code>.</p>
+<p>The parameters are subject to normal exceed parameter conversion rules. You can
+use the @ExceedPropertyType annotation to specify a property type in cases where
+the property type does not follow out of the Java parameter type.</p>
+<p>Examples:</p>
+<pre><code><span class="hljs-selector-tag">import</span> <span class="hljs-selector-tag">de</span><span class="hljs-selector-class">.quinscape</span><span class="hljs-selector-class">.exceed</span><span class="hljs-selector-class">.runtime</span><span class="hljs-selector-class">.domain</span><span class="hljs-selector-class">.GenericDomainObject</span>;
+<span class="hljs-selector-tag">import</span> <span class="hljs-selector-tag">com</span><span class="hljs-selector-class">.myapp</span><span class="hljs-selector-class">.domain</span><span class="hljs-selector-class">.tables</span><span class="hljs-selector-class">.pojos</span><span class="hljs-selector-class">.Bar</span>;
+
+    ...
+
+    @<span class="hljs-keyword">Action</span>
+    public boolean myBusinessAction(
+        @ExceedPropertyType(type=<span class="hljs-string">"DomainType"</span>, typeParam=<span class="hljs-string">"Foo"</span>) GenericDomainObject fooObject,
+        Bar barObject
+    )
+    {
+        …
+    }
+</code></pre><p>Here, the <code>fooObject</code> parameter is a GenericDomainObject, which could contain any domain 
+object value, but the annotation makes it clear that it is supposed to receive
+a domain object of the type <code>Foo</code>.</p>
+<p>If you use JOOQ class generation with exceed&#39;s de.quinscape.exceed.tooling.GeneratorStrategy,
+it will create POJO implementations extending from de.quinscape.exceed.runtime.domain.GeneratedDomainObject.</p>
+<p>These domain object implementations can be used as action parameters without any
+further annotations, their class name is identical to the domain type name.</p>
+<h2><span class="md-heading"><a name="extending-action-service-parameter-handling" class="anchor" href="#extending-action-service-parameter-handling"><span class="header-link">#</span></a>Extending Action Service Parameter Handling</span> </h2><p>The action service uses implementations of ParameterProviderFactory interface
+to create parameter providers to provide such parameter values.</p>
+<pre><code>import  de.quinscape.exceed.runtime.action.ParameterProviderFactory;
+
+public<span class="hljs-built_in"> interface </span>ParameterProviderFactory
+{
+    ParameterProvider createIfApplicable(Class&lt;?&gt; parameterClass, Annotation[] annotations) throws Exception;
+}
+</code></pre><p>The factory returns a parameter provider if it can construct one for the given parameter
+type and annotations on that parameter.</p>
+<p>All Spring beans in the exceed contexts implementing this interface will be automatically considered as provider factories.</p>
+</div><div class="toolbar clearfix"><a class="btn btn-link" href="./models-process.html"><small>Previous :Process Models</small></a><a class="btn btn-link pull-right" href="./page-graph.html"><small>Next :DataGraph Structure</small></a></div></div><div class="col-md-2"><ul class="doc-nav nav nav-pills nav-stacked te"><li class=""><a class="btn btn-link" href="index.html"><small>Overview</small></a></li><li class=""><a class="btn btn-link" href="concept.html"><small>Concept</small></a></li><li class=""><a class="btn btn-link" href="models-about.html"><small>Models in Practice</small></a></li><li class=""><a class="btn btn-link" href="models-domain.html"><small>Domain Models</small></a></li><li class=""><a class="btn btn-link" href="models-view.html"><small>View Models</small></a></li><li class=""><a class="btn btn-link" href="models-unified.html"><small>Context Models and Expressions </small></a></li><li class=""><a class="btn btn-link" href="page-types.html"><small>Exceed Type System</small></a></li><li class=""><a class="btn btn-link" href="models-process.html"><small>Process Models</small></a></li><li class="active"><a class="btn btn-link" href="page-action.html"><small>Exceed Action System</small></a></li><li class=""><a class="btn btn-link" href="page-graph.html"><small>DataGraph Structure</small></a></li><li class=""><a class="btn btn-link" href="customization.html"><small>Customizing Exceed</small></a></li><li class=""><a class="btn btn-link" href="model-reference.html"><small>Model Reference</small></a></li><li class=""><a class="btn btn-link" href="component.html"><small>Component Reference</small></a></li><li class=""><a class="btn btn-link" href="expression.html"><small>Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="query-expression.html"><small>Query Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="filter-expression.html"><small>Filter Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="class-index.html"><small>Components by class</small></a></li></ul></div></div>
+        <div class="row">
+            <div class="col-md-12">
+                <hr>
+                <small class="muted">
+                    Exceed &copy; 2017 Quinscape GmbH
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

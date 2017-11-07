@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Expression Reference &ndash; Exceed Documentation</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/readable-bootstrap.min.css" rel="stylesheet">
+    <link href="css/exceed-docs.css" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="../../base/resources/js/html5shiv.min.js"></script>
+    <script src="../../base/resources/js/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+<div id="root">
+    <div class="container-fluid">
+        <div class="row"><div class="col-md-1"></div><div class="col-md-9"><div class="toolbar clearfix"><a class="btn btn-link" href="./component.html"><small>Previous :Component Reference</small></a><a class="btn btn-link pull-right" href="./query-expression.html"><small>Next :Query Expression Reference</small></a></div><div><div><h1> Action expressions </h1><div><h2>Function catch<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js">Void <span class="hljs-keyword">catch</span>(<span class="hljs-built_in">Object</span>)
+</code></pre>
+</div><p>Allows to declare a sub action sequence to execute as rejection handler</p></div><div><h2>Function fork<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js"><span class="hljs-built_in">List</span> fork(<span class="hljs-built_in">Object</span>...)
+</code></pre>
+</div><p>Special action function that takes multiple sequences as input, runs them in parallel and waits for all of them to end.</p></div><div><h2>Function when<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js"><span class="hljs-built_in">Void</span> <span class="hljs-keyword">when</span>(Object)
+</code></pre>
+</div><p>A conditional branch in the action promise chain</p></div></div><div><h1> Component Expressions </h1><div><h2>Identifier context</h2>Type: Any<p>The current cursor context or transition context.</p></div><div><h2>Function lazyDependency<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js"><span class="hljs-built_in">Object</span> lazyDependency(<span class="hljs-built_in">Object</span>)
+</code></pre>
+</div><p>Marks first the expression argument as being lazily evaluated in terms of context dependency updates.The user can change the context variables within without it triggering view updates.</p></div><div><h2>Identifier model</h2>Type: xcd.view.ComponentModel<p>A reference to the current model</p></div><div><h2>Identifier props</h2>Type: Any<p>In a component expression, the props/attributes of the component (e.g. props.name)</p></div><div><h2>Identifier vars</h2>Type: Any<p>In a component expression, the current vars of the component</p></div></div><div><h1> Domain Object related expressions </h1><div><h2>Function isNew<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js">Boolean isNew(<span class="hljs-name">DomainType</span>)
+</code></pre>
+</div><p>Checks if the given domain object is new i.e. has a null identity</p></div><div><h2>Identifier newObject</h2>Type: Any<p>Create a new object of the given type</p></div><div><h2>Function uuid<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js"><span class="hljs-selector-tag">PlainText</span> <span class="hljs-selector-tag">uuid</span>()
+</code></pre>
+</div><p>Creates a new UUID type 4 value</p></div></div><div><h1> Form related expressions </h1><div><h2>Function fieldId<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js">PlainText fieldId(<span class="hljs-name">PlainText</span>)
+</code></pre>
+</div><p>Returns the correct field id for fields in iterative contexts</p></div><div><h2>Function popCursor<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js"><span class="hljs-built_in">Object</span> popCursor(<span class="hljs-built_in">Object</span>, <span class="hljs-built_in">Integer</span>)
+</code></pre>
+</div><p>Shortens the path of a cursor by n levels, returning the cursor location to a parent or grandparent of the current location.</p></div></div><div><h1> misc </h1><div><h2>Identifier cast</h2>Type: Any<p>Casts a value to another type if possible. Useful to e.g. convert one Enum to another or an Integer to an Enum.</p></div><div><h2>Identifier debug</h2>Type: Any<p>Helper function that will debug log its arguments and return the first argument</p></div><div><h2>Function i18n<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js"><span class="hljs-function"><span class="hljs-title">PlainText</span></span> i18n(PlainText, Object...)
+</code></pre>
+</div><p>First argument is the translation tag followed by values for its placeholders</p></div><div><h2>Function now<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js">Timestamp now(<span class="hljs-name">PlainText</span>)
+</code></pre>
+</div><p>The current timestamp</p></div><div><h2>Function param<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js">PlainText param(<span class="hljs-name">PlainText</span>)
+</code></pre>
+</div><p>Mapping parameter</p></div><div><h2>Function transitionModel<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js">xcd<span class="hljs-selector-class">.process</span><span class="hljs-selector-class">.Transition</span> transitionModel(PlainText)
+</code></pre>
+</div><p>The transition model for the given name</p></div><div><h2>Function uri<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js">PlainText uri(<span class="hljs-name">PlainText</span>, Map)
+</code></pre>
+</div><p>Inner-application URI function, takes a template and map of template values as arguments</p></div></div><div><h1> security expressions </h1><div><h2>Function hasRole<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js">Boolean hasRole(<span class="hljs-name">PlainText</span>)
+</code></pre>
+</div><p>Checks if the current user has the given role.</p></div><div><h2>Function isAdmin<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js"><span class="hljs-keyword">Boolean </span>isAdmin()
+</code></pre>
+</div><p>Checks if the current user has the admin role. Same as hasRole('ROLE_ADMIN').</p></div></div></div><div class="toolbar clearfix"><a class="btn btn-link" href="./component.html"><small>Previous :Component Reference</small></a><a class="btn btn-link pull-right" href="./query-expression.html"><small>Next :Query Expression Reference</small></a></div></div><div class="col-md-2"><ul class="doc-nav nav nav-pills nav-stacked te"><li class=""><a class="btn btn-link" href="index.html"><small>Overview</small></a></li><li class=""><a class="btn btn-link" href="concept.html"><small>Concept</small></a></li><li class=""><a class="btn btn-link" href="models-about.html"><small>Models in Practice</small></a></li><li class=""><a class="btn btn-link" href="models-domain.html"><small>Domain Models</small></a></li><li class=""><a class="btn btn-link" href="models-view.html"><small>View Models</small></a></li><li class=""><a class="btn btn-link" href="models-unified.html"><small>Context Models and Expressions </small></a></li><li class=""><a class="btn btn-link" href="page-types.html"><small>Exceed Type System</small></a></li><li class=""><a class="btn btn-link" href="models-process.html"><small>Process Models</small></a></li><li class=""><a class="btn btn-link" href="page-action.html"><small>Exceed Action System</small></a></li><li class=""><a class="btn btn-link" href="page-graph.html"><small>DataGraph Structure</small></a></li><li class=""><a class="btn btn-link" href="customization.html"><small>Customizing Exceed</small></a></li><li class=""><a class="btn btn-link" href="model-reference.html"><small>Model Reference</small></a></li><li class=""><a class="btn btn-link" href="component.html"><small>Component Reference</small></a></li><li class="active"><a class="btn btn-link" href="expression.html"><small>Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="query-expression.html"><small>Query Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="filter-expression.html"><small>Filter Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="class-index.html"><small>Components by class</small></a></li></ul></div></div>
+        <div class="row">
+            <div class="col-md-12">
+                <hr>
+                <small class="muted">
+                    Exceed &copy; 2017 Quinscape GmbH
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

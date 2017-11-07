@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>View Models &ndash; Exceed Documentation</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/readable-bootstrap.min.css" rel="stylesheet">
+    <link href="css/exceed-docs.css" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="../../base/resources/js/html5shiv.min.js"></script>
+    <script src="../../base/resources/js/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+<div id="root">
+    <div class="container-fluid">
+        <div class="row"><div class="col-md-1"></div><div class="col-md-9"><div class="toolbar clearfix"><a class="btn btn-link" href="./models-domain.html"><small>Previous :Domain Models</small></a><a class="btn btn-link pull-right" href="./models-unified.html"><small>Next :Context Models and Expressions </small></a></div><div><h1><span class="md-heading"><a name="view-models" class="anchor" href="#view-models"><span class="header-link">#</span></a>View Models</span> </h1><p>View models decribe the views / pages of the application. </p>
+<p><ul class="extension-struct"><li class="last"><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> models<ul><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> layout<ul><li class="last"><a class="type-LayoutModel" href="./model-reference.html#xcd.view.LayoutModel"><span class="glyphicon glyphicon-picture"></span> Layout.json<ul></ul></a></li></ul></span></li><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> process<ul><li class="last"><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> process-a<ul><li class="last"><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> view<ul><li class="last"><a class="type-View" href="./model-reference.html#xcd.view.View"><span class="glyphicon glyphicon-picture"></span> process-view.json<ul></ul></a></li></ul></span></li></ul></span></li></ul></span></li><li class="last"><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> view<ul><li class="last"><a class="type-View" href="./model-reference.html#xcd.view.View"><span class="glyphicon glyphicon-picture"></span> home.json<ul></ul></a></li></ul></span></li></ul></span></li></ul></p>
+<h2><span class="md-heading"><a name="views" class="anchor" href="#views"><span class="header-link">#</span></a>Views</span> </h2><pre><code class="lang-json"> {
+    <span class="hljs-attr">"content"</span>: {
+        <span class="hljs-attr">"main"</span>: {
+            <span class="hljs-attr">"name"</span>: <span class="hljs-string">"Toolbar"</span>,
+            <span class="hljs-attr">"kids"</span> : [
+                {
+                    <span class="hljs-attr">"name"</span>: <span class="hljs-string">"Button"</span>,
+                    <span class="hljs-attr">"attrs"</span>: {
+                        <span class="hljs-attr">"icon"</span>: <span class="hljs-string">"comment"</span>,
+                        <span class="hljs-attr">"text"</span>: <span class="hljs-string">"Hello"</span>,
+                        <span class="hljs-attr">"action"</span> : <span class="hljs-string">"{ alert('Hello from the Exceed View!') }"</span>
+                    }
+                }
+            ]
+        }
+    }
+}
+</code></pre>
+<p>Here we see a minimal view model with a single button labeled &quot;Hello&quot;, displaying a pretty alert saying &quot;Hello from the Exceed View!&quot;.</p>
+<p>The <code>content</code> property contains a map of named content areas. The default name for the view content is &quot;main&quot;. Each
+content area is a tree of component model instances.</p>
+<p>Each component model has a <code>name</code> attribute identifying the component. 
+We follow the React Js convention of component names starting with a lower-case letter being just a html tag and a 
+component name starting with an upper-case letter being a full-fledged React component.</p>
+<p>Here we have a <em>Toolbar</em> component which is mostly present to show how to nest components in one another and a <em>Button</em> 
+component inside of it with button text and additional icon given as attributes.</p>
+<h2><span class="md-heading"><a name="view-expressions" class="anchor" href="#view-expressions"><span class="header-link">#</span></a>View Expressions</span> </h2><p>Component attributes can either be a normal string value like for our <code>icon</code> and <code>text</code> attributes here, or they can
+be expressions which are marked by being wrapped in pair of curly braces, vaguely reminiscent of JSX. The view expressions
+are one use of the <a class="" href="./models-unified.html">exceed unified expression language</a>. It gets transpiled into Javascript executable
+on the client.</p>
+<h2><span class="md-heading"><a name="component-packages" class="anchor" href="#component-packages"><span class="header-link">#</span></a>Component Packages</span> </h2><p>Exceed organizes its components in component packages which are folders with react components, component CSS files
+and a <a class="" href="./model-reference.html#xcd.component.ComponentPackageDescriptor">component package descriptor</a>.</p>
+<p>The package descriptor contains a <a class="" href="./model-reference.html#xcd.component.ComponentDescriptor">component descriptor</a> 
+for each component in the component package. The component descriptor describes react components and their props. 
+It has rules about how to combine components.</p>
+<p>Each component can have a server-side data provider implementation that automatically provides data for the component.
+Components have provide values for their children with a context mechanism described in the component descriptor.</p>
+<h2><span class="md-heading"><a name="layout" class="anchor" href="#layout"><span class="header-link">#</span></a>Layout</span> </h2><p>Exceed provides layout models as an easy way to separate content specific to a view from content reused across the 
+application like navigation and page footer.</p>
+<p>Here you see the base default layout:</p>
+<pre><code class="lang-json">{
+    <span class="hljs-attr">"root"</span>: {
+        <span class="hljs-attr">"name"</span> : <span class="hljs-string">"div"</span>,
+        <span class="hljs-attr">"kids"</span>: [
+            {
+                <span class="hljs-attr">"name"</span>: <span class="hljs-string">"StandardNav"</span>
+            },
+            {
+                <span class="hljs-attr">"name"</span>: <span class="hljs-string">"Content"</span>
+            },
+            {
+                <span class="hljs-attr">"name"</span>: <span class="hljs-string">"Footer"</span>
+            }
+        ]
+    }
+}
+</code></pre>
+<p>The layout model looks like a simplified view model, with the <code>root</code> property containing a single content tree.</p>
+<p>This layout <code>root</code> gets imported into every view using it. </p>
+<p>The standard layout renders the <code>StandardNav</code> component which renders navigation entries based on the routing table.
+It contains a special <code>Content</code> component which embeds the actual view content at its location. The <code>Content</code> component
+accepts a <code>name</code> attribute which defaults to <code>&quot;main&quot;</code>. </p>
+<p>A layout can define multiple <code>Content</code> slots to be used by views. <code>&quot;main&quot;</code> is just the default name for the single content
+slot. We recommend that you keep it that way and add others as needed.</p>
+<p>You can define your own layout in your application extension and either 
+<a class="" href="./model-reference.html#xcd.view.View">reference them in individual views</a> or change the 
+<a class="" href="./model-reference.html#xcd.config.ApplicationConfig">application default layout</a>.</p>
+<h2><span class="md-heading"><a name="process-views-vs-standalone-views" class="anchor" href="#process-views-vs-standalone-views"><span class="header-link">#</span></a>Process Views vs Standalone Views</span> </h2><p>As you can see above, views come in two flavors, as process views and standalone views.  </p>
+<table class="table table-striped table-hover table-bordered">
+<thead>
+<tr>
+<th>Feature</th>
+<th>Process View</th>
+<th>Standalone View </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Location</strong></td>
+<td>Inside the view folder of a process folder</td>
+<td>In the <em>/models/view</em> folder</td>
+</tr>
+<tr>
+<td><strong>Navigation</strong></td>
+<td>View transitions orchestrated by parent process</td>
+<td>unstructured navigation between mapped URIs</td>
+</tr>
+<tr>
+<td><strong>Dominant Use-Case</strong></td>
+<td>Application UI</td>
+<td>REST-ish data presentation</td>
+</tr>
+</tbody>
+</table>
+<p><div class="info-block"><h5 class="text-info"><span class="glyphicon glyphicon-info-sign"></span> Implementation Note: React</h5><p><p>As you might have guessed, the components are not the only react components involved in exceed views. The views themselves are transformed into a react component.</p><p>The *view-renderer.js* module transforms and caches the react view components at runtime.</p></p></div></p>
+</div><div class="toolbar clearfix"><a class="btn btn-link" href="./models-domain.html"><small>Previous :Domain Models</small></a><a class="btn btn-link pull-right" href="./models-unified.html"><small>Next :Context Models and Expressions </small></a></div></div><div class="col-md-2"><ul class="doc-nav nav nav-pills nav-stacked te"><li class=""><a class="btn btn-link" href="index.html"><small>Overview</small></a></li><li class=""><a class="btn btn-link" href="concept.html"><small>Concept</small></a></li><li class=""><a class="btn btn-link" href="models-about.html"><small>Models in Practice</small></a></li><li class=""><a class="btn btn-link" href="models-domain.html"><small>Domain Models</small></a></li><li class="active"><a class="btn btn-link" href="models-view.html"><small>View Models</small></a></li><li class=""><a class="btn btn-link" href="models-unified.html"><small>Context Models and Expressions </small></a></li><li class=""><a class="btn btn-link" href="page-types.html"><small>Exceed Type System</small></a></li><li class=""><a class="btn btn-link" href="models-process.html"><small>Process Models</small></a></li><li class=""><a class="btn btn-link" href="page-action.html"><small>Exceed Action System</small></a></li><li class=""><a class="btn btn-link" href="page-graph.html"><small>DataGraph Structure</small></a></li><li class=""><a class="btn btn-link" href="customization.html"><small>Customizing Exceed</small></a></li><li class=""><a class="btn btn-link" href="model-reference.html"><small>Model Reference</small></a></li><li class=""><a class="btn btn-link" href="component.html"><small>Component Reference</small></a></li><li class=""><a class="btn btn-link" href="expression.html"><small>Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="query-expression.html"><small>Query Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="filter-expression.html"><small>Filter Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="class-index.html"><small>Components by class</small></a></li></ul></div></div>
+        <div class="row">
+            <div class="col-md-12">
+                <hr>
+                <small class="muted">
+                    Exceed &copy; 2017 Quinscape GmbH
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Filter Expression Reference &ndash; Exceed Documentation</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/readable-bootstrap.min.css" rel="stylesheet">
+    <link href="css/exceed-docs.css" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="../../base/resources/js/html5shiv.min.js"></script>
+    <script src="../../base/resources/js/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+<div id="root">
+    <div class="container-fluid">
+        <div class="row"><div class="col-md-1"></div><div class="col-md-9"><div class="toolbar clearfix"><a class="btn btn-link" href="./query-expression.html"><small>Previous :Query Expression Reference</small></a><a class="btn btn-link pull-right" href="./class-index.html"><small>Next :Components by class</small></a></div><div><div><h1> Field </h1><div><p>Field expressions are currently always converted to JOOQ conditions which is not optimal
+as it forces alternate query transformers to deal with JOOQ conditions.</p>
+<p>We might introduce our own condition abstraction later if we find compelling use
+cases or volunteers for implementation.</p>
+<h3><span class="md-heading"><a name="examples" class="anchor" href="#examples"><span class="header-link">#</span></a>Examples</span> </h3><pre><code class="lang-js">    name == 'Smith' <span class="hljs-string">|| value &gt; 5</span>
+</code></pre>
+<pre><code class="lang-js">    Order<span class="hljs-selector-class">.customerId</span> == Customer.id
+</code></pre>
+<pre><code class="lang-js">    o<span class="hljs-selector-class">.customerId</span> != c.id
+</code></pre>
+<p>The field expressions use the normal expression syntax plus some additional operations, both
+to service the needs of our models or just relayed to the JOOQ Field class. </p>
+<p>The meaning of the field names depends on the surrounding query context. Field
+references must be unambiguous. Fully qualified field references use either
+the domain type name as prefix or the alias defined for the domain type.</p>
+</div><div><h2>Field.contains<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.contains(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method contains</p></div><div><h2>Field.endsWith<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.endsWith(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method endsWith</p></div><div><h2>Field.eq<br/></h2><div><pre><code class="lang-java">Condition Field.e<span class="hljs-string">q(Field)</span>
+</code></pre>
+</div><p>JOOQ Field method eq</p></div><div><h2>Field.equal<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.equal(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method equal</p></div><div><h2>Field.equalIgnoreCase<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.equalIgnoreCase(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method equalIgnoreCase</p></div><div><h2>Field.ge<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.ge(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method ge</p></div><div><h2>Field.greaterOrEqual<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.greaterOrEqual(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method greaterOrEqual</p></div><div><h2>Field.greaterThan<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.greaterThan(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method greaterThan</p></div><div><h2>Field.gt<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.gt(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method gt</p></div><div><h2>Field.isDistinctFrom<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.isDistinctFrom(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method isDistinctFrom</p></div><div><h2>Field.isFalse<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.isFalse()
+</code></pre>
+</div><p>JOOQ Field method isFalse</p></div><div><h2>Field.isNotDistinctFrom<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.isNotDistinctFrom(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method isNotDistinctFrom</p></div><div><h2>Field.isNotNull<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.isNotNull()
+</code></pre>
+</div><p>JOOQ Field method isNotNull</p></div><div><h2>Field.isNull<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.isNull()
+</code></pre>
+</div><p>JOOQ Field method isNull</p></div><div><h2>Field.isTrue<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.isTrue()
+</code></pre>
+</div><p>JOOQ Field method isTrue</p></div><div><h2>Field.le<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.le(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method le</p></div><div><h2>Field.lessOrEqual<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.lessOrEqual(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method lessOrEqual</p></div><div><h2>Field.lessThan<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.lessThan(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method lessThan</p></div><div><h2>Field.like<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.like(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method like</p></div><div><h2>Field.likeIgnoreCase<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.likeIgnoreCase(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method likeIgnoreCase</p></div><div><h2>Field.likeRegex<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.likeRegex(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method likeRegex</p></div><div><h2>Field.lt<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.lt(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method lt</p></div><div><h2>Field.ne<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.ne(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method ne</p></div><div><h2>Field.notEqual<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.notEqual(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method notEqual</p></div><div><h2>Field.notEqualIgnoreCase<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.notEqualIgnoreCase(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method notEqualIgnoreCase</p></div><div><h2>Field.notLike<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.notLike(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method notLike</p></div><div><h2>Field.notLikeIgnoreCase<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.notLikeIgnoreCase(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method notLikeIgnoreCase</p></div><div><h2>Field.notLikeRegex<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.notLikeRegex(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method notLikeRegex</p></div><div><h2>Field.startsWith<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Condition</span> <span class="hljs-meta">Field</span>.startsWith(<span class="hljs-meta">Field</span>)
+</code></pre>
+</div><p>JOOQ Field method startsWith</p></div></div><div><h1> misc </h1><div><h2>Function combineChildFilters<br/></h2><div><pre><code class="lang-java"><span class="hljs-built_in">Condition</span> combineChildFilters()
+</code></pre>
+</div><p>Returns a new condition combining child filter values. This is used e.g. to combine all the user-input controlled
+      filters of a data grid columns.</p></div><div><h2>Function field<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">Field</span> <span class="hljs-meta">field</span>(<span class="hljs-keyword">String </span>name)
+</code></pre>
+</div><p>Resolves the field with the given name. This is equivalent to just using the field name as identifier.
+      
+      <pre class="text-info"> field('name') == 0 </pre>
+     
+      is the same as
+     
+      <pre class="text-info"> name == 0 </pre></p></div><div><h2>Function filterValue<br/></h2><div><pre><code class="lang-java"><span class="hljs-keyword">Field</span> filterValue()
+</code></pre>
+</div><p>Returns the current filter value for the current column/field component context. Useful for component filters or
+      filter templates.</p></div><div><h2>Function prop<br/></h2><div><pre><code class="lang-java">Condition <span class="hljs-keyword">prop</span>(String <span class="hljs-built_in">name</span>)
+</code></pre>
+</div><p>Returns a component attribute value. Only valid in component contexts.</p></div></div></div><div class="toolbar clearfix"><a class="btn btn-link" href="./query-expression.html"><small>Previous :Query Expression Reference</small></a><a class="btn btn-link pull-right" href="./class-index.html"><small>Next :Components by class</small></a></div></div><div class="col-md-2"><ul class="doc-nav nav nav-pills nav-stacked te"><li class=""><a class="btn btn-link" href="index.html"><small>Overview</small></a></li><li class=""><a class="btn btn-link" href="concept.html"><small>Concept</small></a></li><li class=""><a class="btn btn-link" href="models-about.html"><small>Models in Practice</small></a></li><li class=""><a class="btn btn-link" href="models-domain.html"><small>Domain Models</small></a></li><li class=""><a class="btn btn-link" href="models-view.html"><small>View Models</small></a></li><li class=""><a class="btn btn-link" href="models-unified.html"><small>Context Models and Expressions </small></a></li><li class=""><a class="btn btn-link" href="page-types.html"><small>Exceed Type System</small></a></li><li class=""><a class="btn btn-link" href="models-process.html"><small>Process Models</small></a></li><li class=""><a class="btn btn-link" href="page-action.html"><small>Exceed Action System</small></a></li><li class=""><a class="btn btn-link" href="page-graph.html"><small>DataGraph Structure</small></a></li><li class=""><a class="btn btn-link" href="customization.html"><small>Customizing Exceed</small></a></li><li class=""><a class="btn btn-link" href="model-reference.html"><small>Model Reference</small></a></li><li class=""><a class="btn btn-link" href="component.html"><small>Component Reference</small></a></li><li class=""><a class="btn btn-link" href="expression.html"><small>Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="query-expression.html"><small>Query Expression Reference</small></a></li><li class="active"><a class="btn btn-link" href="filter-expression.html"><small>Filter Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="class-index.html"><small>Components by class</small></a></li></ul></div></div>
+        <div class="row">
+            <div class="col-md-12">
+                <hr>
+                <small class="muted">
+                    Exceed &copy; 2017 Quinscape GmbH
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

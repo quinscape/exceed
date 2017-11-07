@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Domain Models &ndash; Exceed Documentation</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/readable-bootstrap.min.css" rel="stylesheet">
+    <link href="css/exceed-docs.css" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="../../base/resources/js/html5shiv.min.js"></script>
+    <script src="../../base/resources/js/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+<div id="root">
+    <div class="container-fluid">
+        <div class="row"><div class="col-md-1"></div><div class="col-md-9"><div class="toolbar clearfix"><a class="btn btn-link" href="./models-about.html"><small>Previous :Models in Practice</small></a><a class="btn btn-link pull-right" href="./models-view.html"><small>Next :View Models</small></a></div><div><h1><span class="md-heading"><a name="domain-models" class="anchor" href="#domain-models"><span class="header-link">#</span></a>Domain Models</span> </h1><p>The domain models describe the business objects of the application. </p>
+<p><ul class="extension-struct"><li class="last"><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> models<ul><li class="last"><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> domain<ul><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> enum<ul><li class="last"><a class="type-EnumType" href="./model-reference.html#xcd.domain.EnumType"><span class="glyphicon glyphicon-option-vertical"></span> MyEnum.json<ul></ul></a></li></ul></span></li><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> property<ul><li class="last"><a class="type-PropertyTypeModel" href="./model-reference.html#xcd.domain.property.PropertyTypeModel"><span class="glyphicon glyphicon-asterisk"></span> MyPropertyType.json<ul></ul></a></li></ul></span></li><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> query<ul><li class="last"><a class="type-QueryTypeModel" href="./model-reference.html#xcd.domain.type.QueryTypeModel"> QTypeA.json<ul></ul></a></li></ul></span></li><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> rule<ul><li class="last"><a class="type-DomainRule" href="./model-reference.html#xcd.domain.DomainRule"> DomainSpecificRule.json<ul></ul></a></li></ul></span></li><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> state-machine<ul><li class="last"><a class="type-StateMachine" href="./model-reference.html#xcd.domain.StateMachine"><span class="glyphicon glyphicon-ok-circle"></span> MyStateMachine.json<ul></ul></a></li></ul></span></li><li class="last"><a class="type-DomainTypeModel" href="./model-reference.html#xcd.domain.type.DomainTypeModel"> DomainTypeA.json<ul></ul></a></li></ul></span></li></ul></span></li></ul></p>
+<h2><span class="md-heading"><a name="domaintypes" class="anchor" href="#domaintypes"><span class="header-link">#</span></a>DomainTypes</span> </h2><p>The normal <a class="" href="./model-reference.html#xcd.domain.type.DomainTypeModel">domain types</a> ( in this example <code>/models/domain/DomainTypeA.json</code>), 
+are the core of exceed domain models.   </p>
+<p>Here we see a simple definition of our example domain type <code>DomainTypeA</code></p>
+<pre><code class="lang-json">{
+    <span class="hljs-attr">"name"</span>:<span class="hljs-string">"DomainTypeA"</span>,
+    <span class="hljs-attr">"properties"</span>:[
+        {
+            <span class="hljs-attr">"name"</span>:<span class="hljs-string">"id"</span>,
+            <span class="hljs-attr">"type"</span>:<span class="hljs-string">"UUID"</span>,
+            <span class="hljs-attr">"required"</span>:<span class="hljs-literal">true</span>,
+            <span class="hljs-attr">"maxLength"</span>:<span class="hljs-number">36</span>
+        },
+        {
+            <span class="hljs-attr">"name"</span>:<span class="hljs-string">"name"</span>,
+            <span class="hljs-attr">"type"</span>:<span class="hljs-string">"PlainText"</span>,
+            <span class="hljs-attr">"required"</span>:<span class="hljs-literal">true</span>,
+            <span class="hljs-attr">"maxLength"</span>:<span class="hljs-number">64</span>
+        },
+        {
+            <span class="hljs-attr">"name"</span>:<span class="hljs-string">"number"</span>,
+            <span class="hljs-attr">"type"</span>:<span class="hljs-string">"Integer"</span>,
+            <span class="hljs-attr">"required"</span>:<span class="hljs-literal">true</span>,
+            <span class="hljs-attr">"defaultValue"</span>:<span class="hljs-string">"0"</span>
+        },
+        {
+            <span class="hljs-attr">"name"</span>:<span class="hljs-string">"ownerId"</span>,
+            <span class="hljs-attr">"type"</span>:<span class="hljs-string">"UUID"</span>,
+            <span class="hljs-attr">"maxLength"</span>:<span class="hljs-number">36</span>,
+            <span class="hljs-attr">"foreignKey"</span>:{
+                <span class="hljs-attr">"type"</span>:<span class="hljs-string">"AppUser"</span>
+            }
+        }
+    ]
+}
+</code></pre>
+<p><code>DomainTypeA</code> defines 4 properties ( <code>id</code>, <code>name</code>, <code>num</code> and <code>ownerId</code>) with different property types. Currently, all
+domain types use <code>UUID</code> values as primary key and each domain type must have an <code>UUID</code> property with the same <code>id</code>. </p>
+<p>The <code>name</code> property is a <code>PlainText</code> / string property with a maximum of 64 characters. Note that while exceed itself
+doesn&#39;t really care about the maxLength much besides when its validating values, but the default SQL storage will 
+use <code>varchar(n)</code> up to 256 characters and for more than that <code>text</code>. </p>
+<p><code>number</code> is an <code>Integer</code> property which is also marked <code>required</code> / <code>not null</code>, just like <code>name</code>.</p>
+<p>The <code>ownerId</code> property is marked as being a foreign key property, which means that it connects one object with another.
+In this case <code>orderId</code> points to the <code>AppUser</code> that is its owner. <code>AppUser</code> is one of the base domain objects. </p>
+<h2><span class="md-heading"><a name="enum-types" class="anchor" href="#enum-types"><span class="header-link">#</span></a>Enum Types</span> </h2><p><a class="" href="./model-reference.html#xcd.domain.type.EnumType">Enum types</a> contain a list of named enum constants. They are stored as ordinal numbers. </p>
+<pre><code class="lang-json">{
+    <span class="hljs-attr">"name"</span>: <span class="hljs-string">"MyEnum"</span>,
+    <span class="hljs-attr">"values"</span> : [<span class="hljs-string">"A"</span>, <span class="hljs-string">"B"</span>, <span class="hljs-string">"C"</span>, <span class="hljs-string">"D"</span>]
+}
+</code></pre>
+<p>Within the exceed expression language the enum type names can be used as identifiers. <code>MyEnum.A</code> is the enum constant <code>A</code>.</p>
+<p>For an expression like <code>myValue == MyEnum.B</code> is is made sure thae <code>myValue</code> actually is a enum variable of the same type.  </p>
+<h2><span class="md-heading"><a name="state-machines" class="anchor" href="#state-machines"><span class="header-link">#</span></a>State Machines</span> </h2><p><a class="" href="./model-reference.html#xcd.state.StateMachine">State machines</a> contain a number of named states, each defining a number of valid transitions to other states.</p>
+<p>Here is the <code>OrderStatus</code> state machine from the shipping-app example:</p>
+<pre><code class="lang-json">{
+    <span class="hljs-attr">"name"</span> : <span class="hljs-string">"OrderStatus"</span>,
+    <span class="hljs-attr">"startState"</span>: <span class="hljs-string">"ACCEPTED"</span>,
+    <span class="hljs-attr">"states"</span>: {
+        <span class="hljs-attr">"ACCEPTED"</span>: [
+            <span class="hljs-string">"READY"</span>,
+            <span class="hljs-string">"CANCELED"</span>
+        ],
+        <span class="hljs-attr">"READY"</span>: [
+            <span class="hljs-string">"SENT"</span>,
+            <span class="hljs-string">"CANCELED"</span>
+        ],
+        <span class="hljs-attr">"SENT"</span>: [
+            <span class="hljs-string">"DELIVERED"</span>,
+            <span class="hljs-string">"LOST_ON_DELIVERY"</span>
+        ],
+        <span class="hljs-attr">"DELIVERED"</span>: [
+            <span class="hljs-string">"PAID"</span>,
+            <span class="hljs-string">"RETURNED"</span>,
+            <span class="hljs-string">"LOST_ON_RETURN"</span>
+        ],
+        <span class="hljs-attr">"RETURNED"</span>: [],
+        <span class="hljs-attr">"LOST_ON_DELIVERY"</span>: [],
+        <span class="hljs-attr">"LOST_ON_RETURN"</span>: [],
+        <span class="hljs-attr">"PAID"</span>: [],
+        <span class="hljs-attr">"CANCELED"</span>: []
+    }
+}
+</code></pre>
+<p>The state machine starts in &quot;ACCEPTED&quot;, from which it either goes to &quot;READY&quot; or &quot;CANCELED&quot; and so forth. The current state
+of a state machine can be attached to a domain property using the <code>State</code> property type.</p>
+<p>The states can be type-safely compared using the expression language and offer a <code>from</code> method.</p>
+<p><code>OrderStatus.PAID.from(myStatus)</code> evaluates to true if there is a valid transition from the state in <code>myStatus</code> to
+<code>PAID</code>.</p>
+<p>There is a helper component <a class="" href="./component.html#Component-StateMachineButtons">StateMachineButtons</a> that renders groups
+of transition buttons based on the current state. The <code>shipping-app</code> example does this in &quot;orders/detail&quot;</p>
+<h2><span class="md-heading"><a name="query-type-models" class="anchor" href="#query-type-models"><span class="header-link">#</span></a>Query type models</span> </h2><p>So far, we&#39;ve kept the query language for the domain objects as simple as possible which means that it is lacking
+the a lot of the functions that SQL offers. For this purpose, we can interface with normal SQL queries. We just
+need to know how the result set looks like.</p>
+<p>Here is an example of a <a class="" href="./model-reference.html#xcd.domain.type.QueryTypeModel">query type model</a> from the shipping app. It queries the paid orders for the last <em>n</em> months.</p>
+<pre><code class="lang-json">{
+    <span class="hljs-attr">"query"</span> : <span class="hljs-string">"select date_trunc('month', accepted) as month, sum(\"sum\") from shipping.\"order\" where date_trunc('year', accepted) = date_trunc('year', current_date) group by month order by month;"</span>,
+    <span class="hljs-attr">"count"</span> : <span class="hljs-string">"12"</span>,
+    <span class="hljs-attr">"columnTypes"</span> : [
+        {
+            <span class="hljs-attr">"name"</span> : <span class="hljs-string">"month"</span>,
+            <span class="hljs-attr">"type"</span>:<span class="hljs-string">"PlainText"</span>
+        },
+        {
+            <span class="hljs-attr">"name"</span> : <span class="hljs-string">"sum"</span>,
+            <span class="hljs-attr">"type"</span> : <span class="hljs-string">"Currency"</span>
+        }
+    ]
+}
+</code></pre>
+<p>The <code>query</code> property contains the SQL query. The <code>columnTypes</code> property defines the property types of the result set.</p>
+<h3><span class="md-heading"><a name="parametrized-query-types" class="anchor" href="#parametrized-query-types"><span class="header-link">#</span></a>Parametrized Query Types</span> </h3><p>Here we see another example that select an average value a &quot;num&quot; column grouped by an enum type.</p>
+<pre><code class="lang-json">{
+    <span class="hljs-attr">"query"</span> : <span class="hljs-string">"SELECT type, avg(num) from foo where type = ? group by type order by type"</span>,
+    <span class="hljs-attr">"count"</span> : <span class="hljs-string">"1"</span>,
+    <span class="hljs-attr">"parameterTypes"</span> :[
+        {
+            <span class="hljs-attr">"name"</span> : <span class="hljs-string">"type"</span>,
+            <span class="hljs-attr">"type"</span>:<span class="hljs-string">"Enum"</span>,
+            <span class="hljs-attr">"typeParam"</span>:<span class="hljs-string">"MyEnum"</span>,
+            <span class="hljs-attr">"defaultValue"</span> : <span class="hljs-string">"1"</span>
+        }
+    ],
+    <span class="hljs-attr">"columnTypes"</span> : [
+        {
+            <span class="hljs-attr">"name"</span> : <span class="hljs-string">"fooType"</span>,
+            <span class="hljs-attr">"type"</span>:<span class="hljs-string">"Enum"</span>,
+            <span class="hljs-attr">"typeParam"</span>:<span class="hljs-string">"MyEnum"</span>
+        },
+        {
+            <span class="hljs-attr">"name"</span> : <span class="hljs-string">"sumOfNums"</span>,
+            <span class="hljs-attr">"type"</span> : <span class="hljs-string">"Decimal"</span>
+        }
+    ]
+}
+</code></pre>
+<p>The SQL query uses the normal <code>?</code> place holders for the SQL parameters and the <code>parameterTypes</code> property defines the 
+type of all SQL parameters.</p>
+<p>The <code>count</code> field is an expressions that provides the column count available to the query. There can also be a property
+<code>countQuery</code> that defines an additional query to provide that count.</p>
+<h3><span class="md-heading"><a name="domain-types-vs-query-types" class="anchor" href="#domain-types-vs-query-types"><span class="header-link">#</span></a>Domain Types vs Query Types</span> </h3><p>The normal use case is to declare your domain in terms of these domain objects
+and work with that. Query type models (see below) currently refer to the same data sources that are used by the normal
+domain types. In the future we might introduce handling multiple database connections to allow the usage of query types
+in integrative scenarios where an exceed application interfaces with an external database schema.</p>
+<h2><span class="md-heading"><a name="db-support" class="anchor" href="#db-support"><span class="header-link">#</span></a>DB Support</span> </h2><p>Each domain type used a StorageConfiguration interface to do the actual data querying and updating and define naming 
+strategies etc. The default storage configuration is <code>jooqDatabaseStorage</code> which uses JOOQ and Spring JDBC to access
+<a class="" href="https://www.jooq.org/doc/3.9/manual/reference/supported-rdbms/">JOOQ compatible Databases</a>. The synchronization of 
+the data base schema with the model happens via the ANSI <em>information_schema</em> functionality which not all databases 
+support. Over time we might write other schema synchronization implementations.</p>
+<p>For now, the best tested Database to use with exceed is clearly Postgresql. Over time we will add tests for more databases
+but we will clearly be in a situation for a while were we have two different classes of support for databases:</p>
+<ul>
+<li><p>&quot;Gold&quot; level where the database supports the full-range of functionality including schema management</p>
+</li>
+<li><p>&quot;Silver&quot; level for databases for which the schema management support is either not automatic or not present at all. In
+some use cases we might just generate an SQL-script a DevOps person can customize and apply, in other we might just 
+connect to an existing application schema. </p>
+</li>
+</ul>
+<h2><span class="md-heading"><a name="model-domain-equivalence" class="anchor" href="#model-domain-equivalence"><span class="header-link">#</span></a>Model/Domain Equivalence</span> </h2><p>The models are parsed into a <a class="" href="./model-reference.html">hierarchy of java POJOs</a> which are then composed to the final 
+application model in memory as java objects including an internal meta model containing prepared working-data based on 
+the analysis of the other models. Each of this models has a natural JSON structure corresponding to the Java structure 
+defining its schema.</p>
+<p>For model editing purposes, there exists another view on the model hierarchy as domain objects. Each domain type model
+has a system domain type definition equivalent within the exceed system.</p>
+<p>The type corresponds to the relative package path to <em>de.quinscape.exceed.model</em> with a constant &quot;xcd.&quot; prefix.</p>
+<ul>
+<li>Java class de.quinscape.exceed.model.view.View -&gt; Domain type <code>xcd.view.View</code> </li>
+<li>Java class de.quinscape.exceed.model.routing.RoutingTable -&gt; Domain type <code>xcd.routing.RoutingTable</code> </li>
+</ul>
+</div><div class="toolbar clearfix"><a class="btn btn-link" href="./models-about.html"><small>Previous :Models in Practice</small></a><a class="btn btn-link pull-right" href="./models-view.html"><small>Next :View Models</small></a></div></div><div class="col-md-2"><ul class="doc-nav nav nav-pills nav-stacked te"><li class=""><a class="btn btn-link" href="index.html"><small>Overview</small></a></li><li class=""><a class="btn btn-link" href="concept.html"><small>Concept</small></a></li><li class=""><a class="btn btn-link" href="models-about.html"><small>Models in Practice</small></a></li><li class="active"><a class="btn btn-link" href="models-domain.html"><small>Domain Models</small></a></li><li class=""><a class="btn btn-link" href="models-view.html"><small>View Models</small></a></li><li class=""><a class="btn btn-link" href="models-unified.html"><small>Context Models and Expressions </small></a></li><li class=""><a class="btn btn-link" href="page-types.html"><small>Exceed Type System</small></a></li><li class=""><a class="btn btn-link" href="models-process.html"><small>Process Models</small></a></li><li class=""><a class="btn btn-link" href="page-action.html"><small>Exceed Action System</small></a></li><li class=""><a class="btn btn-link" href="page-graph.html"><small>DataGraph Structure</small></a></li><li class=""><a class="btn btn-link" href="customization.html"><small>Customizing Exceed</small></a></li><li class=""><a class="btn btn-link" href="model-reference.html"><small>Model Reference</small></a></li><li class=""><a class="btn btn-link" href="component.html"><small>Component Reference</small></a></li><li class=""><a class="btn btn-link" href="expression.html"><small>Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="query-expression.html"><small>Query Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="filter-expression.html"><small>Filter Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="class-index.html"><small>Components by class</small></a></li></ul></div></div>
+        <div class="row">
+            <div class="col-md-12">
+                <hr>
+                <small class="muted">
+                    Exceed &copy; 2017 Quinscape GmbH
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

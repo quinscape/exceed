@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>DataGraph Structure &ndash; Exceed Documentation</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/readable-bootstrap.min.css" rel="stylesheet">
+    <link href="css/exceed-docs.css" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="../../base/resources/js/html5shiv.min.js"></script>
+    <script src="../../base/resources/js/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+<div id="root">
+    <div class="container-fluid">
+        <div class="row"><div class="col-md-1"></div><div class="col-md-9"><div class="toolbar clearfix"><a class="btn btn-link" href="./page-action.html"><small>Previous :Exceed Action System</small></a><a class="btn btn-link pull-right" href="./customization.html"><small>Next :Customizing Exceed</small></a></div><div><h2><span class="md-heading"><a name="datagraph-structure" class="anchor" href="#datagraph-structure"><span class="header-link">#</span></a>DataGraph Structure</span> </h2><p>In addition to the <a class="" href="./types.html">complex property types (<code>List</code>,<code>Map</code> and <code>DomainType</code>)</a> we support another, partially self-describing
+data structure as output format of our data queries which we call data graph. </p>
+<p>On the java side the data graph is represented as de.quinscape.exceed.runtime.component.DataGraph instance, for Javascript
+it is a plain JSON structure.</p>
+<p>Example:</p>
+<pre><code>{
+    <span class="hljs-attr">"type"</span> : <span class="hljs-string">"OBJECT"</span> | <span class="hljs-string">"ARRAY"</span>,
+    <span class="hljs-attr">"columns"</span> : &lt;map of column descriptors&gt;,
+    <span class="hljs-attr">"rootObject"</span> : &lt;object or array&gt;,
+    <span class="hljs-attr">"count"</span> : &lt;row count&gt;,
+    <span class="hljs-attr">"qualifier"</span> : [qualifier-string]
+}
+</code></pre><p>The <code>type</code> property contains either the value &quot;OBJECT&quot; or &quot;ARRAY&quot;, describing the nature of the <code>rootObject</code> object and the exact
+meaning of the <code>column</code> map which contains property models in any case.</p>
+<h2><span class="md-heading"><a name="array-graphs" class="anchor" href="#array-graphs"><span class="header-link">#</span></a>ARRAY Graphs</span> </h2><p>For data graphs of type &quot;ARRAY&quot;, the root object is an array of complex objects. Each property of those complex objects has
+an entry in the columns map.</p>
+<pre><code>{
+    <span class="hljs-attr">"type"</span> : <span class="hljs-string">"ARRAY"</span>,
+    <span class="hljs-attr">"columns"</span>: {
+        <span class="hljs-attr">"name"</span>: {
+            <span class="hljs-attr">"name"</span>: <span class="hljs-string">"name"</span>,
+            <span class="hljs-attr">"type"</span>: <span class="hljs-string">"PlainText"</span>,
+            <span class="hljs-attr">"domainType"</span>: <span class="hljs-string">"Foo"</span>,
+            <span class="hljs-attr">"data"</span>: <span class="hljs-number">1</span>,
+            <span class="hljs-attr">"config"</span> : {
+                <span class="hljs-attr">"queryName"</span> : <span class="hljs-string">"q"</span>
+            }
+        },
+        <span class="hljs-attr">"num"</span>: {
+            <span class="hljs-attr">"name"</span>: <span class="hljs-string">"num"</span>,
+            <span class="hljs-attr">"type"</span>: <span class="hljs-string">"Integer"</span>,
+            <span class="hljs-attr">"domainType"</span>: <span class="hljs-string">"Foo"</span>,
+            <span class="hljs-attr">"data"</span>: <span class="hljs-number">2</span>,
+            <span class="hljs-attr">"config"</span> : {
+                <span class="hljs-attr">"queryName"</span> : <span class="hljs-string">"q"</span>
+            }
+        }
+    },
+    <span class="hljs-attr">"rootObject"</span>: [
+        {
+            <span class="hljs-attr">"name"</span>: <span class="hljs-string">"TestFoo"</span>,
+            <span class="hljs-attr">"num"</span>: <span class="hljs-number">123</span>
+        },
+        {
+            <span class="hljs-attr">"name"</span>: <span class="hljs-string">"TestFoo #2"</span>,
+            <span class="hljs-attr">"num"</span>: <span class="hljs-number">234</span>
+        }
+    ],
+    <span class="hljs-attr">"count"</span> : <span class="hljs-number">2</span>
+}
+</code></pre><p>The columns map describes two properties <code>name</code> and <code>num</code> which are <code>PlainText</code> and <code>Integer</code> respectively. For queries, 
+the column property will also contain a <code>domainType</code> field to mark the property as originally belonging to that domain 
+type. The name field will reflect the originalname within the domain type in that case (while the columns key always 
+describes the column name as it is for the current <code>rootObject</code>).</p>
+<p>Query graphs will also contain an <code>queryName</code> config value describing the type name or alias the column belongs to 
+within the query (if the query executor supports that).  </p>
+<p>In case of a paginated result graph, the <code>count</code> field contains the number of result rows available.</p>
+<h2><span class="md-heading"><a name="object-graphs" class="anchor" href="#object-graphs"><span class="header-link">#</span></a>OBJECT graphs</span> </h2><p>Data graphs of type &quot;OBJECT&quot; have a single complex object as <code>rootObject</code>. They can have a single column &quot;*&quot; in which
+case all properties of the object will be of that type (Java Map<String,T> equivalent). Otherwise each column entry has 
+its own type identified by its name. It is basically an unnamed ad-hoc complex object -- as opposed to the domain types 
+themselves which are named complex object definitions.  </p>
+<h2><span class="md-heading"><a name="self-describing" class="anchor" href="#self-describing"><span class="header-link">#</span></a>Self-describing</span> </h2><p>A data graph that only contains simple properties is self-describing in terms of exceed types in any exceed application. 
+It already might reference application specific domain types in its <code>domainType</code> attributes though. The structure of the 
+rootObject is still unambiguous though.  </p>
+<p>A data graph might also contain embedded domain objects of an application-specific domain type. The structure of a 
+<code>rootObject</code> with embedded application-specific domain types is only known within that application.</p>
+<p>In so far you should proceed with utmost care if you exchange data graphs between different applications or application
+versions. Make sure that the domain types contained really mean what you think they mean.</p>
+</div><div class="toolbar clearfix"><a class="btn btn-link" href="./page-action.html"><small>Previous :Exceed Action System</small></a><a class="btn btn-link pull-right" href="./customization.html"><small>Next :Customizing Exceed</small></a></div></div><div class="col-md-2"><ul class="doc-nav nav nav-pills nav-stacked te"><li class=""><a class="btn btn-link" href="index.html"><small>Overview</small></a></li><li class=""><a class="btn btn-link" href="concept.html"><small>Concept</small></a></li><li class=""><a class="btn btn-link" href="models-about.html"><small>Models in Practice</small></a></li><li class=""><a class="btn btn-link" href="models-domain.html"><small>Domain Models</small></a></li><li class=""><a class="btn btn-link" href="models-view.html"><small>View Models</small></a></li><li class=""><a class="btn btn-link" href="models-unified.html"><small>Context Models and Expressions </small></a></li><li class=""><a class="btn btn-link" href="page-types.html"><small>Exceed Type System</small></a></li><li class=""><a class="btn btn-link" href="models-process.html"><small>Process Models</small></a></li><li class=""><a class="btn btn-link" href="page-action.html"><small>Exceed Action System</small></a></li><li class="active"><a class="btn btn-link" href="page-graph.html"><small>DataGraph Structure</small></a></li><li class=""><a class="btn btn-link" href="customization.html"><small>Customizing Exceed</small></a></li><li class=""><a class="btn btn-link" href="model-reference.html"><small>Model Reference</small></a></li><li class=""><a class="btn btn-link" href="component.html"><small>Component Reference</small></a></li><li class=""><a class="btn btn-link" href="expression.html"><small>Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="query-expression.html"><small>Query Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="filter-expression.html"><small>Filter Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="class-index.html"><small>Components by class</small></a></li></ul></div></div>
+        <div class="row">
+            <div class="col-md-12">
+                <hr>
+                <small class="muted">
+                    Exceed &copy; 2017 Quinscape GmbH
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Context Models and Expressions  &ndash; Exceed Documentation</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/readable-bootstrap.min.css" rel="stylesheet">
+    <link href="css/exceed-docs.css" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="../../base/resources/js/html5shiv.min.js"></script>
+    <script src="../../base/resources/js/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+<div id="root">
+    <div class="container-fluid">
+        <div class="row"><div class="col-md-1"></div><div class="col-md-9"><div class="toolbar clearfix"><a class="btn btn-link" href="./models-view.html"><small>Previous :View Models</small></a><a class="btn btn-link pull-right" href="./page-types.html"><small>Next :Exceed Type System</small></a></div><div><h1><span class="md-heading"><a name="context-models-and-expressions-" class="anchor" href="#context-models-and-expressions-"><span class="header-link">#</span></a>Context Models and Expressions </span> </h1><p>Exceed uses a unified expression language embedded inside the JSON models to 
+express the fine-details and &quot;glue&quot; of the application code. </p>
+<p>The expression language is simple javascript-ish language which is parsed
+into a common abstract syntax tree format.</p>
+<p>The language is used in many different contexts. Some context transpile it
+to javascript to be executed, both on the client-side and on the server-side.</p>
+<p>Other uses just transform the expression AST into another object representation,
+for example a query expression is being transformed into a JOOQ query definition
+to be queried from an SQL database.</p>
+<h2><span class="md-heading"><a name="context-definitions" class="anchor" href="#context-definitions"><span class="header-link">#</span></a>Context Definitions</span> </h2><p>Exceed allows you to define context variables on several model locations that
+let you declare typed variables to use in your processes and views.</p>
+<p>Here&#39;s an example from the <em>counter-example</em> process <code>counter.json</code>:</p>
+<pre><code class="lang-json">{
+    <span class="hljs-string">"context"</span>: {
+        <span class="hljs-string">"properties"</span>: {
+            <span class="hljs-string">"value"</span>: {
+                <span class="hljs-string">"type"</span>: <span class="hljs-string">"Integer"</span>,
+                <span class="hljs-string">"defaultValue"</span>: <span class="hljs-string">"0"</span>
+            },
+
+            <span class="hljs-string">"limit"</span>: {
+                <span class="hljs-string">"type"</span>: <span class="hljs-string">"Integer"</span>,
+                <span class="hljs-string">"defaultValue"</span>: <span class="hljs-string">"10"</span>
+            }
+        }
+    },
+    ...
+}
+</code></pre>
+<p>The counter process has a variable <code>value</code> which contains the current counter value and another variable <code>limit</code> that
+contains the limit at which the process will jump to the end view.</p>
+<h2><span class="md-heading"><a name="context-types" class="anchor" href="#context-types"><span class="header-link">#</span></a>Context Types</span> </h2><table class="table table-striped table-hover table-bordered">
+<thead>
+<tr>
+<th>Context Model Location</th>
+<th>Scope </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>applicationContext</code> in <a class="" href="./model-reference.html#xcd.config.ApplicationConfig">config model</a></td>
+<td>once</td>
+</tr>
+<tr>
+<td><code>sessionContext</code> in <a class="" href="./model-reference.html#xcd.config.ApplicationConfig">config model</a></td>
+<td>per user session</td>
+</tr>
+<tr>
+<td><code>context</code> in each <a class="" href="./model-reference.html#xcd.process.Process">process model</a></td>
+<td>in that process</td>
+</tr>
+<tr>
+<td><code>context</code> in each <a class="" href="./model-reference.html#xcd.view.View">view model</a></td>
+<td>in that view </td>
+</tr>
+</tbody>
+</table>
+<p>The contexts combine to one set of valid identifiers per application location and must be unique within that location context.
+Which means for example that there can&#39;t be no session context variable and process variable with the same name, 
+but two processes can define the same process variable name since they&#39;re never in the same location.</p>
+<p>Context variable references in client-side code are automatically detected and make the server provide the client with
+the current data for that context variable. The client code can change context variables and the next server communication
+will synchronize back the changes automatically.</p>
+</div><div class="toolbar clearfix"><a class="btn btn-link" href="./models-view.html"><small>Previous :View Models</small></a><a class="btn btn-link pull-right" href="./page-types.html"><small>Next :Exceed Type System</small></a></div></div><div class="col-md-2"><ul class="doc-nav nav nav-pills nav-stacked te"><li class=""><a class="btn btn-link" href="index.html"><small>Overview</small></a></li><li class=""><a class="btn btn-link" href="concept.html"><small>Concept</small></a></li><li class=""><a class="btn btn-link" href="models-about.html"><small>Models in Practice</small></a></li><li class=""><a class="btn btn-link" href="models-domain.html"><small>Domain Models</small></a></li><li class=""><a class="btn btn-link" href="models-view.html"><small>View Models</small></a></li><li class="active"><a class="btn btn-link" href="models-unified.html"><small>Context Models and Expressions </small></a></li><li class=""><a class="btn btn-link" href="page-types.html"><small>Exceed Type System</small></a></li><li class=""><a class="btn btn-link" href="models-process.html"><small>Process Models</small></a></li><li class=""><a class="btn btn-link" href="page-action.html"><small>Exceed Action System</small></a></li><li class=""><a class="btn btn-link" href="page-graph.html"><small>DataGraph Structure</small></a></li><li class=""><a class="btn btn-link" href="customization.html"><small>Customizing Exceed</small></a></li><li class=""><a class="btn btn-link" href="model-reference.html"><small>Model Reference</small></a></li><li class=""><a class="btn btn-link" href="component.html"><small>Component Reference</small></a></li><li class=""><a class="btn btn-link" href="expression.html"><small>Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="query-expression.html"><small>Query Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="filter-expression.html"><small>Filter Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="class-index.html"><small>Components by class</small></a></li></ul></div></div>
+        <div class="row">
+            <div class="col-md-12">
+                <hr>
+                <small class="muted">
+                    Exceed &copy; 2017 Quinscape GmbH
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

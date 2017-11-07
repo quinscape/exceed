@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Process Models &ndash; Exceed Documentation</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/readable-bootstrap.min.css" rel="stylesheet">
+    <link href="css/exceed-docs.css" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="../../base/resources/js/html5shiv.min.js"></script>
+    <script src="../../base/resources/js/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+<div id="root">
+    <div class="container-fluid">
+        <div class="row"><div class="col-md-1"></div><div class="col-md-9"><div class="toolbar clearfix"><a class="btn btn-link" href="./page-types.html"><small>Previous :Exceed Type System</small></a><a class="btn btn-link pull-right" href="./page-action.html"><small>Next :Exceed Action System</small></a></div><div><h1><span class="md-heading"><a name="process-models" class="anchor" href="#process-models"><span class="header-link">#</span></a>Process Models</span> </h1><p>Process models describe activity-diagram like processes within an application.</p>
+<p><ul class="extension-struct"><li class="last"><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> models<ul><li class="last"><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> process<ul><li class="last"><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> process-a<ul><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> view<ul><li class="last"><a class="type-View" href="./model-reference.html#xcd.view.View"><span class="glyphicon glyphicon-picture"></span> process-view.json<ul></ul></a></li></ul></span></li><li class="last"><a class="type-Process" href="./model-reference.html#xcd.process.Process"><span class="glyphicon glyphicon-cog"></span> process-a.json<ul></ul></a></li></ul></span></li></ul></span></li></ul></span></li></ul></p>
+<h2><span class="md-heading"><a name="processes" class="anchor" href="#processes"><span class="header-link">#</span></a>Processes</span> </h2><pre><code class="lang-json">{
+    <span class="hljs-attr">"startTransition"</span>: {
+        <span class="hljs-attr">"to"</span>: <span class="hljs-string">"main"</span>
+    },
+
+    <span class="hljs-attr">"context"</span>: {
+        <span class="hljs-attr">"properties"</span>: {
+            <span class="hljs-attr">"value"</span>: {
+                <span class="hljs-attr">"type"</span>: <span class="hljs-string">"Integer"</span>,
+                <span class="hljs-attr">"defaultValue"</span>: <span class="hljs-string">"0"</span>
+            },
+
+            <span class="hljs-attr">"limit"</span>: {
+                <span class="hljs-attr">"type"</span>: <span class="hljs-string">"Integer"</span>,
+                <span class="hljs-attr">"defaultValue"</span>: <span class="hljs-string">"10"</span>
+            }
+        }
+    },
+
+    <span class="hljs-attr">"states"</span>: {
+
+        <span class="hljs-attr">"main"</span>: {
+            <span class="hljs-attr">"type"</span>: <span class="hljs-string">"xcd.process.ViewState"</span>,
+            <span class="hljs-attr">"transitions"</span>: {
+                <span class="hljs-attr">"inc"</span>: {
+                    <span class="hljs-attr">"to"</span>: <span class="hljs-string">"check"</span>,
+                    <span class="hljs-attr">"action"</span>: <span class="hljs-string">"value = value + 1"</span>
+                }
+            }
+        },
+
+        <span class="hljs-attr">"check"</span>: {
+            <span class="hljs-attr">"type"</span>: <span class="hljs-string">"xcd.process.DecisionState"</span>,
+            <span class="hljs-attr">"decisions"</span>: [
+                {
+                    <span class="hljs-attr">"expression"</span>: <span class="hljs-string">"value &gt;= limit"</span>,
+                    <span class="hljs-attr">"transition"</span>: {
+                        <span class="hljs-attr">"to"</span>: <span class="hljs-string">"end"</span>,
+                        <span class="hljs-attr">"action"</span> : <span class="hljs-string">"syslog('Jumping to End')"</span>
+                    }
+                }
+            ],
+            <span class="hljs-attr">"defaultTransition"</span>: {
+                <span class="hljs-attr">"to"</span>: <span class="hljs-string">"main"</span>,
+                <span class="hljs-attr">"discard"</span>: <span class="hljs-literal">true</span>
+            }
+        },
+
+        <span class="hljs-attr">"end"</span>: {
+            <span class="hljs-attr">"type"</span>: <span class="hljs-string">"xcd.process.ViewState"</span>
+        }
+    }
+}
+</code></pre>
+<p>The <code>states</code> map of a property model contains a named set of process state models. Each process state model must be 
+identified by a <code>type</code> property which currently has be be one of:</p>
+<pre><code>* <span class="hljs-selector-tag">xcd</span><span class="hljs-selector-class">.process</span><span class="hljs-selector-class">.ViewState</span>  
+* <span class="hljs-selector-tag">xcd</span><span class="hljs-selector-class">.process</span><span class="hljs-selector-class">.DecisionState</span>  
+* <span class="hljs-selector-tag">xcd</span><span class="hljs-selector-class">.process</span><span class="hljs-selector-class">.SubprocessState</span>  
+* <span class="hljs-selector-tag">xcd</span><span class="hljs-selector-class">.process</span><span class="hljs-selector-class">.EndState</span>  
+</code></pre></div><div class="toolbar clearfix"><a class="btn btn-link" href="./page-types.html"><small>Previous :Exceed Type System</small></a><a class="btn btn-link pull-right" href="./page-action.html"><small>Next :Exceed Action System</small></a></div></div><div class="col-md-2"><ul class="doc-nav nav nav-pills nav-stacked te"><li class=""><a class="btn btn-link" href="index.html"><small>Overview</small></a></li><li class=""><a class="btn btn-link" href="concept.html"><small>Concept</small></a></li><li class=""><a class="btn btn-link" href="models-about.html"><small>Models in Practice</small></a></li><li class=""><a class="btn btn-link" href="models-domain.html"><small>Domain Models</small></a></li><li class=""><a class="btn btn-link" href="models-view.html"><small>View Models</small></a></li><li class=""><a class="btn btn-link" href="models-unified.html"><small>Context Models and Expressions </small></a></li><li class=""><a class="btn btn-link" href="page-types.html"><small>Exceed Type System</small></a></li><li class="active"><a class="btn btn-link" href="models-process.html"><small>Process Models</small></a></li><li class=""><a class="btn btn-link" href="page-action.html"><small>Exceed Action System</small></a></li><li class=""><a class="btn btn-link" href="page-graph.html"><small>DataGraph Structure</small></a></li><li class=""><a class="btn btn-link" href="customization.html"><small>Customizing Exceed</small></a></li><li class=""><a class="btn btn-link" href="model-reference.html"><small>Model Reference</small></a></li><li class=""><a class="btn btn-link" href="component.html"><small>Component Reference</small></a></li><li class=""><a class="btn btn-link" href="expression.html"><small>Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="query-expression.html"><small>Query Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="filter-expression.html"><small>Filter Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="class-index.html"><small>Components by class</small></a></li></ul></div></div>
+        <div class="row">
+            <div class="col-md-12">
+                <hr>
+                <small class="muted">
+                    Exceed &copy; 2017 Quinscape GmbH
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

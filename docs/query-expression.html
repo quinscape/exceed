@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Query Expression Reference &ndash; Exceed Documentation</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/readable-bootstrap.min.css" rel="stylesheet">
+    <link href="css/exceed-docs.css" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="../../base/resources/js/html5shiv.min.js"></script>
+    <script src="../../base/resources/js/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+<div id="root">
+    <div class="container-fluid">
+        <div class="row"><div class="col-md-1"></div><div class="col-md-9"><div class="toolbar clearfix"><a class="btn btn-link" href="./expression.html"><small>Previous :Expression Reference</small></a><a class="btn btn-link pull-right" href="./filter-expression.html"><small>Next :Filter Expression Reference</small></a></div><div><div><h1> QueryDefinition </h1><div><p>The query definition expressions are the major example for a use of the unified exceed expression language that is not
+transpiled to Javascript, be it server or client.</p>
+<p>A query definition describes a data query process within the application domain which may any of the defined domain types within 
+the application and their fields. The query expression string is parsed once into an abstract syntax tree and then evaluated
+against the current context to produce a query definition object.</p>
+<h3><span class="md-heading"><a name="simple-example-" class="anchor" href="#simple-example-"><span class="header-link">#</span></a>Simple example:</span> </h3><pre><code class="lang-js">    query<span class="hljs-comment">( OrderItem.as(oi)</span> ).filter<span class="hljs-comment">( oi.orderId == currentId )</span>
+</code></pre>
+<p>This is query from the (shipping-app)[#url-missing] example. It queries all <code>OrderItem</code> objects with the alias <code>oi</code> and 
+filter them by the order id in <code>current.id</code>. </p>
+<h4><span class="md-heading"><a name="simplified-orderitem-model" class="anchor" href="#simplified-orderitem-model"><span class="header-link">#</span></a>Simplified OrderItem model</span> </h4><pre><code>{
+    <span class="hljs-attr">"name"</span>:<span class="hljs-string">"OrderItem"</span>,
+    <span class="hljs-attr">"properties"</span>:[
+        {
+            <span class="hljs-attr">"name"</span>:<span class="hljs-string">"id"</span>,
+            <span class="hljs-attr">"type"</span>:<span class="hljs-string">"UUID"</span>,
+            <span class="hljs-attr">"required"</span>:<span class="hljs-literal">true</span>,
+            <span class="hljs-attr">"maxLength"</span>:<span class="hljs-number">36</span>
+        },
+        {
+            <span class="hljs-attr">"name"</span>:<span class="hljs-string">"orderId"</span>,
+            <span class="hljs-attr">"type"</span>:<span class="hljs-string">"UUID"</span>,
+            <span class="hljs-attr">"required"</span>:<span class="hljs-literal">true</span>,
+            <span class="hljs-attr">"maxLength"</span>:<span class="hljs-number">36</span>,
+            <span class="hljs-attr">"foreignKey"</span>:{
+                <span class="hljs-attr">"type"</span>:<span class="hljs-string">"Order"</span>
+            }
+        }
+    ]
+}
+</code></pre><p>Here is the corresponding domain type model in a simplified form. ( Original is under shipping-app/models/domain/OrderItem.json )</p>
+<p>For the standard JOOQ query transformer, this would result in a query similar to</p>
+<pre><code class="lang-sql">    SELECT * FROM shipping_app.order_item oi where oi.order_id == '<span class="hljs-number">145</span>bf30d<span class="hljs-number">-43</span>ae<span class="hljs-number">-4e94</span><span class="hljs-number">-9607</span>-ea8a9acab359'
+</code></pre>
+<hr>
+<h2><span class="md-heading"><a name="query-definition-methods" class="anchor" href="#query-definition-methods"><span class="header-link">#</span></a>Query Definition methods</span> </h2></div><div><h2>QueryDefinition.filter<br/></h2><div><pre><code class="lang-java"><span class="hljs-selector-tag">QueryDefinition</span> <span class="hljs-selector-tag">QueryDefinition</span><span class="hljs-selector-class">.filter</span>(<span class="hljs-selector-tag">Expression</span> <span class="hljs-selector-tag">expr</span>)
+</code></pre>
+</div><p>Defines the filter for the current query definition. The argument will be transformed as filter expression.</p></div><div><h2>QueryDefinition.limit<br/></h2><div><pre><code class="lang-java">QueryDefinition QueryDefinition.limit(<span class="hljs-keyword">int</span> <span class="hljs-keyword">limit</span>)
+</code></pre>
+</div><p>Sets the limit for the current query definition.</p></div><div><h2>QueryDefinition.offset<br/></h2><div><pre><code class="lang-java">QueryDefinition QueryDefinition.<span class="hljs-keyword">offset</span>(<span class="hljs-type">int</span> limit)
+</code></pre>
+</div><p>Sets the offset for the current query definition.</p></div><div><h2>QueryDefinition.orderBy<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">QueryDefinition</span> QueryDefinition.orderBy(<span class="hljs-meta">Field</span>... fields)
+</code></pre>
+</div><p>Defines the order for the current query definition.</p></div><div><h2>QueryDefinition.params<br/></h2><div><pre><code class="lang-java">QueryDefinition QueryDefinition.<span class="hljs-keyword">params</span>(<span class="hljs-built_in">Map</span> <span class="hljs-keyword">params</span>)
+</code></pre>
+</div><p>Defines parameters for the current query definition. Takes a map mapping paramtern names to parameter values.</p></div></div><div><h1> QueryDomainType </h1><div><p>The query domain type definition is embedded within the query definition. It contains the definition of the actual
+domain types and properties/fields involved. The query definition then configures the query, the filter, how many rows, 
+at what offset etcpp.</p>
+<p>Query domain types are most easily referenced by using their name as an identifier like in the OrderItem example above.
+Query domain types can be joined with other query domain types.</p>
+<pre><code class="lang-js">    query( <span class="hljs-name">Customer</span>.as(<span class="hljs-name">c</span>).join( <span class="hljs-name">Address</span>.as(<span class="hljs-name">a</span>)).on( <span class="hljs-name">c</span>.addressId == a.id) )
+</code></pre>
+<hr>
+<h2><span class="md-heading"><a name="query-domain-type-methods" class="anchor" href="#query-domain-type-methods"><span class="header-link">#</span></a>Query Domain Type methods</span> </h2></div><div><h2>QueryDomainType.as<br/></h2><div><pre><code class="lang-java">QueryDomainType QueryDomainType.<span class="hljs-keyword">as</span>(<span class="hljs-keyword">String</span> <span class="hljs-keyword">alias</span>)
+</code></pre>
+</div><p>Defines an alias for the current query domain type definition.</p></div><div><h2>QueryDomainType.crossJoin<br/></h2><div><pre><code class="lang-java"><span class="hljs-selector-tag">JoinDefinition</span> <span class="hljs-selector-tag">QueryDomainType</span><span class="hljs-selector-class">.crossJoin</span>(<span class="hljs-selector-tag">QueryDomainType</span> <span class="hljs-selector-tag">other</span>)
+</code></pre>
+</div><p>Cross-joins the current domain type with another query domain type given as argument.</p></div><div><h2>QueryDomainType.fields<br/></h2><div><pre><code class="lang-java"><span class="hljs-symbol">QueryDomainType</span> QueryDomainType.fields(<span class="hljs-meta">Field</span>... fields)
+</code></pre>
+</div><p>Selects the given fields for the current query domain type definition.</p></div><div><h2>QueryDomainType.fullOuterJoin<br/></h2><div><pre><code class="lang-java"><span class="hljs-selector-tag">JoinDefinition</span> <span class="hljs-selector-tag">QueryDomainType</span><span class="hljs-selector-class">.fullOuterJoin</span>(<span class="hljs-selector-tag">QueryDomainType</span> <span class="hljs-selector-tag">other</span>)
+</code></pre>
+</div><p>Full-outer-joins the current domain type with another query domain type given as argument.</p></div><div><h2>QueryDomainType.join<br/></h2><div><pre><code class="lang-java"><span class="hljs-keyword">JoinDefinition </span>QueryDomainType.<span class="hljs-keyword">join(QueryDomainType </span>other)
+</code></pre>
+</div><p>Joins the current domain type with another query domain type given as argument.</p></div><div><h2>QueryDomainType.leftOuterJoin<br/></h2><div><pre><code class="lang-java"><span class="hljs-selector-tag">JoinDefinition</span> <span class="hljs-selector-tag">QueryDomainType</span><span class="hljs-selector-class">.leftOuterJoin</span>(<span class="hljs-selector-tag">QueryDomainType</span> <span class="hljs-selector-tag">other</span>)
+</code></pre>
+</div><p>Left-outer-joins the current domain type with another query domain type given as argument.</p></div><div><h2>QueryDomainType.naturalJoin<br/></h2><div><pre><code class="lang-java"><span class="hljs-selector-tag">JoinDefinition</span> <span class="hljs-selector-tag">QueryDomainType</span><span class="hljs-selector-class">.naturalJoin</span>(<span class="hljs-selector-tag">QueryDomainType</span> <span class="hljs-selector-tag">other</span>)
+</code></pre>
+</div><p>Natural-joins the current domain type with another query domain type given as argument.</p></div><div><h2>QueryDomainType.naturalLeftOuterJoin<br/></h2><div><pre><code class="lang-java"><span class="hljs-selector-tag">JoinDefinition</span> <span class="hljs-selector-tag">QueryDomainType</span><span class="hljs-selector-class">.naturalLeftOuterJoin</span>(<span class="hljs-selector-tag">QueryDomainType</span> <span class="hljs-selector-tag">other</span>)
+</code></pre>
+</div><p>Natural-Left-Outer-joins the current domain type with another query domain type given as argument.</p></div><div><h2>QueryDomainType.naturalRightOuterJoin<br/></h2><div><pre><code class="lang-java"><span class="hljs-selector-tag">JoinDefinition</span> <span class="hljs-selector-tag">QueryDomainType</span><span class="hljs-selector-class">.naturalRightOuterJoin</span>(<span class="hljs-selector-tag">QueryDomainType</span> <span class="hljs-selector-tag">other</span>)
+</code></pre>
+</div><p>Natural-Right-Outer-joins the current domain type with another query domain type given as argument.</p></div><div><h2>QueryDomainType.query<br/></h2><div><pre><code class="lang-java"><span class="hljs-selector-tag">QueryDefinition</span> <span class="hljs-selector-tag">QueryDomainType</span><span class="hljs-selector-class">.query</span>()
+</code></pre>
+</div><p>Constructs a query definition for this query domain type definition.</p></div><div><h2>QueryDomainType.rightOuterJoin<br/></h2><div><pre><code class="lang-java"><span class="hljs-selector-tag">JoinDefinition</span> <span class="hljs-selector-tag">QueryDomainType</span><span class="hljs-selector-class">.rightOuterJoin</span>(<span class="hljs-selector-tag">QueryDomainType</span> <span class="hljs-selector-tag">other</span>)
+</code></pre>
+</div><p>Right-outer-joins the current domain type with another query domain type given as argument.</p></div></div><div><h1> JoinDefinition </h1><div><h2>JoinDefinition.on<br/></h2><div><pre><code class="lang-java"><span class="hljs-attribute">QueryDomainType</span> JoinDefinition.<span class="hljs-literal">on</span>(Expression expr)
+</code></pre>
+</div><p>Defines the query condition for a join definition. The argument will be transformed as filter expression.</p></div></div><div><h1> Conditional </h1><div><h2>Conditional.else<br/></h2><div><pre><code class="lang-java"><span class="hljs-built_in">Object</span> Conditional.<span class="hljs-keyword">else</span>(<span class="hljs-built_in">Object</span> elseValue)
+</code></pre>
+</div><p>Else branch in a conditional query definition. Takes a query definition as argument.</p></div><div><h2>Conditional.then<br/></h2><div><pre><code class="lang-java"><span class="hljs-keyword">Object</span> Conditional.<span class="hljs-keyword">then</span>(<span class="hljs-keyword">Object</span> thenValue)
+</code></pre>
+</div><p>Then branch in a conditional query definition. Takes a query definition as argument.</p></div></div><div><h1> misc </h1><div><h2>Function actionQuery<br/></h2><div><pre><code class="lang-java"><span class="hljs-built_in">Object</span> actionQuery(<span class="hljs-built_in">String</span> actionName, <span class="hljs-built_in">Object</span>... actionParams)
+</code></pre>
+</div><p>Executes an action and returns the result. Can be used to implement Java-Based DataGraph returning actions.</p></div><div><h2>Function appName<br/></h2><div><pre><code class="lang-java"><span class="hljs-keyword">String</span> appName()
+</code></pre>
+</div><p>Returns the name of the current application.</p></div><div><h2>Function childFieldRefs<br/></h2><div><pre><code class="lang-java"><span class="hljs-built_in">List</span> childFieldRefs()
+</code></pre>
+</div><p>Returns a list of all child components field referenec attributes ( attributes with prop type FIELD_REFERENCE).
+      Only valid in a component context.</p></div><div><h2>Function domainType<br/></h2><div><pre><code class="lang-java">QueryDomainType domainType(<span class="hljs-name">String</span> domainType)
+</code></pre>
+</div><p>Returns a query domain type definition for the given name argument. This is a generic function and equivalent
+      to just using the name of the domain type as Identifier.
+     
+      <pre class="text-info"> domainType('Foo') </pre> is the same as
+      
+      <pre class="text-info"> Foo </pre></p></div><div><h2>Function exec<br/></h2><div><pre><code class="lang-java">Object exec(<span class="hljs-name">QueryDefinition</span> queryDefinition)
+</code></pre>
+</div><p>Executes a query definition and returns the result value. Normally this will be a data graph.</p></div><div><h2>Function formFieldType<br/></h2><div><pre><code class="lang-java">PropertyModel formFieldType<span class="hljs-comment">()</span>
+</code></pre>
+</div><p>Returns the property type of a form field component. Only valid in a form field component context.</p></div><div><h2>Function param<br/></h2><div><pre><code class="lang-java"><span class="hljs-built_in">Object</span> param(<span class="hljs-built_in">String</span>)
+</code></pre>
+</div><p>Returns the location parameter with the given name.</p></div><div><h2>Function prop<br/></h2><div><pre><code class="lang-java"><span class="hljs-keyword">Object</span> prop(<span class="hljs-keyword">String</span> <span class="hljs-keyword">name</span>)
+</code></pre>
+</div><p>Returns the component attribute with the given name. Only valid in a component context.</p></div><div><h2>Function query<br/></h2><div><pre><code class="lang-java">QueryDefinition <span class="hljs-keyword">query</span>(QueryDomainType <span class="hljs-keyword">query</span>DomainType)
+</code></pre>
+</div><p>Constructs a query definition taking a  query domain type definition as argument.</p></div><div><h2>Function var<br/></h2><div><pre><code class="lang-java"><span class="hljs-built_in">Object</span> <span class="hljs-keyword">var</span>(<span class="hljs-built_in">String</span>)
+</code></pre>
+</div><p>Returns the component variable with the given name. Only valid in a component context.</p></div><div><h2>Function when<br/></h2><div><pre><code class="lang-java">Conditional when(<span class="hljs-name">boolean</span> condition)
+</code></pre>
+</div><p>Conditional query function.
+      <pre class="text-info"> when( <em>condition</em> ).then( <em>queryDefinition</em> ) </pre>
+     
+      or
+
+      <pre class="text-info"> when( <em>condition</em> ).then( <em>queryDefinition</em> ).else( <em>queryDefinition</em> ) </pre></p></div></div></div><div class="toolbar clearfix"><a class="btn btn-link" href="./expression.html"><small>Previous :Expression Reference</small></a><a class="btn btn-link pull-right" href="./filter-expression.html"><small>Next :Filter Expression Reference</small></a></div></div><div class="col-md-2"><ul class="doc-nav nav nav-pills nav-stacked te"><li class=""><a class="btn btn-link" href="index.html"><small>Overview</small></a></li><li class=""><a class="btn btn-link" href="concept.html"><small>Concept</small></a></li><li class=""><a class="btn btn-link" href="models-about.html"><small>Models in Practice</small></a></li><li class=""><a class="btn btn-link" href="models-domain.html"><small>Domain Models</small></a></li><li class=""><a class="btn btn-link" href="models-view.html"><small>View Models</small></a></li><li class=""><a class="btn btn-link" href="models-unified.html"><small>Context Models and Expressions </small></a></li><li class=""><a class="btn btn-link" href="page-types.html"><small>Exceed Type System</small></a></li><li class=""><a class="btn btn-link" href="models-process.html"><small>Process Models</small></a></li><li class=""><a class="btn btn-link" href="page-action.html"><small>Exceed Action System</small></a></li><li class=""><a class="btn btn-link" href="page-graph.html"><small>DataGraph Structure</small></a></li><li class=""><a class="btn btn-link" href="customization.html"><small>Customizing Exceed</small></a></li><li class=""><a class="btn btn-link" href="model-reference.html"><small>Model Reference</small></a></li><li class=""><a class="btn btn-link" href="component.html"><small>Component Reference</small></a></li><li class=""><a class="btn btn-link" href="expression.html"><small>Expression Reference</small></a></li><li class="active"><a class="btn btn-link" href="query-expression.html"><small>Query Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="filter-expression.html"><small>Filter Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="class-index.html"><small>Components by class</small></a></li></ul></div></div>
+        <div class="row">
+            <div class="col-md-12">
+                <hr>
+                <small class="muted">
+                    Exceed &copy; 2017 Quinscape GmbH
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

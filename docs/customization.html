@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Customizing Exceed &ndash; Exceed Documentation</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/readable-bootstrap.min.css" rel="stylesheet">
+    <link href="css/exceed-docs.css" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="../../base/resources/js/html5shiv.min.js"></script>
+    <script src="../../base/resources/js/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+<div id="root">
+    <div class="container-fluid">
+        <div class="row"><div class="col-md-1"></div><div class="col-md-9"><div class="toolbar clearfix"><a class="btn btn-link" href="./page-graph.html"><small>Previous :DataGraph Structure</small></a><a class="btn btn-link pull-right" href="./model-reference.html"><small>Next :Model Reference</small></a></div><div><h1><span class="md-heading"><a name="customizing-exceed" class="anchor" href="#customizing-exceed"><span class="header-link">#</span></a>Customizing Exceed</span> </h1><h2><span class="md-heading"><a name="models-and-resources" class="anchor" href="#models-and-resources"><span class="header-link">#</span></a>Models and Resources</span> </h2><p>All models and resources used by the system are contained in the <a class="" href="./model-reference.html">resource extensions</a> which get
+stacked on top of each other to be composed into the final application model.</p>
+<p>The models/resources in the &quot;base&quot; extension describe general aspects of any exceed application. You define your application
+by adding one or more extensions to that definition. The extensions are sorted in increasing priority.</p>
+<p>Consider this example of an <em>exceed-config.json</em> startup configuration:</p>
+<pre><code class="lang-json">{
+    <span class="hljs-attr">"env"</span> : {
+        <span class="hljs-attr">"spring.profiles.active"</span> : <span class="hljs-string">"development"</span>
+    },
+
+    <span class="hljs-attr">"apps"</span> : [
+        {
+            <span class="hljs-attr">"name"</span> : <span class="hljs-string">"myapp"</span>,
+            <span class="hljs-attr">"extensions"</span> : [
+                <span class="hljs-string">"my-org-layout"</span>, 
+                <span class="hljs-string">"my-app"</span>
+            ]
+        }
+    ]
+}
+</code></pre>
+<p>We have a single application called <code>myapp</code> and two extensions located in the extensions root folder with our servlet context
+ ( <em>/WEB-INF/extensions/</em> ). So the effective extensions are <code>base</code>, <code>my-org-layout</code> and <code>my-app</code>.</p>
+<p>Everything in <code>my-org-layout</code> has a higher priority than base. So this extension can change the visual aspects of a standard
+exceed application. It can provide its own bootstrap theme, and additional css and images etcpp in the below the <em>/resources/</em>
+location. This extension can be reused for all exceed applications in your organization.</p>
+<p>Added on top of that is the <code>my-app</code> extension which defines the actual application with its business processes and RESTish
+data-presentations etc. With a setup like here, <code>my-app</code> shouldn&#39;t contain any design elements. If you work with only 
+one extension, you throw everything together, of course.</p>
+<p>Higher priority resource files always overwrite resource files at the lower priority location. Higher priority models either
+replace the lower priority models or are merged with them with <a class="" href="./models-about.html#merging">location dependent merging rules</a>. </p>
+<h2><span class="md-heading"><a name="base-template" class="anchor" href="#base-template"><span class="header-link">#</span></a>Base Template</span> </h2><p>We&#39;ve seen how we&#39;re able to change the general <a class="" href="./models-view.html#layout">layout</a>
+of an exceed application. This lets you control the complete HTML document body.</p>
+<p>There exists what we call a &quot;base template&quot; which contains the outer HTML document
+around the layout root.</p>
+<pre><code class="lang-html"><span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">"$LOCALE"</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">charset</span>=<span class="hljs-string">"utf-8"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">http-equiv</span>=<span class="hljs-string">"X-UA-Compatible"</span> <span class="hljs-attr">content</span>=<span class="hljs-string">"IE=edge"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"viewport"</span> <span class="hljs-attr">content</span>=<span class="hljs-string">"width=device-width, initial-scale=1"</span>&gt;</span>
+    <span class="hljs-comment">&lt;!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags --&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>$TITLE<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+
+    <span class="hljs-comment">&lt;!-- Bootstrap --&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">link</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"application-styles"</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"$CONTEXT_PATH/res/$APP_NAME/style/$APP_NAME.css"</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">"stylesheet"</span>&gt;</span>
+
+    <span class="hljs-comment">&lt;!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries --&gt;</span>
+    <span class="hljs-comment">&lt;!-- WARNING: Respond.js doesn't work if you view the page via file:// --&gt;</span>
+    <span class="hljs-comment">&lt;!--[if lt IE 9]&gt;
+    &lt;script src="$CONTEXT_PATH/res/$APP_NAME/js/html5shiv.min.js"&gt;&lt;/script&gt;
+    &lt;script src="$CONTEXT_PATH/res/$APP_NAME/js/respond.min.js"&gt;&lt;/script&gt;
+    &lt;![endif]--&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"root-data"</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"x-ceed/view-data"</span>&gt;</span><span class="undefined">
+        $VIEW_DATA
+    </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+$SCRIPTS
+$HEAD
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+$CONTENT_BEFORE
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"root"</span>&gt;</span>
+    $CONTENT
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+$CONTENT_AFTER
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>
+<p>Our &quot;template engine&quot; replaces the contained placeholders with content:</p>
+<ul>
+<li><code>$APP_NAME</code> - Name of the current application</li>
+<li><code>$CONTENT_AFTER</code> - Additional HTML markup to insert after the main content</li>
+<li><code>$CONTENT_BEFORE</code> - Additional HTML markup to insert before the main content</li>
+<li><code>$CONTENT</code> - Main content area containing the layout root. This is currently still empty but will contain the server-side rendered React content.</li>
+<li><code>$CONTEXT_PATH</code> - Servlet context path of the application container</li>
+<li><code>$HEAD</code> - Additional HTML to insert in the &lt;head&gt;</li>
+<li><code>$LOCALE</code> - Current locale code</li>
+<li><code>$SCRIPTS</code> - HTML script tags to load the exceed Javascript files bundles </li>
+<li><code>$TITLE</code> - Document title</li>
+<li><code>$VIEW_DATA</code> - dehydrated initial redux state </li>
+</ul>
+<p>It is our hope that changing the base template will be the absolute exception among the use cases of exceed. You can change the template
+by providing an alternate resource at the location <em>/resources/template/template.html</em> in an application extension. </p>
+<p>See you can configure the values for the additional placeholders in the default template or placeholders in your own template
+under <a class="" href="./model-reference.html#xcd.config.BaseTemplateConfig">component.json / componentConfig / baseTemplate </a>. </p>
+</div><div class="toolbar clearfix"><a class="btn btn-link" href="./page-graph.html"><small>Previous :DataGraph Structure</small></a><a class="btn btn-link pull-right" href="./model-reference.html"><small>Next :Model Reference</small></a></div></div><div class="col-md-2"><ul class="doc-nav nav nav-pills nav-stacked te"><li class=""><a class="btn btn-link" href="index.html"><small>Overview</small></a></li><li class=""><a class="btn btn-link" href="concept.html"><small>Concept</small></a></li><li class=""><a class="btn btn-link" href="models-about.html"><small>Models in Practice</small></a></li><li class=""><a class="btn btn-link" href="models-domain.html"><small>Domain Models</small></a></li><li class=""><a class="btn btn-link" href="models-view.html"><small>View Models</small></a></li><li class=""><a class="btn btn-link" href="models-unified.html"><small>Context Models and Expressions </small></a></li><li class=""><a class="btn btn-link" href="page-types.html"><small>Exceed Type System</small></a></li><li class=""><a class="btn btn-link" href="models-process.html"><small>Process Models</small></a></li><li class=""><a class="btn btn-link" href="page-action.html"><small>Exceed Action System</small></a></li><li class=""><a class="btn btn-link" href="page-graph.html"><small>DataGraph Structure</small></a></li><li class="active"><a class="btn btn-link" href="customization.html"><small>Customizing Exceed</small></a></li><li class=""><a class="btn btn-link" href="model-reference.html"><small>Model Reference</small></a></li><li class=""><a class="btn btn-link" href="component.html"><small>Component Reference</small></a></li><li class=""><a class="btn btn-link" href="expression.html"><small>Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="query-expression.html"><small>Query Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="filter-expression.html"><small>Filter Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="class-index.html"><small>Components by class</small></a></li></ul></div></div>
+        <div class="row">
+            <div class="col-md-12">
+                <hr>
+                <small class="muted">
+                    Exceed &copy; 2017 Quinscape GmbH
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

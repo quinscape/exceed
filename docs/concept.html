@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Concept &ndash; Exceed Documentation</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/readable-bootstrap.min.css" rel="stylesheet">
+    <link href="css/exceed-docs.css" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="../../base/resources/js/html5shiv.min.js"></script>
+    <script src="../../base/resources/js/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+<div id="root">
+    <div class="container-fluid">
+        <div class="row"><div class="col-md-1"></div><div class="col-md-9"><div class="toolbar clearfix"><a class="btn btn-link" href="./index.html"><small>Previous :Overview</small></a><a class="btn btn-link pull-right" href="./models-about.html"><small>Next :Models in Practice</small></a></div><div><h1><span class="md-heading"><a name="concept" class="anchor" href="#concept"><span class="header-link">#</span></a>Concept</span> </h1><p><img class="pull-right" src="./media/geek-and-poke-architecture-right.jpg" alt="Geek &amp; Poke: Clean Architecture"> </p>
+<p>This page looks at the reasoning and motivation behind the creation of exceed. If you&#39;re eager to more concrete and
+hands-on information, you can skip this for now.</p>
+<blockquote>
+<p>model-based full-stack web application engine.</p>
+</blockquote>
+<p>What does that mean? Let&#39;s look at it piece by piece. </p>
+<blockquote>
+<p>web application engine</p>
+</blockquote>
+<p>Well first of all, it&#39;s about modern internet applications, of many kinds and complexities. We call it an engine because
+it executes and orchestrates your business logic as a complex system of inter-locking parts. You could call it a framework, too,
+and it is certainly extensible and adaptable on many levels.</p>
+<blockquote>
+<p>full-stack</p>
+</blockquote>
+<p>Exceed generates front-end and back-end functionality from one source of truth, can configure databases to support that truth. </p>
+<blockquote>
+<p>model-based</p>
+</blockquote>
+<p>Everything is based on a inter-connected data model. It describes all parts and connects them to one another. It defines what things are and
+how they are processed. It defines a routing map for the user through out the application.  </p>
+<h2><span class="md-heading"><a name="motivation" class="anchor" href="#motivation"><span class="header-link">#</span></a>Motivation</span> </h2><p>Let&#39;s go deeper into the motivation and results of using a data model driven application engine/framework. Partial data 
+models or their visual representations are a quite common part of software development. There are a lot of methodologies
+for software development, but most of them and especially the viable ones, involve some level of planning and modeling.
+Even if this only happens on a whiteboard in an office or scribbled on a piece of paper.</p>
+<p>There have been attempts at using data-sets for actual software development. Prolog is an early example for a data driven 
+or logical programming language. There are formal methods to describe program structures like UML and its diagram forms. 
+For the most parts these tools mostly apply to the early design and development phase of a software project and 
+deteriorate with age. A project starts with lots of good intentions and diagrams which are left aside once the basic shape
+of the application is established. Often the diagrams are not even regarded as software development artifacts and just 
+happen to lie around on Bob&#39;s old computer. Even if they&#39;re kept and archived, very few projects go through the trouble
+of keeping diagrams updated. There are also technical challenges in the iterative improvement of software models. 
+Most common are generators that turn a data description into code and then you&#39;re stuck with that code and there&#39;s no
+way to make changes to that code and have the model reflect those changes.  </p>
+<p>Code deterioration can go further and further. The implementation quality can suddenly start to vary within subsystem and 
+people implementing them. Even with an application style guide, people tend to reinvent things all the time leading to 
+more and more inconsistencies. If sub systems in a larger application grow one after another, they are often identifiable 
+as belonging to a certain year or era by the way they are built.</p>
+<p>Once you hit the nitty gritty code level, you&#39;re not going back. All the nice order and organization you have gets choked
+on all the &quot;code&quot; added to it.</p>
+<h2><span class="md-heading"><a name="introducing-models" class="anchor" href="#introducing-models"><span class="header-link">#</span></a>Introducing Models</span> </h2><p>Our model-based approach is similar to <a class="" href="https://en.wikipedia.org/wiki/Model-driven_architecture">Model-driven architecture</a>.
+There is no platform-specific model though, or rather it is generated at system startup.</p>
+<p>The model is the primary artifact of application development in exceed and remains central through the whole service 
+lifetime of the application. The model evolves with the business requirements with more models and model changes. In a
+80:20 kind of rule we expect roughly 80% of the application code to be realized just by model composition, leaving 20%
+of application specific extensions and integration code. </p>
+<p>The exceed base distribution provides common domain types and administrative functions common to many web applications.
+Over time, a library of reusable macro-components will grow.</p>
+<p>Model-based application development provides a clear mandatory application structure that itself data-drive and can be 
+further manipulated or be created by transforming data from other sources. </p>
+<p>The implementation quality of a model-based application is 100% uniform.</p>
+<p>New functionality, improvements or bug fixes can be implemented once in the base system and can be rolled out uniformly
+by updating the base system.  </p>
+<h2><span class="md-heading"><a name="opensaga-the-predecessor" class="anchor" href="#opensaga-the-predecessor"><span class="header-link">#</span></a>OpenSAGA, the predecessor</span> </h2><p>Exceed is in fact the second such model-based system we developed. The first was <a class="" href="http://www.opensaga.org/">OpenSAGA</a> which
+we successfully used in a number of projects for small and medium enterprises to larger government agency websites.</p>
+<p>Exceed is an attempt to learn from the parts of OpenSAGA that did not work out so well and improve on them. Many of the 
+design decisions in exceed follow the parts of OpenSAGA that did seem to work well. </p>
+</div><div class="toolbar clearfix"><a class="btn btn-link" href="./index.html"><small>Previous :Overview</small></a><a class="btn btn-link pull-right" href="./models-about.html"><small>Next :Models in Practice</small></a></div></div><div class="col-md-2"><ul class="doc-nav nav nav-pills nav-stacked te"><li class=""><a class="btn btn-link" href="index.html"><small>Overview</small></a></li><li class="active"><a class="btn btn-link" href="concept.html"><small>Concept</small></a></li><li class=""><a class="btn btn-link" href="models-about.html"><small>Models in Practice</small></a></li><li class=""><a class="btn btn-link" href="models-domain.html"><small>Domain Models</small></a></li><li class=""><a class="btn btn-link" href="models-view.html"><small>View Models</small></a></li><li class=""><a class="btn btn-link" href="models-unified.html"><small>Context Models and Expressions </small></a></li><li class=""><a class="btn btn-link" href="page-types.html"><small>Exceed Type System</small></a></li><li class=""><a class="btn btn-link" href="models-process.html"><small>Process Models</small></a></li><li class=""><a class="btn btn-link" href="page-action.html"><small>Exceed Action System</small></a></li><li class=""><a class="btn btn-link" href="page-graph.html"><small>DataGraph Structure</small></a></li><li class=""><a class="btn btn-link" href="customization.html"><small>Customizing Exceed</small></a></li><li class=""><a class="btn btn-link" href="model-reference.html"><small>Model Reference</small></a></li><li class=""><a class="btn btn-link" href="component.html"><small>Component Reference</small></a></li><li class=""><a class="btn btn-link" href="expression.html"><small>Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="query-expression.html"><small>Query Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="filter-expression.html"><small>Filter Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="class-index.html"><small>Components by class</small></a></li></ul></div></div>
+        <div class="row">
+            <div class="col-md-12">
+                <hr>
+                <small class="muted">
+                    Exceed &copy; 2017 Quinscape GmbH
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

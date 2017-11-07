@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Exceed Type System &ndash; Exceed Documentation</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/readable-bootstrap.min.css" rel="stylesheet">
+    <link href="css/exceed-docs.css" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="../../base/resources/js/html5shiv.min.js"></script>
+    <script src="../../base/resources/js/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+<div id="root">
+    <div class="container-fluid">
+        <div class="row"><div class="col-md-1"></div><div class="col-md-9"><div class="toolbar clearfix"><a class="btn btn-link" href="./models-unified.html"><small>Previous :Context Models and Expressions </small></a><a class="btn btn-link pull-right" href="./models-process.html"><small>Next :Process Models</small></a></div><div><h1><span class="md-heading"><a name="exceed-type-system" class="anchor" href="#exceed-type-system"><span class="header-link">#</span></a>Exceed Type System</span> </h1><p>The exceed type system is an extensible system based on a data atoms and
+complex object structures built from them. Previously we have already seen domain type
+definitions and context variable definitions, both of which use property types. </p>
+<p>The type system is also used to express the result of data queries and to edit the models
+themselves.</p>
+<h2><span class="md-heading"><a name="property-types" class="anchor" href="#property-types"><span class="header-link">#</span></a>Property-Types</span> </h2><p>A property is a named property value contained in a larger context (domain type model, context model).
+ It is defined as JSON model.</p>
+<pre><code>{
+    <span class="hljs-attr">"name"</span>: <span class="hljs-string">"myProp"</span>,
+    <span class="hljs-attr">"type"</span>: <span class="hljs-string">"Integer"</span>
+}
+</code></pre><p>The type of the property is defined by the type field and for some property types,
+the typeParam and config fields.</p>
+<h2><span class="md-heading"><a name="builtin-property-types" class="anchor" href="#builtin-property-types"><span class="header-link">#</span></a>Builtin Property Types</span> </h2><table class="table table-striped table-hover table-bordered">
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+<th>TypeParam</th>
+<th>Config Map</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Boolean</td>
+<td>boolean type</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Currency</td>
+<td>currency type<a class="" href="#currency-type-limitations">*</a></td>
+<td>Currency code</td>
+<td>-        </td>
+</tr>
+<tr>
+<td>DataGraph</td>
+<td><a class="" href="./data-graph.html">data graph structure</a></td>
+<td>-</td>
+<td>-        </td>
+</tr>
+<tr>
+<td>Date</td>
+<td>Date</td>
+<td>-</td>
+<td>-    </td>
+</tr>
+<tr>
+<td>Decimal</td>
+<td>Decimal number</td>
+<td>-</td>
+<td><a class="" href="#decimal-config">decimalPlaces,precision,trailingZeroes</a>    </td>
+</tr>
+<tr>
+<td>DomainType</td>
+<td>domain object value</td>
+<td>Domain Type name</td>
+<td><a class="" href="#domaintype-config">implementation</a>        </td>
+</tr>
+<tr>
+<td>Enum</td>
+<td>enum value</td>
+<td>Enum Type name</td>
+<td><a class="" href="#enum-config">javaEnum</a>    </td>
+</tr>
+<tr>
+<td>Integer</td>
+<td>32 bit Integer number</td>
+<td>-</td>
+<td>-    </td>
+</tr>
+<tr>
+<td>List</td>
+<td>List</td>
+<td>Domain type or enum type or property type</td>
+<td>-    </td>
+</tr>
+<tr>
+<td>Long</td>
+<td>64 bit Integer number</td>
+<td>-</td>
+<td>-    </td>
+</tr>
+<tr>
+<td>Map</td>
+<td>map value with string keys</td>
+<td>Domain type or enum type or property type</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Object</td>
+<td>any</td>
+<td>-</td>
+<td>-    </td>
+</tr>
+<tr>
+<td>PlainText</td>
+<td>string</td>
+<td>-</td>
+<td>-        </td>
+</tr>
+<tr>
+<td>RichText</td>
+<td>html text</td>
+<td>-</td>
+<td>-        </td>
+</tr>
+<tr>
+<td>State</td>
+<td>state machine value</td>
+<td>state machine name</td>
+<td>-    </td>
+</tr>
+<tr>
+<td>Timestamp</td>
+<td>timestamp</td>
+<td>-</td>
+<td>-        </td>
+</tr>
+<tr>
+<td>UUID</td>
+<td>special UUID string type for ids</td>
+<td>-</td>
+<td>-    </td>
+</tr>
+</tbody>
+</table>
+<p>The typeParam values of <code>DomainType</code>, <code>Enum</code>, <code>State</code>, <code>List</code> and <code>Map</code> mean that the JSON property definitions are 
+application specific as they can refer to application-specific type definitions by name.</p>
+<p>The base extension defines some basic application domain types like <code>AppUser</code> and <code>AppTranslation</code> the application defines 
+additional types to a final set of valid domain types, enum types and state machine types.</p>
+<p>The system will also generate a domain type definition for every model class below the package de.quinscape.exceed.model.
+The routing table model de.quinscape.exceed.model.routing.RoutingTable for example will have a corresponding domain type
+definition with the type set to &quot;xcd.routing.RoutingTable&quot;.</p>
+<h2><span class="md-heading"><a name="property-type-configuration" class="anchor" href="#property-type-configuration"><span class="header-link">#</span></a>Property Type Configuration</span> </h2><p>Some property types offer additional configuration properties via an additional map property <code>config</code>. </p>
+<h3><span class="md-heading"><a name="config-example-" class="anchor" href="#config-example-"><span class="header-link">#</span></a>Config Example:</span> </h3><pre><code>{
+    <span class="hljs-attr">"name"</span>: <span class="hljs-string">"myValue"</span>,
+    <span class="hljs-attr">"type"</span>: <span class="hljs-string">"Decimal"</span>,
+    <span class="hljs-attr">"config"</span>: {
+        <span class="hljs-attr">"precision"</span>: <span class="hljs-number">12</span>,
+        <span class="hljs-attr">"decimalPlaces"</span>: <span class="hljs-number">4</span>
+    }
+}
+</code></pre><p>This would define a <code>Decimal</code> property with a precision of 12 digits and 4 decimal places. The config.json contains
+the application-wide defaults which are (precision=10 and decimalPlaces=3 by default).</p>
+<h3><span class="md-heading"><a name="decimal-config" class="anchor" href="#decimal-config"><span class="header-link">#</span></a>Decimal Config</span> </h3><p>The <code>Decimal</code> type has the following config parameters:</p>
+<ul>
+<li>decimalPlaces : Number of after the fractional separator</li>
+<li>precision : Overall number of digits
+<code>trailingZeroes:</code>true* if the number is supposed to be formatted with trailing zeroes</li>
+</ul>
+<p>There is additional application wide configuration in the config.json <code>decimalConfig</code> property.  </p>
+<h3><span class="md-heading"><a name="domaintype-config" class="anchor" href="#domaintype-config"><span class="header-link">#</span></a>DomainType Config</span> </h3><p>The <code>implementation</code> config parameter can be used to create a certain type of domain object, e.g. a special GeneratedDomainObject</p>
+<h3><span class="md-heading"><a name="enum-config" class="anchor" href="#enum-config"><span class="header-link">#</span></a>Enum Config</span> </h3><p>The <code>javaEnum</code> config parameter can be used to make the property have java enum values of that type instead of ordinal values.
+This is mostly useful and used for the model domain types.</p>
+<h2><span class="md-heading"><a name="currency-type-limitations" class="anchor" href="#currency-type-limitations"><span class="header-link">#</span></a>Currency Type Limitations</span> </h2><p>Numbers in exceed come with the same limitations as javascript numbers. They&#39;re 64-bit IEEE-754 floating point numbers with limited precision.
+Exceed offers the <code>Decimal</code> type for additional precision but uses a dedicated currency type for currency values.</p>
+<p>The currency values are stored in one ten thousandth units. So 1.00 EUR would be a value of 10000. The <code>typeParam</code> field 
+can be used to define the three letter currency code for that property. It can be left out to use application wide currency default.</p>
+<p>Currency values also being normal Javascript numbers limits them to an interval of [MIN_SAFE_INTEGER, MAX_SAFE_INTEGER] for precise calculations as per 
+<a class="" href="https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER">ECMAScript spec</a>.</p>
+<p>The range of of +/- 2^53 - 1 limits us to precise currency values in a range of +/- 90000 billion (10^13.95). For values 
+larger or smaller then that, rounding errors will occur in the cent range.</p>
+</div><div class="toolbar clearfix"><a class="btn btn-link" href="./models-unified.html"><small>Previous :Context Models and Expressions </small></a><a class="btn btn-link pull-right" href="./models-process.html"><small>Next :Process Models</small></a></div></div><div class="col-md-2"><ul class="doc-nav nav nav-pills nav-stacked te"><li class=""><a class="btn btn-link" href="index.html"><small>Overview</small></a></li><li class=""><a class="btn btn-link" href="concept.html"><small>Concept</small></a></li><li class=""><a class="btn btn-link" href="models-about.html"><small>Models in Practice</small></a></li><li class=""><a class="btn btn-link" href="models-domain.html"><small>Domain Models</small></a></li><li class=""><a class="btn btn-link" href="models-view.html"><small>View Models</small></a></li><li class=""><a class="btn btn-link" href="models-unified.html"><small>Context Models and Expressions </small></a></li><li class="active"><a class="btn btn-link" href="page-types.html"><small>Exceed Type System</small></a></li><li class=""><a class="btn btn-link" href="models-process.html"><small>Process Models</small></a></li><li class=""><a class="btn btn-link" href="page-action.html"><small>Exceed Action System</small></a></li><li class=""><a class="btn btn-link" href="page-graph.html"><small>DataGraph Structure</small></a></li><li class=""><a class="btn btn-link" href="customization.html"><small>Customizing Exceed</small></a></li><li class=""><a class="btn btn-link" href="model-reference.html"><small>Model Reference</small></a></li><li class=""><a class="btn btn-link" href="component.html"><small>Component Reference</small></a></li><li class=""><a class="btn btn-link" href="expression.html"><small>Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="query-expression.html"><small>Query Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="filter-expression.html"><small>Filter Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="class-index.html"><small>Components by class</small></a></li></ul></div></div>
+        <div class="row">
+            <div class="col-md-12">
+                <hr>
+                <small class="muted">
+                    Exceed &copy; 2017 Quinscape GmbH
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

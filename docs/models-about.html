@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Models in Practice &ndash; Exceed Documentation</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/readable-bootstrap.min.css" rel="stylesheet">
+    <link href="css/exceed-docs.css" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="../../base/resources/js/html5shiv.min.js"></script>
+    <script src="../../base/resources/js/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+<body>
+<div id="root">
+    <div class="container-fluid">
+        <div class="row"><div class="col-md-1"></div><div class="col-md-9"><div class="toolbar clearfix"><a class="btn btn-link" href="./concept.html"><small>Previous :Concept</small></a><a class="btn btn-link pull-right" href="./models-domain.html"><small>Next :Domain Models</small></a></div><div><h1><span class="md-heading"><a name="models-in-practice" class="anchor" href="#models-in-practice"><span class="header-link">#</span></a>Models in Practice</span> </h1><p>Let&#39;s get a bit more concrete and take a look at what models look like in detail.</p>
+<p>An exceed applications consists of models and resources which are grouped in so called &quot;extensions&quot;.
+An extension is directory with a standardized layout.</p>
+<p>Here we see an example application with one model of each type being present. The type of the JSON model is determined
+by its relative location in the extension folder and the name of it is taken from the file name.  </p>
+<h2><span class="md-heading"><a name="standardized-extension-layout" class="anchor" href="#standardized-extension-layout"><span class="header-link">#</span></a>Standardized Extension layout</span> </h2><p><ul class="extension-struct"><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> models<ul><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> domain<ul><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> enum<ul><li class="last"><a class="type-EnumType" href="./model-reference.html#xcd.domain.EnumType"><span class="glyphicon glyphicon-option-vertical"></span> MyEnum.json<ul></ul></a></li></ul></span></li><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> property<ul><li class="last"><a class="type-PropertyTypeModel" href="./model-reference.html#xcd.domain.property.PropertyTypeModel"><span class="glyphicon glyphicon-asterisk"></span> MyPropertyType.json<ul></ul></a></li></ul></span></li><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> query<ul><li class="last"><a class="type-QueryTypeModel" href="./model-reference.html#xcd.domain.type.QueryTypeModel"> QTypeA.json<ul></ul></a></li></ul></span></li><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> rule<ul><li class="last"><a class="type-DomainRule" href="./model-reference.html#xcd.domain.DomainRule"> DomainSpecificRule.json<ul></ul></a></li></ul></span></li><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> state-machine<ul><li class="last"><a class="type-StateMachine" href="./model-reference.html#xcd.domain.StateMachine"><span class="glyphicon glyphicon-ok-circle"></span> MyStateMachine.json<ul></ul></a></li></ul></span></li><li class="last"><a class="type-DomainTypeModel" href="./model-reference.html#xcd.domain.type.DomainTypeModel"> DomainTypeA.json<ul></ul></a></li></ul></span></li><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> layout<ul><li class="last"><a class="type-LayoutModel" href="./model-reference.html#xcd.view.LayoutModel"><span class="glyphicon glyphicon-picture"></span> Layout.json<ul></ul></a></li></ul></span></li><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> process<ul><li class="last"><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> process-a<ul><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> view<ul><li class="last"><a class="type-View" href="./model-reference.html#xcd.view.View"><span class="glyphicon glyphicon-picture"></span> process-view.json<ul></ul></a></li></ul></span></li><li class="last"><a class="type-Process" href="./model-reference.html#xcd.process.Process"><span class="glyphicon glyphicon-cog"></span> process-a.json<ul></ul></a></li></ul></span></li></ul></span></li><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> view<ul><li class="last"><a class="type-View" href="./model-reference.html#xcd.view.View"><span class="glyphicon glyphicon-picture"></span> home.json<ul></ul></a></li></ul></span></li><li class=""><a class="type-ApplicationConfig" href="./model-reference.html#xcd.config.ApplicationConfig"><span class="glyphicon glyphicon-wrench"></span> config.json<ul></ul></a></li><li class="last"><a class="type-RoutingTable" href="./model-reference.html#xcd.routing.RoutingTable"><span class="glyphicon glyphicon-road"></span> routing.json<ul></ul></a></li></ul></span></li><li class="last"><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> resources<ul><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> css<ul><li class="last"><span class="type-asset"><span class="glyphicon glyphicon-picture"></span> mybootstrap-theme.min.css<ul></ul></span></li></ul></span></li><li class=""><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> image<ul><li class="last"><span class="type-asset"><span class="glyphicon glyphicon-picture"></span> mylogo.jpg<ul></ul></span></li></ul></span></li><li class="last"><span class="type-folder"><span class="glyphicon glyphicon-folder-open"></span> template<ul><li class="last"><a class="type-template" href="./customization.html#base-template"><span class="glyphicon glyphicon-file"></span> template.html<ul></ul></a></li></ul></span></li></ul></span></li></ul></p>
+<h2><span class="md-heading"><a name="model-composition" class="anchor" href="#model-composition"><span class="header-link">#</span></a>Model Composition</span> </h2><p>At startup, each extension in an exceed application is combined into the final application model. The base library of
+exceed comes with the so called &quot;base&quot; extension which provides all the very basic atoms/definitions of an exceed application
+and also common processes and defaults for common views, e.g. the login view.</p>
+<p>You can imagine the composition process like copying the extensions into a target directory one after another. In the 
+case of a collision one of three things happen:</p>
+<ul>
+<li>The model is merged with the existing model at this location</li>
+<li>The model overwrites the existing model  </li>
+<li>An error occurs</li>
+</ul>
+<h2><span class="md-heading"><a name="merging" class="anchor" href="#merging"><span class="header-link">#</span></a>Merging</span> </h2><p>WIP</p>
+</div><div class="toolbar clearfix"><a class="btn btn-link" href="./concept.html"><small>Previous :Concept</small></a><a class="btn btn-link pull-right" href="./models-domain.html"><small>Next :Domain Models</small></a></div></div><div class="col-md-2"><ul class="doc-nav nav nav-pills nav-stacked te"><li class=""><a class="btn btn-link" href="index.html"><small>Overview</small></a></li><li class=""><a class="btn btn-link" href="concept.html"><small>Concept</small></a></li><li class="active"><a class="btn btn-link" href="models-about.html"><small>Models in Practice</small></a></li><li class=""><a class="btn btn-link" href="models-domain.html"><small>Domain Models</small></a></li><li class=""><a class="btn btn-link" href="models-view.html"><small>View Models</small></a></li><li class=""><a class="btn btn-link" href="models-unified.html"><small>Context Models and Expressions </small></a></li><li class=""><a class="btn btn-link" href="page-types.html"><small>Exceed Type System</small></a></li><li class=""><a class="btn btn-link" href="models-process.html"><small>Process Models</small></a></li><li class=""><a class="btn btn-link" href="page-action.html"><small>Exceed Action System</small></a></li><li class=""><a class="btn btn-link" href="page-graph.html"><small>DataGraph Structure</small></a></li><li class=""><a class="btn btn-link" href="customization.html"><small>Customizing Exceed</small></a></li><li class=""><a class="btn btn-link" href="model-reference.html"><small>Model Reference</small></a></li><li class=""><a class="btn btn-link" href="component.html"><small>Component Reference</small></a></li><li class=""><a class="btn btn-link" href="expression.html"><small>Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="query-expression.html"><small>Query Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="filter-expression.html"><small>Filter Expression Reference</small></a></li><li class=""><a class="btn btn-link" href="class-index.html"><small>Components by class</small></a></li></ul></div></div>
+        <div class="row">
+            <div class="col-md-12">
+                <hr>
+                <small class="muted">
+                    Exceed &copy; 2017 Quinscape GmbH
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
