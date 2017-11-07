@@ -129,17 +129,17 @@
             "classes": [ "element" ],
             "propTypes": {
                 "showBranding": {
-                    "description" : "If true, don't display the branding part of the navbar.",
+                    "description" : "If false, don't display the branding part of the navbar.",
                     "type": "BOOLEAN",
                     "defaultValue" : "true"
                 },
                 "showNormal": {
-                    "description" : "If true, don't display the normal app dropdown, even if there are normal entries.",
+                    "description" : "If false, don't display the normal app dropdown, even if there are normal entries.",
                     "type": "BOOLEAN",
                     "defaultValue" : "true"
                 },
                 "showAdmin": {
-                    "description" : "If true, don't display the admin dropdown, even if there are admin entries.",
+                    "description" : "If false, don't display the admin dropdown, even if there are admin entries.",
                     "type": "BOOLEAN",
                     "defaultValue" : "true"
                 }
