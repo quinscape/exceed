@@ -32,7 +32,7 @@ public class ResourceInjectorTest
         final NashornScriptEngine engine = JsUtil.createEngine();
         injector.injectResources(engine, resourceLoader, target);
 
-        assertThat(target.getStringValue(), is ("bla bla bla\n"));
+        assertThat(target.getStringValue().trim(), is ("bla bla bla"));
 
         ScriptContext scriptContext = JsUtil.createNewContext(engine);
         String value = "v" + Math.random();
