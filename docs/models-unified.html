@@ -66,11 +66,15 @@ contains the limit at which the process will jump to the end view.</p>
 <tbody>
 <tr>
 <td><code>applicationContext</code> in <a class="" href="./model-reference.html#xcd.config.ApplicationConfig">config model</a></td>
-<td>once</td>
+<td>once (per app, persistent)</td>
 </tr>
 <tr>
 <td><code>sessionContext</code> in <a class="" href="./model-reference.html#xcd.config.ApplicationConfig">config model</a></td>
-<td>per user session</td>
+<td>per user-session</td>
+</tr>
+<tr>
+<td><code>userContext</code> in <a class="" href="./model-reference.html#xcd.config.ApplicationConfig">config model</a></td>
+<td>per user (persistent)</td>
 </tr>
 <tr>
 <td><code>context</code> in each <a class="" href="./model-reference.html#xcd.process.Process">process model</a></td>

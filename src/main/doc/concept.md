@@ -1,6 +1,6 @@
 Concept
 =======
-![Geek & Poke: Clean Architecture](./media/geek-and-poke-architecture-right.jpg) 
+![Cartoon image: Clean Architecture](./media/geek-and-poke-architecture-right.jpg "Comic from http://geek-and-poke.com/") 
 
 This page looks at the reasoning and motivation behind the creation of exceed. If you're eager to more concrete and
 hands-on information, you can skip this for now.
@@ -82,3 +82,6 @@ we successfully used in a number of projects for small and medium enterprises to
 
 Exceed is an attempt to learn from the parts of OpenSAGA that did not work out so well and improve on them. Many of the 
 design decisions in exceed follow the parts of OpenSAGA that did seem to work well. 
+
+---
+[Cartoon from http://geek-and-poke.com/: Clean Architecture](http://geek-and-poke.com/)
