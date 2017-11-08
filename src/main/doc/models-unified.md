@@ -50,8 +50,9 @@ Context Types
 
 Context Model Location                                                                        | Scope 
 --------------------------------------------------------------------------------------------- | ----- 
-`applicationContext` in [config model](./model-reference.html#xcd.config.ApplicationConfig)   | once
-`sessionContext` in [config model](./model-reference.html#xcd.config.ApplicationConfig)       | per user session
+`applicationContext` in [config model](./model-reference.html#xcd.config.ApplicationConfig)   | once (per app, persistent)
+`sessionContext` in [config model](./model-reference.html#xcd.config.ApplicationConfig)       | per user-session
+`userContext` in [config model](./model-reference.html#xcd.config.ApplicationConfig)          | per user (persistent)
 `context` in each [process model](./model-reference.html#xcd.process.Process)                 | in that process
 `context` in each [view model](./model-reference.html#xcd.view.View)                          | in that view 
 
