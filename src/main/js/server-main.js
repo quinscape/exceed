@@ -1,4 +1,5 @@
 // setImmediate from promises is provided on the server-side by a java host object
+import "es6-shim"
 import { Promise } from "es6-promise-polyfill"
 
 import BigNumber from "bignumber.js"
@@ -8,6 +9,7 @@ import domainService from "./service/domain"
 import propertyConverter from "./service/property-converter";
 import cast from "./util/cast";
 import when from "./util/when";
+
 
 function filterOdd(value, index)
 {
