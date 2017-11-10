@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Java container for the exceed app container configuration in <code></code>/WEB-INF/cfg/exceed-config.json</code>
+ * Java container for the exceed app container configuration in <code></code>/WEB-INF/cfg/startup.json</code>
  */
 public class ExceedConfig
     extends AbstractTopLevelModel
@@ -66,7 +66,7 @@ public class ExceedConfig
 
 
     /**
-     * Env properties provided by the exceed-config.json
+     * Env properties provided by the startup.json
      *
      * @return
      */
@@ -79,7 +79,7 @@ public class ExceedConfig
     @Override
     public <I, O> O accept(TopLevelModelVisitor<I, O> visitor, I in)
     {
-        // exceed-config.json is not part of the normal application runtime model
+        // startup.json is not part of the normal application runtime model
         throw new UnsupportedOperationException();
     }
 

@@ -9,7 +9,7 @@ stacked on top of each other to be composed into the final application model.
 The models/resources in the "base" extension describe general aspects of any exceed application. You define your application
 by adding one or more extensions to that definition. The extensions are sorted in increasing priority.
 
-Consider this example of an *exceed-config.json* startup configuration:
+Consider this example of an *startup.json* startup configuration:
 
 ```json
 {

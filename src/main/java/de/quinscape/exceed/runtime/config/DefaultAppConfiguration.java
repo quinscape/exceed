@@ -39,7 +39,7 @@ public class DefaultAppConfiguration
 {
     private final static Logger log = LoggerFactory.getLogger(DefaultAppConfiguration.class);
 
-    public static final String EXCEED_DEFAULT_CONFIG = "/WEB-INF/cfg/exceed-config.json";
+    public static final String EXCEED_STARTUP_CONFIG = "/WEB-INF/cfg/startup.json";
 
     private final static String ROOT_NAME = "exceed-root";
 

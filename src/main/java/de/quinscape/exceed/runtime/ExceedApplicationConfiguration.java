@@ -41,7 +41,7 @@ import static de.quinscape.exceed.runtime.config.DefaultAppConfiguration.*;
 @PropertySource(
     name = "ExceedConfig",
     factory = ExceedPropertySourceFactory.class,
-    value = EXCEED_DEFAULT_CONFIG
+    value = EXCEED_STARTUP_CONFIG
 )
 public class ExceedApplicationConfiguration
 {
@@ -60,7 +60,7 @@ public class ExceedApplicationConfiguration
         final ExceedConfig config = JSONUtil.DEFAULT_PARSER.parse(
             ExceedConfig.class,
             new InputStreamSource(
-                servletContext.getResourceAsStream(EXCEED_DEFAULT_CONFIG),
+                servletContext.getResourceAsStream(EXCEED_STARTUP_CONFIG),
                 true
             )
         );
@@ -92,7 +92,7 @@ public class ExceedApplicationConfiguration
 
     private String getExtensionBasePath()
     {
-        final String configPath = servletContext.getRealPath(EXCEED_DEFAULT_CONFIG);
+        final String configPath = servletContext.getRealPath(EXCEED_STARTUP_CONFIG);
         final boolean runningFromFileSystem = configPath != null;
 
         String extensionPath;
