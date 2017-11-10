@@ -3,5 +3,6 @@ node_modules
 node_tmp
 target
 node
+local
 # src/main/resource/Expression.jjt is the relevant grammar file
 src/main/java/de/quinscape/exceed/expression/Expression.jj
