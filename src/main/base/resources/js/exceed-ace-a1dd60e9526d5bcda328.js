@@ -1,6 +1,6 @@
 webpackJsonpExceed([0],{
 
-/***/ 474:
+/***/ 476:
 /*!***************************!*\
   !*** ./editor/ace-api.js ***!
   \***************************/
@@ -11,19 +11,19 @@ webpackJsonpExceed([0],{
 "use strict";
 
 
-var ace = __webpack_require__(/*! brace */ 475);
+var ace = __webpack_require__(/*! brace */ 477);
 if (typeof window !== "undefined") {
   //    window.ace = ace;
 }
 module.exports = ace;
 
-__webpack_require__(/*! ./code/ace-mode-exceed */ 478);
-__webpack_require__(/*! brace/mode/json */ 481);
-__webpack_require__(/*! brace/ext/language_tools */ 483);
+__webpack_require__(/*! ./code/ace-mode-exceed */ 480);
+__webpack_require__(/*! brace/mode/json */ 483);
+__webpack_require__(/*! brace/ext/language_tools */ 485);
 
 /***/ }),
 
-/***/ 475:
+/***/ 477:
 /*!******************************************************************!*\
   !*** /home/sven/ideaprojects/exceed/node_modules/brace/index.js ***!
   \******************************************************************/
@@ -3755,7 +3755,7 @@ init(true);function init(packaged) {
     if (!global || !global.document)
         return;
     
-    options.packaged = packaged || acequire.packaged || module.packaged || (global.define && __webpack_require__(/*! !webpack amd define */ 476).packaged);
+    options.packaged = packaged || acequire.packaged || module.packaged || (global.define && __webpack_require__(/*! !webpack amd define */ 478).packaged);
 
     var scriptOptions = {};
     var scriptUrl = "";
@@ -16438,7 +16438,7 @@ var WorkerClient = function(topLevelNamespaces, mod, classname, workerUrl) {
 
     try {
             var workerSrc = mod.src;
-    var Blob = __webpack_require__(/*! w3c-blob */ 477);
+    var Blob = __webpack_require__(/*! w3c-blob */ 479);
     var blob = new Blob([ workerSrc ], { type: 'application/javascript' });
     var blobUrl = (window.URL || window.webkitURL).createObjectURL(blob);
 
@@ -18714,7 +18714,7 @@ module.exports = window.ace.acequire("ace/ace");
 
 /***/ }),
 
-/***/ 476:
+/***/ 478:
 /*!***************************************!*\
   !*** (webpack)/buildin/amd-define.js ***!
   \***************************************/
@@ -18729,7 +18729,7 @@ module.exports = function() {
 
 /***/ }),
 
-/***/ 477:
+/***/ 479:
 /*!***********************************************************************!*\
   !*** /home/sven/ideaprojects/exceed/node_modules/w3c-blob/browser.js ***!
   \***********************************************************************/
@@ -18766,11 +18766,11 @@ function get_blob() {
   }
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./../webpack/buildin/global.js */ 36)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! ./../webpack/buildin/global.js */ 35)))
 
 /***/ }),
 
-/***/ 478:
+/***/ 480:
 /*!****************************************!*\
   !*** ./editor/code/ace-mode-exceed.js ***!
   \****************************************/
@@ -18781,17 +18781,17 @@ function get_blob() {
 "use strict";
 
 
-var _actions = __webpack_require__(/*! ../../actions */ 145);
+var _actions = __webpack_require__(/*! ../../actions */ 146);
 
 var _reducers = __webpack_require__(/*! ../../reducers */ 23);
 
-var _tokens = __webpack_require__(/*! ./tokens */ 99);
+var _tokens = __webpack_require__(/*! ./tokens */ 100);
 
 var _tokens2 = _interopRequireDefault(_tokens);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-__webpack_require__(/*! brace/mode/xml */ 479);
+__webpack_require__(/*! brace/mode/xml */ 481);
 
 var escapedRe = "\\\\(?:x[0-9a-fA-F]{2}|" + "u[0-9a-fA-F]{4}|" + "u{[0-9a-fA-F]{1,6}}|" + "[0-2][0-7]{0,2}|" + "3[0-7][0-7]?|" + "[4-7][0-7]?|" + ".)";
 
@@ -19063,7 +19063,7 @@ ace.define('ace/mode/exceed_view', ["require", "exports", "module"], function (a
 
 /***/ }),
 
-/***/ 479:
+/***/ 481:
 /*!*********************************************************************!*\
   !*** /home/sven/ideaprojects/exceed/node_modules/brace/mode/xml.js ***!
   \*********************************************************************/
@@ -19713,7 +19713,7 @@ oop.inherits(Mode, TextMode);
     this.blockComment = {start: "<!--", end: "-->"};
 
     this.createWorker = function(session) {
-        var worker = new WorkerClient(["ace"], __webpack_require__(/*! ../worker/xml */ 480), "Worker");
+        var worker = new WorkerClient(["ace"], __webpack_require__(/*! ../worker/xml */ 482), "Worker");
         worker.attachToDocument(session.getDocument());
 
         worker.on("error", function(e) {
@@ -19736,7 +19736,7 @@ exports.Mode = Mode;
 
 /***/ }),
 
-/***/ 480:
+/***/ 482:
 /*!***********************************************************************!*\
   !*** /home/sven/ideaprojects/exceed/node_modules/brace/worker/xml.js ***!
   \***********************************************************************/
@@ -19749,7 +19749,7 @@ module.exports.src = "\"no use strict\";(function(window){function resolveModule
 
 /***/ }),
 
-/***/ 481:
+/***/ 483:
 /*!**********************************************************************!*\
   !*** /home/sven/ideaprojects/exceed/node_modules/brace/mode/json.js ***!
   \**********************************************************************/
@@ -20405,7 +20405,7 @@ oop.inherits(Mode, TextMode);
     };
 
     this.createWorker = function(session) {
-        var worker = new WorkerClient(["ace"], __webpack_require__(/*! ../worker/json */ 482), "JsonWorker");
+        var worker = new WorkerClient(["ace"], __webpack_require__(/*! ../worker/json */ 484), "JsonWorker");
         worker.attachToDocument(session.getDocument());
 
         worker.on("annotate", function(e) {
@@ -20429,7 +20429,7 @@ exports.Mode = Mode;
 
 /***/ }),
 
-/***/ 482:
+/***/ 484:
 /*!************************************************************************!*\
   !*** /home/sven/ideaprojects/exceed/node_modules/brace/worker/json.js ***!
   \************************************************************************/
@@ -20442,7 +20442,7 @@ module.exports.src = "\"no use strict\";(function(window){function resolveModule
 
 /***/ }),
 
-/***/ 483:
+/***/ 485:
 /*!*******************************************************************************!*\
   !*** /home/sven/ideaprojects/exceed/node_modules/brace/ext/language_tools.js ***!
   \*******************************************************************************/
@@ -22392,4 +22392,4 @@ acequire("../config").defineOptions(Editor.prototype, "editor", {
 /***/ })
 
 });
-//# sourceMappingURL=exceed-ace-f72e379778aebe4608ea.js.map
+//# sourceMappingURL=exceed-ace-a1dd60e9526d5bcda328.js.map

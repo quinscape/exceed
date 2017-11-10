@@ -27,7 +27,7 @@ var _store = __webpack_require__(/*! ../service/store */ 3);
 
 var _store2 = _interopRequireDefault(_store);
 
-var _editor = __webpack_require__(/*! ../actions/editor */ 41);
+var _editor = __webpack_require__(/*! ../actions/editor */ 40);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -190,7 +190,7 @@ var _sys = __webpack_require__(/*! ../sys */ 12);
 
 var _sys2 = _interopRequireDefault(_sys);
 
-var _editorView = __webpack_require__(/*! ../actions/editor/editorView */ 135);
+var _editorView = __webpack_require__(/*! ../actions/editor/editorView */ 136);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -294,7 +294,7 @@ exports.default = ModelLink;
 
 /***/ }),
 
-/***/ 466:
+/***/ 467:
 /*!************************!*\
   !*** ./editor-main.js ***!
   \************************/
@@ -315,37 +315,37 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 //noinspection JSUnusedLocalSymbols
 
 
-var _aceLoader = __webpack_require__(/*! ./editor/ace-loader */ 80);
+var _aceLoader = __webpack_require__(/*! ./editor/ace-loader */ 81);
 
 var _aceLoader2 = _interopRequireDefault(_aceLoader);
 
-var _event = __webpack_require__(/*! ./util/event */ 58);
+var _event = __webpack_require__(/*! ./util/event */ 60);
 
 var _event2 = _interopRequireDefault(_event);
 
-var _es6PromisePolyfill = __webpack_require__(/*! es6-promise-polyfill */ 18);
+var _es6PromisePolyfill = __webpack_require__(/*! es6-promise-polyfill */ 19);
 
-var _editorView = __webpack_require__(/*! ./reducers/editor/editorView */ 89);
+var _editorView = __webpack_require__(/*! ./reducers/editor/editorView */ 90);
 
 var _react = __webpack_require__(/*! react */ 0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactRedux = __webpack_require__(/*! react-redux */ 112);
+var _reactRedux = __webpack_require__(/*! react-redux */ 113);
 
-var _reactDom = __webpack_require__(/*! react-dom */ 14);
+var _reactDom = __webpack_require__(/*! react-dom */ 13);
 
-var _editor = __webpack_require__(/*! ./reducers/editor */ 98);
+var _editor = __webpack_require__(/*! ./reducers/editor */ 99);
 
 var _editor2 = _interopRequireDefault(_editor);
 
-var _startup = __webpack_require__(/*! ./util/startup */ 100);
+var _startup = __webpack_require__(/*! ./util/startup */ 103);
 
-var _domready = __webpack_require__(/*! domready */ 166);
+var _domready = __webpack_require__(/*! domready */ 173);
 
 var _domready2 = _interopRequireDefault(_domready);
 
-var _createStore = __webpack_require__(/*! ./create-store */ 167);
+var _createStore = __webpack_require__(/*! ./create-store */ 174);
 
 var _createStore2 = _interopRequireDefault(_createStore);
 
@@ -355,9 +355,9 @@ var _store2 = _interopRequireDefault(_store);
 
 var _reducers = __webpack_require__(/*! ./reducers */ 23);
 
-var _editorView2 = __webpack_require__(/*! ./actions/editor/editorView */ 135);
+var _editorView2 = __webpack_require__(/*! ./actions/editor/editorView */ 136);
 
-var _security = __webpack_require__(/*! ./service/security */ 61);
+var _security = __webpack_require__(/*! ./service/security */ 62);
 
 var _security2 = _interopRequireDefault(_security);
 
@@ -365,7 +365,7 @@ var _UndoManager = __webpack_require__(/*! ./editor/UndoManager */ 234);
 
 var _UndoManager2 = _interopRequireDefault(_UndoManager);
 
-var _services = __webpack_require__(/*! ./services */ 169);
+var _services = __webpack_require__(/*! ./services */ 176);
 
 var _services2 = _interopRequireDefault(_services);
 
@@ -381,7 +381,7 @@ var _i18n = __webpack_require__(/*! ./service/i18n */ 9);
 
 var _i18n2 = _interopRequireDefault(_i18n);
 
-var _svgLayout = __webpack_require__(/*! ./gfx/svg-layout */ 94);
+var _svgLayout = __webpack_require__(/*! ./gfx/svg-layout */ 95);
 
 var _svgLayout2 = _interopRequireDefault(_svgLayout);
 
@@ -398,10 +398,10 @@ _store2.default._init(store, null);
 var auth = (0, _reducers.getAuthentication)(initialState);
 _security2.default.init(auth.userName, auth.roles);
 
-var Editor = __webpack_require__(/*! ./editor/Editor */ 469).default;
+var Editor = __webpack_require__(/*! ./editor/Editor */ 470).default;
 
 var hub = __webpack_require__(/*! ./service/hub */ 49);
-var editorNavHistory = __webpack_require__(/*! ./editor/nav-history */ 211).default;
+var editorNavHistory = __webpack_require__(/*! ./editor/nav-history */ 212).default;
 
 (0, _domready2.default)(function () {
     //console.log("DOMREADY");
@@ -462,7 +462,7 @@ exports.default = _services2.default;
 
 /***/ }),
 
-/***/ 467:
+/***/ 468:
 /*!***********************************!*\
   !*** ./reducers/editor/editor.js ***!
   \***********************************/
@@ -503,7 +503,7 @@ exports.getDomainTypes = getDomainTypes;
 exports.getDomainType = getDomainType;
 exports.getTranslations = getTranslations;
 
-var _config = __webpack_require__(/*! ../../actions/editor/config */ 212);
+var _config = __webpack_require__(/*! ../../actions/editor/config */ 213);
 
 function getEditorData(state) {
     return state.editor;
@@ -566,7 +566,7 @@ function getTranslations(state) {
 
 /***/ }),
 
-/***/ 468:
+/***/ 469:
 /*!*********************************!*\
   !*** ./reducers/editor/meta.js ***!
   \*********************************/
@@ -584,7 +584,7 @@ exports.getResourceLocations = getResourceLocations;
 exports.getModelDocs = getModelDocs;
 exports.getModelLocations = getModelLocations;
 
-var _meta = __webpack_require__(/*! ../meta */ 13);
+var _meta = __webpack_require__(/*! ../meta */ 14);
 
 function getResourceLocations(state) {
     return (0, _meta.getMeta)(state).editor.resources;
@@ -600,7 +600,7 @@ function getModelLocations(state) {
 
 /***/ }),
 
-/***/ 469:
+/***/ 470:
 /*!**************************!*\
   !*** ./editor/Editor.js ***!
   \**************************/
@@ -621,7 +621,7 @@ var _react = __webpack_require__(/*! react */ 0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _ComponentSubscription = __webpack_require__(/*! ../util/ComponentSubscription */ 139);
+var _ComponentSubscription = __webpack_require__(/*! ../util/ComponentSubscription */ 140);
 
 var _ComponentSubscription2 = _interopRequireDefault(_ComponentSubscription);
 
@@ -629,25 +629,25 @@ var _UndoManager = __webpack_require__(/*! ../editor/UndoManager */ 234);
 
 var _UndoManager2 = _interopRequireDefault(_UndoManager);
 
-var _ModelSelector = __webpack_require__(/*! ./ModelSelector */ 470);
+var _ModelSelector = __webpack_require__(/*! ./ModelSelector */ 471);
 
 var _ModelSelector2 = _interopRequireDefault(_ModelSelector);
 
-var _ConfigEditor = __webpack_require__(/*! ./ConfigEditor */ 472);
+var _ConfigEditor = __webpack_require__(/*! ./ConfigEditor */ 473);
 
 var _ConfigEditor2 = _interopRequireDefault(_ConfigEditor);
 
-var _AutoHeight = __webpack_require__(/*! ../ui/AutoHeight */ 473);
+var _AutoHeight = __webpack_require__(/*! ../ui/AutoHeight */ 475);
 
 var _AutoHeight2 = _interopRequireDefault(_AutoHeight);
 
-var _Button = __webpack_require__(/*! react-bootstrap/lib/Button */ 144);
+var _Button = __webpack_require__(/*! react-bootstrap/lib/Button */ 145);
 
 var _Button2 = _interopRequireDefault(_Button);
 
-var _editorView = __webpack_require__(/*! ../reducers/editor/editorView */ 89);
+var _editorView = __webpack_require__(/*! ../reducers/editor/editorView */ 90);
 
-var _editor = __webpack_require__(/*! ../reducers/editor */ 98);
+var _editor = __webpack_require__(/*! ../reducers/editor */ 99);
 
 var _i18n = __webpack_require__(/*! ../service/i18n */ 9);
 
@@ -806,7 +806,7 @@ exports.default = Editor;
 
 /***/ }),
 
-/***/ 470:
+/***/ 471:
 /*!*********************************!*\
   !*** ./editor/ModelSelector.js ***!
   \*********************************/
@@ -831,11 +831,11 @@ var _ModelLink = __webpack_require__(/*! ./ModelLink */ 235);
 
 var _ModelLink2 = _interopRequireDefault(_ModelLink);
 
-var _NamedGroup = __webpack_require__(/*! ./NamedGroup */ 471);
+var _NamedGroup = __webpack_require__(/*! ./NamedGroup */ 472);
 
 var _NamedGroup2 = _interopRequireDefault(_NamedGroup);
 
-var _memoizer = __webpack_require__(/*! ../util/memoizer */ 79);
+var _memoizer = __webpack_require__(/*! ../util/memoizer */ 80);
 
 var _memoizer2 = _interopRequireDefault(_memoizer);
 
@@ -855,13 +855,13 @@ var _i18n = __webpack_require__(/*! ../service/i18n */ 9);
 
 var _i18n2 = _interopRequireDefault(_i18n);
 
-var _Icon = __webpack_require__(/*! ../ui/Icon */ 90);
+var _Icon = __webpack_require__(/*! ../ui/Icon */ 91);
 
 var _Icon2 = _interopRequireDefault(_Icon);
 
-var _editor = __webpack_require__(/*! ../actions/editor */ 41);
+var _editor = __webpack_require__(/*! ../actions/editor */ 40);
 
-var _editor2 = __webpack_require__(/*! ../reducers/editor */ 98);
+var _editor2 = __webpack_require__(/*! ../reducers/editor */ 99);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1145,7 +1145,7 @@ exports.default = ModelSelector;
 
 /***/ }),
 
-/***/ 471:
+/***/ 472:
 /*!******************************!*\
   !*** ./editor/NamedGroup.js ***!
   \******************************/
@@ -1170,11 +1170,11 @@ var _classnames = __webpack_require__(/*! classnames */ 1);
 
 var _classnames2 = _interopRequireDefault(_classnames);
 
-var _memoizer = __webpack_require__(/*! ../util/memoizer */ 79);
+var _memoizer = __webpack_require__(/*! ../util/memoizer */ 80);
 
 var _memoizer2 = _interopRequireDefault(_memoizer);
 
-var _Icon = __webpack_require__(/*! ../ui/Icon */ 90);
+var _Icon = __webpack_require__(/*! ../ui/Icon */ 91);
 
 var _Icon2 = _interopRequireDefault(_Icon);
 
@@ -1329,7 +1329,7 @@ exports.default = NamedGroup;
 
 /***/ }),
 
-/***/ 472:
+/***/ 473:
 /*!********************************!*\
   !*** ./editor/ConfigEditor.js ***!
   \********************************/
@@ -1362,15 +1362,15 @@ var _i18n = __webpack_require__(/*! ../service/i18n */ 9);
 
 var _i18n2 = _interopRequireDefault(_i18n);
 
-var _editor = __webpack_require__(/*! ../reducers/editor */ 98);
+var _editor = __webpack_require__(/*! ../reducers/editor */ 99);
 
-var _editor2 = __webpack_require__(/*! ../actions/editor */ 41);
+var _editor2 = __webpack_require__(/*! ../actions/editor */ 40);
 
 var _Form = __webpack_require__(/*! ../components/std/form/Form */ 232);
 
 var _Form2 = _interopRequireDefault(_Form);
 
-var _Field = __webpack_require__(/*! ../components/std/form/Field */ 136);
+var _Field = __webpack_require__(/*! ../components/std/form/Field */ 137);
 
 var _Field2 = _interopRequireDefault(_Field);
 
@@ -1378,7 +1378,7 @@ var _StaticText = __webpack_require__(/*! ../components/std/form/StaticText */ 2
 
 var _StaticText2 = _interopRequireDefault(_StaticText);
 
-var _FormProvider = __webpack_require__(/*! ../ui/FormProvider */ 217);
+var _FormProvider = __webpack_require__(/*! ../ui/FormProvider */ 474);
 
 var _FormProvider2 = _interopRequireDefault(_FormProvider);
 
@@ -1437,7 +1437,66 @@ exports.default = ConfigEditor;
 
 /***/ }),
 
-/***/ 473:
+/***/ 474:
+/*!****************************!*\
+  !*** ./ui/FormProvider.js ***!
+  \****************************/
+/*! dynamic exports provided */
+/*! all exports used */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(/*! react */ 0);
+
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var FormProvider = function (_React$Component) {
+    _inherits(FormProvider, _React$Component);
+
+    function FormProvider() {
+        _classCallCheck(this, FormProvider);
+
+        return _possibleConstructorReturn(this, (FormProvider.__proto__ || Object.getPrototypeOf(FormProvider)).apply(this, arguments));
+    }
+
+    _createClass(FormProvider, [{
+        key: "render",
+        value: function render() {
+            var children = this.props.children;
+
+
+            return _react2.default.createElement(
+                "div",
+                null,
+                children
+            );
+        }
+    }]);
+
+    return FormProvider;
+}(_react2.default.Component);
+
+exports.default = FormProvider;
+
+/***/ }),
+
+/***/ 475:
 /*!**************************!*\
   !*** ./ui/AutoHeight.js ***!
   \**************************/
@@ -1512,7 +1571,7 @@ exports.default = function (Component) {
     }(_react2.default.Component);
 };
 
-var _event = __webpack_require__(/*! ../util/event */ 58);
+var _event = __webpack_require__(/*! ../util/event */ 60);
 
 var _event2 = _interopRequireDefault(_event);
 
@@ -1546,7 +1605,7 @@ function calculateHeight(customFn) {
 
 /***/ }),
 
-/***/ 98:
+/***/ 99:
 /*!**********************************!*\
   !*** ./reducers/editor/index.js ***!
   \**********************************/
@@ -1561,7 +1620,7 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _editorView = __webpack_require__(/*! ./editorView */ 89);
+var _editorView = __webpack_require__(/*! ./editorView */ 90);
 
 Object.keys(_editorView).forEach(function (key) {
     if (key === "default" || key === "__esModule") return;
@@ -1573,7 +1632,7 @@ Object.keys(_editorView).forEach(function (key) {
     });
 });
 
-var _editor = __webpack_require__(/*! ./editor */ 467);
+var _editor = __webpack_require__(/*! ./editor */ 468);
 
 Object.keys(_editor).forEach(function (key) {
     if (key === "default" || key === "__esModule") return;
@@ -1585,7 +1644,7 @@ Object.keys(_editor).forEach(function (key) {
     });
 });
 
-var _meta = __webpack_require__(/*! ./meta */ 468);
+var _meta = __webpack_require__(/*! ./meta */ 469);
 
 Object.keys(_meta).forEach(function (key) {
     if (key === "default" || key === "__esModule") return;
@@ -1617,9 +1676,9 @@ exports.default = function (state, action) {
     return editorReducers(state, action);
 };
 
-var _redux = __webpack_require__(/*! redux */ 78);
+var _redux = __webpack_require__(/*! redux */ 79);
 
-var _meta2 = __webpack_require__(/*! ../meta */ 13);
+var _meta2 = __webpack_require__(/*! ../meta */ 14);
 
 var _meta3 = _interopRequireDefault(_meta2);
 
@@ -1627,7 +1686,7 @@ var _editor2 = _interopRequireDefault(_editor);
 
 var _editorView2 = _interopRequireDefault(_editorView);
 
-var _editor3 = __webpack_require__(/*! ../../actions/editor */ 41);
+var _editor3 = __webpack_require__(/*! ../../actions/editor */ 40);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1643,5 +1702,5 @@ var editorReducers = (0, _redux.combineReducers)({
 
 /***/ })
 
-},[466]);
-//# sourceMappingURL=exceed-editor-b0e96fac8461d8cbf12a.js.map
+},[467]);
+//# sourceMappingURL=exceed-editor-9cc34e5272550ed412f8.js.map
