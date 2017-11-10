@@ -1,12 +1,12 @@
-import assign from "object-assign";
 
 import { loadEditorView } from "./inpage";
 import { getViewModel } from "../reducers/meta";
 import { isInPageEditorActive } from "../reducers/inpage";
-import { convertComponents, convert } from "../util/convert";
-import { newFormState, prepareViewModel } from "../form/form-state";
+
+import hydrate from "../util/hydrate";
 
 export const APP_RESET = "APP_RESET";
+
 
 /**
  * Initializes the exceed redux store with a new state from the server. Parts of the state are converted, form-state is
@@ -21,9 +21,11 @@ export function hydrateAppState(data)
     return (dispatch, getState) =>
     {
         const state = getState();
+        const newState = hydrate(state, data);
+
         const viewModel = getViewModel(data);
 
-        if (isInPageEditorActive(state))
+        if (isInPageEditorActive(newState))
         {
             dispatch(
                 loadEditorView(
@@ -32,29 +34,6 @@ export function hydrateAppState(data)
             );
         }
 
-
-        const newState = {
-            component: assign(
-                {},
-                state.component,
-                convertComponents(data.component),
-            ),
-            scope: {
-                dirty: {},
-                graph: convert(data.scope.graph)
-            },
-            // merge meta
-            meta: assign(
-                {},
-                state.meta,
-                data.meta
-            ),
-            inpage: state.inpage
-        };
-
-        prepareViewModel(newState);
-
-        newState.formState = newFormState(newState);
 
         dispatch({
             type: APP_RESET,
