@@ -87,7 +87,7 @@ public class ActionController
     {
 
         // TODO: action security?
-        RuntimeApplication runtimeApplication = applicationService.getRuntimeApplication(servletContext, appName);
+        RuntimeApplication runtimeApplication = applicationService.getRuntimeApplication(appName);
         if (runtimeApplication == null)
         {
             return new ResponseEntity<String>(

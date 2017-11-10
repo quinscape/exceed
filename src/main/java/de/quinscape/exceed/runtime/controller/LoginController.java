@@ -41,7 +41,9 @@ public class LoginController
         model.addAttribute(TemplateVariables.TITLE, "Login");
 
         final String defaultApp = applicationService.getDefaultApplication();
-        final DefaultRuntimeApplication runtimeApplication = (DefaultRuntimeApplication) applicationService.getRuntimeApplication(servletContext, defaultApp);
+        final DefaultRuntimeApplication runtimeApplication = (DefaultRuntimeApplication) applicationService.getRuntimeApplication(
+
+            defaultApp);
 
         try
         {

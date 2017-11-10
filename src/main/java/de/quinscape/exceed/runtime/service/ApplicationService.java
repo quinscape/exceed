@@ -17,15 +17,15 @@ public interface ApplicationService
 {
     AppState getApplicationState(String name);
 
-    void setStatus(ServletContext servletContext, String appName, ApplicationStatus status);
+    void setStatus(String appName, ApplicationStatus status);
 
-    void updateApplication(ServletContext servletContext, AppState appState);
+    void updateApplication(AppState appState);
 
     List<AppState> getActiveApplications();
 
-    RuntimeApplication getRuntimeApplication(ServletContext servletContext, String appName);
+    RuntimeApplication getRuntimeApplication(String appName);
 
-    DefaultRuntimeApplication resetRuntimeApplication(ServletContext servletContext, String appName);
+    DefaultRuntimeApplication resetRuntimeApplication(String appName);
 
     void signalStyleChanges();
 

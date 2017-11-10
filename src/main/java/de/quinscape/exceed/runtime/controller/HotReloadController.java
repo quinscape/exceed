@@ -44,7 +44,9 @@ public class HotReloadController
         HttpServletRequest request, HttpServletResponse response
     ) throws IOException, InterruptedException
     {
-        DefaultRuntimeApplication runtimeApplication = (DefaultRuntimeApplication) applicationService.getRuntimeApplication(servletContext, appName);
+        DefaultRuntimeApplication runtimeApplication = (DefaultRuntimeApplication) applicationService.getRuntimeApplication(
+
+            appName);
         if (runtimeApplication == null)
         {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Application '" + appName + "' not found");

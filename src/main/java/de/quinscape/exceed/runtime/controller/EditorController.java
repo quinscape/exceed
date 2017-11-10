@@ -92,7 +92,7 @@ public class EditorController
         ModelMap model,
         HttpServletRequest request, HttpServletResponse response) throws IOException
     {
-        RuntimeApplication runtimeApplication = applicationService.getRuntimeApplication(servletContext, appName);
+        RuntimeApplication runtimeApplication = applicationService.getRuntimeApplication(appName);
         if (runtimeApplication == null)
         {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Application '" + appName + "' not found");

@@ -278,7 +278,8 @@ public class TestApplicationBuilder
                     ),
                     new TypeAnalyzer()
                 )
-            )
+            ),
+            null
         );
 
         if (extensions != null)

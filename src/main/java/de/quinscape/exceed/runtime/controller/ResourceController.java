@@ -44,7 +44,9 @@ public class ResourceController
         ModelMap model, HttpServletRequest request, HttpServletResponse response) throws IOException, ExecutionException
     {
 
-        DefaultRuntimeApplication runtimeApplication = (DefaultRuntimeApplication) applicationService.getRuntimeApplication(servletContext, appName);
+        DefaultRuntimeApplication runtimeApplication = (DefaultRuntimeApplication) applicationService.getRuntimeApplication(
+
+            appName);
         if (runtimeApplication == null)
         {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Application '" + appName + "' not found");

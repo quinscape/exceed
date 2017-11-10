@@ -36,18 +36,22 @@ public class ApplicationServiceImpl
 
     private final ConcurrentMap<String, ApplicationHolder> applications = new ConcurrentHashMap<>();
 
+    private final ServletContext servletContext;
+
     private volatile ExceedConfig exceedConfig;
 
     @Autowired
     public ApplicationServiceImpl(
         ApplicationContext applicationContext,
         RuntimeApplicationFactory runtimeApplicationFactory,
-        ClientStateService clientStateService
+        ClientStateService clientStateService,
+        ServletContext servletContext
     )
     {
         this.applicationContext = applicationContext;
         this.runtimeApplicationFactory = runtimeApplicationFactory;
         this.clientStateService = clientStateService;
+        this.servletContext = servletContext;
     }
 
 
@@ -70,18 +74,18 @@ public class ApplicationServiceImpl
 
 
     @Override
-    public void setStatus(ServletContext servletContext, String appName, ApplicationStatus status)
+    public void setStatus(String appName, ApplicationStatus status)
     {
         final AppState state = holder(appName).getState().buildCopy()
             .withStatus(status)
             .build();
         
-        updateApplication(servletContext, state);
+        updateApplication(state);
     }
 
 
     @Override
-    public void updateApplication(ServletContext servletContext, AppState appState)
+    public void updateApplication(AppState appState)
     {
         final String appName = appState.getName();
 
@@ -123,7 +127,7 @@ public class ApplicationServiceImpl
     }
 
     @Override
-    public DefaultRuntimeApplication getRuntimeApplication(ServletContext servletContext, String appName)
+    public DefaultRuntimeApplication getRuntimeApplication(String appName)
     {
         ensureReady();
 
@@ -138,7 +142,7 @@ public class ApplicationServiceImpl
 
 
     @Override
-    public DefaultRuntimeApplication resetRuntimeApplication(ServletContext servletContext, String appName)
+    public DefaultRuntimeApplication resetRuntimeApplication(String appName)
     {
         ApplicationHolder applicationHolder = applications.get(appName);
         if (applicationHolder == null)
@@ -287,7 +291,7 @@ public class ApplicationServiceImpl
 
             log.info("Initializing exceed application '{}' ( extensions: {} )", appName, appState.getExtensions());
 
-            updateApplication(servletContext, appState);
+            updateApplication(appState);
         }
         
         this.exceedConfig = exceedConfig;

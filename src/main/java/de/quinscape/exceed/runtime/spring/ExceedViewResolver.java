@@ -100,7 +100,7 @@ public class ExceedViewResolver
         ViewSpec spec = new ViewSpec(viewName);
 
 
-        final RuntimeApplication runtimeApplication = getApplicationService().getRuntimeApplication(servletContext,
+        final RuntimeApplication runtimeApplication = getApplicationService().getRuntimeApplication(
             spec.appName);
 
         ExceedView holder = new ExceedView(runtimeApplication, servletContext, templateVariablesProviders, spec.bundles);

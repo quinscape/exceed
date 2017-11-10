@@ -1,6 +1,5 @@
 package de.quinscape.exceed.runtime.controller;
 
-import de.quinscape.exceed.runtime.RuntimeContextHolder;
 import de.quinscape.exceed.runtime.application.ApplicationNotFoundException;
 import de.quinscape.exceed.runtime.application.ApplicationSecurityException;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
@@ -78,7 +77,9 @@ public class ApplicationController
         log.debug("showApplicationView: app = {} path = {}", appName, inAppURI);
         try
         {
-            DefaultRuntimeApplication runtimeApplication = (DefaultRuntimeApplication) applicationService.getRuntimeApplication(servletContext, appName);
+            DefaultRuntimeApplication runtimeApplication = (DefaultRuntimeApplication) applicationService.getRuntimeApplication(
+
+                appName);
             if (runtimeApplication == null)
             {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Application '" + appName + "' not found");

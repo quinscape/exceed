@@ -30,7 +30,6 @@ import org.springframework.security.web.authentication.rememberme.PersistentToke
 
 import javax.servlet.ServletContext;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -86,7 +85,7 @@ public class ExceedTokenRepository
 
     private RuntimeApplication getDefaultApplication()
     {
-        return applicationService.getRuntimeApplication(servletContext, applicationService.getDefaultApplication());
+        return applicationService.getRuntimeApplication(applicationService.getDefaultApplication());
     }
 
 

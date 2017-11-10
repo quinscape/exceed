@@ -11,6 +11,7 @@ import de.quinscape.exceed.runtime.model.ModelLocationRules;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.service.model.ModelSchemaService;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -48,9 +49,18 @@ public class ModelConfiguration
         ComponentRegistry componentRegistry,
         ModelSchemaService modelSchemaService,
         ModelJSONService modelJSONService,
-        JsEnvironmentFactory jsEnvironmentFactory)
+        JsEnvironmentFactory jsEnvironmentFactory,
+        ApplicationContext applicationContext
+    )
     {
-        return new ModelCompositionService(modelLocationRules, modelSchemaService, componentRegistry, modelJSONService, jsEnvironmentFactory);
+        return new ModelCompositionService(
+            modelLocationRules,
+            modelSchemaService,
+            componentRegistry,
+            modelJSONService,
+            jsEnvironmentFactory,
+            applicationContext
+        );
     }
 
     @Bean

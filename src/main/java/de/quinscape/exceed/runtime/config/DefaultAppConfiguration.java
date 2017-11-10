@@ -131,7 +131,6 @@ public class DefaultAppConfiguration
         {
             final String appName = state.getName();
             final RuntimeApplication runtimeApplication = applicationService.getRuntimeApplication(
-                servletContext,
                 appName
             );
 

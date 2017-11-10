@@ -60,7 +60,7 @@ public class ApplicationUserDetailsService
         for (AppState state : activeApplications)
         {
             final RuntimeApplication runtimeApplication = applicationService.getRuntimeApplication(
-                servletContext, state.getName());
+                state.getName());
 
             final DomainService domainService = domainServiceRepository.getDomainService(state.getName());
 
