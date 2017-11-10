@@ -25,11 +25,31 @@
 <body>
 <div id="root">
     <div class="container-fluid">
-        <div class="row"><div class="col-md-1"></div><div class="col-md-9"><div class="toolbar clearfix"><a class="btn btn-link" href="./component.html"><small>Previous :Component Reference</small></a><a class="btn btn-link pull-right" href="./query-expression.html"><small>Next :Query Expression Reference</small></a></div><div><div><h1> Action expressions </h1><div><h2>Function catch<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js">Void <span class="hljs-keyword">catch</span>(<span class="hljs-built_in">Object</span>)
+        <div class="row"><div class="col-md-1"></div><div class="col-md-9"><div class="toolbar clearfix"><a class="btn btn-link" href="./component.html"><small>Previous :Component Reference</small></a><a class="btn btn-link pull-right" href="./query-expression.html"><small>Next :Query Expression Reference</small></a></div><div><div><h1> Action expressions </h1><div><h2>Function actionQuery<br/><small>Type: ACTION</small></h2><div><pre><code class="lang-js">DataGraph actionQuery(<span class="hljs-name">Expression</span>)
 </code></pre>
-</div><p>Allows to declare a sub action sequence to execute as rejection handler</p></div><div><h2>Function fork<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js"><span class="hljs-built_in">List</span> fork(<span class="hljs-built_in">Object</span>...)
+</div><p>Action query embedded in a server-side expression</p></div><div><h2>Function alert<br/><small>Type: CLIENT_SIDE_ACTION</small></h2><div><pre><code class="lang-js">Void alert(<span class="hljs-name">PlainText</span>)
 </code></pre>
-</div><p>Special action function that takes multiple sequences as input, runs them in parallel and waits for all of them to end.</p></div><div><h2>Function when<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js"><span class="hljs-built_in">Void</span> <span class="hljs-keyword">when</span>(Object)
+</div><p>Client-side bootstrap alert</p></div><div><h2>Function catch<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js">Void <span class="hljs-keyword">catch</span>(<span class="hljs-built_in">Object</span>)
+</code></pre>
+</div><p>Allows to declare a sub action sequence to execute as rejection handler</p></div><div><h2>Function delete<br/><small>Type: ACTION</small></h2><div><pre><code class="lang-js"><span class="hljs-function"><span class="hljs-title">Void</span></span> delete(DomainType...)
+</code></pre>
+</div><p>Deletes the given domain objects</p></div><div><h2>Function error<br/><small>Type: ACTION</small></h2><div><pre><code class="lang-js">Void error(<span class="hljs-name">PlainText</span>)
+</code></pre>
+</div><p>An action that executes the given transition</p></div><div><h2>Function fork<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js"><span class="hljs-built_in">List</span> fork(<span class="hljs-built_in">Object</span>...)
+</code></pre>
+</div><p>Special action function that takes multiple sequences as input, runs them in parallel and waits for all of them to end.</p></div><div><h2>Function merge<br/><small>Type: ACTION</small></h2><div><pre><code class="lang-js">DomainType merge(<span class="hljs-name">DomainType</span>)
+</code></pre>
+</div><p>Merges the give domain object with its persistent state, i.e. it fills in all the missing null values</p></div><div><h2>Function navigateTo<br/><small>Type: CLIENT_SIDE_ACTION</small></h2><div><pre><code class="lang-js"><span class="hljs-literal">Void</span> navigateTo(PlainText, <span class="hljs-built_in">Map</span>)
+</code></pre>
+</div><p>AJAX Navigation action within an exceed application. To be used in views without process.</p></div><div><h2>Function query<br/><small>Type: ACTION</small></h2><div><pre><code class="lang-js">DataGraph query(<span class="hljs-name">Expression</span>)
+</code></pre>
+</div><p>Query embedded in a server-side expression</p></div><div><h2>Function store<br/><small>Type: ACTION</small></h2><div><pre><code class="lang-js"><span class="hljs-function"><span class="hljs-title">Void</span></span> store(DomainType...)
+</code></pre>
+</div><p>Stores the given domain object</p></div><div><h2>Function syslog<br/><small>Type: ACTION</small></h2><div><pre><code class="lang-js"><span class="hljs-function"><span class="hljs-title">Void</span></span> syslog(Object...)
+</code></pre>
+</div><p>System log function. Server logs per slf4j, client to the console API</p></div><div><h2>Function transition<br/><small>Type: CLIENT_SIDE_ACTION</small></h2><div><pre><code class="lang-js">Void transition(<span class="hljs-name">PlainText</span>)
+</code></pre>
+</div><p>An action that executes the given transition</p></div><div><h2>Function when<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js"><span class="hljs-built_in">Void</span> <span class="hljs-keyword">when</span>(Object)
 </code></pre>
 </div><p>A conditional branch in the action promise chain</p></div></div><div><h1> Component Expressions </h1><div><h2>Identifier context</h2>Type: Any<p>The current cursor context or transition context.</p></div><div><h2>Function lazyDependency<br/><small>Type: BUILTIN</small></h2><div><pre><code class="lang-js"><span class="hljs-built_in">Object</span> lazyDependency(<span class="hljs-built_in">Object</span>)
 </code></pre>

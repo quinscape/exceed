@@ -104,3 +104,31 @@ by providing an alternate resource at the location */resources/template/template
 
 See you can configure the values for the additional placeholders in the default template or placeholders in your own template
 under [component.json / componentConfig / baseTemplate ](./model-reference.html#xcd.config.BaseTemplateConfig). 
+
+### Java-based config
+
+As third step, we also provide a java-based based way of providing such a template placeholder. Any spring bean implementing
+de.quinscape.exceed.runtime.template.TemplateVariablesProvider will be automatically used. 
+
+```java
+import de.quinscape.exceed.runtime.RuntimeContext;
+
+import java.util.Map;
+
+public interface TemplateVariablesProvider
+{
+
+    /**
+     * Provides or overrides base template variables.
+     *
+     * @param runtimeContext    current runtime context
+     * @param model             model map for the base template prefilled with the default values.
+     */
+    void provide(RuntimeContext runtimeContext, Map<String, Object> model);
+}
+```
+
+### Server-Rendering
+
+Server-rendering is implemented as template variables provider in de.quinscape.exceed.runtime.universal.ReactServerSideRenderer.
+
