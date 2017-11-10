@@ -29,6 +29,7 @@ import de.quinscape.exceed.runtime.resource.ResourceLoader;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.PathResources;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
+import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.service.model.ModelSchemaService;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
@@ -36,6 +37,7 @@ import de.quinscape.exceed.runtime.util.FileExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -52,7 +54,6 @@ public class ModelCompositionService
 {
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
-
     private final static Logger log = LoggerFactory.getLogger(ModelCompositionService.class);
 
     private final ModelJSONService modelJSONService;
@@ -60,15 +61,22 @@ public class ModelCompositionService
     private final ModelSchemaService modelSchemaService;
     private final JsEnvironmentFactory jsEnvironmentFactory;
     private final ComponentRegistry componentRegistry;
+    private final ApplicationContext applicationContext;
 
     @Autowired
-    public ModelCompositionService(ModelLocationRules modelLocationRules, ModelSchemaService modelSchemaService, ComponentRegistry componentRegistry, ModelJSONService modelJSONService, JsEnvironmentFactory jsEnvironmentFactory)
+    public ModelCompositionService(
+        ModelLocationRules modelLocationRules, ModelSchemaService modelSchemaService,
+        ComponentRegistry componentRegistry, ModelJSONService modelJSONService,
+        JsEnvironmentFactory jsEnvironmentFactory,
+        ApplicationContext applicationContext
+    )
     {
         this.modelLocationRules = modelLocationRules;
         this.modelSchemaService = modelSchemaService;
         this.componentRegistry = componentRegistry;
         this.modelJSONService = modelJSONService;
         this.jsEnvironmentFactory = jsEnvironmentFactory;
+        this.applicationContext = applicationContext;
     }
 
 
@@ -196,12 +204,7 @@ public class ModelCompositionService
         }
         else if (topLevelModel instanceof ApplicationConfig)
         {
-            ApplicationConfig newConfig = (ApplicationConfig)topLevelModel;
-            applicationModel.setConfigModel(newConfig);
-
-            // redo full meta postprocessing if config changes
-            // recycle the js environment which will detect changes and update the js contexts contained automatically
-            metaData.postProcess();
+            applicationContext.getBean(ApplicationService.class).resetRuntimeApplication(applicationModel.getName());
         }
         else if (topLevelModel instanceof QueryTypeModel)
         {
