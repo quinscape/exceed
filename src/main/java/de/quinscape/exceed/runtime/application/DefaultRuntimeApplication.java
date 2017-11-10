@@ -4,6 +4,7 @@ import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
+import de.quinscape.exceed.model.annotation.ResourceInjectorPredicate;
 import de.quinscape.exceed.model.change.CodeChange;
 import de.quinscape.exceed.model.change.Shutdown;
 import de.quinscape.exceed.model.change.StyleChange;
@@ -158,7 +159,7 @@ public class DefaultRuntimeApplication
 
     private Model changeModel = null;
 
-    private ResourceInjector resourceInjector = new ResourceInjector(ApplicationMetaData.class);
+    private final ResourceInjector resourceInjector;
 
 
     public DefaultRuntimeApplication(
@@ -170,13 +171,17 @@ public class DefaultRuntimeApplication
         ServletContext servletContext,
         ResourceLoader resourceLoader,
         DomainService domainService,
-        String appName
+        String appName,
+        Map<String, ResourceInjectorPredicate> predicates
     )
     {
         if (servletContext == null)
         {
             throw new IllegalArgumentException("servletContext can't be null");
         }
+
+        resourceInjector = new ResourceInjector(ApplicationMetaData.class, predicates);
+
 
         this.processService = processService;
         this.scopedContextFactory = scopedContextFactory;
@@ -202,11 +207,11 @@ public class DefaultRuntimeApplication
         this.applicationContext = scopedContextFactory.createApplicationContext(context, appName);
 
         final ApplicationMetaData metaData = this.applicationModel.getMetaData();
-        resourceInjector.injectResources(nashorn, resourceLoader, metaData);
-
         modelCompositionService.postprocess(applicationModel);
-        
+
         RuntimeContext systemContext = createSystemContext();
+        resourceInjector.injectResources(systemContext, nashorn, resourceLoader, metaData);
+
         RuntimeContextHolder.register(systemContext, null);
         domainService.init(this);
 
@@ -905,7 +910,7 @@ public class DefaultRuntimeApplication
                 }
                 clientStateService.flushModelVersionScope(getName());
             }
-            resourceInjector.updateResource(nashorn, resourceLoader, applicationModel.getMetaData(), path);
+            resourceInjector.updateResource(createSystemContext(), nashorn, resourceLoader, applicationModel.getMetaData(), path);
         }
         else
         {
@@ -937,7 +942,7 @@ public class DefaultRuntimeApplication
                 }
                 else
                 {
-                    resourceInjector.updateResource(nashorn, resourceLoader, applicationModel.getMetaData(), path);
+                    resourceInjector.updateResource(createSystemContext(), nashorn, resourceLoader, applicationModel.getMetaData(), path);
                 }
             }
 

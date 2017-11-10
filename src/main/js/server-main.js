@@ -10,12 +10,6 @@ import propertyConverter from "./service/property-converter";
 import cast from "./util/cast";
 import when from "./util/when";
 
-
-function filterOdd(value, index)
-{
-    return (index & 1) !== 0;
-}
-
 /**
  * All properties of this object are bound to the global object as non-writable property for easy access
  */

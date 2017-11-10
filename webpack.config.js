@@ -134,7 +134,8 @@ module.exports = [
 
         context: path.resolve(__dirname, "src/main/js"),
         entry: {
-            server: "./server-main.js"
+            server: "./server-main.js",
+            srvrender: "./server-render.js"
         },
 
         node: {
@@ -157,16 +158,16 @@ module.exports = [
         },
 
         plugins: [
+            new webpack.optimize.CommonsChunkPlugin({
+                name: "srvcommon"
+            }),
 
-            // Always expose NODE_ENV to webpack, you can now use `process.env.NODE_ENV`
-            // inside your code for any environment checks; UglifyJS will automatically
-            // drop any unreachable code.
             new webpack.DefinePlugin({
-                "__PROD": PRODUCTION,
-                "__DEV": !PRODUCTION,
+                "__PROD": !true,
+                "__DEV": !false,
                 "__SERVER": true,
                 "process.env": {
-                    "USE_EDITOR": USE_EDITOR
+                    "USE_EDITOR": false
                 }
             }),
             new webpack.IgnorePlugin(/^(node-libs-browser|process|timers-browserify)/)

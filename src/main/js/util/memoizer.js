@@ -1,4 +1,7 @@
 
+const supportsWeakMap = typeof WeakMap !== "undefined";
+
+
 /**
  * Returns an weakmap based object memoizer function that will cache a value for the given object identity
  * or produce it by calling the given producer function.
@@ -9,7 +12,7 @@
  */
 export default function createMemoizer(producer)
 {
-    let map = new WeakMap();
+    let map = supportsWeakMap ? new WeakMap() : new Map();
 
     /**
      * Memoizer function
@@ -21,7 +24,7 @@ export default function createMemoizer(producer)
     {
         if (obj === undefined)
         {
-            map = new WeakMap();
+            map = supportsWeakMap ? new WeakMap() : new Map();
             return;
         }
 

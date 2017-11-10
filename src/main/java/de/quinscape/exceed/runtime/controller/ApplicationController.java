@@ -118,10 +118,6 @@ public class ApplicationController
             log.error("Error rendering application view", e);
             response.sendError(500);
         }
-        finally
-        {
-            RuntimeContextHolder.clear();
-        }
         return null;
     }
 

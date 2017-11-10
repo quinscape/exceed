@@ -17,6 +17,7 @@ import de.quinscape.exceed.runtime.js.env.Console;
 import de.quinscape.exceed.runtime.js.env.DomainServiceCreateFunction;
 import de.quinscape.exceed.runtime.js.env.ExpressionFunction;
 import de.quinscape.exceed.runtime.js.env.IsValidTransitionFunction;
+import de.quinscape.exceed.runtime.js.env.NoOpFunction;
 import de.quinscape.exceed.runtime.js.env.Promise;
 import de.quinscape.exceed.runtime.js.env.ScopeFunction;
 import de.quinscape.exceed.runtime.js.env.SecurityFunction;
@@ -35,6 +36,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.script.CompiledScript;
 import javax.script.ScriptContext;
 import javax.script.ScriptException;
 import java.math.BigDecimal;
@@ -58,6 +60,7 @@ public class JsEnvironment
     public static final String TO_SERVER_EXPRESSION = "_converter.toServer";
 
     public static final String TO_JS_DECIMAL = "_decimal";
+    public static final String RENDER_TO_STRING = "_renderToString";
 
     private final NashornScriptEngine nashorn;
 
@@ -232,6 +235,9 @@ public class JsEnvironment
 
         private final JSObject toJsDecimal;
 
+        private final JSObject renderToString;
+
+
         // XXX: refactor configuration process into a service or something
         public JsContext(RuntimeContext runtimeContext, ExpressionBundle expressionBundle, ActionService actionService)
         {
@@ -261,7 +267,22 @@ public class JsEnvironment
                 global.setMember("__Expression", new ExpressionFunction());
                 global.setMember("__domainService_create", new DomainServiceCreateFunction(runtimeContext.getDomainService()));
 
-                metaData.getServerJsBundle().eval(scriptContext);
+
+                final CompiledScript serverCommonJsBundle = metaData.getServerCommonJsBundle();
+                final CompiledScript serverJsBundle = metaData.getServerJsBundle();
+                final CompiledScript serverRenderJsBundle = metaData.getServerRenderJsBundle();
+
+                serverCommonJsBundle.eval(scriptContext);
+                serverJsBundle.eval(scriptContext);
+                if (serverRenderJsBundle != null)
+                {
+                    serverRenderJsBundle.eval(scriptContext);
+                }
+                else
+                {
+                    global.setMember(RENDER_TO_STRING, NoOpFunction.INSTANCE);
+                }
+
                 expressionBundle.getCompiledScript().eval(scriptContext);
 
                 JSObject viewAPI = (JSObject) global.getMember("_v");
@@ -283,9 +304,10 @@ public class JsEnvironment
                     log.debug("Globals: {}", Util.join(global.keySet(), ", "));
                 }
 
-                this.fromServer = getJsFunction(nashorn, scriptContext, FROM_SERVER_EXPRESSION);
-                this.toServer = getJsFunction(nashorn, scriptContext, TO_SERVER_EXPRESSION);
-                this.toJsDecimal = getJsFunction(nashorn, scriptContext, TO_JS_DECIMAL);
+                this.fromServer = getJsFunction(nashorn, scriptContext, FROM_SERVER_EXPRESSION, false);
+                this.toServer = getJsFunction(nashorn, scriptContext, TO_SERVER_EXPRESSION, false);
+                this.toJsDecimal = getJsFunction(nashorn, scriptContext, TO_JS_DECIMAL, false);
+                this.renderToString = getJsFunction(nashorn, scriptContext, RENDER_TO_STRING, true);
 
                 this.scriptContext = scriptContext;
 
@@ -322,14 +344,18 @@ public class JsEnvironment
     }
 
 
-    private static JSObject getJsFunction(NashornScriptEngine nashorn, ScriptContext scriptContext, String
-        expression)
+    private static JSObject getJsFunction(
+        NashornScriptEngine nashorn,
+        ScriptContext scriptContext,
+        String expression,
+        boolean optional
+    )
 
     {
         try
         {
             final JSObject fn = (JSObject) nashorn.eval(expression, scriptContext);
-            if (fn == null || !fn.isFunction())
+            if (!optional && (fn == null || !fn.isFunction()))
             {
                 throw new IllegalStateException(expression + " is not a function");
             }
@@ -423,5 +449,23 @@ public class JsEnvironment
     public ScriptContext getScriptContext(RuntimeContext runtimeContext)
     {
         return get(runtimeContext).scriptContext;
+    }
+
+
+    /**
+     * Uses server-side react rendering to render a markup string from the given view-data JSON blob.
+     *
+     * @param runtimeContext    runtime context
+     * @param viewDataJson      view data JSON
+     * @return prerendered react markup as string
+     */
+    public String renderToString(RuntimeContext runtimeContext, String viewDataJson)
+    {
+        final JSObject renderToString = get(runtimeContext).renderToString;
+        if (renderToString == null)
+        {
+            return "<!-- server-side rendering disabled -->";
+        }
+        return (String) renderToString.call(null, viewDataJson);
     }
 }

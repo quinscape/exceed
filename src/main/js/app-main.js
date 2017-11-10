@@ -2,7 +2,7 @@
 // load our global-undo to patch MouseTrap
 //
 //noinspection JSUnusedLocalSymbols
-
+import ReactDOM from "react-dom"
 import { Promise } from "es6-promise-polyfill"
 import { evaluateEmbedded, findBundles } from "./util/startup"
 import { hydrateAppState } from "./actions/reset"
@@ -82,7 +82,20 @@ domready(function ()
     {
         appNavHistory.init();
         appNavHistory.update(store.getState());
-        return viewService.render(store);
+
+        const rootElem = document.getElementById("root");
+        if (!rootElem)
+        {
+            throw new Error("Missing #root DOM element");
+        }
+        return new Promise(function (resolve, reject) {
+            ReactDOM.hydrate(
+                viewService.render(store),
+                rootElem,
+                resolve
+            )
+        });
+
     })
     .then(function ()
     {

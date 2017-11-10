@@ -18,6 +18,8 @@ const AceAPI = {
 
     load: function ()
     {
+
+
         if (theAPI)
         {
             return Promise.resolve(theAPI);
@@ -37,4 +39,4 @@ const AceAPI = {
     }
 };
 
-export default AceAPI;
+module.exports = AceAPI;

@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime;
 
 import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.model.config.ServerRenderingMode;
 import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.model.domain.DomainRule;
@@ -47,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import org.svenson.JSONParser;
 import org.svenson.tokenize.InputStreamSource;
 
+import javax.script.CompiledScript;
 import javax.script.ScriptException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -290,6 +292,8 @@ public class TestApplicationBuilder
             applicationModel.setName(name);
         }
 
+        applicationModel.getConfigModel().getComponentConfig().setServerRenderingMode(ServerRenderingMode.DISABLED);
+
         for (DomainType domainType : domainTypes.values())
         {
             applicationModel.addDomainType(domainType);
@@ -378,6 +382,7 @@ public class TestApplicationBuilder
         {
             applicationModel.getConfigModel().setSessionContextModel(sessionContext);
         }
+
         readServerBundle(applicationModel, nashorn);
 
         svc.postprocess(applicationModel);
@@ -393,20 +398,28 @@ public class TestApplicationBuilder
     {
         try
         {
-            applicationModel.getMetaData().setServerJsBundle(
-                nashorn.compile(
-                    new FileReader(
-                        new File("./src/main/base/resources/js/exceed-server.js")
-                    )
-                )
+            applicationModel.getMetaData().setServerCommonJsBundle(
+                compileBundle(nashorn, "./src/main/base/resources/js/exceed-srvcommon.js")
             );
-
+            applicationModel.getMetaData().setServerJsBundle(
+                compileBundle(nashorn, "./src/main/base/resources/js/exceed-server.js")
+            );
             log.info("Read server bundle: " + applicationModel.getMetaData().getServerJsBundle());
         }
         catch (ScriptException | FileNotFoundException e)
         {
             throw new ExceedRuntimeException(e);
         }
+    }
+
+
+    private CompiledScript compileBundle(NashornScriptEngine nashorn, String path) throws ScriptException, FileNotFoundException
+    {
+        return nashorn.compile(
+            new FileReader(
+                new File(path)
+            )
+        );
     }
 
 

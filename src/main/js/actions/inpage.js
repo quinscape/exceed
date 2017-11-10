@@ -11,13 +11,18 @@ import { getViewModel } from "../reducers/meta"
 
 import EditorViewDocument from "../editor/code/EditorDocument"
 
-import aceLoader from "../editor/ace-loader"
 
 export const EDITOR_ACTIVE_KEY = "Exceed_Editor_Active";
 
 const DOCUMENT_RECYCLE_LIMIT = 8;
 
 const hub = require("../service/hub");
+
+let aceLoader;
+if (process.env.USE_EDITOR)
+{
+    aceLoader = require("../editor/ace-loader");
+}
 
 function docIsClean(doc)
 {

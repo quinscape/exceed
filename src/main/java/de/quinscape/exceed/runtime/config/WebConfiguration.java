@@ -13,6 +13,9 @@ import de.quinscape.dss.functions.MinFunction;
 import de.quinscape.dss.functions.MixColorFunction;
 import de.quinscape.exceed.message.IncomingMessage;
 import de.quinscape.exceed.message.Message;
+import de.quinscape.exceed.model.annotation.ResourceInjectorPredicate;
+import de.quinscape.exceed.model.config.ServerRenderingMode;
+import de.quinscape.exceed.runtime.universal.ServerRenderingStrategy;
 import de.quinscape.exceed.runtime.controller.ExceedExceptionResolver;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.runtime.service.websocket.EditorMessageHandler;
@@ -22,6 +25,7 @@ import de.quinscape.exceed.runtime.service.websocket.MessageHubRegistryImpl;
 import de.quinscape.exceed.runtime.service.websocket.WebSocketServerFactory;
 import de.quinscape.exceed.runtime.spring.ExceedViewResolver;
 import de.quinscape.exceed.runtime.template.TemplateVariablesProvider;
+import de.quinscape.exceed.runtime.universal.ReactServerSideRenderer;
 import de.quinscape.exceed.runtime.util.MediaTypeService;
 import de.quinscape.exceed.runtime.util.MediaTypeServiceImpl;
 import org.slf4j.Logger;
@@ -212,4 +216,22 @@ public class WebConfiguration
     {
         return new AlphaHexColorFunction();
     }
+
+    @Bean
+    public ReactServerSideRenderer reactServerSideRenderer()
+    {
+        return new ReactServerSideRenderer(applicationContext.getBeansOfType(ServerRenderingStrategy.class));
+    }
+
+    @Bean
+    public ResourceInjectorPredicate isServerRenderingActive()
+    {
+        return runtimeContext -> runtimeContext.getApplicationModel().getConfigModel().getComponentConfig().getServerRenderingMode() != ServerRenderingMode.DISABLED;
+    }
+
+//    @Bean
+//    public ServerRenderingStrategy onlyForADMIN()
+//    {
+//        return runtimeContext -> runtimeContext.getAuthentication().hasRole(Roles.ADMIN);
+//    }
 }

@@ -28,6 +28,11 @@ public class TranslationFunction
     public Object call(Object thiz, Object... args)
     {
         final RuntimeContext runtimeContext = RuntimeContextHolder.get();
-        return runtimeContext.getTranslator().translate(runtimeContext, (String) args[0]);
+        final Object value = args[0];
+        if (value == null)
+        {
+            return "";
+        }
+        return runtimeContext.getTranslator().translate(runtimeContext, value.toString());
     }
 }

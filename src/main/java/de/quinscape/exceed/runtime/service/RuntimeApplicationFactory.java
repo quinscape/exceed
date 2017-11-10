@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.service;
 
 import com.google.common.cache.LoadingCache;
+import de.quinscape.exceed.model.annotation.ResourceInjectorPredicate;
 import de.quinscape.exceed.model.startup.AppState;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
@@ -33,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -75,6 +77,9 @@ public class RuntimeApplicationFactory
     private final Definitions systemDefinitions;
 
     private Set<ClientStateProvider> clientStateProviders;
+
+    private Map<String, ResourceInjectorPredicate> predicates;
+
 
     @Autowired
     public RuntimeApplicationFactory(
@@ -147,7 +152,8 @@ public class RuntimeApplicationFactory
             servletContext,
             resourceLoader,
             domainService,
-            appName
+            appName,
+            predicates
         );
     }
 
@@ -218,6 +224,7 @@ public class RuntimeApplicationFactory
     public void initProviders()
     {
         clientStateProviders = ClientStateService.findProviderBeans(applicationContext, ExceedAppProvider.class);
+        predicates = applicationContext.getBeansOfType(ResourceInjectorPredicate.class);
     }
 
 }

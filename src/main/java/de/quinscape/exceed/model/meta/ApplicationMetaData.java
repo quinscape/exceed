@@ -84,6 +84,11 @@ public class ApplicationMetaData
 
     private JsEnvironment jsEnvironment;
 
+    private CompiledScript serverCommonJsBundle;
+
+    private CompiledScript serverRenderJsBundle;
+
+
     public ApplicationMetaData(ApplicationModel applicationModel, Definitions systemDefinitions)
     {
         this.applicationModel = applicationModel;
@@ -124,6 +129,33 @@ public class ApplicationMetaData
     {
         return webpackStats;
     }
+
+
+    public CompiledScript getServerCommonJsBundle()
+    {
+        return serverCommonJsBundle;
+    }
+
+    @InjectResource("/resources/js/exceed-srvcommon.js")
+    public void setServerCommonJsBundle(CompiledScript serverCommonJsBundle)
+    {
+        this.serverCommonJsBundle = serverCommonJsBundle;
+    }
+
+
+    public CompiledScript getServerRenderJsBundle()
+    {
+        return serverRenderJsBundle;
+    }
+
+
+    @InjectResource(value = "/resources/js/exceed-srvrender.js", predicate = "isServerRenderingActive")
+    public void setServerRenderJsBundle(CompiledScript serverRenderJsBundle)
+    {
+        this.serverRenderJsBundle = serverRenderJsBundle;
+    }
+
+
 
 
     @InjectResource("/resources/js/exceed-server.js")

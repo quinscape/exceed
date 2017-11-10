@@ -1,8 +1,6 @@
 import React from "react"
 import { Provider } from 'react-redux'
 
-import { render } from "react-dom"
-import { Promise } from "es6-promise-polyfill"
 import security from "./security"
 import store from "./store"
 import { updateScopeCursor } from "../actions/scope"
@@ -12,10 +10,9 @@ import Dialog from "../util/dialog"
 import ComponentSubscription from "../util/ComponentSubscription"
 import RTView from "../service/runtime-view-api"
 import viewRenderer from "./view-renderer"
-import FormProvider from "../ui/FormProvider"
 import ErrorBoundary from "../ui/ErrorBoundary"
 
-var componentService = require("./component");
+const componentService = require("./component");
 
 let InPageEditor = false;
 if (process.env.USE_EDITOR)
@@ -129,33 +126,21 @@ const viewService = {
     /**
      * Renders the given viewModel and viewData
      *
-     *
-     * @returns {Promise} resolves after rendering is done.
-     *
      * @param store     redux store
+     *
+     * @returns {ReactElement} rendered react element
      */
-    render: function(store)
-    {
-        const rootElem = document.getElementById("root");
-        if (!rootElem)
-        {
-            throw new Error("Missing #root DOM element");
-        }
-
-        return new Promise((resolve, reject) => {
-            render(
-                <Provider store={ store }>
-                    <div>
-                    <ViewComponent store={ store } />
-                    { security.hasRole("ROLE_EDITOR") && InPageEditor && <InPageEditor store={ store } /> }
+    render: function(store) {
+        return (
+            <Provider store={store}>
+                <div>
+                    <ViewComponent store={store}/>
+                    {security.hasRole("ROLE_EDITOR") && InPageEditor && <InPageEditor store={store}/>}
                     <ThrobberComponent/>
-                    { Dialog.render() }
-                    </div>
-                </Provider>,
-                rootElem,
-                resolve
-            );
-        });
+                    {Dialog.render()}
+                </div>
+            </Provider>
+        );
     },
 
     renderFn: function()

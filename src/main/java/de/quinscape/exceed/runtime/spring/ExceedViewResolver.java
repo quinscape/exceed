@@ -230,7 +230,11 @@ public class ExceedViewResolver
                 {
                     for (String name : baseTemplateConfig.propertyNames())
                     {
-                        model.put(name, baseTemplateConfig.getProperty(name));
+                        final Object value = baseTemplateConfig.getProperty(name);
+                        if (value != null)
+                        {
+                            model.put(name, value.toString());
+                        }
                     }
                 }
 
@@ -263,8 +267,11 @@ public class ExceedViewResolver
             catch (Exception e)
             {
                 IOUtils.closeQuietly(os);
-                // these are most commonly browser windows being closed before the last request is done
                 log.error("Error sending view", e);
+            }
+            finally
+            {
+                RuntimeContextHolder.clear();
             }
         }
 
@@ -314,7 +321,11 @@ public class ExceedViewResolver
             {
                 log.debug("Flushing template for application {}", appName);
 
-                applicationViews.get(appName).flush();
+                final ExceedView exceedView = applicationViews.get(appName);
+                if (exceedView != null)
+                {
+                    exceedView.flush();
+                }
             }
         }
 
