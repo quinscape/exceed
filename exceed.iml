@@ -31,6 +31,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/js/components" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/base" type="java-resource" />
+      <excludeFolder url="file://$MODULE_DIR$/docs" />
       <excludeFolder url="file://$MODULE_DIR$/src/main/base/resources/js" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
