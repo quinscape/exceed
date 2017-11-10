@@ -20,4 +20,11 @@ public @interface InjectResource
      * @return resource path
      */
     String value();
+
+    /**
+     * Spring bean name of an implementation of {@link ResourceInjectorPredicate} to check whether
+     * this resource should be processed and injected.
+     * @return
+     */
+    String predicate() default "";
 }
