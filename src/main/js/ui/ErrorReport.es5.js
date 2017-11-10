@@ -28,7 +28,7 @@ var ErrorReport = createReactClass({
 
     render: function ()
     {
-        const error = this.props.error;
+        var error = this.props.error;
 
         if (error instanceof Error)
         {
