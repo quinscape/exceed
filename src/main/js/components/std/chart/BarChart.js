@@ -1,6 +1,7 @@
 import React from "react"
 import cx from "classnames"
 import propertyConverter from "../../../service/property-converter"
+import propertyRenderer from "../../../service/property-renderer"
 
 import SVGLayout from "../../../gfx/svg-layout"
 import GUIContainer from "../../../editor/gui/GUIContainer"
@@ -175,7 +176,7 @@ function InfoWindow(props)
             title={ query.name }
         >
             { label } <br/>
-            Value: { propertyConverter.renderStatic(value, propertyType) }
+            Value: { propertyRenderer.renderStatic(value, propertyType) }
         </Popover>
     );
 }

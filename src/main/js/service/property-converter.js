@@ -1,18 +1,11 @@
-import React from "react"
 import assign from "object-assign"
 // noinspection JSFileReferences
 import BigNumber from "bignumber.js"
 
-
 import parseNumber from "../util/parse-number"
-import describeProperty from "../util/describe-property"
 import i18n from "./i18n"
 
-import store from "../service/store"
-import { getCurrency } from "../reducers/meta"
-
 const domainService = require("./domain");
-
 
 const CURRENCY_MULTIPLIER = 10000;
 
@@ -83,7 +76,6 @@ function checkMaxLength(value, propertyType)
 }
 
 let converters;
-let renderersByType;
 
 function normDate(dateObj){
     dateObj.setUTCHours(0);
@@ -184,33 +176,6 @@ function getEnumType(enumName)
 
 function reset()
 {
-    renderersByType = {
-        "Currency" : (value, propertyType) => {
-
-
-            return (
-                <span>
-                    {
-                        value + " "
-                    }
-                    <em className="text-muted">
-                        {
-                            getCurrency(store.getState(), propertyType)
-                        }
-                    </em>
-                </span>
-            );
-        },
-
-        "Boolean" : (value, propertyType) => {
-            return (
-                value ?
-                    <span className="glyphicon glyphicon-check text-success" /> :
-                    <span className="glyphicon glyphicon-remove-sign text-danger" />
-            );
-        }
-    };
-
     converters = {
         "Boolean": {
             fromServer: false,
@@ -443,26 +408,6 @@ const propertyConverter = {
         return result;
     },
 
-    /**
-     * Renders the given value as react element for a static, read-only context.
-     * @param value
-     * @param propertyType
-     * @returns {*}
-     */
-    renderStatic: function (value, propertyType)
-    {
-        const converted = this.toUser(value, propertyType);
-
-        const renderer = renderersByType[propertyType.type];
-
-        if (renderer)
-        {
-            return renderer(converted, propertyType);
-        }
-
-        return <span className={ "pv-" + describeProperty(propertyType, true) } >{ converted }</span>;
-    },
-
     fromUser: function(value, propertyType)
     {
         if (!propertyType || !propertyType.type)
@@ -497,12 +442,6 @@ const propertyConverter = {
             fromUser: fromUserConverter,
             toUser: toUserConverter
         };
-    },
-
-
-    registerRenderer: function (type, renderer)
-    {
-        renderersByType[type] = renderer;
     },
 
     reset: reset,

@@ -11,7 +11,7 @@ import GUIElement from "../../../editor/gui/GUIElement"
 import UIState from "../../../editor/gui/ui-state";
 import Popover from "react-bootstrap/lib/Popover"
 
-import propertyConverter from "../../../service/property-converter";
+import propertyRenderer from "../../../service/property-renderer";
 
 const{ TextSize } = SVGLayout;
 
@@ -308,7 +308,7 @@ class InfoWindow extends  React.Component
                 title={ name }
             >
                 { label } <br/>
-                Value: { propertyConverter.renderStatic(value, propertyType) }
+                Value: { propertyRenderer.renderStatic(value, propertyType) }
             </Popover>
         );
 

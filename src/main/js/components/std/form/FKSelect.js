@@ -9,10 +9,10 @@ import ValueLink from "../../../util/value-link";
 
 import i18n from "../../../service/i18n";
 import store from "../../../service/store";
-import propertyConverter from "../../../service/property-converter";
+import propertyRenderer from "../../../service/property-renderer";
 import { updateComponent } from "../../../actions/component";
 
-const domainService = require("../../../service/domain")
+const domainService = require("../../../service/domain");
 
 export function Property(props)
 {
@@ -45,7 +45,7 @@ function renderTargetLabel(graph, target, propModels) {
             {
                 const attrName = propModel.attrs.name;
 
-                const component = propertyConverter.renderStatic(target[attrName], columns[attrName]);
+                const component = propertyRenderer.renderStatic(target[attrName], columns[attrName]);
                 l.push(React.cloneElement(component, { key: i }), " ");
             }
         }

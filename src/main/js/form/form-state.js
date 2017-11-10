@@ -3,6 +3,7 @@ import { findComponents, findParent } from "../util/component-util"
 
 import DataCursor from "../domain/cursor";
 import propertyConverter from "../service/property-converter";
+import propertyRenderer from "../service/property-renderer";
 import store from "../service/store";
 import FieldState from "./field-state";
 import RTView from "../service/runtime-view-api";
@@ -242,7 +243,7 @@ export function compareFieldValue(field, index, contextCache, reduxState, curren
     // always return render static properties
     if (field.model.name === "StaticText")
     {
-        return propertyConverter.renderStatic(cursor.get(), field.propertyType);
+        return propertyRenderer.renderStatic(cursor.get(), field.propertyType);
     }
 
     // read previous form field value and convert it to js

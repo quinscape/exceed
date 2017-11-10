@@ -9,7 +9,7 @@ import DataGraph, { validateDataGraph } from "../../../domain/graph";
 import DataCursor from "../../../domain/cursor";
 import immutableUpdate from "immutability-helper";
 import domainService from "../../../service/domain";
-import propertyConverter from "../../../service/property-converter";
+import propertyRenderer from "../../../service/property-renderer";
 import debounce from "../../../util/debounce";
 import PagingComponent from "../../../ui/PagingComponent";
 import renderWithContext from "../../../util/render-with-context";
@@ -120,7 +120,7 @@ export class Column extends React.Component
             return (
                 <td>
                     <p className={ cx("form-control-static", COLUMN_ALIGNMENT[propertyType.type]) }>
-                        { propertyConverter.renderStatic(value, propertyType) }
+                        { propertyRenderer.renderStatic(value, propertyType) }
                     </p>
                 </td>
             );
