@@ -169,7 +169,7 @@ module.exports = [
                     "USE_EDITOR": USE_EDITOR
                 }
             }),
-            new webpack.IgnorePlugin(/(node-libs-browser|process|timers-browserify)/)
+            new webpack.IgnorePlugin(/^(node-libs-browser|process|timers-browserify)/)
         ],
 
         module: {
