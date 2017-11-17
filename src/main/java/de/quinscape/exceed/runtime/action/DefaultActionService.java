@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.action;
 
 import com.esotericsoftware.reflectasm.MethodAccess;
+import de.quinscape.exceed.model.startup.ExceedConfig;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.controller.ActionNotFoundException;
 import de.quinscape.exceed.runtime.js.ExpressionType;
@@ -57,28 +58,35 @@ public class DefaultActionService
 
         for (Method m : component.getClass().getMethods())
         {
-            final Action actionAnno = m.getAnnotation(Action.class);
-            if (actionAnno != null)
+            try
             {
-                final String nameFromAnnotation = actionAnno.value();
-                final String actionName = nameFromAnnotation.equals(Action.METHOD_NAME) ? m.getName() : nameFromAnnotation;
+                final Action actionAnno = m.getAnnotation(Action.class);
+                if (actionAnno != null)
+                {
+                    final String nameFromAnnotation = actionAnno.value();
+                    final String actionName = nameFromAnnotation.equals(Action.METHOD_NAME) ? m.getName() : nameFromAnnotation;
 
-                actions.put(actionName,
-                    new MethodAccessRegistration(
-                        actionName,
-                        component,
-                        componentAccess,
-                        m,
-                        parameterProviderFactories,
-                        actionAnno.env(),
-                        Util.join(
-                            Arrays.asList(
-                                actionAnno.description()
-                            ),
-                            "\n"
+                    actions.put(actionName,
+                        new MethodAccessRegistration(
+                            actionName,
+                            component,
+                            componentAccess,
+                            m,
+                            parameterProviderFactories,
+                            actionAnno.env(),
+                            Util.join(
+                                Arrays.asList(
+                                    actionAnno.description()
+                                ),
+                                "\n"
+                            )
                         )
-                    )
-                );
+                    );
+                }
+            }
+            catch (Exception e)
+            {
+                throw new IllegalStateException("Error analyzing: " + m, e);
             }
         }
     }
