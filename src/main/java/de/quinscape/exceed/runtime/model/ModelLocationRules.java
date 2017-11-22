@@ -5,13 +5,14 @@ import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.config.ApplicationConfig;
 import de.quinscape.exceed.model.domain.DomainRule;
 import de.quinscape.exceed.model.domain.DomainVersion;
+import de.quinscape.exceed.model.domain.EnumType;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
 import de.quinscape.exceed.model.domain.type.DomainTypeModel;
-import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.type.QueryTypeModel;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.routing.RoutingTable;
-import de.quinscape.exceed.model.domain.StateMachine;
+import de.quinscape.exceed.model.staging.StageModel;
 import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
 
@@ -27,6 +28,8 @@ public class ModelLocationRules
     private final List<ModelLocationRule> modelLocationRules;
 
     public static final String CONFIG_MODEL_NAME = "/models/config.json";
+
+    public static final String STAGE_MODEL_NAME = "/models/stage/";
 
     public static final String ROUTING_MODEL_NAME = "/models/routing.json";
 
@@ -59,6 +62,7 @@ public class ModelLocationRules
             Arrays.asList(
                 new ModelLocationRule( CONFIG_MODEL_NAME, Model.getType(ApplicationConfig.class)),
                 new ModelLocationRule( ROUTING_MODEL_NAME, Model.getType(RoutingTable.class)),
+                new ModelLocationRule( STAGE_MODEL_NAME, Model.getType(StageModel.class)),
                 new ModelLocationRule( DOMAIN_VERSION_PREFIX, Model.getType(DomainVersion.class)),
                 new ModelLocationRule( DOMAIN_PROPERTY_MODEL_PREFIX, Model.getType(PropertyTypeModel.class)),
                 new ModelLocationRule( ENUM_MODEL_PREFIX, Model.getType(EnumType.class)),

@@ -8,6 +8,7 @@ import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataGraph;
+import de.quinscape.exceed.runtime.datasrc.ExceedDataSource;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.GeneratedDomainObject;
@@ -244,7 +245,8 @@ public class DomainUtil
             )
         );
 
-        final DataGraph graph = domainService.getStorageConfiguration(domainTypeName).getDomainOperations().query(
+        final ExceedDataSource dataSource = domainService.getDataSource(domainType.getDataSourceName());
+        final DataGraph graph = dataSource.getStorageConfiguration().getDomainOperations().query(
             runtimeContext,
             domainService,
             queryDefinition

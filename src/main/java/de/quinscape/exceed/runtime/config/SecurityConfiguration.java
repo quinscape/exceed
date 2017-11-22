@@ -2,9 +2,6 @@ package de.quinscape.exceed.runtime.config;
 
 import de.quinscape.exceed.runtime.security.ApplicationUserDetailsService;
 import de.quinscape.exceed.runtime.service.ApplicationService;
-import de.quinscape.exceed.runtime.service.DomainServiceRepository;
-import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
-import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,8 +13,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
-
-import javax.servlet.ServletContext;
 
 @EnableWebSecurity
 @Configuration
@@ -38,35 +33,19 @@ public class SecurityConfiguration
             "/"
         };
 
-    private final DSLContext dslContext;
-
     private final ApplicationService applicationService;
 
     private final PersistentTokenRepository persistentTokenRepository;
 
-    private final ServletContext servletContext;
-
-    private final DomainServiceRepository domainServiceRepository;
-
-    private final RuntimeContextFactory runtimeContextFactory;
-
 
     @Autowired
     public SecurityConfiguration(
-        DSLContext dslContext,
         ApplicationService applicationService,
-        PersistentTokenRepository persistentTokenRepository,
-        ServletContext servletContext,
-        DomainServiceRepository domainServiceRepository,
-        RuntimeContextFactory runtimeContextFactory
+        PersistentTokenRepository persistentTokenRepository
     )
     {
-        this.dslContext = dslContext;
         this.applicationService = applicationService;
         this.persistentTokenRepository = persistentTokenRepository;
-        this.servletContext = servletContext;
-        this.domainServiceRepository = domainServiceRepository;
-        this.runtimeContextFactory = runtimeContextFactory;
     }
 
 
@@ -115,11 +94,7 @@ public class SecurityConfiguration
         auth
             .userDetailsService(
                 new ApplicationUserDetailsService(
-                    dslContext,
-                    servletContext,
-                    applicationService,
-                    domainServiceRepository,
-                    runtimeContextFactory
+                    applicationService
             ))
             .passwordEncoder(new BCryptPasswordEncoder());
 

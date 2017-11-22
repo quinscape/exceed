@@ -6,7 +6,6 @@ import de.quinscape.exceed.runtime.expression.query.ComponentQueryTransformer;
 import de.quinscape.exceed.runtime.i18n.Translator;
 import de.quinscape.exceed.runtime.resource.DefaultResourceCacheFactory;
 import de.quinscape.exceed.runtime.resource.ResourceCacheFactory;
-import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.service.DomainServiceFactory;
 import de.quinscape.exceed.runtime.service.ProcessService;
@@ -19,8 +18,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Map;
 
 @Configuration
 @ComponentScan(value = {
@@ -72,14 +69,9 @@ public class ServiceConfiguration
 
 
     @Bean
-    public DomainServiceFactory domainServiceFactory(
-        StorageConfigurationRepository storageConfigurationRepository
-    )
+    public DomainServiceFactory domainServiceFactory()
     {
-
-        return new DomainServiceFactory(
-            storageConfigurationRepository
-        );
+        return new DomainServiceFactory();
     }
 
 
@@ -91,12 +83,11 @@ public class ServiceConfiguration
     
     @Bean
     public ComponentQueryTransformer componentQueryTransformer(
-        ExpressionService expressionService,
-        StorageConfigurationRepository storageConfigurationRepository)
+        ExpressionService expressionService
+    )
     {
          return new ComponentQueryTransformer(
-             expressionService,
-             storageConfigurationRepository
+             expressionService
          );
     }
 }

@@ -12,6 +12,7 @@ public class RuntimeContextProviderFactory
     @Override
     public ParameterProvider createIfApplicable(Class<?> parameterClass, Annotation[] annotations)
     {
+
         return parameterClass.equals(RuntimeContext.class) ? this : null;
     }
 

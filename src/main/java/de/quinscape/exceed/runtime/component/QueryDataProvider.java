@@ -6,12 +6,12 @@ import de.quinscape.exceed.model.expression.ExpressionValueType;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.action.ActionService;
+import de.quinscape.exceed.runtime.datasrc.ExceedDataSource;
 import de.quinscape.exceed.runtime.domain.DomainOperations;
 import de.quinscape.exceed.runtime.expression.query.QueryContext;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryDomainType;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
-import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import de.quinscape.exceed.runtime.view.DataProviderContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,17 +29,13 @@ public class QueryDataProvider
 {
     private final static Logger log = LoggerFactory.getLogger(QueryDataProvider.class);
 
-    private final StorageConfigurationRepository storageConfigurationRepository;
-
     private final ActionService actionService;
 
 
     public QueryDataProvider(
-        StorageConfigurationRepository storageConfigurationRepository,
         ActionService actionService
     )
     {
-        this.storageConfigurationRepository = storageConfigurationRepository;
         this.actionService = actionService;
     }
 
@@ -87,9 +83,10 @@ public class QueryDataProvider
 
                     registerTranslations(dataProviderContext, queryDefinition);
 
-                    final String config = queryDefinition.getQueryDomainType().getType().getStorageConfiguration();
-                    final DomainOperations ops = storageConfigurationRepository.getConfiguration(config)
-                        .getDomainOperations();
+                    final ExceedDataSource dataSource = runtimeContext.getDomainService().getDataSource(
+                        queryDefinition.getQueryDomainType().getType().getDataSourceName());
+
+                    final DomainOperations ops = dataSource.getStorageConfiguration().getDomainOperations();
 
                     return ops.query(runtimeContext, runtimeContext.getDomainService(), queryDefinition);
 

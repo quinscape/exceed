@@ -12,9 +12,10 @@ import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
 import de.quinscape.exceed.model.domain.type.DomainTypeModel;
 import de.quinscape.exceed.model.domain.type.QueryTypeModel;
-import de.quinscape.exceed.model.merge.MergeType;
+import de.quinscape.exceed.model.merge.ModelMergeMode;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.routing.RoutingTable;
+import de.quinscape.exceed.model.staging.StageModel;
 import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
@@ -54,9 +55,6 @@ public final class ModelMerger
     private final DomainService domainService;
 
     private final PathResources resources;
-
-    private int newInstanceCount = 0;
-
 
     /**
      * Creates a new model merger
@@ -186,6 +184,14 @@ public final class ModelMerger
     }
 
 
+    @Override
+    public TopLevelModel visit(StageModel stageModel, Object in)
+    {
+        applicationModel.addStageModel(stageModel);
+        return stageModel;
+    }
+
+
     /**
      * Main entry point for model merging.
      *
@@ -211,14 +217,14 @@ public final class ModelMerger
 
         MergeStrategy mergeStrategy = type.getAnnotation(MergeStrategy.class);
 
-        final MergeType mergeType;
+        final ModelMergeMode mergeType;
         if (mergeStrategy != null)
         {
             mergeType = mergeStrategy.value();
         }
         else
         {
-            mergeType = MergeType.REPLACE;
+            mergeType = ModelMergeMode.REPLACE;
         }
 
         final TopLevelModel model;
@@ -251,7 +257,7 @@ public final class ModelMerger
                             r
                         )
                     )
-                    .reduce(null, merger::merge);
+                    .reduce(null, ModelMerger::merge);
                 break;
             default:
                 throw new IllegalStateException("Unhandled mergeType: " + mergeType);
@@ -272,17 +278,17 @@ public final class ModelMerger
      *
      * @return merged object
      */
-    <T> T merge(T curr, T next)
+    public static <T> T merge(T curr, T next)
     {
         log.debug("MERGE {}, {}", curr, next);
 
-        if (curr == null || isForcedReplacement(curr.getClass()))
-        {
-            return next;
-        }
-        else if (next == null)
+        if (next == null)
         {
             return curr;
+        }
+        else if (curr == null || isForcedReplacement(curr.getClass()))
+        {
+            return next;
         }
         else
         {
@@ -346,7 +352,7 @@ public final class ModelMerger
                     }
                     else
                     {
-                        MergeType newMergeType = MergeType.REPLACE;
+                        ModelMergeMode newMergeType = ModelMergeMode.DEEP;
                         if (isMap || isCollection)
                         {
                             final Class<Object> typeHint = info.getTypeHint();
@@ -374,7 +380,7 @@ public final class ModelMerger
                                 final Map<String, Object> currMap = (Map<String, Object>) util.getProperty(
                                     curr, propertyName);
                                 final Map<String, Object> result;
-                                if (newMergeType == MergeType.REPLACE)
+                                if (newMergeType == ModelMergeMode.REPLACE)
                                 {
                                     log.debug("replace items in map");
 
@@ -397,7 +403,7 @@ public final class ModelMerger
                             else
                             {
                                 final List<Object> result;
-                                if (newMergeType == MergeType.REPLACE)
+                                if (newMergeType == ModelMergeMode.REPLACE)
                                 {
                                     log.debug("replace list");
 
@@ -442,29 +448,36 @@ public final class ModelMerger
     }
 
 
-    private Map<String, Object> mergeMap(Map<String, Object> currMap, Map<String, Object> nextMap)
+    private static Map<String, Object> mergeMap(Map<String, Object> currMap, Map<String, Object> nextMap)
     {
-        Map<String, Object> result;
-        result = nextMap != null ? newInstance(nextMap) : new HashMap<>();
 
-        for (Map.Entry<String, Object> e : nextMap.entrySet())
+        if (nextMap == null || nextMap.size() == 0)
         {
-            final Object value = currMap.get(e.getKey());
-            if (value != null)
-            {
-                result.put(e.getKey(), merge(e.getValue(), value));
-            }
-            else
-            {
-                result.put(e.getKey(), value);
-            }
-
+            return currMap;
         }
+
+        Map<String, Object> result;
+        result = newInstance(nextMap);
+
+
+        for (Map.Entry<String, Object> e : currMap.entrySet())
+        {
+            result.put(e.getKey(), merge(e.getValue(), nextMap.get(e.getKey())));
+        }
+
+        final HashSet<String> keysOnlyInNext = new HashSet<>(nextMap.keySet());
+        keysOnlyInNext.removeAll(currMap.keySet());
+
+        for (String name : keysOnlyInNext)
+        {
+            result.put(name, nextMap.get(name));
+        }
+
         return result;
     }
 
 
-    private boolean isForcedReplacement(Class<?> cls)
+    public static boolean isForcedReplacement(Class<?> cls)
     {
         return cls.isPrimitive() ||
             String.class.isAssignableFrom(cls) ||
@@ -475,15 +488,12 @@ public final class ModelMerger
     }
 
 
-    private <T> T newInstance(Object curr)
+    private static <T> T newInstance(Object curr)
     {
         if (curr == null)
         {
             throw new IllegalArgumentException("curr can't be null");
         }
-
-
-        newInstanceCount++;
 
         if (curr instanceof Set)
         {
@@ -514,9 +524,4 @@ public final class ModelMerger
         }
     }
 
-
-    public int getNewInstanceCount()
-    {
-        return newInstanceCount;
-    }
 }

@@ -18,6 +18,7 @@ import de.quinscape.exceed.runtime.action.ActionService;
 import de.quinscape.exceed.runtime.action.DefaultActionService;
 import de.quinscape.exceed.runtime.action.builtin.ExceedBaseActions;
 import de.quinscape.exceed.runtime.action.param.ContextPropertyValueProviderFactory;
+import de.quinscape.exceed.runtime.action.param.DataSourceProviderFactory;
 import de.quinscape.exceed.runtime.action.param.RuntimeContextProviderFactory;
 import de.quinscape.exceed.runtime.config.ExpressionConfiguration;
 import de.quinscape.exceed.runtime.domain.DomainService;
@@ -243,12 +244,13 @@ public class TestApplicationBuilder
     {
         ActionService actionService = new DefaultActionService(
             Arrays.asList(
-                new ExceedBaseActions(null, null),
+                new ExceedBaseActions(null),
                 testActionBean
             ),
             Arrays.asList(
                 new RuntimeContextProviderFactory(),
-                new ContextPropertyValueProviderFactory()
+                new ContextPropertyValueProviderFactory(),
+                new DataSourceProviderFactory()
             )
         );
 
@@ -342,7 +344,7 @@ public class TestApplicationBuilder
 
         if (domainService == null)
         {
-            domainService = new DomainServiceImpl(new TestStorageConfigurationRepository());
+            domainService = new DomainServiceImpl();
 
         }
         else
@@ -389,7 +391,7 @@ public class TestApplicationBuilder
         svc.postprocess(applicationModel);
 
         final TestApplication testApplication = new TestApplication(applicationModel, domainService);
-        domainService.init(testApplication);
+        domainService.init(testApplication, null);
 
         return testApplication;
     }

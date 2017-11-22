@@ -11,10 +11,10 @@ import de.quinscape.exceed.expression.ASTPropertyChain;
 import de.quinscape.exceed.expression.ASTRelational;
 import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
 import de.quinscape.exceed.runtime.js.InvalidExpressionException;
-import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import de.quinscape.exceed.runtime.util.ExpressionUtil;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -122,9 +122,9 @@ public class QueryFilterEnvironment
         
         addFieldReference(dataField);
 
-        final StorageConfigurationRepository storageConfigurationRepository = getTransformerEnvironment().getStorageConfigurationRepository();
+        final RuntimeContext runtimeContext = getTransformerEnvironment().getRuntimeContext();
 
-        NamingStrategy namingStrategy =  storageConfigurationRepository.getConfiguration(queryDomainType.getType().getStorageConfiguration()).getNamingStrategy();
+        NamingStrategy namingStrategy =  runtimeContext.getDomainService().getDataSource(queryDomainType.getType().getDataSourceName()).getStorageConfiguration().getNamingStrategy();
 
         return DSL.field(DSL.name(dataField.getNameFromStrategy(namingStrategy)));
     }

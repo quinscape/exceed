@@ -15,6 +15,7 @@ import de.quinscape.exceed.model.domain.property.PropertyModel;
 import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.process.Process;
+import de.quinscape.exceed.model.staging.StageModel;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.domain.property.DecimalConverter;
@@ -87,6 +88,10 @@ public class ApplicationMetaData
     private CompiledScript serverCommonJsBundle;
 
     private CompiledScript serverRenderJsBundle;
+
+    private StageModel mergedStageModel;
+
+    private List<String> activeStageNames;
 
 
     public ApplicationMetaData(ApplicationModel applicationModel, Definitions systemDefinitions)
@@ -550,5 +555,29 @@ public class ApplicationMetaData
     public Definitions getSystemDefinitions()
     {
         return systemDefinitions;
+    }
+
+
+    public void setMergedStageModel(StageModel mergedStageModel)
+    {
+        this.mergedStageModel = mergedStageModel;
+    }
+
+
+    public StageModel getMergedStageModel()
+    {
+        return mergedStageModel;
+    }
+
+
+    public void setActiveStageNames(List<String> activeStageNames)
+    {
+        this.activeStageNames = activeStageNames;
+    }
+
+
+    public List<String> getActiveStageNames()
+    {
+        return activeStageNames;
     }
 }

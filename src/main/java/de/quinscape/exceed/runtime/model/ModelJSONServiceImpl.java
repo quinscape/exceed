@@ -81,7 +81,6 @@ public class ModelJSONServiceImpl
         b.propertyUnlessNull("identityGUID", model.getIdentityGUID());
         b.propertyUnlessNull("versionGUID", model.getVersionGUID());
         b.property("name", model.getName());
-        b.propertyUnlessNull("storage", model.getStorageConfiguration());
         b.arrayProperty("properties");
 
         for (DomainProperty domainProperty : model.getProperties())
@@ -132,6 +131,11 @@ public class ModelJSONServiceImpl
     @Override
     public <M> M toModel(Class<M> cls, String json) throws IllegalArgumentException
     {
+        if (json == null || json.length() == 0)
+        {
+            return null;
+        }
+
         try
         {
             Object model = parser.parse((Class)cls, json);

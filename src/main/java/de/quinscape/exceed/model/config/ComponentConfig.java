@@ -1,7 +1,7 @@
 package de.quinscape.exceed.model.config;
 
 import de.quinscape.exceed.model.annotation.MergeStrategy;
-import de.quinscape.exceed.model.merge.MergeType;
+import de.quinscape.exceed.model.merge.ModelMergeMode;
 import de.quinscape.exceed.runtime.universal.ServerRenderingStrategy;
 import org.svenson.JSONProperty;
 
@@ -9,10 +9,16 @@ import org.svenson.JSONProperty;
  * Contains component configurations for the components within an exceed applications. Is embedded in
  * {@link ApplicationConfig}
  * <p>
- * This is were app-level configuration for components is stored. Is provided
+ * This is were app-level configuration for system components is stored. This can be an actual component model
+ * configuration or for another system component. It provides a typed and auto-documented set of configuration options
+ * for these (system) components.
+ * </p>
+ * <p>
+ *     If you add  multiple properties for the same logical component, you should consider an intermediary container
+ *     component like {@link BaseTemplateConfig}. 
  * </p>
  */
-@MergeStrategy(MergeType.DEEP)
+@MergeStrategy(ModelMergeMode.DEEP)
 public class ComponentConfig
 {
 
@@ -58,9 +64,8 @@ public class ComponentConfig
 
     /**
      * Controls the server rendering mode for the application. Exceed can do a server-side reactjs prerendering
-     * of the initial view for better SEO integration and faster UI. The way our js integration works however, we have
-     * one server js environment per HTTP connection. Configuring the setting to {@link ServerRenderingMode#DISABLED} will
-     * disabling the loading of the server render js bundle.
+     * of the initial view for better SEO integration and faster UI. Since it comes with additional server overhead
+     * it can be DISABLED or limited with PER_STRATEGY (in combination with "serverRenderingStrategy")
      *
      * @return mode enum
      */

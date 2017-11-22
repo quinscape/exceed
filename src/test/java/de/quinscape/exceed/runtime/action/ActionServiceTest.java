@@ -11,6 +11,7 @@ import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.TestApplication;
 import de.quinscape.exceed.runtime.TestApplicationBuilder;
 import de.quinscape.exceed.runtime.action.param.ContextPropertyValueProviderFactory;
+import de.quinscape.exceed.runtime.action.param.DataSourceProviderFactory;
 import de.quinscape.exceed.runtime.action.param.RuntimeContextProviderFactory;
 import de.quinscape.exceed.runtime.controller.ActionNotFoundException;
 import de.quinscape.exceed.runtime.domain.DomainObject;
@@ -56,7 +57,8 @@ public class ActionServiceTest
         Collections.singleton(target),
         Arrays.asList(
             new RuntimeContextProviderFactory(),
-            new ContextPropertyValueProviderFactory()
+            new ContextPropertyValueProviderFactory(),
+            new DataSourceProviderFactory()
         )
     );
 
@@ -278,7 +280,6 @@ public class ActionServiceTest
             DomainTypeModel domainType = new DomainTypeModel();
             domainType.setName(name);
             domainType.setAnnotation("Test domain type " + name);
-            domainType.setStorageConfiguration("testStorage");
 
             domainType.setProperties(Arrays.asList(
                 DomainProperty.builder().withName("id").withType(PropertyType.UUID).build(),

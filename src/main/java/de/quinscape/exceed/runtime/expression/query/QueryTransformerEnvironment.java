@@ -8,7 +8,6 @@ import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.action.ActionRegistration;
 import de.quinscape.exceed.runtime.action.ActionResult;
 import de.quinscape.exceed.runtime.expression.ExpressionEnvironment;
-import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +19,6 @@ public class QueryTransformerEnvironment
 
     private final static Logger log = LoggerFactory.getLogger(QueryTransformerEnvironment.class);
 
-    private final StorageConfigurationRepository storageConfigurationRepository;
 
     private final RuntimeContext runtimeContext;
 
@@ -32,12 +30,10 @@ public class QueryTransformerEnvironment
 
     public QueryTransformerEnvironment(
         RuntimeContext runtimeContext,
-        StorageConfigurationRepository storageConfigurationRepository,
         QueryContext queryContext
     )
     {
         this.runtimeContext = runtimeContext;
-        this.storageConfigurationRepository = storageConfigurationRepository;
         this.queryContext = queryContext;
 
         if (runtimeContext != null)
@@ -141,12 +137,6 @@ public class QueryTransformerEnvironment
     public RuntimeContext getRuntimeContext()
     {
         return runtimeContext;
-    }
-
-
-    public StorageConfigurationRepository getStorageConfigurationRepository()
-    {
-        return storageConfigurationRepository;
     }
 
 

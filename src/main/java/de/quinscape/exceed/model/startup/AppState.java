@@ -1,5 +1,6 @@
 package de.quinscape.exceed.model.startup;
 
+import com.google.common.collect.ImmutableList;
 import de.quinscape.exceed.runtime.application.ApplicationStatus;
 import de.quinscape.exceed.runtime.startup.AppStateBuilder;
 import org.svenson.JSONParameter;
@@ -12,33 +13,44 @@ import java.util.List;
 public class AppState
     implements Cloneable
 {
+    private static final List<String> DEFAULT_STAGES = ImmutableList.of("default");
+
     private final String name;
+
     private final String path;
+
     private final ApplicationStatus status;
+
     private final List<String> extensions;
+
+    private final List<String> stages;
+
+
     private final String domainVersion;
 
 
     //[null, crud, null, null, crud-example, null, null, null]
     public AppState(
         @JSONParameter("name")
-        String name,
+            String name,
 
         @JSONParameter("path")
-        String path,
+            String path,
 
         @JSONParameter("status")
-        ApplicationStatus status,
+            ApplicationStatus status,
 
         @JSONParameter("extensions")
-        List<String> extensions,
+            List<String> extensions,
 
         @JSONParameter("domainVersion")
-        String domainVersion,
+            String domainVersion,
 
         @JSONParameter("defaultApp")
-        String defaultApp
+            String defaultApp,
 
+        @JSONParameter("stages")
+            List<String> stages
     )
     {
         this.name = name;
@@ -46,6 +58,7 @@ public class AppState
         this.status = status != null ? status : ApplicationStatus.DEVELOPMENT;
         this.extensions = extensions;
         this.domainVersion = domainVersion;
+        this.stages = stages != null ? stages : DEFAULT_STAGES;
     }
 
 
@@ -94,6 +107,7 @@ public class AppState
         return domainVersion;
     }
 
+
     public AppStateBuilder buildCopy()
     {
         return new AppStateBuilder(this);
@@ -103,5 +117,21 @@ public class AppState
     public static AppStateBuilder builder()
     {
         return new AppStateBuilder();
+    }
+
+
+    /**
+     * Array with the active stage names. Default is <code>["default"]</code>. Can be overridden by setting a system property
+     * "exceed.stages.myapp" ( with "myapp" being the name of the app to set the stages for). The value must be a comma separated
+     * list of stage names in that case.
+     *
+     * <pre title="system property example">
+     *  -Dexeed.stages.myapp=default,prod
+     * </pre>
+     *
+     */
+    public List<String> getStages()
+    {
+        return stages;
     }
 }

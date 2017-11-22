@@ -10,10 +10,6 @@
 
     "applicationContext": {
         "properties": {
-            "appConfig": {
-                "type": "PlainText",
-                "defaultValue": "'App Config Value'"
-            }
         }
     },
 

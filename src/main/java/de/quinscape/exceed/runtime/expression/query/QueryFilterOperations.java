@@ -6,13 +6,14 @@ import de.quinscape.exceed.expression.Node;
 import de.quinscape.exceed.model.component.PropDeclaration;
 import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.view.ComponentModel;
+import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.ComponentInstanceRegistration;
+import de.quinscape.exceed.runtime.datasrc.ExceedDataSource;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.expression.ExpressionContext;
 import de.quinscape.exceed.runtime.expression.annotation.ExpressionOperations;
 import de.quinscape.exceed.runtime.expression.annotation.Operation;
 import de.quinscape.exceed.runtime.expression.annotation.OperationParam;
-import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -153,13 +154,14 @@ public class QueryFilterOperations
             name = (String) fnNode.jjtGetChild(0).jjtAccept(env, null);
         }
 
+        final RuntimeContext runtimeContext = env.getTransformerEnvironment().getRuntimeContext();
 
-        final StorageConfigurationRepository storageConfigurationRepository = env.getTransformerEnvironment()
-            .getStorageConfigurationRepository();
 
         QueryDomainType queryDomainType = ctx.getEnv().getQueryDomainType();
         DataField dataField = queryDomainType.resolveField(name);
-        NamingStrategy namingStrategy =  storageConfigurationRepository.getConfiguration(queryDomainType.getType().getStorageConfiguration()).getNamingStrategy();
+        final ExceedDataSource dataSource = runtimeContext.getDomainService().getDataSource(
+            queryDomainType.getType().getDataSourceName());
+        NamingStrategy namingStrategy =  dataSource.getStorageConfiguration().getNamingStrategy();
 
         return DSL.field(DSL.name(dataField.getNameFromStrategy(namingStrategy)));
     }

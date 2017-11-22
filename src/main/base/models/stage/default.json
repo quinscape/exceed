@@ -1,0 +1,46 @@
+{
+    "dataSources" : {
+        "jooqDataSource" : {
+            "type": "xcd.staging.JOOQDataSourceModel",
+            "dialect" : "POSTGRES_9_4",
+
+            "domainOperations" : "jooqDomainOperations",
+
+            "dataSource" : "defaultDataSource"
+        },
+
+        "queryTypeDataSource" : {
+            "type": "xcd.staging.QueryTypeDataSourceModel",
+
+            "domainOperations" : "queryTypeOperations",
+            "schemaService" : "noopSchemaService",
+
+            "dataSource" : "defaultDataSource"
+        },
+
+        "defaultDataSource" : {
+            "type": "xcd.staging.AtomikosDataSourceModel",
+
+            "xaDataSourceClassName": "org.postgresql.xa.PGXADataSource",
+            "xaProperties": {
+                "serverName": "localhost",
+                "portNumber": "5432"
+            },
+
+            "minPoolSize" : 5,
+            "maxPoolSize" : 10,
+
+            "namingStrategy" : "defaultNamingStrategy",
+            "schemaService" : "defaultSchemaService",
+            "domainOperations" : null
+        },
+
+        "systemDataSource" : {
+            "type": "xcd.staging.SystemDataSourceModel",
+
+            "namingStrategy" : "neutralNamingStrategy",
+            "domainOperations" : "systemStorageOperations",
+            "schemaService" : "noopSchemaService"
+        }
+    }
+}

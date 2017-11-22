@@ -14,7 +14,6 @@ import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.scope.SessionContext;
 import de.quinscape.exceed.runtime.scope.UserContext;
 import de.quinscape.exceed.runtime.service.ApplicationService;
-import de.quinscape.exceed.runtime.service.DomainServiceRepository;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
 import de.quinscape.exceed.runtime.service.client.ClientStateProvider;
 import de.quinscape.exceed.runtime.service.client.ClientStateService;
@@ -62,8 +61,6 @@ public class EditorController
 
     private final RuntimeContextFactory runtimeContextFactory;
 
-    private final DomainServiceRepository domainServiceRepository;
-
     private final ClientStateService clientStateService;
 
     private final ModelCompositionService modelCompositionService;
@@ -74,13 +71,19 @@ public class EditorController
 
 
     @Autowired
-    public EditorController(ApplicationService applicationService, ServletContext servletContext, ScopedContextFactory scopedContextFactory, RuntimeContextFactory runtimeContextFactory, DomainServiceRepository domainServiceRepository, ClientStateService clientStateService, ModelCompositionService modelCompositionService)
+    public EditorController(
+        ApplicationService applicationService,
+        ServletContext servletContext,
+        ScopedContextFactory scopedContextFactory,
+        RuntimeContextFactory runtimeContextFactory,
+        ClientStateService clientStateService,
+        ModelCompositionService modelCompositionService
+    )
     {
         this.applicationService = applicationService;
         this.servletContext = servletContext;
         this.scopedContextFactory = scopedContextFactory;
         this.runtimeContextFactory = runtimeContextFactory;
-        this.domainServiceRepository = domainServiceRepository;
         this.clientStateService = clientStateService;
         this.modelCompositionService = modelCompositionService;
     }
@@ -123,7 +126,7 @@ public class EditorController
             "/editor/" + appName,
             request.getLocale(),
             scopedContextChain,
-            domainServiceRepository.getDomainService(appName)
+            applicationService.getDomainService(appName)
         );
 
         RuntimeContextHolder.register(runtimeContext, request);

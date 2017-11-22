@@ -3,6 +3,9 @@ package de.quinscape.exceed.model.process;
 import de.quinscape.exceed.model.expression.ExpressionValue;
 import org.svenson.JSONProperty;
 
+/**
+ * Configuration for automatic transition confirmation dialogs.
+ */
 public class Confirmation
 {
     private static final ExpressionValue DEFAULT_OK_LABEL = ExpressionValue.forValue("i18n('Ok')", true);
@@ -60,6 +63,9 @@ public class Confirmation
     }
 
 
+    /**
+     * Title expression.
+     */
     public String getTitle()
     {
         return title != null ? title.getValue() : null;

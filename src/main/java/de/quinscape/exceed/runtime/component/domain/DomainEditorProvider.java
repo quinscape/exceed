@@ -7,7 +7,6 @@ import de.quinscape.exceed.runtime.component.DataProvider;
 import de.quinscape.exceed.runtime.component.SelectOption;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
-import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.view.DataProviderContext;
 
@@ -20,15 +19,12 @@ import java.util.stream.Collectors;
 public class DomainEditorProvider
     implements DataProvider
 {
-    private final StorageConfigurationRepository storageConfigurationRepository;
 
     private final ApplicationService applicationService;
 
 
-    public DomainEditorProvider(StorageConfigurationRepository storageConfigurationRepository, ApplicationService
-        applicationService)
+    public DomainEditorProvider(ApplicationService applicationService)
     {
-        this.storageConfigurationRepository = storageConfigurationRepository;
         this.applicationService = applicationService;
     }
 
@@ -41,9 +37,9 @@ public class DomainEditorProvider
         List<SelectOption> options = new ArrayList<>();
 
         final RuntimeContext runtimeContext = dataProviderContext.getRuntimeContext();
-        options.add(new SelectOption(runtimeContext.getTranslator().translate(runtimeContext, "Default Storage"),
+        options.add(new SelectOption(runtimeContext.getTranslator().translate(runtimeContext, "Default DataSource"),
             null));
-        for (String name : storageConfigurationRepository.getConfigurationNames())
+        for (String name : runtimeContext.getDomainService().getDataSources().keySet())
         {
             options.add(new SelectOption(name, name));
         }
@@ -64,7 +60,7 @@ public class DomainEditorProvider
                 .map(ExtensionInfo::new)
                 .collect(Collectors.toList())
         );
-        map.put("storageOptions", options);
+        map.put("dataSourceOptions", options);
         map.put("domainVersion", applicationService.getApplicationState(appName).getDomainVersion());
         return map;
     }

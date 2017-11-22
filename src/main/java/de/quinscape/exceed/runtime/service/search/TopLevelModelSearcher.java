@@ -22,6 +22,7 @@ import de.quinscape.exceed.model.process.Transition;
 import de.quinscape.exceed.model.process.ViewState;
 import de.quinscape.exceed.model.routing.Mapping;
 import de.quinscape.exceed.model.routing.RoutingTable;
+import de.quinscape.exceed.model.staging.StageModel;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
@@ -236,12 +237,12 @@ class TopLevelModelSearcher
     }
 
 
-//    @Override
-//    public TopLevelModel visit(DomainEditorViews domainEditorViews, Object o)
-//    {
-//        return null;
-//    }
-
+    @Override
+    public Object visit(StageModel stageModel, Object in)
+    {
+        // XXX: implement search for stage models
+        return null;
+    }
 
     @Override
     public List<SearchResult> visit(DomainVersion domainVersion, Object o)
@@ -255,6 +256,5 @@ class TopLevelModelSearcher
     {
         return null;
     }
-
 
 }

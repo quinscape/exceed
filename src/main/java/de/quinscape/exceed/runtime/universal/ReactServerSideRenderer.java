@@ -36,10 +36,14 @@ public class ReactServerSideRenderer
         final ComponentConfig componentConfig = runtimeContext.getApplicationModel().getConfigModel()
             .getComponentConfig();
 
-        if (componentConfig.getServerRenderingMode() != ServerRenderingMode.PER_STRATEGY ||
-                check(runtimeContext, componentConfig.getServerRenderingStrategyName())
-
+        final ServerRenderingMode serverRenderingMode = componentConfig.getServerRenderingMode();
+        if (
+            serverRenderingMode != ServerRenderingMode.PER_STRATEGY ||
+            check(
+                runtimeContext,
+                componentConfig.getServerRenderingStrategyName()
             )
+        )
         {
             final JsEnvironment env = runtimeContext.getJsEnvironment();
             final String content = env.renderToString(runtimeContext, (String) model.get(TemplateVariables.VIEW_DATA));

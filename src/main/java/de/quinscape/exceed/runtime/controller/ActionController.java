@@ -13,7 +13,6 @@ import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.scope.SessionContext;
 import de.quinscape.exceed.runtime.scope.UserContext;
 import de.quinscape.exceed.runtime.service.ApplicationService;
-import de.quinscape.exceed.runtime.service.DomainServiceRepository;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
 import de.quinscape.exceed.runtime.util.AppAuthentication;
 import de.quinscape.exceed.runtime.util.ContentType;
@@ -55,15 +54,12 @@ public class ActionController
 
     private final ScopedContextFactory scopedContextFactory;
 
-    private final DomainServiceRepository domainServiceRepository;
-
 
     @Autowired
     public ActionController(
         ApplicationService applicationService, ServletContext servletContext, ActionService actionService,
         RuntimeContextFactory runtimeContextFactory,
-        ScopedContextFactory scopedContextFactory,
-        DomainServiceRepository domainServiceRepository
+        ScopedContextFactory scopedContextFactory
     )
     {
         this.applicationService = applicationService;
@@ -71,7 +67,6 @@ public class ActionController
         this.actionService = actionService;
         this.runtimeContextFactory = runtimeContextFactory;
         this.scopedContextFactory = scopedContextFactory;
-        this.domainServiceRepository = domainServiceRepository;
     }
 
 
@@ -123,7 +118,7 @@ public class ActionController
             "/action/" + appName + "/" + actionName,
             request.getLocale(),
             scopedContextChain,
-            domainServiceRepository.getDomainService(appName)
+            applicationService.getDomainService(appName)
         );
 
         RuntimeContextHolder.register(runtimeContext, request);

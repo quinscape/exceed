@@ -5,6 +5,8 @@ import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.component.DataGraphQualifier;
+import de.quinscape.exceed.runtime.datasrc.ExceedDataSource;
+import de.quinscape.exceed.runtime.datasrc.JOOQDataSource;
 import de.quinscape.exceed.runtime.domain.property.PropertyConverter;
 import de.quinscape.exceed.runtime.expression.query.DataField;
 import de.quinscape.exceed.runtime.expression.query.JoinDefinition;
@@ -53,16 +55,12 @@ public class JOOQDomainOperations
 
     private static final TransactionDefinition DELETE_TRANSACTION_DEF = createDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 
-    private final DSLContext dslContext;
-
     private final PlatformTransactionManager txManager;
 
     public JOOQDomainOperations(
-        DSLContext dslContext,
         PlatformTransactionManager txManager
     )
     {
-        this.dslContext = dslContext;
         this.txManager = txManager;
     }
 
@@ -82,13 +80,16 @@ public class JOOQDomainOperations
     public DomainObject read(RuntimeContext runtimeContext, DomainService domainService, String type, String id)
     {
         DomainType domainType = domainService.getDomainType(type);
-        final NamingStrategy namingStrategy = domainService.getStorageConfiguration(type).getNamingStrategy();
+        final ExceedDataSource dataSource = domainService.getDataSource(
+            domainType.getDataSourceName()
+        );
+        final NamingStrategy namingStrategy = dataSource.getStorageConfiguration().getNamingStrategy();
 
         Table<Record> table = DBUtil.jooqTableFor(domainType, null);
 
         Field<Object> idField = DBUtil.jooqField(domainType, DomainType.ID_PROPERTY);
 
-        return dslContext.select()
+        return getDSLContext(runtimeContext, type).select()
             .from(table)
             .where(idField.eq(id))
             .fetchOne(new DomainTypeRecordMapper(runtimeContext, domainType, namingStrategy));
@@ -104,7 +105,7 @@ public class JOOQDomainOperations
             final String type = domainObject.getDomainType();
             DomainType domainType = domainService.getDomainType(type);
 
-            DeleteQuery<Record> query = dslContext.deleteQuery(DBUtil.jooqTableFor(domainType, null));
+            DeleteQuery<Record> query = getDSLContext(runtimeContext, domainType).deleteQuery(DBUtil.jooqTableFor(domainType, null));
 
             for (String name : domainType.getPkFields())
             {
@@ -134,7 +135,7 @@ public class JOOQDomainOperations
         TransactionStatus status = txManager.getTransaction(INSERT_TRANSACTION_DEF);
         try
         {
-            insertInternal(domainService, domainObject);
+            insertInternal(runtimeContext, domainService, domainObject);
         }
         catch (Exception ex)
         {
@@ -146,13 +147,16 @@ public class JOOQDomainOperations
     }
 
 
-    private void insertInternal(DomainService domainService, DomainObject domainObject)
+    private void insertInternal(
+        RuntimeContext runtimeContext, DomainService domainService,
+        DomainObject domainObject
+    )
     {
         final String type = domainObject.getDomainType();
         final DomainType domainType = domainService.getDomainType(type);
-        final NamingStrategy namingStrategy = domainService.getStorageConfiguration(type).getNamingStrategy();
+        final NamingStrategy namingStrategy = domainService.getDataSource(domainType.getDataSourceName()).getStorageConfiguration().getNamingStrategy();
 
-        InsertQuery<Record> query = dslContext.insertQuery(DBUtil.jooqTableFor(domainType, null));
+        InsertQuery<Record> query = getDSLContext(runtimeContext, domainType).insertQuery(DBUtil.jooqTableFor(domainType, null));
 
         for (DomainProperty property : domainType.getProperties())
         {
@@ -184,11 +188,11 @@ public class JOOQDomainOperations
 
             if (existing == null)
             {
-                insertInternal(domainService, genericDomainObject);
+                insertInternal(runtimeContext, domainService, genericDomainObject);
             }
             else
             {
-                updateInternal(domainService, genericDomainObject);
+                updateInternal(runtimeContext, domainService, genericDomainObject);
             }
 
         }
@@ -207,7 +211,7 @@ public class JOOQDomainOperations
         TransactionStatus status = txManager.getTransaction(UPDATE_TRANSACTION_DEF);
         try
         {
-            final boolean wasUpdated = updateInternal(domainService, domainObject);
+            final boolean wasUpdated = updateInternal(runtimeContext, domainService, domainObject);
 
             txManager.commit(status);
             return wasUpdated;
@@ -256,14 +260,20 @@ public class JOOQDomainOperations
     }
 
 
-    private boolean updateInternal(DomainService domainService, DomainObject domainObject)
+    private boolean updateInternal(
+        RuntimeContext runtimeContext, DomainService domainService,
+        DomainObject domainObject
+    )
     {
         final String type = domainObject.getDomainType();
         final DomainType domainType =  domainService.getDomainType(type);
-        final NamingStrategy namingStrategy = domainService.getStorageConfiguration(type).getNamingStrategy();
+        final ExceedDataSource dataSource = domainService.getDataSource(
+            domainType.getDataSourceName()
+        );
+        final NamingStrategy namingStrategy = dataSource.getStorageConfiguration().getNamingStrategy();
 
 
-        UpdateQuery<Record> query = dslContext.updateQuery(DBUtil.jooqTableFor(domainType, null));
+        UpdateQuery<Record> query = getDSLContext(runtimeContext, domainType).updateQuery(DBUtil.jooqTableFor(domainType, null));
 
         final List<String> pkFields = domainType.getPkFields();
 
@@ -309,6 +319,7 @@ public class JOOQDomainOperations
 
         Table<Record> mainTable = DBUtil.jooqTableFor(queryDomainType.getType(), queryDomainType.getAlias());
 
+        final DSLContext dslContext = getDSLContext(runtimeContext, queryDomainType.getLeftMost().getType());
         SelectQuery<Record> query = dslContext.selectQuery();
 
         query.addFrom(mainTable);
@@ -423,6 +434,23 @@ public class JOOQDomainOperations
     }
 
 
+    private DSLContext getDSLContext(RuntimeContext runtimeContext, String type)
+    {
+        return getDSLContext(runtimeContext, runtimeContext.getDomainService().getDomainType(type));
+    }
+
+    private DSLContext getDSLContext(RuntimeContext runtimeContext, DomainType type)
+    {
+        final ExceedDataSource dataSource = runtimeContext.getDomainService().getDataSource(type.getDataSourceName());
+        if (!(dataSource instanceof JOOQDataSource))
+        {
+            throw new IllegalStateException("Data source is not a JOOQDataSource");
+        }
+
+        return ((JOOQDataSource) dataSource).getDslContext();
+    }
+
+
     private JoinType getJoinType(String joinType)
     {
         return JoinType.valueOf(DefaultNamingStrategy.camelCaseToUnderline(joinType).toUpperCase());
@@ -443,9 +471,10 @@ public class JOOQDomainOperations
 
     private static Field<Object> jooqField(RuntimeContext runtimeContext, DataField dataField)
     {
-        final String domainTypeName = dataField.getQueryDomainType().getType().getName();
-        final NamingStrategy namingStrategy = runtimeContext.getDomainService().getStorageConfiguration
-            (domainTypeName).getNamingStrategy();
+        final ExceedDataSource dataSource = runtimeContext.getDomainService().getDataSource(
+            dataField.getQueryDomainType().getType().getDataSourceName()
+        );
+        final NamingStrategy namingStrategy = dataSource.getStorageConfiguration().getNamingStrategy();
         return DSL.field(DSL.name(dataField.getNameFromStrategy(namingStrategy)));
     }
 
@@ -502,8 +531,10 @@ public class JOOQDomainOperations
             {
                 if (!mappedFields.contains(field))
                 {
-                    final String domainTypeName = field.getQueryDomainType().getType().getName();
-                    final NamingStrategy namingStrategy = domainService.getStorageConfiguration(domainTypeName).getNamingStrategy();
+                    final ExceedDataSource dataSource = domainService.getDataSource(
+                        field.getQueryDomainType().getType().getDataSourceName()
+                    );
+                    final NamingStrategy namingStrategy = dataSource.getStorageConfiguration().getNamingStrategy();
                     Object value = record.getValue(DSL.field(DSL.name(field.getNameFromStrategy(namingStrategy))));
                     domainObject.setProperty(field.getLocalName(), value);
                 }
@@ -521,8 +552,10 @@ public class JOOQDomainOperations
                     {
                         final DataField dataField = allFields.get(idx);
 
-                        final String domainTypeName = dataField.getQueryDomainType().getType().getName();
-                        final NamingStrategy namingStrategy = domainService.getStorageConfiguration(domainTypeName).getNamingStrategy();
+                        final ExceedDataSource dataSource = domainService.getDataSource(
+                            dataField.getQueryDomainType().getType().getDataSourceName()
+                        );
+                        final NamingStrategy namingStrategy = dataSource.getStorageConfiguration().getNamingStrategy();
 
                         Object nestedValue = record.getValue(DSL.field(DSL.name(dataField.getNameFromStrategy(namingStrategy))));
 

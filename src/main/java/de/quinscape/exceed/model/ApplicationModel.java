@@ -15,6 +15,7 @@ import de.quinscape.exceed.model.meta.ApplicationMetaData;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.routing.RoutingTable;
+import de.quinscape.exceed.model.staging.StageModel;
 import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.domain.DomainTypesRegistry;
@@ -54,6 +55,7 @@ public class ApplicationModel
         map.put(LayoutModel.class, ApplicationModel::getLayout);
         map.put(QueryTypeModel.class, (app,name) -> app.getQueryTypes().get(name));
         map.put(PropertyTypeModel.class, ApplicationModel::getPropertyType);
+        map.put(StageModel.class, (app, name) -> app.getStageModels().get(name));
         EXTRACTORS = map;
     }
 
@@ -94,6 +96,10 @@ public class ApplicationModel
     private Map<String, StateMachine> stateMachines = new HashMap<>();
 
     private Map<String, StateMachine> stateMachinesRO = Collections.unmodifiableMap(stateMachines);
+
+    private Map<String, StageModel> stageModels = new HashMap<>();
+
+    private Map<String, StageModel> stageModelsRO = Collections.unmodifiableMap(stageModels);
 
     private String name;
 
@@ -454,6 +460,16 @@ public class ApplicationModel
         return stateMachinesRO;
     }
 
+    public void addStageModel( StageModel stageModel)
+    {
+        stageModels.put(stageModel.getName(), stageModel);
+    }
+
+    public Map<String, StageModel> getStageModels()
+    {
+        return stageModelsRO;
+    }
+
     public <T extends TopLevelModel> T getNamedDependent(Class<T> type, String name)
     {
         final TopLevelModelExtractor<? extends TopLevelModel> extractor = EXTRACTORS.get(type);
@@ -465,4 +481,5 @@ public class ApplicationModel
 
         return (T) extractor.get(this, name);
     }
+
 }

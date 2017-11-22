@@ -3,7 +3,7 @@ package de.quinscape.exceed.model.routing;
 
 import de.quinscape.exceed.model.annotation.MergeStrategy;
 import de.quinscape.exceed.model.expression.ExpressionValue;
-import de.quinscape.exceed.model.merge.MergeType;
+import de.quinscape.exceed.model.merge.ModelMergeMode;
 import de.quinscape.exceed.runtime.model.InconsistentModelException;
 import org.svenson.JSONProperty;
 
@@ -13,7 +13,7 @@ import java.util.Set;
 /**
  * A single routing table mapping.
  */
-@MergeStrategy(MergeType.REPLACE)
+@MergeStrategy(ModelMergeMode.REPLACE)
 public class Mapping
 {
     private String viewName;

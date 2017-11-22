@@ -22,6 +22,8 @@ public class AppStateBuilder
 
     private String defaultApp;
 
+    private List<String> stages;
+
 
     public AppStateBuilder()
     {
@@ -86,8 +88,15 @@ public class AppStateBuilder
     }
 
 
+    public AppStateBuilder withStages(List<String> stages)
+    {
+        this.stages = stages;
+        return this;
+    }
+
+
     public AppState build()
     {
-        return new AppState(name, path, status, extensions, domainVersion, defaultApp);
+        return new AppState(name, path, status, extensions, domainVersion, defaultApp, stages);
     }
 }

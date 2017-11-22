@@ -13,13 +13,9 @@ public interface DomainType
 {
     String ID_PROPERTY = "id";
     /**
-     * Storage used for internal data types.
-     */
-    String SYSTEM_STORAGE = "systemStorage";
-    /**
      * Default storage for non-system types
      */
-    String DEFAULT_STORAGE = "jooqDatabaseStorage";
+    String SYSTEM_DATA_SOURCE = "systemDataSource";
     /**
      * Internal property to distinguish domain type objects.
      */
@@ -35,11 +31,11 @@ public interface DomainType
 
     boolean isPKField(String name);
 
-    String getStorageConfiguration();
-
     boolean isSystem();
 
     String getDescription();
+
+    String getDataSourceName();
 
     void postProcess(ApplicationModel applicationModel);
 }

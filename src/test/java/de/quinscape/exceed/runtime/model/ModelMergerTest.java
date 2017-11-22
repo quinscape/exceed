@@ -1,10 +1,15 @@
 package de.quinscape.exceed.runtime.model;
 
+import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.model.config.ApplicationConfig;
 import de.quinscape.exceed.model.config.BaseTemplateConfig;
 import de.quinscape.exceed.model.config.ComponentConfig;
 import de.quinscape.exceed.model.routing.Mapping;
 import de.quinscape.exceed.model.routing.RoutingTable;
+import de.quinscape.exceed.model.staging.DataSourceModel;
+import de.quinscape.exceed.model.staging.JOOQDataSourceModel;
+import de.quinscape.exceed.model.staging.StageModel;
+import de.quinscape.exceed.model.staging.SystemDataSourceModel;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -15,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static de.quinscape.exceed.runtime.model.ModelMerger.*;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 
@@ -22,27 +28,23 @@ public class ModelMergerTest
 {
 
     @Test
-    public void testPrimitives() throws Exception
+    public void mergePrimitives() throws Exception
     {
-
-        final ModelMerger merger = merger();
-
-        assertThat(merger.merge("aab", "bbb"), is("bbb"));
-        assertThat(merger.merge(1, 2), is(2));
-        assertThat(merger.merge(false, true), is(true));
+        assertThat( merge("aaa", null), is("aaa"));
+        assertThat( merge(null, "aaa"), is("aaa"));
+        assertThat( merge("aab", "bbb"), is("bbb"));
+        assertThat( merge("bbb", "aab"), is("aab"));
+        assertThat( merge(1, 2), is(2));
+        assertThat( merge(2, 1), is(1));
+        assertThat( merge(false, true), is(true));
+        assertThat( merge(true, false), is(false));
     }
 
-
-    private ModelMerger merger()
-    {
-        return new ModelMerger(null, null, null);
-    }
 
 
     @Test
     public void mergeRoutingTables() throws Exception
     {
-        final ModelMerger merger = merger();
 
         final RoutingTable routingTableA = new RoutingTable();
         final TreeMap<String, Mapping> mappingsA = new TreeMap<>();
@@ -55,21 +57,17 @@ public class ModelMergerTest
         routingTableB.setMappings(mappingsB);
 
 
-        final RoutingTable merged = (RoutingTable) merger.merge(routingTableA, routingTableB);
+        final RoutingTable merged = merge(routingTableA, routingTableB);
 
         assertThat(merged.getMappings().size(), is(2));
         assertThat(merged.getMappings().get("/").getViewName(), is("Home"));
         assertThat(merged.getMappings().get("/second").getViewName(), is("Second"));
 
-        // new mapping and new map
-        assertThat(merger.getNewInstanceCount(), is((2)));
     }
 
     @Test
-    public void mergeRoutingTables2() throws Exception
+    public void overwriteRoutingEntry() throws Exception
     {
-        final ModelMerger merger = merger();
-
         final RoutingTable routingTableA = new RoutingTable();
         final TreeMap<String, Mapping> mappingsA = new TreeMap<>();
         mappingsA.put("/", new Mapping("Home", null));
@@ -81,13 +79,11 @@ public class ModelMergerTest
         routingTableB.setMappings(mappingsB);
 
 
-        final RoutingTable merged = (RoutingTable) merger.merge(routingTableA, routingTableB);
+        final RoutingTable merged = merge(routingTableA, routingTableB);
 
         assertThat(merged.getMappings().size(), is(1));
         assertThat(merged.getMappings().get("/").getViewName(), is("Second"));
 
-        // new mapping and new map
-        assertThat(merger.getNewInstanceCount(), is((2)));
     }
 
 
@@ -103,8 +99,7 @@ public class ModelMergerTest
         cfgB.setDefaultUsers(users);
 
 
-        final ModelMerger merger = merger();
-        final ApplicationConfig merge = merger.merge(cfgA, cfgB);
+        final ApplicationConfig merge = merge(cfgA, cfgB);
 
         assertThat(merge.getDefaultUsers().get("user"),is(newSet("ROLE_USER", "ROLE_XXX")));
     }
@@ -117,10 +112,9 @@ public class ModelMergerTest
         cfgB.setSupportedLocales(Collections.singletonList("en"));
 
 
-        final ModelMerger merger = merger();
-        final ApplicationConfig merge = merger.merge(cfgA, cfgB);
+        final ApplicationConfig mergedConfig = merge(cfgA, cfgB);
 
-        assertThat(merge.getSupportedLocales(),is(Arrays.asList("en")));
+        assertThat(mergedConfig.getSupportedLocales(),is(Arrays.asList("en")));
     }
 
 
@@ -146,13 +140,41 @@ public class ModelMergerTest
         cfgA.setComponentConfig(componentConfigA);
         cfgB.setComponentConfig(componentConfigB);
 
-        final ModelMerger merger = merger();
-        final ApplicationConfig merge = merger.merge(cfgA, cfgB);
-
-        final ComponentConfig mergedComponentCfg = merge.getComponentConfig();
+        final ComponentConfig mergedComponentCfg = merge(cfgA, cfgB).getComponentConfig();
         assertThat(mergedComponentCfg.getBaseTemplateConfig().getHead(),is("HEAD"));
         assertThat(mergedComponentCfg.getBaseTemplateConfig().getContentAfter(),is("AFTER2"));
 
+    }
+
+
+    @Test
+    public void testDataSourceMerging() throws Exception
+    {
+
+        final JOOQDataSourceModel modelA = new JOOQDataSourceModel();
+
+        modelA.setNamingStrategyName("aaa");
+        modelA.setDomainOperationsName("bbb");
+        modelA.setSchemaServiceName("ccc");
+
+        final JOOQDataSourceModel modelB = new JOOQDataSourceModel();
+
+        final SystemDataSourceModel systemDataSourceModel = new SystemDataSourceModel();
+
+        final StageModel stageA = new StageModel();
+        final StageModel stageB = new StageModel();
+        stageA.setDataSourceModels(ImmutableMap.of("test", modelA, "systemDataSource", systemDataSourceModel));
+        stageB.setDataSourceModels(ImmutableMap.of("test", modelB));
+
+        final StageModel mergedModel = merge(stageA, stageB);
+
+        final JOOQDataSourceModel mergedSrc = (JOOQDataSourceModel) mergedModel.getDataSourceModels().get("test");
+        assertThat(mergedSrc.getNamingStrategyName(), is("aaa"));
+        assertThat(mergedSrc.getDomainOperationsName(), is("bbb"));
+        assertThat(mergedSrc.getSchemaServiceName(), is("ccc"));
+
+        final DataSourceModel mergedSrc2 = mergedModel.getDataSourceModels().get("systemDataSource");
+        assertThat(mergedSrc2,instanceOf(SystemDataSourceModel.class));
     }
 
 
@@ -165,6 +187,4 @@ public class ModelMergerTest
         }
         return set;
     }
-
-
 }

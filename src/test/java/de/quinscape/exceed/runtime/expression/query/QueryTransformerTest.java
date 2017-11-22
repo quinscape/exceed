@@ -1,6 +1,5 @@
 package de.quinscape.exceed.runtime.expression.query;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.TestDomainServiceBase;
 import de.quinscape.exceed.expression.ParseException;
@@ -12,11 +11,8 @@ import de.quinscape.exceed.model.meta.PropertyType;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.TestApplication;
 import de.quinscape.exceed.runtime.TestApplicationBuilder;
-import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
-import de.quinscape.exceed.runtime.schema.DefaultStorageConfiguration;
-import de.quinscape.exceed.runtime.schema.DefaultStorageConfigurationRepository;
 import org.jooq.Condition;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -41,9 +37,7 @@ public class QueryTransformerTest
     private ExpressionService expressionService = new ExpressionServiceImpl(ImmutableSet.of
         (queryTransformerOperations));
 
-    private ComponentQueryTransformer transformer = new ComponentQueryTransformer(expressionService, new DefaultStorageConfigurationRepository(
-        ImmutableMap.of("testStorage", new DefaultStorageConfiguration( null, new DefaultNamingStrategy(), null)),
-        null));
+    private ComponentQueryTransformer transformer = new ComponentQueryTransformer(expressionService);
 
     private View view = new View("test");
 
@@ -163,7 +157,6 @@ public class QueryTransformerTest
             DomainTypeModel domainType = new DomainTypeModel();
             domainType.setName(name);
             domainType.setAnnotation("Test domain type " + name);
-            domainType.setStorageConfiguration("testStorage");
 
             final List<DomainProperty> list = new ArrayList<>();
 

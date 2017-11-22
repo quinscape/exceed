@@ -51,13 +51,16 @@ public class DomainTypeModel
 
     private DomainService domainService;
 
-    private String storageConfiguration;
-
     private String description;
 
     private Map<String, DomainProperty> propertyMap;
 
+    private String dataSource;
 
+
+    /**
+     * Name of the domain type. Should be start with an upper case letter.
+     */
     @Override
     public String getName()
     {
@@ -188,21 +191,21 @@ public class DomainTypeModel
         return visitor.visit(this, in);
     }
 
+    @JSONProperty("dataSource")
+    public void setDataSourceName(String dataSource)
+    {
+        this.dataSource = dataSource;
+    }
+
     /**
-     * Configures the storage configuration to use for this domain type. Default is <code>"jooqDatabaseStorage"</code>.
+     * The exceed data source to use for this domain type. Default is "defaultDataSource"
      */
     @Override
-    @JSONProperty(value = "storage", ignoreIfNull = true, priority = -20)
-    public String getStorageConfiguration()
+    public String getDataSourceName()
     {
-        return storageConfiguration;
+        return dataSource;
     }
 
-
-    public void setStorageConfiguration(String storageConfiguration)
-    {
-        this.storageConfiguration = storageConfiguration;
-    }
 
 
     @Override

@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.controller;
 
 import com.google.common.cache.LoadingCache;
-import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.service.CachedResource;
 import de.quinscape.exceed.runtime.util.MediaTypeService;
@@ -28,36 +27,37 @@ public class ResourceController
 {
     private final static Logger log = LoggerFactory.getLogger(ResourceController.class);
 
-    @Autowired
-    private ApplicationService applicationService;
+    private final ApplicationService applicationService;
+
+    private final MediaTypeService mediaTypeService;
+
+    private final ServletContext servletContext;
+
 
     @Autowired
-    private MediaTypeService mediaTypeService;
-
-    @Autowired
-    private ServletContext servletContext;
+    public ResourceController(
+        ApplicationService applicationService, MediaTypeService mediaTypeService, ServletContext servletContext
+    )
+    {
+        this.applicationService = applicationService;
+        this.mediaTypeService = mediaTypeService;
+        this.servletContext = servletContext;
+    }
 
 
     @RequestMapping("/res/{appName}/**")
     public ResponseEntity serveResource(
         @PathVariable("appName") String appName,
-        ModelMap model, HttpServletRequest request, HttpServletResponse response) throws IOException, ExecutionException
+        ModelMap model, HttpServletRequest request, HttpServletResponse response
+    ) throws IOException, ExecutionException
     {
 
-        DefaultRuntimeApplication runtimeApplication = (DefaultRuntimeApplication) applicationService.getRuntimeApplication(
-
-            appName);
-        if (runtimeApplication == null)
-        {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Application '" + appName + "' not found");
-            return null;
-        }
 
         String resourceURI = RequestUtil.getRemainingURI(request, appName.length() + 5);
 
         if (resourceURI.equals("/style/" + appName + ".css"))
         {
-            byte[] data = runtimeApplication.getCollectedStyles().getBytes(RequestUtil. UTF_8);
+            byte[] data = applicationService.getCollectedStyles(appName).getBytes(RequestUtil.UTF_8);
 
             response.setCharacterEncoding("UTF-8");
             response.setContentType("text/css");
@@ -79,7 +79,8 @@ public class ResourceController
 
         log.debug("Serve resource {}:{}", appName, resourcePath);
 
-        LoadingCache<String, CachedResource> resourceCache = runtimeApplication.getResourceLoader().getResourceCache();
+        LoadingCache<String, CachedResource> resourceCache = applicationService.getResourceLoader(appName)
+            .getResourceCache();
 
         if (resourceCache == null)
         {

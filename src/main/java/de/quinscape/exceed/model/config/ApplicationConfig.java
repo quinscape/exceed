@@ -7,7 +7,7 @@ import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.annotation.DocumentedCollection;
 import de.quinscape.exceed.model.annotation.MergeStrategy;
 import de.quinscape.exceed.model.context.ContextModel;
-import de.quinscape.exceed.model.merge.MergeType;
+import de.quinscape.exceed.model.merge.ModelMergeMode;
 import de.quinscape.exceed.runtime.security.Roles;
 import org.springframework.util.StringUtils;
 import org.svenson.JSONProperty;
@@ -23,10 +23,11 @@ import java.util.Set;
 /**
  * Encapsulates general application configuration. Corresponds to the "/models/config.json" resource.
  */
-@MergeStrategy(MergeType.DEEP)
+@MergeStrategy(ModelMergeMode.DEEP)
 public class ApplicationConfig
     extends AbstractTopLevelModel
 {
+
     /**
      * The default defaultUsers to use.
      */
@@ -43,6 +44,8 @@ public class ApplicationConfig
     );
 
     public static final int DECIMAL_PLACES_DEFAULT = 3;
+
+    public static final String DEFAULT_DATA_SOURCE = "jooqDataSource";
 
     private List<String> supportedLocales = Collections.singletonList("en_US");
 
@@ -69,6 +72,9 @@ public class ApplicationConfig
     private String authSchema;
 
     private Map<String, Set<String>> defaultUsers = DEFAULT_USERS;
+
+    private String defaultDataSource = DEFAULT_DATA_SOURCE;
+
 
     /**
      * Database schema for this application
@@ -97,6 +103,7 @@ public class ApplicationConfig
      * @return
      */
     @JSONTypeHint(String.class)
+    @MergeStrategy(ModelMergeMode.REPLACE)
     public List<String> getStyleSheets()
     {
         return styleSheets;
@@ -160,7 +167,7 @@ public class ApplicationConfig
     /**
      * Array of normalized locale specifications to support for this application.
      */
-    @MergeStrategy(MergeType.REPLACE)
+    @MergeStrategy(ModelMergeMode.REPLACE)
     public List<String> getSupportedLocales()
     {
         if (supportedLocales == null)
@@ -346,7 +353,7 @@ public class ApplicationConfig
         keyDesc = "userName",
         valueDesc = "Set of role string"
     )
-    @MergeStrategy(MergeType.DEEP)
+    @MergeStrategy(ModelMergeMode.DEEP)
     public Map<String, Set<String>> getDefaultUsers()
     {
         return defaultUsers;
@@ -356,5 +363,20 @@ public class ApplicationConfig
     public void setDefaultUsers(Map<String, Set<String>> defaultUsers)
     {
         this.defaultUsers = defaultUsers;
+    }
+
+
+    /**
+     * The name of the default data source for normal domain types. 
+     */
+    public String getDefaultDataSource()
+    {
+        return defaultDataSource;
+    }
+
+
+    public void setDefaultDataSource(String defaultDataSource)
+    {
+        this.defaultDataSource = defaultDataSource;
     }
 }

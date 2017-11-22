@@ -1,7 +1,6 @@
 package de.quinscape.exceed.runtime.controller;
 
 import de.quinscape.exceed.model.Model;
-import de.quinscape.exceed.runtime.application.DefaultRuntimeApplication;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import org.apache.commons.io.IOUtils;
@@ -18,25 +17,32 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.concurrent.TimeUnit;
 
 @Controller
 public class HotReloadController
 {
     private final static Logger log = LoggerFactory.getLogger(HotReloadController.class);
 
-    public final static long TIMEOUT = TimeUnit.SECONDS.toMillis(110);
 
-    @Autowired
-    private ApplicationService applicationService;
+    private final ApplicationService applicationService;
 
-    @Autowired
-    private ServletContext servletContext;
+    private final ServletContext servletContext;
 
-    @Autowired
-    private ModelJSONService modelJSONService;
+    private final ModelJSONService modelJSONService;
 
     private final static Charset UTF8 = Charset.forName("UTF-8");
+
+
+    @Autowired
+    public HotReloadController(
+        ApplicationService applicationService, ServletContext servletContext, ModelJSONService modelJSONService
+    )
+    {
+        this.applicationService = applicationService;
+        this.servletContext = servletContext;
+        this.modelJSONService = modelJSONService;
+    }
+
 
     @RequestMapping("/reload/{name}")
     public void pollForChanges(
@@ -44,17 +50,8 @@ public class HotReloadController
         HttpServletRequest request, HttpServletResponse response
     ) throws IOException, InterruptedException
     {
-        DefaultRuntimeApplication runtimeApplication = (DefaultRuntimeApplication) applicationService.getRuntimeApplication(
-
-            appName);
-        if (runtimeApplication == null)
-        {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Application '" + appName + "' not found");
-            return;
-        }
-
+        Model changedModel = applicationService.waitForChange(appName);
         // will block until a change happens or a timeout.
-        Model changedModel = runtimeApplication.waitForChange(TIMEOUT);
 
         String json = modelJSONService.toJSON(changedModel);
         log.debug("Sending change response: {}", json);
@@ -71,7 +68,7 @@ public class HotReloadController
             os.write(data);
             os.flush();
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             log.debug("Error writing response", e);
             IOUtils.closeQuietly(os);

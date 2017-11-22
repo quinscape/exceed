@@ -1,15 +1,16 @@
 package de.quinscape.exceed.runtime.config;
 
 import de.quinscape.exceed.model.meta.ApplicationError;
+import de.quinscape.exceed.model.startup.AppState;
 import de.quinscape.exceed.model.startup.ExceedConfig;
 import de.quinscape.exceed.runtime.application.ApplicationStatus;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.datasrc.ExceedDataSource;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
 import de.quinscape.exceed.runtime.resource.stream.ClassPathResourceRoot;
 import de.quinscape.exceed.runtime.service.ApplicationService;
 import de.quinscape.exceed.runtime.service.ComponentRegistryImpl;
-import de.quinscape.exceed.model.startup.AppState;
 import de.quinscape.exceed.runtime.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -41,8 +43,6 @@ public class DefaultAppConfiguration
 
     public static final String EXCEED_STARTUP_CONFIG = "/WEB-INF/cfg/startup.json";
 
-    private final static String ROOT_NAME = "exceed-root";
-
     private final ServletContext servletContext;
 
     private final ApplicationService applicationService;
@@ -57,10 +57,10 @@ public class DefaultAppConfiguration
     @Autowired
     public DefaultAppConfiguration(
         ServletContext servletContext,
+        Environment env,
         ApplicationService applicationService,
         ComponentRegistryImpl componentRegistry,
-        ExceedConfig exceedConfig,
-        Environment env
+        ExceedConfig exceedConfig
     )
     {
         this.servletContext = servletContext;
@@ -77,8 +77,7 @@ public class DefaultAppConfiguration
         registerComponents();
         initializeApps();
     }
-
-
+    
     private void registerComponents() throws IOException
     {
         File exceedLibrarySource = Util.getExceedLibrarySource();
@@ -114,8 +113,7 @@ public class DefaultAppConfiguration
 
     private void initializeApps()
     {
-        applicationService.update(servletContext, exceedConfig);
-
+        applicationService.startup(servletContext, exceedConfig, env);
     }
 
 
@@ -133,7 +131,7 @@ public class DefaultAppConfiguration
             final RuntimeApplication runtimeApplication = applicationService.getRuntimeApplication(
                 appName
             );
-
+                
             final Set<ApplicationError> errors = runtimeApplication.getApplicationModel().getMetaData().getErrors();
 
             final int numberOfErrors = errors.size();
@@ -166,13 +164,33 @@ public class DefaultAppConfiguration
         log.info("*");
         activeApplications.forEach(appState -> {
 
+            final RuntimeApplication app = applicationService.getRuntimeApplication(appState.getName());
+
             if (!appWithErrors.contains(appState.getName()))
             {
                 log.info("*    Application: {}", appState.getName());
                 log.info("*    Extensions: {}", appState.getExtensions());
+                log.info("*    Stages: {}", app.getApplicationModel().getMetaData().getActiveStageNames());
             }
             log.info("*");
         });
+
+        final Map<String, ExceedDataSource> sharedDataSources = applicationService.getSharedDataSources();
+
+        if (sharedDataSources.size() > 0)
+        {
+            log.info("*  Shared Data Sources:");
+
+            for (String dataSourceName : sharedDataSources.keySet())
+            {
+                final String usedBy = Util.join(
+                    applicationService.getSharedDataSourceToApp().get(dataSourceName),
+                    ", "
+                );
+
+                log.info("    Data source '{}': {}", dataSourceName, usedBy);
+            }
+        }
 
         if (appWithErrors.size() > 0)
         {
@@ -184,6 +202,5 @@ public class DefaultAppConfiguration
         {
             log.info("***************************************************************************");
         }
-
     }
 }

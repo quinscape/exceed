@@ -204,7 +204,8 @@ public class ModelCompositionService
         }
         else if (topLevelModel instanceof ApplicationConfig)
         {
-            applicationContext.getBean(ApplicationService.class).resetRuntimeApplication(applicationModel.getName());
+            final ApplicationService appSvc = applicationContext.getBean(ApplicationService.class);
+            appSvc.resetRuntimeApplication(applicationModel.getName());
         }
         else if (topLevelModel instanceof QueryTypeModel)
         {
@@ -255,6 +256,10 @@ public class ModelCompositionService
 
         final M model = modelJSONService.toModel(cls, json);
 
+        if (model == null)
+        {
+            return null;
+        }
         model.setResource(resource);
         model.setExtension(resource.getResourceRoot().getExtensionIndex());
 

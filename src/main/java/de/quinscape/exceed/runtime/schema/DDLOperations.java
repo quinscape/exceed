@@ -4,6 +4,7 @@ import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.runtime.RuntimeContext;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -17,21 +18,21 @@ public interface DDLOperations
      *
      * @return list of schemata
      */
-    List<String> listSchemata();
+    List<String> listSchemata(RuntimeContext runtimeContext);
 
     /**
      * Deletes a schema.
      *
      * @param name      schema name
      */
-    void dropSchema(String name);
+    void dropSchema(RuntimeContext runtimeContext, String name);
 
     /**
      * Creates a schema.
      *
      * @param name      schema name
      */
-    void createSchema(String name);
+    void createSchema(RuntimeContext runtimeContext, String name);
 
     /**
      * Lists all existing tables of a given schema
@@ -40,7 +41,7 @@ public interface DDLOperations
      *
      * @return list of tables
      */
-    List<String> listTables(String schema);
+    List<String> listTables(RuntimeContext runtimeContext, String schema);
 
     /**
      * Creates a new database table for the given domain type.
@@ -83,9 +84,11 @@ public interface DDLOperations
      */
     void createForeignKeys(RuntimeContext runtimeContext, DomainType type, DomainProperty domainProperty);
 
-    void renameTable(String schema, String from, String to);
+    void renameTable(RuntimeContext runtimeContext, String schema, String from, String to);
 
-    Map<String, DatabaseColumn> listColumns(String schemaName, String tableName);
+    Map<String, DatabaseColumn> listColumns(RuntimeContext runtimeContext, String schemaName, String tableName);
 
-    void renameField(String schema, String type, String from, String to);
+    void renameField(RuntimeContext runtimeContext, String schema, String type, String from, String to);
+
+    void destroy();
 }

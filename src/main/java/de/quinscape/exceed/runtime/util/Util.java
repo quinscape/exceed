@@ -3,6 +3,7 @@ package de.quinscape.exceed.runtime.util;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import de.quinscape.exceed.runtime.ExceedProperties;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,10 +15,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.UUID;
@@ -25,7 +29,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class Util
 {
-    public static final String LIBRARY_SOURCE_SYSTEM_PROPERTY = "exceed.library.source";
 
     private final static Logger log = LoggerFactory.getLogger(Util.class);
 
@@ -124,7 +127,7 @@ public final class Util
 
     public static File getExceedLibrarySource()
     {
-        String property = System.getProperty(LIBRARY_SOURCE_SYSTEM_PROPERTY);
+        String property = System.getProperty(ExceedProperties.LIBRARY_SOURCE_SYSTEM_PROPERTY);
         if (property == null)
         {
             return null;
@@ -135,7 +138,7 @@ public final class Util
         {
             if (!isValidSourceDir(sourceDir))
             {
-                throw new IllegalStateException("System property " + LIBRARY_SOURCE_SYSTEM_PROPERTY + " is set but " +
+                throw new IllegalStateException("System property " + ExceedProperties.LIBRARY_SOURCE_SYSTEM_PROPERTY + " is set but " +
                     "does not point to a valid source checkout");
             }
             sourceChecked.set(true);
@@ -457,6 +460,31 @@ public final class Util
             return path.substring(1);
         }
         return path;
+    }
+
+
+    public static Properties mapToProperties(Map<String, String> props)
+    {
+        final Properties properties = new Properties();
+
+        for (Map.Entry<String, String> e : props.entrySet())
+        {
+            properties.setProperty(e.getKey(), e.getValue());
+        }
+        return properties;
+    }
+
+
+    public static Map<String, String> propertiesToMap(Properties properties)
+    {
+        final HashMap<String, String> map = new HashMap<>();
+        for (Enumeration<?> e = properties.propertyNames(); e.hasMoreElements(); )
+        {
+            final String key = (String) e.nextElement();
+
+            map.put(key, properties.getProperty(key));
+        }
+        return map;
     }
 }
 

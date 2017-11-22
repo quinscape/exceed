@@ -5,11 +5,11 @@ import de.quinscape.exceed.model.AbstractModel;
 import de.quinscape.exceed.model.Model;
 import de.quinscape.exceed.model.TopLevelModel;
 import de.quinscape.exceed.model.annotation.ExceedPropertyType;
+import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.property.DomainPropertyBuilder;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.domain.type.DomainTypeModel;
-import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.meta.PropertyType;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.component.DataGraph;
@@ -133,7 +133,7 @@ public class ModelSchemaService
         final DomainTypeModel domainType = new DomainTypeModel();
         domainType.setName(domainTypeName);
         domainType.setSystem(true);
-        domainType.setStorageConfiguration(DomainType.SYSTEM_STORAGE);
+        domainType.setDataSourceName(DomainType.SYSTEM_DATA_SOURCE);
 
         modelDomainTypes.put(cls, domainType);
 

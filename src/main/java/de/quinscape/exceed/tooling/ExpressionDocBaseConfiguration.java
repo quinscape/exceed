@@ -6,13 +6,9 @@ import de.quinscape.exceed.runtime.config.ExpressionConfiguration;
 import de.quinscape.exceed.runtime.expression.query.QueryContext;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
-import de.quinscape.exceed.runtime.schema.StorageConfiguration;
-import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-
-import java.util.Set;
 
 /**
  * Entry point of a special spring context for model docs generation. Mocks some beans
@@ -31,25 +27,6 @@ public class ExpressionDocBaseConfiguration
             public QueryDefinition transform(
                 RuntimeContext runtimeContext, QueryContext queryContext, ASTExpression astExpression
             )
-            {
-                return null;
-            }
-        };
-    }
-    @Bean
-    public StorageConfigurationRepository storageConfigurationRepository()
-    {
-        return new StorageConfigurationRepository()
-        {
-            @Override
-            public Set<String> getConfigurationNames()
-            {
-                return null;
-            }
-
-
-            @Override
-            public StorageConfiguration getConfiguration(String name)
             {
                 return null;
             }

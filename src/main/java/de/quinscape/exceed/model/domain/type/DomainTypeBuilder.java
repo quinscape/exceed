@@ -28,6 +28,8 @@ public class DomainTypeBuilder
 
     private String description;
 
+    private String dataSourceName;
+
 
     public DomainTypeBuilder(String name)
     {
@@ -91,6 +93,13 @@ public class DomainTypeBuilder
     }
 
 
+    public DomainTypeBuilder withDataSourceName(String dataSourceName)
+    {
+        this.dataSourceName = dataSourceName;
+        return this;
+    }
+
+
     public DomainType build()
     {
         final DomainTypeModel domainType = new DomainTypeModel();
@@ -103,7 +112,7 @@ public class DomainTypeBuilder
         domainType.setDomainService(domainService);
         domainType.setIdentityGUID(identityGUID);
         domainType.setDescription(description);
-        domainType.setStorageConfiguration(storageConfiguration);
+        domainType.setDataSourceName(dataSourceName);
 
         return domainType;
     }

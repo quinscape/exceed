@@ -3,13 +3,14 @@ package de.quinscape.exceed.model;
 import de.quinscape.exceed.model.config.ApplicationConfig;
 import de.quinscape.exceed.model.domain.DomainRule;
 import de.quinscape.exceed.model.domain.DomainVersion;
+import de.quinscape.exceed.model.domain.EnumType;
+import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
 import de.quinscape.exceed.model.domain.type.DomainTypeModel;
-import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.type.QueryTypeModel;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.routing.RoutingTable;
-import de.quinscape.exceed.model.domain.StateMachine;
+import de.quinscape.exceed.model.staging.StageModel;
 import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
 
@@ -44,4 +45,6 @@ public interface TopLevelModelVisitor<I, O>
     O visit(QueryTypeModel queryTypeModel);
 
     O visit(StateMachine stateMachine, I in);
+
+    O visit(StageModel stageModel, I in);
 }

@@ -5,7 +5,7 @@ import de.quinscape.exceed.model.AbstractTopLevelModel;
 import de.quinscape.exceed.model.TopLevelModelVisitor;
 import de.quinscape.exceed.model.annotation.DocumentedCollection;
 import de.quinscape.exceed.model.annotation.MergeStrategy;
-import de.quinscape.exceed.model.merge.MergeType;
+import de.quinscape.exceed.model.merge.ModelMergeMode;
 import de.quinscape.exceed.runtime.application.MappingNotFoundException;
 import de.quinscape.exceed.runtime.application.RoutingResult;
 import org.svenson.JSONProperty;
@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
-@MergeStrategy(MergeType.DEEP)
+@MergeStrategy(ModelMergeMode.DEEP)
 public class RoutingTable
     extends AbstractTopLevelModel
 {

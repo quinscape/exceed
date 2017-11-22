@@ -21,8 +21,6 @@ import java.util.Map;
 public class QueryTypeOperations
     implements DomainOperations
 {
-    private final JdbcTemplate jdbcTemplate;
-
 
     private final Map<String, SqlQueryFactory> sqlQueryFactories;
 
@@ -32,13 +30,11 @@ public class QueryTypeOperations
 
 
     public QueryTypeOperations(
-        JdbcTemplate jdbcTemplate,
         Map<String, SqlQueryFactory> sqlQueryFactories,
         Map<String, QueryTypeParameterProvider> queryParameterProviders,
         Map<String, QueryTypeUpdateHandler> handlers
     )
     {
-        this.jdbcTemplate = jdbcTemplate;
         this.sqlQueryFactories = sqlQueryFactories;
         this.queryParameterProviders = queryParameterProviders;
         this.handlers = handlers;
@@ -66,6 +62,12 @@ public class QueryTypeOperations
         SqlQueryFactory factory = get(SqlQueryFactory.class, sqlQueryFactories, queryTypeModel.getSqlQueryFactory());
         QueryTypeParameterProvider parameterProvider = get(QueryTypeParameterProvider.class, queryParameterProviders, queryTypeModel.getQueryParameterProvider());
 
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(
+            domainService.getDataSource(
+                queryTypeModel.getDataSourceName()
+            ).getDataSource()
+        );
+        
         SqlQuery<DomainObject> sqlQuery = factory.create(runtimeContext, jdbcTemplate.getDataSource(), queryDefinition);
 
         final Object[] parameters = parameterProvider.getSqlParameters(runtimeContext, queryDefinition);
@@ -101,6 +103,9 @@ public class QueryTypeOperations
 
         return new DataGraph(queryDefinition.createColumnDescriptorMap(), list, count, null);
     }
+
+
+
 
     @Override
     public DomainObject create(RuntimeContext runtimeContext, DomainService domainService, String type, String id,

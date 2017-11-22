@@ -1,19 +1,17 @@
 package de.quinscape.exceed.runtime.editor.completion;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.TestDomainServiceBase;
+import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.domain.type.DomainTypeModel;
-import de.quinscape.exceed.model.domain.EnumType;
 import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.meta.PropertyType;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.TestApplication;
 import de.quinscape.exceed.runtime.TestApplicationBuilder;
-import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.editor.completion.expression.PropCompleteEnvironment;
 import de.quinscape.exceed.runtime.editor.completion.expression.PropCompleteOperations;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
@@ -22,8 +20,6 @@ import de.quinscape.exceed.runtime.expression.query.ComponentQueryTransformer;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.runtime.model.ModelJSONServiceImpl;
 import de.quinscape.exceed.runtime.model.TestRegistry;
-import de.quinscape.exceed.runtime.schema.DefaultStorageConfiguration;
-import de.quinscape.exceed.runtime.schema.DefaultStorageConfigurationRepository;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.apache.commons.io.FileUtils;
@@ -72,9 +68,7 @@ public class PropCompleteEnvironmentTest
         TestApplication app = new TestApplicationBuilder().withDomainService(new TestDomainService()).withEnum("MyEnum", myEnum).withView(viewModel).build();
         ExpressionService expressionService = new ExpressionServiceImpl(ImmutableSet.of(new PropCompleteOperations()));
 
-        ComponentQueryTransformer queryTransformer = new ComponentQueryTransformer(expressionService, new DefaultStorageConfigurationRepository(
-            ImmutableMap.of("testStorage", new DefaultStorageConfiguration(null, new DefaultNamingStrategy(), null)),
-            null));
+        ComponentQueryTransformer queryTransformer = new ComponentQueryTransformer(expressionService);
 
         {
 

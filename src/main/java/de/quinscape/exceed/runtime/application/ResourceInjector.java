@@ -1,9 +1,9 @@
 package de.quinscape.exceed.runtime.application;
 
+import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.annotation.InjectResource;
 import de.quinscape.exceed.model.annotation.ResourceInjectorPredicate;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
-import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.resource.ResourceLoader;
 import de.quinscape.exceed.runtime.resource.file.PathResources;
 import de.quinscape.exceed.runtime.util.JSONUtil;
@@ -11,8 +11,6 @@ import de.quinscape.exceed.runtime.util.RequestUtil;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
 import org.svenson.JSONParseException;
 import org.svenson.info.JSONClassInfo;
 import org.svenson.info.JSONPropertyInfo;
@@ -110,7 +108,7 @@ public class ResourceInjector
      *
      * @throws IllegalArgumentException if the given target object is not of the required type.
      */
-    public void injectResources(RuntimeContext runtimeContext, NashornScriptEngine nashorn, ResourceLoader resourceLoader, Object target)
+    public void injectResources(ApplicationModel applicationModel, NashornScriptEngine nashorn, ResourceLoader resourceLoader, Object target)
     {
         if (!target.getClass().equals(targetClass))
         {
@@ -119,7 +117,7 @@ public class ResourceInjector
 
         for (MetaDataResourceProperty property : properties)
         {
-            updateResourceInternal(runtimeContext, nashorn, resourceLoader, target, property);
+            updateResourceInternal(applicationModel, nashorn, resourceLoader, target, property);
         }
     }
 
@@ -133,25 +131,28 @@ public class ResourceInjector
      * @param target          meta data
      * @param resourcePath      resource path
      */
-    public void updateResource(RuntimeContext runtimeContext, NashornScriptEngine nashorn, ResourceLoader resourceLoader, Object target, String resourcePath)
+    public void updateResource(ApplicationModel applicationModel, NashornScriptEngine nashorn, ResourceLoader resourceLoader, Object target, String resourcePath)
     {
 
         for (MetaDataResourceProperty property : properties)
         {
             if (property.resourcePath.equals(resourcePath))
             {
-                updateResourceInternal(runtimeContext, nashorn, resourceLoader, target, property);
+                updateResourceInternal(applicationModel, nashorn, resourceLoader, target, property);
                 return;
             }
         }
     }
 
     private void updateResourceInternal(
-        RuntimeContext runtimeContext, NashornScriptEngine nashorn,
-        ResourceLoader resourceLoader, Object target, MetaDataResourceProperty property
+        ApplicationModel applicationModel,
+        NashornScriptEngine nashorn,
+        ResourceLoader resourceLoader,
+        Object target,
+        MetaDataResourceProperty property
     )
     {
-        if (property.predicate != null && !property.predicate.shouldInject(runtimeContext))
+        if (property.predicate != null && !property.predicate.shouldInject(applicationModel))
         {
             return;
         }

@@ -1,14 +1,19 @@
 package de.quinscape.exceed.runtime.schema;
 
 import de.quinscape.exceed.model.ApplicationModel;
+import de.quinscape.exceed.model.config.ApplicationConfig;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.property.ForeignKeyDefinition;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.datasrc.ExceedDataSource;
 import de.quinscape.exceed.runtime.domain.NamingStrategy;
 import de.quinscape.exceed.runtime.util.AppAuthentication;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Default implementation of the schema service that contains the default update algorithm and delegates the actual
@@ -17,86 +22,104 @@ import java.util.List;
 public class DefaultSchemaService
     implements SchemaService
 {
+    private final static Logger log = LoggerFactory.getLogger(DefaultSchemaService.class);
+
+
     private final NamingStrategy namingStrategy;
 
-    private final DDLOperations op;
+    private final DDLOperationsFactory opFactory;
 
 
-    public DefaultSchemaService(NamingStrategy namingStrategy, DDLOperations op)
+    public DefaultSchemaService(NamingStrategy namingStrategy, DDLOperationsFactory opFactory)
     {
         this.namingStrategy = namingStrategy;
-        this.op = op;
+        this.opFactory = opFactory;
     }
 
 
     @Override
-    public void synchronizeSchema(RuntimeContext runtimeContext, List<DomainType> domainTypes)
+    public void synchronizeSchema(RuntimeContext runtimeContext, ExceedDataSource dataSource, List<DomainType> domainTypes)
     {
+
+        log.info("Synchronize schema: {}, {}", dataSource, domainTypes);
+
         final ApplicationModel applicationModel = runtimeContext.getRuntimeApplication().getApplicationModel();
         final String schema = applicationModel.getConfigModel().getSchema();
         final String authSchema = applicationModel.getConfigModel().getAuthSchema();
 
-        List<String> schemata = op.listSchemata();
-        if (!schemata.contains(schema))
+        final DDLOperations ops = opFactory.create(runtimeContext, dataSource);
+        try
         {
-            op.createSchema(schema);
-        }
-        if (!schema.equals(authSchema) && !schemata.contains(authSchema))
-        {
-            op.createSchema(authSchema);
-        }
-
-        List<String> tables = op.listTables(schema);
-        List<String> authTables = op.listTables(authSchema);
-
-        for (DomainType type : domainTypes)
-        {
-            String tableName = namingStrategy.getTableName(type.getName());
-
-            final boolean isAuthType = AppAuthentication.isAuthType(type);
-            if (isAuthType ? authTables.contains(tableName) : tables.contains(tableName))
+            List<String> schemata = ops.listSchemata(runtimeContext);
+            if (!schemata.contains(schema))
             {
-                op.dropKeys(runtimeContext, type);
+                ops.createSchema(runtimeContext, schema);
             }
-        }
-
-        for (DomainType type : domainTypes)
-        {
-
-            String tableName = namingStrategy.getTableName(type.getName());
-            final boolean isAuthType = AppAuthentication.isAuthType(type);
-            if (isAuthType ? authTables.contains(tableName) : tables.contains(tableName))
+            if (!schema.equals(authSchema) && !schemata.contains(authSchema))
             {
-                op.updateTable(runtimeContext, type);
+                ops.createSchema(runtimeContext, authSchema);
             }
-            else
-            {
-                op.createTable(runtimeContext, type);
-            }
-        }
 
-        for (DomainType type : domainTypes)
-        {
-            op.createPrimaryKey(runtimeContext, type);
-        }
+            List<String> tables = ops.listTables(runtimeContext, schema);
+            List<String> authTables = ops.listTables(runtimeContext, authSchema);
 
-        for (DomainType type : domainTypes)
-        {
-            for (DomainProperty domainProperty : type.getProperties())
+            for (DomainType type : domainTypes)
             {
-                final ForeignKeyDefinition foreignKeyDefinition = domainProperty.getForeignKey();
-                if (foreignKeyDefinition != null)
+                String tableName = namingStrategy.getTableName(type.getName());
+
+                final boolean isAuthType = AppAuthentication.isAuthType(type);
+                if (isAuthType ? authTables.contains(tableName) : tables.contains(tableName))
                 {
-                    op.createForeignKeys(runtimeContext, type, domainProperty);
+                    ops.dropKeys(runtimeContext, type);
+                }
+            }
+
+            for (DomainType type : domainTypes)
+            {
+
+                String tableName = namingStrategy.getTableName(type.getName());
+                final boolean isAuthType = AppAuthentication.isAuthType(type);
+                if (isAuthType ? authTables.contains(tableName) : tables.contains(tableName))
+                {
+                    ops.updateTable(runtimeContext, type);
+                }
+                else
+                {
+                    ops.createTable(runtimeContext, type);
+                }
+            }
+
+            for (DomainType type : domainTypes)
+            {
+                ops.createPrimaryKey(runtimeContext, type);
+            }
+
+            for (DomainType type : domainTypes)
+            {
+                for (DomainProperty domainProperty : type.getProperties())
+                {
+                    final ForeignKeyDefinition foreignKeyDefinition = domainProperty.getForeignKey();
+                    if (foreignKeyDefinition != null)
+                    {
+                        ops.createForeignKeys(runtimeContext, type, domainProperty);
+                    }
                 }
             }
         }
+        finally
+        {
+            ops.destroy();
+        }
+
     }
 
     @Override
-    public void removeSchema(RuntimeContext runtimeContext)
+    public void removeSchema(RuntimeContext runtimeContext, ExceedDataSource dataSource)
     {
-        op.dropSchema(runtimeContext.getRuntimeApplication().getApplicationModel().getConfigModel().getSchema());
+        final DDLOperations op = opFactory.create(runtimeContext, dataSource);
+
+        final ApplicationConfig configModel = runtimeContext.getApplicationModel().getConfigModel();
+        op.dropSchema(runtimeContext, configModel.getSchema());
     }
 }
 

@@ -9,11 +9,11 @@ import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.datasrc.ExceedDataSource;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.GenericDomainObject;
 import de.quinscape.exceed.runtime.js.JsEnvironment;
-import de.quinscape.exceed.runtime.schema.StorageConfiguration;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +28,10 @@ public class TestDomainServiceBase
 
 
     @Override
-    public void init(RuntimeApplication runtimeApplication)
+    public void init(
+        RuntimeApplication runtimeApplication,
+        Map<String, ExceedDataSource> dataSources
+    )
     {
 
         this.runtimeApplication = runtimeApplication;
@@ -181,15 +184,24 @@ public class TestDomainServiceBase
 
 
     @Override
-    public StorageConfiguration getStorageConfiguration(String domainType)
+    public JsEnvironment getJsEnvironment()
+    {
+        return runtimeApplication != null ? runtimeApplication.getApplicationModel().getMetaData().getJsEnvironment() : null;
+    }
+
+
+    @Override
+    public ExceedDataSource getDataSource(String dataSourceName)
     {
         return null;
     }
 
 
     @Override
-    public JsEnvironment getJsEnvironment()
+    public Map<String, ExceedDataSource> getDataSources()
     {
-        return runtimeApplication != null ? runtimeApplication.getApplicationModel().getMetaData().getJsEnvironment() : null;
+        return null;
     }
+
+
 }

@@ -1,6 +1,7 @@
 package de.quinscape.exceed.runtime.config;
 
 import org.jooq.DSLContext;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
     ServiceConfiguration.class,
 })
 @Transactional
+@Ignore
 public class PreparedStatementTest
 {
     private final static Logger log = LoggerFactory.getLogger(PreparedStatementTest.class);

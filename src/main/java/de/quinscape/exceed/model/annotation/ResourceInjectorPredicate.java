@@ -1,8 +1,8 @@
 package de.quinscape.exceed.model.annotation;
 
-import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.model.ApplicationModel;
 
 public interface ResourceInjectorPredicate
 {
-    boolean shouldInject(RuntimeContext runtimeContext);
+    boolean shouldInject(ApplicationModel applicationModel);
 }

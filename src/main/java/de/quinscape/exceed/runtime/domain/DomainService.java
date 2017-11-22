@@ -3,8 +3,10 @@ package de.quinscape.exceed.runtime.domain;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
+import de.quinscape.exceed.runtime.datasrc.ExceedDataSource;
 import de.quinscape.exceed.runtime.js.JsEnvironment;
-import de.quinscape.exceed.runtime.schema.StorageConfiguration;
+
+import java.util.Map;
 
 /**
  *  Handles registration of domain types in the system and converts domain objects to JSON and back.
@@ -12,7 +14,10 @@ import de.quinscape.exceed.runtime.schema.StorageConfiguration;
 public interface DomainService
     extends DomainTypesRegistry
 {
-    void init(RuntimeApplication runtimeApplication);
+    void init(
+        RuntimeApplication runtimeApplication,
+        Map<String, ExceedDataSource> dataSources
+    );
 
     String toJSON(Object domainObject);
 
@@ -38,7 +43,15 @@ public interface DomainService
 
     boolean update(RuntimeContext runtimeContext, DomainObject genericDomainObject);
 
-    StorageConfiguration getStorageConfiguration(String domainType);
-
     JsEnvironment getJsEnvironment();
+
+    /**
+     * Returns the data source with the given name. If the name is <code>null</code>, the default data source is returned.
+     *
+     * @param dataSourceName    name or <code>null</code> for default
+     * @return  data source
+     */
+    ExceedDataSource getDataSource(String dataSourceName);
+
+    Map<String,ExceedDataSource> getDataSources();
 }

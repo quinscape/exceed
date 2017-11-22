@@ -41,9 +41,14 @@ public class RuntimeContext
     private String routingTemplate;
 
 
-    public RuntimeContext(RuntimeApplication runtimeApplication,
-                          String path, Translator translator, Locale locale, ScopedContextChain scopedContextChain,
-                          DomainService domainService)
+    public RuntimeContext(
+        RuntimeApplication runtimeApplication,
+        String path,
+        Translator translator,
+        Locale locale,
+        ScopedContextChain scopedContextChain,
+        DomainService domainService
+    )
     {
         this.path = path;
         this.runtimeApplication = runtimeApplication;

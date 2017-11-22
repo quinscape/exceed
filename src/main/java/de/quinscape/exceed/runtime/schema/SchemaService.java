@@ -2,6 +2,7 @@ package de.quinscape.exceed.runtime.schema;
 
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.datasrc.ExceedDataSource;
 
 import java.util.List;
 
@@ -15,11 +16,11 @@ public interface SchemaService
      * Creates or updates the schema according to the given model.
      *
      */
-    void synchronizeSchema(RuntimeContext runtimeContext, List<DomainType> value);
+    void synchronizeSchema(RuntimeContext runtimeContext, ExceedDataSource dataSource, List<DomainType> value);
 
     /**
      * Removes the schema associated with the given application model.
      *
      */
-    void removeSchema(RuntimeContext runtimeContext);
+    void removeSchema(RuntimeContext runtimeContext, ExceedDataSource dataSource);
 }

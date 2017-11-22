@@ -3,7 +3,6 @@ package de.quinscape.exceed.runtime.expression.query;
 import de.quinscape.exceed.expression.ASTExpression;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
-import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,12 +16,12 @@ public class ComponentQueryTransformer
 
     private ExpressionService expressionService;
 
-    private final StorageConfigurationRepository storageConfigurationRepository;
 
-    public ComponentQueryTransformer(ExpressionService expressionService, StorageConfigurationRepository storageConfigurationRepository)
+    public ComponentQueryTransformer(
+        ExpressionService expressionService
+    )
     {
         this.expressionService = expressionService;
-        this.storageConfigurationRepository = storageConfigurationRepository;
     }
 
 
@@ -31,7 +30,7 @@ public class ComponentQueryTransformer
     @Override
     public Object transform(RuntimeContext runtimeContext, QueryContext queryContext, ASTExpression astExpression)
     {
-        QueryTransformerEnvironment visitor = new QueryTransformerEnvironment(runtimeContext, storageConfigurationRepository, queryContext);
+        QueryTransformerEnvironment visitor = new QueryTransformerEnvironment(runtimeContext, queryContext);
 
         QueryDefinition result;
 

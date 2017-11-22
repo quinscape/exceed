@@ -7,14 +7,14 @@ import de.quinscape.exceed.runtime.action.Action;
 import de.quinscape.exceed.runtime.action.ActionEnvironment;
 import de.quinscape.exceed.runtime.action.CustomLogic;
 import de.quinscape.exceed.runtime.component.DataGraph;
+import de.quinscape.exceed.runtime.datasrc.ExceedDataSource;
 import de.quinscape.exceed.runtime.domain.DomainObject;
+import de.quinscape.exceed.runtime.domain.DomainOperations;
 import de.quinscape.exceed.runtime.domain.GenericDomainObject;
 import de.quinscape.exceed.runtime.expression.query.QueryContext;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryTransformer;
 import de.quinscape.exceed.runtime.js.env.InspectUtil;
-import de.quinscape.exceed.runtime.schema.StorageConfiguration;
-import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import de.quinscape.exceed.runtime.util.DomainUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,17 +29,14 @@ public class ExceedBaseActions
     private final static Logger log = LoggerFactory.getLogger(ExceedBaseActions.class);
 
     private final QueryTransformer queryTransformer;
-    private final StorageConfigurationRepository storageConfigurationRepository;
 
 
     @Autowired
     public ExceedBaseActions(
-        QueryTransformer queryTransformer,
-        StorageConfigurationRepository storageConfigurationRepository
+        QueryTransformer queryTransformer
     )
     {
         this.queryTransformer = queryTransformer;
-        this.storageConfigurationRepository = storageConfigurationRepository;
     }
 
 
@@ -186,17 +183,15 @@ public class ExceedBaseActions
             throw new IllegalStateException("queryTransformer can't be null");
         }
 
-        if (storageConfigurationRepository == null)
-        {
-            throw new IllegalStateException("storageConfigurationRepository can't be null");
-        }
-
         final QueryDefinition queryDefinition = (QueryDefinition) queryTransformer.transform(runtimeContext, QUERY_CONTEXT, astExpression);
         final DomainType domainType = queryDefinition.getQueryDomainType().getType();
-        final StorageConfiguration configuration = storageConfigurationRepository.getConfiguration(
-            domainType.getStorageConfiguration());
 
-        return configuration.getDomainOperations().query(runtimeContext,domainType.getDomainService(), queryDefinition);
+        final ExceedDataSource dataSource = runtimeContext.getDomainService().getDataSource(
+            domainType.getDataSourceName());
+
+        final DomainOperations domainOperations = dataSource.getStorageConfiguration().getDomainOperations();
+
+        return domainOperations.query(runtimeContext,domainType.getDomainService(), queryDefinition);
     }
 
     @Action(

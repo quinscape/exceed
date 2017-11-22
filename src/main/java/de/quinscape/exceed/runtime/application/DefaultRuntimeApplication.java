@@ -2,63 +2,45 @@ package de.quinscape.exceed.runtime.application;
 
 import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.ApplicationModel;
-import de.quinscape.exceed.model.Model;
-import de.quinscape.exceed.model.TopLevelModel;
-import de.quinscape.exceed.model.annotation.ResourceInjectorPredicate;
-import de.quinscape.exceed.model.change.CodeChange;
-import de.quinscape.exceed.model.change.Shutdown;
-import de.quinscape.exceed.model.change.StyleChange;
-import de.quinscape.exceed.model.change.Timeout;
-import de.quinscape.exceed.model.context.ContextModel;
 import de.quinscape.exceed.model.context.ScopeMetaModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
+import de.quinscape.exceed.model.domain.type.QueryTypeModel;
 import de.quinscape.exceed.model.expression.Attributes;
 import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.expression.ExpressionValueType;
-import de.quinscape.exceed.model.meta.ApplicationMetaData;
 import de.quinscape.exceed.model.process.Process;
 import de.quinscape.exceed.model.process.ProcessState;
 import de.quinscape.exceed.model.routing.Mapping;
+import de.quinscape.exceed.model.staging.DataSourceModel;
+import de.quinscape.exceed.model.staging.StageModel;
 import de.quinscape.exceed.model.view.ComponentModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.ContextUpdate;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.RuntimeContextHolder;
-import de.quinscape.exceed.runtime.component.ComponentRegistration;
 import de.quinscape.exceed.runtime.component.DataProviderPreparationException;
+import de.quinscape.exceed.runtime.datasrc.ExceedDataSource;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainService;
-import de.quinscape.exceed.runtime.js.def.Definitions;
 import de.quinscape.exceed.runtime.model.ModelCompositionService;
 import de.quinscape.exceed.runtime.process.ProcessExecutionState;
 import de.quinscape.exceed.runtime.process.TransitionInput;
-import de.quinscape.exceed.runtime.resource.AppResource;
-import de.quinscape.exceed.runtime.resource.ResourceChangeListener;
 import de.quinscape.exceed.runtime.resource.ResourceLoader;
-import de.quinscape.exceed.runtime.resource.ResourceRoot;
-import de.quinscape.exceed.runtime.resource.ResourceWatcher;
-import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
-import de.quinscape.exceed.runtime.resource.file.ModuleResourceEvent;
-import de.quinscape.exceed.runtime.resource.file.PathResources;
 import de.quinscape.exceed.runtime.schema.SchemaService;
-import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import de.quinscape.exceed.runtime.scope.ApplicationContext;
 import de.quinscape.exceed.runtime.scope.ScopedContextChain;
 import de.quinscape.exceed.runtime.scope.ScopedContextFactory;
 import de.quinscape.exceed.runtime.scope.SessionContext;
 import de.quinscape.exceed.runtime.scope.UserContext;
 import de.quinscape.exceed.runtime.scope.ViewContext;
-import de.quinscape.exceed.runtime.service.ComponentRegistry;
 import de.quinscape.exceed.runtime.service.ProcessService;
 import de.quinscape.exceed.runtime.service.RuntimeContextFactory;
-import de.quinscape.exceed.runtime.service.StyleService;
 import de.quinscape.exceed.runtime.service.client.ClientStateProvider;
 import de.quinscape.exceed.runtime.service.client.ClientStateService;
 import de.quinscape.exceed.runtime.template.TemplateVariables;
 import de.quinscape.exceed.runtime.util.AppAuthentication;
 import de.quinscape.exceed.runtime.util.ComponentUtil;
-import de.quinscape.exceed.runtime.util.FileExtension;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import de.quinscape.exceed.runtime.util.LocationUtil;
 import de.quinscape.exceed.runtime.util.RequestUtil;
@@ -66,12 +48,10 @@ import de.quinscape.exceed.runtime.util.Util;
 import de.quinscape.exceed.runtime.view.ComponentData;
 import de.quinscape.exceed.runtime.view.ViewData;
 import de.quinscape.exceed.runtime.view.ViewDataService;
-import jdk.nashorn.api.scripting.NashornScriptEngine;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.svenson.JSON;
 import org.svenson.JSONParseException;
 
 import javax.servlet.ServletContext;
@@ -84,7 +64,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -102,7 +81,7 @@ import java.util.UUID;
  *
  */
 public class DefaultRuntimeApplication
-    implements ResourceChangeListener, RuntimeApplication
+    implements RuntimeApplication
 {
     public static final String PREVIEW_HEADER_NAME = "X-ceed-Preview";
 
@@ -123,15 +102,9 @@ public class DefaultRuntimeApplication
 
     private static final String CONTEXT_UPDATE_PARAM = "contextUpdate";
 
-    private final ServletContext servletContext;
-
     private final ApplicationModel applicationModel;
 
     private final ViewDataService viewDataService;
-
-    private final StyleService styleService;
-
-    private final ComponentRegistry componentRegistry;
 
     private final ModelCompositionService modelCompositionService;
 
@@ -147,32 +120,24 @@ public class DefaultRuntimeApplication
 
     private final ClientStateService clientStateService;
 
-    private final NashornScriptEngine nashorn;
-
-    private final Definitions systemDefinitions;
-
-    private long lastChange;
-
     private final RuntimeContextFactory runtimeContextFactory;
 
     private final Set<ClientStateProvider> clientStateProviders;
 
-    private Model changeModel = null;
-
-    private final ResourceInjector resourceInjector;
-
 
     public DefaultRuntimeApplication(
-        ViewDataService viewDataService, ComponentRegistry componentRegistry, StyleService styleService,
-        ModelCompositionService modelCompositionService, ClientStateService clientStateService,
-        ProcessService processService, RuntimeContextFactory runtimeContextFactory,
-        ScopedContextFactory scopedContextFactory, StorageConfigurationRepository storageConfigurationRepository,
-        Set<ClientStateProvider> clientStateProviders, NashornScriptEngine nashorn, Definitions definitions,
+        ViewDataService viewDataService,
+        ModelCompositionService modelCompositionService,
+        ClientStateService clientStateService,
+        ProcessService processService,
+        RuntimeContextFactory runtimeContextFactory,
+        ScopedContextFactory scopedContextFactory,
+        Set<ClientStateProvider> clientStateProviders,
         ServletContext servletContext,
         ResourceLoader resourceLoader,
         DomainService domainService,
-        String appName,
-        Map<String, ResourceInjectorPredicate> predicates
+        ApplicationModel applicationModel,
+        Map<String, ExceedDataSource> dataSources
     )
     {
         if (servletContext == null)
@@ -180,60 +145,32 @@ public class DefaultRuntimeApplication
             throw new IllegalArgumentException("servletContext can't be null");
         }
 
-        resourceInjector = new ResourceInjector(ApplicationMetaData.class, predicates);
-
 
         this.processService = processService;
         this.scopedContextFactory = scopedContextFactory;
         this.runtimeContextFactory = runtimeContextFactory;
         this.clientStateProviders = clientStateProviders;
 
-        this.servletContext = servletContext;
         this.viewDataService = viewDataService;
-        this.styleService = styleService;
-        this.componentRegistry = componentRegistry;
         this.modelCompositionService = modelCompositionService;
         this.resourceLoader = resourceLoader;
         this.clientStateService = clientStateService;
-        this.systemDefinitions = definitions;
+        this.applicationModel = applicationModel;
 
         //boolean production = ApplicationStatus.from(state) == ApplicationStatus.PRODUCTION;
 
         this.domainService = domainService;
-        applicationModel = modelCompositionService.compose(resourceLoader, domainService, systemDefinitions, appName);
-
-        ContextModel context = applicationModel.getConfigModel().getApplicationContextModel();
-
-        this.applicationContext = scopedContextFactory.createApplicationContext(context, appName);
-
-        final ApplicationMetaData metaData = this.applicationModel.getMetaData();
-        modelCompositionService.postprocess(applicationModel);
 
         RuntimeContext systemContext = createSystemContext();
-        resourceInjector.injectResources(systemContext, nashorn, resourceLoader, metaData);
-
         RuntimeContextHolder.register(systemContext, null);
-        domainService.init(this);
 
-        for (ResourceRoot root : resourceLoader.getExtensions())
-        {
-            ResourceWatcher resourceWatcher = root.getResourceWatcher();
-            if (resourceWatcher != null)
-            {
-                log.debug("Register lister for watcher of resource root {}", root);
-                resourceWatcher.register(this);
-            }
-            else
-            {
-                log.debug("Non-reloadable resource root {}", root);
-            }
-        }
+        applicationContext = scopedContextFactory.createApplicationContext(applicationModel.getConfigModel().getApplicationContextModel(), applicationModel.getName());
 
-        synchronizeDomainTypeSchemata(systemContext, storageConfigurationRepository);
+        domainService.init(this, dataSources);
+
+        synchronizeDomainTypeSchemata(systemContext);
         ensureBaseRoles(systemContext);
         scopedContextFactory.initializeContext(applicationModel.getMetaData().getJsEnvironment(), systemContext, applicationContext);
-
-        this.nashorn = nashorn;
     }
 
     private void ensureBaseRoles(
@@ -323,40 +260,68 @@ public class DefaultRuntimeApplication
     }
 
 
-    private void synchronizeDomainTypeSchemata(RuntimeContext systemContext, StorageConfigurationRepository
-        storageConfigurationRepository)
+    private void synchronizeDomainTypeSchemata(
+        RuntimeContext systemContext
+    )
     {
-        final Map<String, List<DomainType>> map = mapDomainTypesByStorageConfig(systemContext);
+        final Map<String, List<DomainType>> map = mapDomainTypesByDataSource(systemContext);
 
         for (Map.Entry<String, List<DomainType>> entry : map.entrySet())
         {
-            final SchemaService schemaService = storageConfigurationRepository.getConfiguration(entry.getKey()).getSchemaService();
+            final String dataSourceName = entry.getKey();
+            final ExceedDataSource dataSource = systemContext.getDomainService().getDataSource(dataSourceName);
+
+            final SchemaService schemaService = dataSource.getStorageConfiguration().getSchemaService();
             if (schemaService != null)
             {
-                schemaService.synchronizeSchema(systemContext, entry.getValue());
+                schemaService.synchronizeSchema(systemContext, dataSource, entry.getValue());
             }
         }
     }
 
 
-    private Map<String, List<DomainType>> mapDomainTypesByStorageConfig(RuntimeContext systemContext)
+    private Map<String, List<DomainType>> mapDomainTypesByDataSource(RuntimeContext runtimeContext)
     {
-        Map<String,List<DomainType>> bySchemaService = new HashMap<>();
-        for (DomainType type : systemContext.getDomainService().getDomainTypes().values())
-        {
-            final String storageConfig = type.getStorageConfiguration();
+        final ApplicationModel applicationModel = runtimeContext.getApplicationModel();
 
-            List<DomainType> domainTypes = bySchemaService.get(storageConfig);
+        final Map<String,List<DomainType>> byDataSource = new HashMap<>();
+
+        final StageModel mergedStageModel = applicationModel.getMetaData().getMergedStageModel();
+        final Map<String, DataSourceModel> dataSourceModels = mergedStageModel.getDataSourceModels();
+
+        for (DomainType type : runtimeContext.getDomainService().getDomainTypes().values())
+        {
+            if (type instanceof QueryTypeModel || type.isSystem())
+            {
+                continue;
+            }
+
+            final String dataSourceName;
+            if (type.getDataSourceName() != null)
+            {
+                dataSourceName = type.getDataSourceName();
+            }
+            else
+            {
+                dataSourceName = applicationModel.getConfigModel().getDefaultDataSource();
+            }
+
+            final DataSourceModel dataSourceModel = dataSourceModels.get(dataSourceName);
+
+            if (dataSourceModel == null)
+            {
+                throw new IllegalStateException("Could not find data source with name '" + dataSourceName + "' in " + mergedStageModel);
+            }
+            
+            List<DomainType> domainTypes = byDataSource.get(dataSourceName);
             if (domainTypes == null)
             {
                 domainTypes = new ArrayList<>();
-                bySchemaService.put(storageConfig, domainTypes);
+                byDataSource.put(dataSourceName, domainTypes);
             }
-
             domainTypes.add(type);
         }
-
-        return bySchemaService;
+        return byDataSource;
     }
 
 
@@ -781,214 +746,6 @@ public class DefaultRuntimeApplication
     }
 
 
-    public String getCollectedStyles()
-    {
-        try
-        {
-            StringBuilder sb = new StringBuilder();
-
-
-            for (String name : applicationModel.getConfigModel().getStyleSheets())
-            {
-                PathResources resourceLocation = resourceLoader.getResources(name);
-
-                if (resourceLocation == null)
-                {
-                    log.info("RESOURCE LOCATIONS:\n{}", JSON.formatJSON(JSONUtil.DEFAULT_GENERATOR.forValue(resourceLoader
-                        .getAllResources().keySet())));
-                    throw new IllegalStateException("Resource '" + name + "' does not exist in any extension");
-                }
-
-                ResourceRoot root = resourceLocation.getHighestPriorityResource().getResourceRoot();
-                sb.append("/* APP '")
-                    .append(name)
-                    .append("' */\n")
-                    .append(styleService.process(root, name))
-                    .append('\n');
-            }
-
-            collectComponentStyles(applicationModel, sb);
-
-            return sb.toString();
-        }
-        catch (IOException e)
-        {
-            throw new ExceedRuntimeException(e);
-        }
-    }
-
-
-    private void collectComponentStyles(ApplicationModel applicationModel, StringBuilder out)
-    {
-        Set<String> usedComponents = findUsedComponents(applicationModel);
-        for (String name : usedComponents)
-        {
-            if (Character.isUpperCase(name.charAt(0)))
-            {
-                ComponentRegistration registration = componentRegistry
-                    .getComponentRegistration(name);
-
-                if (registration == null)
-                {
-                    throw new IllegalStateException("No component registration with name '" + name + "' found");
-                }
-
-
-                String styles = registration.getStyles();
-                if (styles != null)
-                {
-                    out.append("/* COMPONENT '")
-                        .append(name)
-                        .append("' */\n")
-                        .append(styles)
-                        .append('\n');
-                }
-            }
-        }
-    }
-
-
-    private Set<String> findUsedComponents(ApplicationModel applicationModel)
-    {
-        Set<String> usedComponents = new HashSet<>();
-        for (View view : applicationModel.getViews().values())
-        {
-            for (ComponentModel componentModel : view.getContent().values())
-            {
-                addComponentsRecursive(componentModel, usedComponents);
-            }
-        }
-
-        return usedComponents;
-    }
-
-
-    private void addComponentsRecursive(ComponentModel component, Set<String> usedComponents)
-    {
-        final String componentName = component.getName();
-        if (!usedComponents.contains(componentName))
-        {
-            usedComponents.add(componentName);
-        }
-        
-        for (ComponentModel kid : component.children())
-        {
-            addComponentsRecursive(kid, usedComponents);
-        }
-    }
-
-
-    @Override
-    public synchronized void onResourceChange(
-        ModuleResourceEvent resourceEvent,
-        FileResourceRoot root,
-        String path
-    )
-    {
-        log.debug("onResourceChange:  {} {} ( ROOT {} ) ", resourceEvent, path, root);
-
-        PathResources pathResources = resourceLoader.getResources(path);
-
-        if (pathResources == null)
-        {
-            return;
-        }
-
-        if (path.endsWith(FileExtension.JSON))
-        {
-            // for models we need to always update on any change to the path resources because merging means that
-            // lower priority models can still influence the final outcome
-
-            TopLevelModel model = modelCompositionService.update(applicationModel, domainService, resourceLoader, root, pathResources);
-            if (model != null)
-            {
-                notifyChange(model);
-
-                if (model instanceof View)
-                {
-                    clientStateService.flushViewScope((View) model);
-                }
-                clientStateService.flushModelVersionScope(getName());
-            }
-            resourceInjector.updateResource(createSystemContext(), nashorn, resourceLoader, applicationModel.getMetaData(), path);
-        }
-        else
-        {
-            // for resources, we only care for changes in the top resource.
-
-            AppResource topResource = pathResources.getHighestPriorityResource();
-            ResourceRoot rootOfTopResource = topResource.getResourceRoot();
-            if (root.equals(rootOfTopResource))
-            {
-                if (path.endsWith(FileExtension.CSS))
-                {
-                    if (applicationModel.getConfigModel().getStyleSheets().contains(path))
-                    {
-                        try
-                        {
-                            styleService.reload(root, path);
-                        }
-                        catch (IOException e)
-                        {
-                            throw new ExceedRuntimeException(e);
-                        }
-                        notifyStyleChange();
-                    }
-                }
-                else if (path.equals("/resources/js/main.js"))
-                {
-                    log.debug("Reload js: {}", path);
-                    notifyCodeChange();
-                }
-                else
-                {
-                    resourceInjector.updateResource(createSystemContext(), nashorn, resourceLoader, applicationModel.getMetaData(), path);
-                }
-            }
-
-        }
-
-    }
-
-
-    public void notifyStyleChange()
-    {
-        log.debug("notifyStyleChange");
-
-        notifyChange(StyleChange.INSTANCE);
-    }
-
-
-    public void notifyCodeChange()
-    {
-        notifyChange(CodeChange.INSTANCE);
-    }
-
-
-    private synchronized void notifyChange(Model changeModel)
-    {
-        log.debug("notifyChange", changeModel);
-
-        this.lastChange = System.currentTimeMillis();
-        this.changeModel = changeModel;
-        this.notifyAll();
-    }
-
-
-    public synchronized Model waitForChange(long timeout) throws InterruptedException
-    {
-        long start = lastChange;
-
-        while (lastChange == start)
-        {
-            this.wait(timeout);
-            if (lastChange == start)
-            {
-                return Timeout.INSTANCE;
-            }
-        }
-        return changeModel;
-    }
 
 
     public ResourceLoader getResourceLoader()
@@ -996,24 +753,10 @@ public class DefaultRuntimeApplication
         return resourceLoader;
     }
 
-
-    public void notifyShutdown()
-    {
-        notifyChange(Shutdown.INSTANCE);
-    }
-
-
-    public void signalComponentChanges(Set<String> componentNames)
-    {
-        for (View view : applicationModel.getViews().values())
-        {
-            ComponentUtil.updateComponentRegsAndParents(componentRegistry, view, componentNames);
-        }
-    }
-
     public ApplicationContext getApplicationContext()
     {
         return applicationContext;
     }
+
 }
 

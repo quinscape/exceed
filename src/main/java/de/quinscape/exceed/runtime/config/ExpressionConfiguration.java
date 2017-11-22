@@ -11,6 +11,7 @@ import de.quinscape.exceed.runtime.action.DefaultActionService;
 import de.quinscape.exceed.runtime.action.MethodAccessRegistration;
 import de.quinscape.exceed.runtime.action.ParameterProviderFactory;
 import de.quinscape.exceed.runtime.action.param.ContextPropertyValueProviderFactory;
+import de.quinscape.exceed.runtime.action.param.DataSourceProviderFactory;
 import de.quinscape.exceed.runtime.action.param.RuntimeContextProviderFactory;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
@@ -82,6 +83,12 @@ public class ExpressionConfiguration
     public RuntimeContextProviderFactory runtimeContextProvider()
     {
         return new RuntimeContextProviderFactory();
+    }
+
+    @Bean
+    public DataSourceProviderFactory dataSourceProviderFactory()
+    {
+        return new DataSourceProviderFactory();
     }
 
     @Bean
@@ -193,7 +200,6 @@ public class ExpressionConfiguration
             .andFunction("now")
             .withDescription("Returns a timestamp for the current time.")
             .withType(DefinitionType.BUILTIN)
-            .withParameterModels(ExpressionUtil.PLAINTEXT_TYPE)
             .withDescription("The current timestamp")
             .withReturnType(PropertyType.TIMESTAMP)
             .renderAs("_now")

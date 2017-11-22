@@ -26,8 +26,8 @@ public class ResourceInjectorTest
     private final TestApplication app = new TestApplicationBuilder().withView(new View("test")).build();
 
     private ResourceInjector injector = new ResourceInjector(TestInjectionTarget.class, ImmutableMap.of(
-        "alwaysFalse", runtimeContext -> false,
-        "alwaysTrue", runtimeContext -> true
+        "alwaysFalse", applicationModel -> false,
+        "alwaysTrue", applicationModel -> true
     ));
 
 
@@ -41,7 +41,7 @@ public class ResourceInjectorTest
 
         final TestInjectionTarget target = new TestInjectionTarget();
         final NashornScriptEngine engine = JsUtil.createEngine();
-        injector.injectResources(app.createRuntimeContext(), engine, resourceLoader, target);
+        injector.injectResources(app.getApplicationModel(), engine, resourceLoader, target);
 
         assertThat(target.getStringValue().trim(), is("bla bla bla"));
 
@@ -67,7 +67,7 @@ public class ResourceInjectorTest
         ResourceLoader resourceLoader = new DefaultResourceLoader(
             Collections.singletonList(new ClassPathResourceRoot("injector-base")));
         final NashornScriptEngine engine = JsUtil.createEngine();
-        injector.injectResources(app.createRuntimeContext(), engine, resourceLoader, new TestInjectionSub());
+        injector.injectResources(app.getApplicationModel(), engine, resourceLoader, new TestInjectionSub());
     }
 
 

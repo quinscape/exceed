@@ -15,7 +15,6 @@ import de.quinscape.exceed.message.IncomingMessage;
 import de.quinscape.exceed.message.Message;
 import de.quinscape.exceed.model.annotation.ResourceInjectorPredicate;
 import de.quinscape.exceed.model.config.ServerRenderingMode;
-import de.quinscape.exceed.runtime.universal.ServerRenderingStrategy;
 import de.quinscape.exceed.runtime.controller.ExceedExceptionResolver;
 import de.quinscape.exceed.runtime.model.ModelJSONService;
 import de.quinscape.exceed.runtime.service.websocket.EditorMessageHandler;
@@ -26,6 +25,7 @@ import de.quinscape.exceed.runtime.service.websocket.WebSocketServerFactory;
 import de.quinscape.exceed.runtime.spring.ExceedViewResolver;
 import de.quinscape.exceed.runtime.template.TemplateVariablesProvider;
 import de.quinscape.exceed.runtime.universal.ReactServerSideRenderer;
+import de.quinscape.exceed.runtime.universal.ServerRenderingStrategy;
 import de.quinscape.exceed.runtime.util.MediaTypeService;
 import de.quinscape.exceed.runtime.util.MediaTypeServiceImpl;
 import org.slf4j.Logger;
@@ -226,7 +226,7 @@ public class WebConfiguration
     @Bean
     public ResourceInjectorPredicate isServerRenderingActive()
     {
-        return runtimeContext -> runtimeContext.getApplicationModel().getConfigModel().getComponentConfig().getServerRenderingMode() != ServerRenderingMode.DISABLED;
+        return applicationModel -> applicationModel.getConfigModel().getComponentConfig().getServerRenderingMode() != ServerRenderingMode.DISABLED;
     }
 
 //    @Bean

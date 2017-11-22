@@ -27,13 +27,13 @@ public class QueryTypeModel
     extends AbstractTopLevelModel
     implements DomainType
 {
-    public static final String DEFAULT_QUERY_STORAGE = "queryTypeStorageConfiguration";
-
     private static final String DEFAULT_SQL_QUERY_FACTORY = "defaultQueryTypeSQLFactory";
 
     public static final String SQL_PARAM_INDEX = "sqlParamIndex";
 
     private static final String DEFAULT_QUERY_PARAMETER_PROVIDER = "defaultQueryParameterProvider";
+
+    private static final String DEFAULT_DATA_SOURCE = "queryTypeDataSource";
 
     private String query;
 
@@ -46,8 +46,6 @@ public class QueryTypeModel
 
     private String updateHandlerName;
 
-    private String storageConfiguration = DEFAULT_QUERY_STORAGE;
-
     private String sqlQueryFactory = DEFAULT_SQL_QUERY_FACTORY;
 
     private String queryParameterProvider = DEFAULT_QUERY_PARAMETER_PROVIDER;
@@ -59,6 +57,8 @@ public class QueryTypeModel
     private Map<String, DomainProperty> parameterTypeMap;
 
     private Object data;
+
+    private String dataSource = DEFAULT_DATA_SOURCE;
 
     /**
      * Returns the SQL query for this query type model.
@@ -182,23 +182,6 @@ public class QueryTypeModel
     }
 
 
-    public void setStorageConfiguration(String storageConfiguration)
-    {
-        this.storageConfiguration = storageConfiguration;
-    }
-
-
-    /**
-     * Spring bean name of an implementation of {@link de.quinscape.exceed.runtime.schema.StorageConfiguration}.
-     * Default is "queryTypeStorageConfiguration" for query types.
-     */
-    @Override
-    public String getStorageConfiguration()
-    {
-        return storageConfiguration;
-    }
-
-
     @Override
     @Internal
     public boolean isSystem()
@@ -220,6 +203,20 @@ public class QueryTypeModel
     public String getDescription()
     {
         return description;
+    }
+
+
+    @JSONProperty("dataSource")
+    public void setDataSourceName(String dataSource)
+    {
+        this.dataSource = dataSource;
+    }
+
+
+    @Override
+    public String getDataSourceName()
+    {
+        return dataSource;
     }
 
 
@@ -369,5 +366,16 @@ public class QueryTypeModel
     public void setData(Object data)
     {
         this.data = data;
+    }
+
+
+    /**
+     * Name of the query type. Should start With a "Q" followed by an uppercase letter.
+     * @return
+     */
+    @Override
+    public String getName()
+    {
+        return super.getName();
     }
 }

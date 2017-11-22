@@ -7,6 +7,7 @@ import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.component.DataGraph;
 import de.quinscape.exceed.runtime.domain.DomainObject;
 import de.quinscape.exceed.runtime.domain.DomainOperations;
+import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.expression.query.QueryDefinition;
 import de.quinscape.exceed.runtime.expression.query.QueryDomainType;
 import de.quinscape.exceed.runtime.util.DomainUtil;
@@ -23,8 +24,10 @@ public class ExceedAppTranslationProvider
 {
     public List<AppTranslation> provideTranslations(RuntimeContext runtimeContext)
     {
-        final DomainOperations ops = runtimeContext.getDomainService().getStorageConfiguration(
-            TRANSLATION_TYPE).getDomainOperations();
+        final DomainService domainService = runtimeContext.getDomainService();
+        final DomainOperations ops = domainService.getDataSource(
+            domainService.getDomainType(TRANSLATION_TYPE).getDataSourceName()
+        ).getStorageConfiguration().getDomainOperations();
 
         final DomainType translationTypeModel = runtimeContext.getDomainService().getDomainType(TRANSLATION_TYPE);
         final QueryDomainType queryDomainType = new QueryDomainType(

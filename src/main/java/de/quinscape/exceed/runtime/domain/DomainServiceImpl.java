@@ -10,16 +10,17 @@ import de.quinscape.exceed.model.domain.type.QueryTypeModel;
 import de.quinscape.exceed.runtime.RuntimeContext;
 import de.quinscape.exceed.runtime.application.RuntimeApplication;
 import de.quinscape.exceed.runtime.datalist.DataGraphService;
+import de.quinscape.exceed.runtime.datasrc.ExceedDataSource;
 import de.quinscape.exceed.runtime.js.JsEnvironment;
-import de.quinscape.exceed.runtime.schema.StorageConfiguration;
-import de.quinscape.exceed.runtime.schema.StorageConfigurationRepository;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 import org.svenson.JSONParser;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,8 +31,6 @@ public class DomainServiceImpl
     implements DomainService
 {
     private final static Logger log = LoggerFactory.getLogger(DomainServiceImpl.class);
-
-    private final StorageConfigurationRepository storageConfigurationRepository;
 
     private final JSONParser parser;
 
@@ -45,13 +44,14 @@ public class DomainServiceImpl
 
     private String authSchema;
 
+    private Map<String, ExceedDataSource> dataSources;
+
+    private Map<String, ExceedDataSource> dataSourcesRO;
+
 
     public DomainServiceImpl(
-        StorageConfigurationRepository storageConfigurationRepository
     )
     {
-        this.storageConfigurationRepository = storageConfigurationRepository;
-
         parser = new JSONParser();
         parser.setObjectSupport(JSONUtil.OBJECT_SUPPORT);
         parser.addObjectFactory(new DomainFactory(this));
@@ -67,9 +67,16 @@ public class DomainServiceImpl
     }
 
 
-    public void init(RuntimeApplication runtimeApplication)
+    public void init(
+        RuntimeApplication runtimeApplication,
+        Map<String, ExceedDataSource> dataSources
+    )
     {
         this.runtimeApplication = runtimeApplication;
+
+        this.dataSources = dataSources;
+        this.dataSourcesRO = dataSources == null ? Collections.emptyMap() : Collections.unmodifiableMap(dataSources);
+        
         final ApplicationConfig configModel = runtimeApplication.getApplicationModel().getConfigModel();
 
         this.schema = configModel.getSchema();
@@ -207,76 +214,100 @@ public class DomainServiceImpl
     @Override
     public DomainObject create(RuntimeContext runtimeContext, String type, String id)
     {
-        return dbOps(type).create(runtimeContext, this, type, id, GenericDomainObject.class);
+        return dbOps(runtimeContext, type).create(runtimeContext, this, type, id, GenericDomainObject.class);
     }
 
     @Override
     public DomainObject create(RuntimeContext runtimeContext, String type, String id, Class<? extends DomainObject> implClass)
     {
-        return dbOps(type).create(runtimeContext, this, type, id, implClass);
+        return dbOps(runtimeContext, type).create(runtimeContext, this, type, id, implClass);
     }
 
 
     @Override
     public DomainObject read(RuntimeContext runtimeContext, String type, String id)
     {
-        return dbOps(type).read(runtimeContext, this, type, id);
+        return dbOps(runtimeContext, type).read(runtimeContext, this, type, id);
     }
 
 
     @Override
     public boolean delete(RuntimeContext runtimeContext, DomainObject genericDomainObject)
     {
-        return dbOps(genericDomainObject.getDomainType()).delete(runtimeContext, this, genericDomainObject);
+        return dbOps(runtimeContext, genericDomainObject.getDomainType()).delete(runtimeContext, this, genericDomainObject);
     }
 
 
     @Override
     public void insert(RuntimeContext runtimeContext, DomainObject genericDomainObject)
     {
-        dbOps(genericDomainObject.getDomainType()).insert(runtimeContext, this, genericDomainObject);
+        dbOps(runtimeContext, genericDomainObject.getDomainType()).insert(runtimeContext, this, genericDomainObject);
     }
 
 
     @Override
     public void insertOrUpdate(RuntimeContext runtimeContext, DomainObject genericDomainObject)
     {
-        dbOps(genericDomainObject.getDomainType()).insertOrUpdate(runtimeContext, this, genericDomainObject);
+        dbOps(runtimeContext, genericDomainObject.getDomainType()).insertOrUpdate(runtimeContext, this, genericDomainObject);
     }
 
 
     @Override
     public boolean update(RuntimeContext runtimeContext, DomainObject genericDomainObject)
     {
-        return dbOps(genericDomainObject.getDomainType()).update(runtimeContext, this, genericDomainObject);
+        return dbOps(runtimeContext, genericDomainObject.getDomainType()).update(runtimeContext, this, genericDomainObject);
     }
 
 
-    private DomainOperations dbOps(String domainType)
+    private DomainOperations dbOps(RuntimeContext runtimeContext, String domainType)
     {
-        final StorageConfiguration ops = getStorageConfiguration(domainType);
+
+
+        final DomainService domainService = runtimeContext.getDomainService();
+        final DomainType type = domainService.getDomainType(domainType);
+
+        final ExceedDataSource dataSource = domainService.getDataSource(type.getDataSourceName());
+
+
+        final DomainOperations ops = dataSource.getStorageConfiguration().getDomainOperations();
 
         if (ops == null)
         {
             throw new IllegalArgumentException("Domain operations not supported for type '" + domainType + "'");
         }
 
-        return ops.getDomainOperations();
+        return ops;
     }
-
-    @Override
-    public StorageConfiguration getStorageConfiguration(String domainType)
-    {
-        final DomainType type = getDomainType(domainType);
-        final String config = type.getStorageConfiguration();
-        return storageConfigurationRepository.getConfiguration(config);
-    }
-
 
     @Override
     public JsEnvironment getJsEnvironment()
     {
         return runtimeApplication.getApplicationModel().getMetaData().getJsEnvironment();
+    }
+
+
+    @Override
+    public ExceedDataSource getDataSource(String dataSourceName)
+    {
+        if (!StringUtils.hasText(dataSourceName))
+        {
+            dataSourceName = runtimeApplication.getApplicationModel().getConfigModel().getDefaultDataSource();
+        }
+
+        final ExceedDataSource exceedDataSource = dataSources.get(dataSourceName);
+        if (exceedDataSource == null)
+        {
+            throw new IllegalStateException("Could not find data source with name '" + dataSourceName + "'");
+        }
+
+        return exceedDataSource;
+    }
+
+
+    @Override
+    public Map<String, ExceedDataSource> getDataSources()
+    {
+        return dataSourcesRO;
     }
 
 
@@ -290,4 +321,5 @@ public class DomainServiceImpl
     {
         return this.runtimeApplication.getName();
     }
+
 }

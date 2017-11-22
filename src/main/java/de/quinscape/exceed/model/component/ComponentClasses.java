@@ -42,4 +42,9 @@ public interface ComponentClasses
      * The context provided is part of an iteration over a parent list.
      */
     String ITERATIVE_CONTEXT = "iterative-context";
+
+    /**
+     * Component is not rendered during server rendering
+     */
+    String NO_SERVER_RENDERING = "no-server-rendering";
 }

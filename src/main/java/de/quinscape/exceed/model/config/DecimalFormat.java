@@ -1,13 +1,13 @@
 package de.quinscape.exceed.model.config;
 
 import de.quinscape.exceed.model.annotation.MergeStrategy;
-import de.quinscape.exceed.model.merge.MergeType;
+import de.quinscape.exceed.model.merge.ModelMergeMode;
 
 /**
  * Bignumber.js compatible decimal format specification.
  * 
  */
-@MergeStrategy(MergeType.DEEP)
+@MergeStrategy(ModelMergeMode.DEEP)
 public class DecimalFormat
 {
     /** the decimal separator

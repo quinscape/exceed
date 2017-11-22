@@ -1,6 +1,6 @@
 package de.quinscape.exceed.model.annotation;
 
-import de.quinscape.exceed.model.merge.MergeType;
+import de.quinscape.exceed.model.merge.ModelMergeMode;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -17,5 +17,5 @@ import java.lang.annotation.Target;
 @Documented
 public @interface MergeStrategy
 {
-    MergeType value() default MergeType.REPLACE;
+    ModelMergeMode value() default ModelMergeMode.REPLACE;
 }
