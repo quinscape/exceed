@@ -12,6 +12,8 @@ import de.quinscape.exceed.model.startup.AppState;
 import de.quinscape.exceed.runtime.startup.ExceedPropertySourceFactory;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -43,6 +45,9 @@ import static de.quinscape.exceed.runtime.config.DefaultAppConfiguration.*;
     factory = ExceedPropertySourceFactory.class,
     value = EXCEED_STARTUP_CONFIG
 )
+@EnableAutoConfiguration(exclude = {
+    DataSourceAutoConfiguration.class
+})
 public class ExceedApplicationConfiguration
 {
     private final ServletContext servletContext;
