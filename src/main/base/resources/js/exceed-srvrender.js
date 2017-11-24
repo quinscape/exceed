@@ -5529,7 +5529,8 @@ function findCurrentViewChanges(state) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.APP_RESET = undefined;
+exports.APP_RERENDER = exports.APP_RESET = undefined;
+exports.rerenderServerRendering = rerenderServerRendering;
 exports.hydrateAppState = hydrateAppState;
 exports.restoreAppState = restoreAppState;
 
@@ -5546,6 +5547,9 @@ var _hydrate2 = _interopRequireDefault(_hydrate);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var APP_RESET = exports.APP_RESET = "APP_RESET";
+var APP_RERENDER = exports.APP_RERENDER = "APP_RESET";
+
+function rerenderServerRendering() {}
 
 /**
  * Initializes the exceed redux store with a new state from the server. Parts of the state are converted, form-state is
