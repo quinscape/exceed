@@ -133,6 +133,16 @@ export function getRoutingTable(state)
     return getMeta(state).routing;
 }
 
+/**
+ * True if the view initialization happens with hydration of server-rendered markup
+ * @param state
+ * @returns {*}
+ */
+export function isHydrationRender(state)
+{
+    return getMeta(state).isHydration;
+}
+
 export function getComponentConfig(state, name)
 {
     const config = getMeta(state).config.component;

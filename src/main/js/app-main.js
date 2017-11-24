@@ -1,7 +1,3 @@
-//
-// load our global-undo to patch MouseTrap
-//
-//noinspection JSUnusedLocalSymbols
 import ReactDOM from "react-dom"
 import { Promise } from "es6-promise-polyfill"
 import { evaluateEmbedded, findBundles } from "./util/startup"
@@ -17,7 +13,6 @@ import {
     getActionNames,
     getAppName,
     getAuthentication,
-    getConnectionId,
     getContextPath,
     getDomainData
 } from "./reducers"
@@ -54,7 +49,6 @@ componentService.registerFromRequireContext(
     require.context("./components/std/", true, /\.js(on)?$/)
 );
 
-store.dispatch(hydrateAppState(initialState));
 
 const auth = getAuthentication(initialState);
 security.init(auth.userName, auth.roles);
@@ -69,6 +63,16 @@ domready(function ()
 
     //console.log("DOMREADY");
 
+    const rootElem = document.getElementById("root");
+    const isHydration = !!rootElem.innerHTML;
+    if (!rootElem)
+    {
+        throw new Error("Missing #root DOM element");
+    }
+
+    initialState.meta.isHydration = isHydration;
+
+    store.dispatch(hydrateAppState(initialState));
 
     // set correct public path for dynamic module loading.
     const scriptResourcePath = sys.contextPath + "/res/" + sys.appName + "/js/";
@@ -83,17 +87,27 @@ domready(function ()
         appNavHistory.init();
         appNavHistory.update(store.getState());
 
-        const rootElem = document.getElementById("root");
-        if (!rootElem)
-        {
-            throw new Error("Missing #root DOM element");
-        }
         return new Promise(function (resolve, reject) {
-            ReactDOM.hydrate(
-                viewService.render(store),
-                rootElem,
-                resolve
-            )
+
+            const element = viewService.render(store);
+            if (isHydration)
+            {
+                ReactDOM.hydrate(
+                    element,
+                    rootElem,
+                    resolve
+                );
+            }
+            else
+            {
+                ReactDOM.render(
+                    element,
+                    rootElem,
+                    resolve
+                );
+            }
+
+
         });
 
     })
@@ -108,7 +122,7 @@ domready(function ()
     // });
 });
 
-// This export will be available as "Exceed" in the browser environment of the runnign application
+// This export will be available as "Exceed" in the browser environment of the running application
 // traditional export to not have a .default in the browser env
 // noinspection JSUnusedGlobalSymbols
 module.exports = Services;

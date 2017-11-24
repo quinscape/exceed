@@ -39,6 +39,8 @@ module.exports = bindToGlobal({
         const store = createStore(rootReducer, initialState);
         StoreHolder._init(store, null);
 
+        initialState.meta.isHydration = true;
+
         store.dispatch(hydrateAppState(initialState));
 
         const state = store.getState();

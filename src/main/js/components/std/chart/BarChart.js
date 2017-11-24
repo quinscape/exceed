@@ -11,6 +11,7 @@ import Popover from "react-bootstrap/lib/Popover"
 import GUIElement from "../../../editor/gui/GUIElement";
 import UIState from "../../../editor/gui/ui-state";
 import DocumentClick from "../../../util/DocumentClick";
+import ClientOnly from "../../../util/ClientOnly";
 
 const{ TextSize } = SVGLayout;
 
@@ -181,90 +182,94 @@ function InfoWindow(props)
     );
 }
 
-const BarChart = DocumentClick(
-    class extends React.Component {
+const BarChart =
+    DocumentClick(
+        ClientOnly(
+            class extends React.Component {
 
-    state = {
-        info : null
-    };
+                state = {
+                    info : null
+                };
 
-    onDocumentClick = () =>
-        this.setState({
-            info: null
-        });
+                onDocumentClick = () =>
+                    this.setState({
+                        info: null
+                    });
 
-    updatePopover = (query, index) =>
-        this.setState({
-            info: {
-                query,
-                index
-            }
-        });
+                updatePopover = (query, index) =>
+                    this.setState({
+                        info: {
+                            query,
+                            index
+                        }
+                    });
 
-    render()
-    {
-        if (!LAYOUT_LABEL)
-        {
-            initLayout();
-        }
-
-        const { id, width, height, queries, round } = this.props;
-        const { info } = this.state;
-
-        const size = 0.9;
-        const graphWidth = width * size;
-        const graphHeight = height * size;
-
-        const max = findMaximum(queries);
-
-        const chartConfig = {
-            x: width / 2 - graphWidth / 2,
-            y: height / 2 - graphHeight / 2,
-            width: graphWidth,
-            height: graphHeight,
-            max,
-            round,
-            propertyType: queries[0].data.columns.value,
-            chartId : id
-        };
-
-
-        return (
-            <div id={ id } className="bar-chart">
-
-                <GUIContainer
-                    width={ width }
-                    height={ height }
-                    centerX={ width/2 }
-                    centerY={ height/2 }
-                    zoom={ false }
-                    pan={ false }
-                >
-                    <CartesianGrid
-                        chartConfig={ chartConfig }
-                    />
-                    {
-                        queries.map(
-                            query =>
-                                <Series
-                                    key={ query.className }
-                                    chartConfig={ chartConfig }
-                                    query={ query }
-                                    onFocus={ this.updatePopover }
-                                />
-                        )
-                    }
-                </GUIContainer>
+                render()
                 {
-                    info &&
-                    <InfoWindow
-                        chartConfig={ chartConfig }
-                        {... info }
-                    />
+                    if (!LAYOUT_LABEL)
+                    {
+                        initLayout();
+                    }
+
+                    const { id, width, height, queries, round } = this.props;
+                    const { info } = this.state;
+
+                    const size = 0.9;
+                    const graphWidth = width * size;
+                    const graphHeight = height * size;
+
+                    const max = findMaximum(queries);
+
+                    const chartConfig = {
+                        x: width / 2 - graphWidth / 2,
+                        y: height / 2 - graphHeight / 2,
+                        width: graphWidth,
+                        height: graphHeight,
+                        max,
+                        round,
+                        propertyType: queries[0].data.columns.value,
+                        chartId : id
+                    };
+
+
+                    return (
+                        <div id={ id } className="bar-chart">
+
+                            <GUIContainer
+                                width={ width }
+                                height={ height }
+                                centerX={ width/2 }
+                                centerY={ height/2 }
+                                zoom={ false }
+                                pan={ false }
+                            >
+                                <CartesianGrid
+                                    chartConfig={ chartConfig }
+                                />
+                                {
+                                    queries.map(
+                                        query =>
+                                            <Series
+                                                key={ query.className }
+                                                chartConfig={ chartConfig }
+                                                query={ query }
+                                                onFocus={ this.updatePopover }
+                                            />
+                                    )
+                                }
+                            </GUIContainer>
+                            {
+                                info &&
+                                <InfoWindow
+                                    chartConfig={ chartConfig }
+                                    {... info }
+                                />
+                            }
+                        </div>
+                    )
                 }
-            </div>
+            }
         )
-    }
-});
+    );
 
 export default BarChart

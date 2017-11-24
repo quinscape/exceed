@@ -167,7 +167,7 @@ module.exports = [
                 "__DEV": !false,
                 "__SERVER": true,
                 "process.env": {
-                    "USE_EDITOR": false
+                    "USE_EDITOR": USE_EDITOR
                 }
             }),
             new webpack.IgnorePlugin(/^(node-libs-browser|process|timers-browserify)/)

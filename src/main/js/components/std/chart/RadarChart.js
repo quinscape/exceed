@@ -3,6 +3,7 @@ import cx from "classnames"
 import keys from "../../../util/keys"
 
 import DocumentClick from "../../../util/DocumentClick";
+import ClientOnly from "../../../util/ClientOnly";
 
 import SVGLayout from "../../../gfx/svg-layout"
 import GUIContext from "../../../editor/gui/gui-context"
@@ -355,117 +356,120 @@ function Legend(props)
     );
 }
 
-const RadarChart = DocumentClick(
-    class extends React.Component {
+const RadarChart =
+    DocumentClick(
+        ClientOnly(
+            class extends React.Component {
 
-        state = {
-            currentInfo: null
-        };
+                state = {
+                    currentInfo: null
+                };
 
-        onInteraction = (name, label, value, position) => {
+                onInteraction = (name, label, value, position) => {
 
-            this.setState({
-                currentInfo: {
-                    name,
-                    label,
-                    value,
-                    position
-                }
-            });
-
-        };
-
-        onDocumentClick = () => {
-
-            this.setState({
-                currentInfo: null
-            });
-
-        };
-
-        render()
-        {
-            if (!LAYOUT_LABEL)
-            {
-                initLayout();
-            }
-
-            const {id, width, height, queries} = this.props;
-
-            const chartConfig = {
-                width,
-                height,
-                halfWidth: width / 2,
-                halfHeight: height / 2,
-                chartId: id,
-                propertyType: queries[0].data.columns.value
-            };
-
-            const {currentInfo} = this.state;
-
-            const data = buildData(queries);
-
-            const {names, titles} = data;
-
-            return (
-                <div id={id} className="radar-chart">
-                    <GUIContainer
-                        chartConfig={chartConfig}
-                        width={width}
-                        height={height}
-                        centerX={width / 2}
-                        centerY={height / 2}
-                        zoom={false}
-                        pan={false}
-                    >
-                        <Legend
-                            chartConfig={chartConfig}
-                            names={names}
-                            titles={titles}
-                        />
-                        {
-                            <Grid
-                                chartConfig={chartConfig}
-                                count={data.labels.length}
-                            />
+                    this.setState({
+                        currentInfo: {
+                            name,
+                            label,
+                            value,
+                            position
                         }
-                        {
-                            data.series.map((dataSet, idx) => {
-                                    const name = names[idx];
-                                    const title = titles[idx];
-                                    return <DataSet
-                                        key={name}
-                                        name={name}
-                                        title={title}
-                                        chartConfig={chartConfig}
-                                        dataSet={dataSet}
-                                        labels={data.labels}
-                                        titles={data.labels}
-                                        max={data.max}
-                                        onInteraction={this.onInteraction}
-                                    />;
-                                }
-                            )
+                    });
 
-                        }
-                        {
-                            <Labels
-                                chartConfig={chartConfig}
-                                labels={data.labels}
-                            />
-                        }
-                    </GUIContainer>
+                };
+
+                onDocumentClick = () => {
+
+                    this.setState({
+                        currentInfo: null
+                    });
+
+                };
+
+                render()
+                {
+                    if (!LAYOUT_LABEL)
                     {
-                        currentInfo &&
-                        <InfoWindow
-                            chartConfig={chartConfig}
-                            {...currentInfo}
-                        />
+                        initLayout();
                     }
-                </div>
-            )
-        }
-    }
-);
+
+                    const {id, width, height, queries} = this.props;
+
+                    const chartConfig = {
+                        width,
+                        height,
+                        halfWidth: width / 2,
+                        halfHeight: height / 2,
+                        chartId: id,
+                        propertyType: queries[0].data.columns.value
+                    };
+
+                    const {currentInfo} = this.state;
+
+                    const data = buildData(queries);
+
+                    const {names, titles} = data;
+
+                    return (
+                        <div id={id} className="radar-chart">
+                            <GUIContainer
+                                chartConfig={chartConfig}
+                                width={width}
+                                height={height}
+                                centerX={width / 2}
+                                centerY={height / 2}
+                                zoom={false}
+                                pan={false}
+                            >
+                                <Legend
+                                    chartConfig={chartConfig}
+                                    names={names}
+                                    titles={titles}
+                                />
+                                {
+                                    <Grid
+                                        chartConfig={chartConfig}
+                                        count={data.labels.length}
+                                    />
+                                }
+                                {
+                                    data.series.map((dataSet, idx) => {
+                                            const name = names[idx];
+                                            const title = titles[idx];
+                                            return <DataSet
+                                                key={name}
+                                                name={name}
+                                                title={title}
+                                                chartConfig={chartConfig}
+                                                dataSet={dataSet}
+                                                labels={data.labels}
+                                                titles={data.labels}
+                                                max={data.max}
+                                                onInteraction={this.onInteraction}
+                                            />;
+                                        }
+                                    )
+
+                                }
+                                {
+                                    <Labels
+                                        chartConfig={chartConfig}
+                                        labels={data.labels}
+                                    />
+                                }
+                            </GUIContainer>
+                            {
+                                currentInfo &&
+                                <InfoWindow
+                                    chartConfig={chartConfig}
+                                    {...currentInfo}
+                                />
+                            }
+                        </div>
+                    )
+                }
+            }
+        )
+    );
 
 export default RadarChart
