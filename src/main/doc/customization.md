@@ -131,4 +131,5 @@ public interface TemplateVariablesProvider
 ### Server-Rendering
 
 Server-rendering is implemented as template variables provider in de.quinscape.exceed.runtime.universal.ReactServerSideRenderer.
+It is controlled by [component config setting "serverRendering"](./model-reference.html#xcd.config.ComponentConfig).
 

@@ -28,6 +28,18 @@ const getSortedProps = Memoizer(doc => {
     }
 });
 
+function MergeLabel(props)
+{
+    const { mergeMode } = props;
+
+    return (
+        <span className="merge-label" title={ "MergeStrategy: " + mergeMode }>
+            <span className="glyphicon glyphicon-import"/>
+            { mergeMode }
+        </span>
+    )
+}
+
 function Description({ value, prefix = "", className })
 {
     if (!value && !prefix)
@@ -40,7 +52,7 @@ function Description({ value, prefix = "", className })
     )
 }
 
-function Section(type, docs)
+function Section(type, docs, parentMerge)
 {
     const doc = docs[type];
 
@@ -94,12 +106,19 @@ function Section(type, docs)
                            <br/>
                             <small>
                                 Location: { doc.locationDescription }
+                                <MergeLabel mergeMode={ doc.mergeMode }/>
                             </small>
                         </h2>,
                         <Description  key="2" value={ doc.classDescription }/>
                     ]
                 ) : (
+                    <span>
                     <Description prefix={ "<strong>" + doc.type + ": " + "</strong>" } value={ doc.classDescription }/>
+                        {
+                            parentMerge !== doc.mergeMode &&
+                            <MergeLabel mergeMode={ doc.mergeMode }/>
+                        }
+                    </span>
                 ) 
             }
 
@@ -123,6 +142,10 @@ function Section(type, docs)
                             </td>
                             <td>
                                 <Description value={ propDoc.propertyDescription }/>
+                                {
+                                    propDoc.mergeMode && propDoc.mergeMode !== doc.mergeMode &&
+                                    <MergeLabel mergeMode={ propDoc.mergeMode }/>
+                                }
                             </td>
                         </tr>
                     )
@@ -145,7 +168,7 @@ function Section(type, docs)
                                 <td colSpan={3}>
                                     {
                                         propDoc.subTypeDocs.map(subType =>  {
-                                            return Section(subType, docs)
+                                            return Section(subType, docs, doc.mergeMode)
                                         })
                                     }
                                 </td>
@@ -204,7 +227,7 @@ class ModelDocs extends React.Component {
                 <h1>Model Locations</h1>
                 <ExtensionStructure { ... this.props } extra={ true }/>
                 {
-                    modelDocs.topLevelTypes.map(type => Section(type, docs) )
+                    modelDocs.topLevelTypes.map(type => Section(type, docs, null) )
                 }
 
             </div>

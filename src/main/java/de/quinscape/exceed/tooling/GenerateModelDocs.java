@@ -11,10 +11,12 @@ import de.quinscape.exceed.model.annotation.DocumentedCollection;
 import de.quinscape.exceed.model.annotation.DocumentedModelType;
 import de.quinscape.exceed.model.annotation.DocumentedSubTypes;
 import de.quinscape.exceed.model.annotation.Internal;
+import de.quinscape.exceed.model.annotation.MergeStrategy;
 import de.quinscape.exceed.model.component.ComponentPackageDescriptor;
 import de.quinscape.exceed.model.context.ScopedPropertyModel;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.expression.ExpressionValueType;
+import de.quinscape.exceed.model.merge.ModelMergeMode;
 import de.quinscape.exceed.model.startup.ExceedConfig;
 import de.quinscape.exceed.runtime.ExceedRuntimeException;
 import de.quinscape.exceed.runtime.domain.QueryTypeOperations;
@@ -31,6 +33,7 @@ import de.quinscape.exceed.runtime.js.def.Definitions;
 import de.quinscape.exceed.runtime.js.def.DefinitionsBuilder;
 import de.quinscape.exceed.runtime.model.ModelLocationRule;
 import de.quinscape.exceed.runtime.model.ModelLocationRules;
+import de.quinscape.exceed.runtime.model.ModelMerger;
 import de.quinscape.exceed.runtime.util.JSONUtil;
 import de.quinscape.exceed.runtime.util.Util;
 import org.apache.commons.io.FileUtils;
@@ -130,7 +133,7 @@ public class GenerateModelDocs
             final HashMap<String, ModelDoc> modelDocs = new HashMap<>();
             for (Class<? extends TopLevelModel> cls : topLevelModels)
             {
-                final ModelDoc doc = createModelDoc(cls, modelDocs);
+                final ModelDoc doc = createModelDoc(cls, modelDocs, ModelMergeMode.REPLACE);
                 if (doc != null)
                 {
                     topLevelModelDocs.add(doc.getType());
@@ -173,7 +176,9 @@ public class GenerateModelDocs
     }
 
 
-    private ModelDoc createModelDoc(Class<?> cls, HashMap<String, ModelDoc> visited)
+    private ModelDoc createModelDoc(
+        Class<?> cls, HashMap<String, ModelDoc> visited, ModelMergeMode defaultMergeMode
+    )
     {
         try
         {
@@ -188,12 +193,24 @@ public class GenerateModelDocs
             {
                 return existing;
             }
-            final ModelDoc modelDoc = new ModelDoc(modelType);
+            final MergeStrategy annotation = cls.getAnnotation(MergeStrategy.class);
+            ModelMergeMode mergeMode;
+            if (annotation != null)
+            {
+                mergeMode = annotation.value();
+            }
+            else
+            {
+                mergeMode = defaultMergeMode;
+            }
+
+            final ModelDoc modelDoc = new ModelDoc(modelType, mergeMode);
             visited.put(modelType, modelDoc);
 
             log.info("Analyze {}", cls);
 
             final JSONClassInfo classInfo = JSONUtil.getClassInfo(cls);
+
 
             String classDescription = null;
             String locationDescription;
@@ -218,8 +235,12 @@ public class GenerateModelDocs
             {
                 final String propName = info.getJsonName();
 
-                if (info == null || info.isIgnore() || (JSONUtil.findAnnotation(info, Internal.class) != null) || propName.equals(
-                    AutoVersionedModel.IDENTITY_GUID) || propName.equals(AutoVersionedModel.VERSION_GUID) )
+                if (
+                    info.isIgnore() || 
+                    (JSONUtil.findAnnotation(info, Internal.class) != null) ||
+                    propName.equals(AutoVersionedModel.IDENTITY_GUID) ||
+                    propName.equals(AutoVersionedModel.VERSION_GUID)
+                )
                 {
                     continue;
                 }
@@ -234,9 +255,14 @@ public class GenerateModelDocs
                 final DocumentedCollection mapAnno = JSONUtil.findAnnotation(info, DocumentedCollection.class);
                 final DocumentedModelType typeAnno = JSONUtil.findAnnotation(info, DocumentedModelType.class);
                 final DocumentedSubTypes subTypesAnno = JSONUtil.findAnnotation(info, DocumentedSubTypes.class);
+                final MergeStrategy mergeStrategyAnno = JSONUtil.findAnnotation(info, MergeStrategy.class);
                 final String keyName = mapAnno != null && mapAnno.keyDesc().length() > 0 ? mapAnno.keyDesc() : DEFAULT_KEY_NAME;
                 final String valueName = mapAnno != null && mapAnno.valueDesc().length() > 0 ? mapAnno.valueDesc() : null;
 
+                if (mergeStrategyAnno != null)
+                {
+                    mergeMode = mergeStrategyAnno.value();
+                }
 
                 String propTypeDescription;
 
@@ -263,7 +289,9 @@ public class GenerateModelDocs
                             else
                             {
                                 propTypeDescription = typeAnno != null ? typeAnno.value() : "Array of " + typeHint.getSimpleName();
-                                subTypeDocs = toSingletonTypeList(createModelDoc(typeHint, visited));
+                                subTypeDocs = toSingletonTypeList(createModelDoc(typeHint, visited,
+                                    mergeMode
+                                ));
                             }
                         }
                     }
@@ -290,7 +318,9 @@ public class GenerateModelDocs
                             else
                             {
                                 propTypeDescription = typeAnno != null ? typeAnno.value() : "Map " + keyName + " -> " + typeHint.getSimpleName();
-                                subTypeDocs = toSingletonTypeList(createModelDoc(typeHint, visited));
+                                subTypeDocs = toSingletonTypeList(createModelDoc(typeHint, visited,
+                                    mergeMode
+                                ));
                             }
                         }
                     }
@@ -307,21 +337,29 @@ public class GenerateModelDocs
                     if (propTypeDescription == null)
                     {
                         propTypeDescription = type.getSimpleName();
-                        subTypeDocs = toSingletonTypeList(createModelDoc(type, visited));
+                        subTypeDocs = toSingletonTypeList(createModelDoc(type, visited, mergeMode));
                     }
                 }
 
                 if (subTypesAnno != null)
                 {
+                    final ModelMergeMode mode = mergeMode;
+
                     subTypeDocs = Arrays.stream(subTypesAnno.value())
                         .map(subTypeCls ->
                         {
-                            return createModelDoc(subTypeCls, visited).getType();
+                            return createModelDoc(subTypeCls, visited, mode).getType();
                         })
                         .collect(Collectors.toList());
                 }
 
-                propertyDocs.add(new ModelPropertyDoc(propName, propTypeDescription, propertyDescription, subTypeDocs));
+                propertyDocs.add(
+                    new ModelPropertyDoc(
+                        propName,
+                        propTypeDescription,
+                        propertyDescription,
+                        subTypeDocs,
+                        !ModelMerger.isForcedReplacement(type) ? mergeMode : null));
             }
 
             modelDoc.setClassDescription(classDescription);

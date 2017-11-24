@@ -81,7 +81,8 @@ const MODEL_NAME = {
     "DomainTypeModel" : "DomainTypeA",
     "LayoutModel" : "Layout",
     "Process" : "process-a",
-    "View" : "home"
+    "View" : "home",
+    "StageModel" : "myStage"
 };
 
 const ICON_NAME = {
@@ -95,6 +96,7 @@ const ICON_NAME = {
     "Process" : "cog",
     "View" : "picture",
     "ApplicationConfig" : "wrench",
+    "StageModel" : "map-marker",
     "RoutingTable" : "road"
 };
 

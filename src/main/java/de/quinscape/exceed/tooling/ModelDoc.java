@@ -1,10 +1,14 @@
 package de.quinscape.exceed.tooling;
 
+import de.quinscape.exceed.model.merge.ModelMergeMode;
+
 import java.util.List;
 
 public class ModelDoc
 {
     private String type;
+
+    private final ModelMergeMode mergeMode;
 
     private String locationDescription;
 
@@ -13,9 +17,10 @@ public class ModelDoc
     private List<ModelPropertyDoc> propertyDocs;
 
 
-    public ModelDoc(String modelType)
+    public ModelDoc(String modelType, ModelMergeMode mergeMode)
     {
         this.type = modelType;
+        this.mergeMode = mergeMode;
     }
 
 
@@ -64,5 +69,11 @@ public class ModelDoc
     public List<ModelPropertyDoc> getPropertyDocs()
     {
         return propertyDocs;
+    }
+
+
+    public ModelMergeMode getMergeMode()
+    {
+        return mergeMode;
     }
 }
