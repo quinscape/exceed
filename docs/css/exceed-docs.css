@@ -130,3 +130,15 @@ pre code.lang-json
 {
     margin-bottom: 1em;
 }
+
+.merge-label
+{
+    display: inline-block;
+    background: #b1d9e3;
+    color: #222;
+    font-size: 9pt;
+    padding: 0.5em 1ex;
+    margin: 0.5em;
+    border: 1px solid #5bb9d8;
+    border-radius: 8px;
+}
