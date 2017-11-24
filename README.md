@@ -71,3 +71,7 @@ the exceed jar file, but from that location, making the base distribution hot-lo
 
 We are still in the very early stages of development. In the end we're hoping to have better scaffolding tools and/or
 editors.  
+
+## Project Documentation
+
+See the [Docs README](https://github.com/quinscape/exceed/blob/master/docs/README.md) for how to generate/update the project documentation.
