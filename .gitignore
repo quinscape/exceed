@@ -6,3 +6,8 @@ node
 local
 # src/main/resource/Expression.jjt is the relevant grammar file
 src/main/java/de/quinscape/exceed/expression/Expression.jj
+# ignore generated js bundles
+src/main/base/resources/js/exceed-*.js
+src/main/base/resources/js/exceed-*.js.map
+src/main/base/resources/js/track-usage.json
+src/main/base/resources/js/webpack-stats.json
