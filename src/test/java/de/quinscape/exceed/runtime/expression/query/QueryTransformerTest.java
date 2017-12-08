@@ -3,16 +3,24 @@ package de.quinscape.exceed.runtime.expression.query;
 import com.google.common.collect.ImmutableSet;
 import de.quinscape.exceed.TestDomainServiceBase;
 import de.quinscape.exceed.expression.ParseException;
+import de.quinscape.exceed.model.config.ApplicationConfig;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.domain.type.DomainTypeModel;
 import de.quinscape.exceed.model.expression.ExpressionValue;
 import de.quinscape.exceed.model.meta.PropertyType;
+import de.quinscape.exceed.model.staging.SystemDataSourceModel;
 import de.quinscape.exceed.model.view.View;
 import de.quinscape.exceed.runtime.TestApplication;
 import de.quinscape.exceed.runtime.TestApplicationBuilder;
+import de.quinscape.exceed.runtime.datasrc.ExceedDataSource;
+import de.quinscape.exceed.runtime.datasrc.StorageConfiguration;
+import de.quinscape.exceed.runtime.datasrc.SystemDataSource;
+import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
+import de.quinscape.exceed.runtime.domain.SystemStorageOperations;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
+import de.quinscape.exceed.runtime.schema.NoopSchemaService;
 import org.jooq.Condition;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -157,6 +165,7 @@ public class QueryTransformerTest
             DomainTypeModel domainType = new DomainTypeModel();
             domainType.setName(name);
             domainType.setAnnotation("Test domain type " + name);
+            domainType.setDataSourceName(ApplicationConfig.DEFAULT_DATA_SOURCE);
 
             final List<DomainProperty> list = new ArrayList<>();
 
@@ -212,6 +221,21 @@ public class QueryTransformerTest
         public Map<String, DomainType> getDomainTypes()
         {
             return domainTypes;
+        }
+
+
+        @Override
+        public ExceedDataSource getDataSource(String dataSourceName)
+        {
+            return new SystemDataSource(
+                dataSourceName,
+                new SystemDataSourceModel(),
+                new StorageConfiguration(
+                    new DefaultNamingStrategy(),
+                    new SystemStorageOperations(),
+                    new NoopSchemaService()
+                )
+            );
         }
     }
 }

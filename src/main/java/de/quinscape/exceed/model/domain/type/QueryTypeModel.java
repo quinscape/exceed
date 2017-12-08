@@ -33,7 +33,7 @@ public class QueryTypeModel
 
     private static final String DEFAULT_QUERY_PARAMETER_PROVIDER = "defaultQueryParameterProvider";
 
-    private static final String DEFAULT_DATA_SOURCE = "queryTypeDataSource";
+    public static final String DEFAULT_DATA_SOURCE = "queryTypeDataSource";
 
     private String query;
 

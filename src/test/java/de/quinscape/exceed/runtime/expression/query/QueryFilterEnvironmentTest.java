@@ -6,6 +6,9 @@ import de.quinscape.exceed.expression.ParseException;
 import de.quinscape.exceed.model.domain.property.DomainProperty;
 import de.quinscape.exceed.model.domain.type.DomainTypeBuilder;
 import de.quinscape.exceed.model.meta.PropertyType;
+import de.quinscape.exceed.model.view.View;
+import de.quinscape.exceed.runtime.RuntimeContext;
+import de.quinscape.exceed.runtime.TestApplicationBuilder;
 import de.quinscape.exceed.runtime.expression.ExpressionService;
 import de.quinscape.exceed.runtime.expression.ExpressionServiceImpl;
 import org.jooq.Condition;
@@ -67,7 +70,12 @@ public class QueryFilterEnvironmentTest
 
         fooType.join("join", barType);
 
+        final View testView = new View("test");
+        final RuntimeContext runtimeContext = new TestApplicationBuilder()
+            .withView(testView)
+            .build().createRuntimeContext(testView);
+
         return (Condition) expressionService.evaluate(ExpressionParser.parse(expr), new QueryFilterEnvironment(
-            new QueryTransformerEnvironment(null, null), fooType));
+            new QueryTransformerEnvironment(runtimeContext, null), fooType));
     }
 }

@@ -1,5 +1,6 @@
 package de.quinscape.exceed.runtime;
 
+import com.google.common.collect.ImmutableMap;
 import de.quinscape.exceed.model.ApplicationModel;
 import de.quinscape.exceed.model.config.ServerRenderingMode;
 import de.quinscape.exceed.model.context.ContextModel;
@@ -10,7 +11,10 @@ import de.quinscape.exceed.model.domain.StateMachine;
 import de.quinscape.exceed.model.domain.property.PropertyTypeModel;
 import de.quinscape.exceed.model.domain.type.DomainType;
 import de.quinscape.exceed.model.domain.type.DomainTypeModel;
+import de.quinscape.exceed.model.domain.type.QueryTypeModel;
 import de.quinscape.exceed.model.process.Process;
+import de.quinscape.exceed.model.staging.StageModel;
+import de.quinscape.exceed.model.staging.SystemDataSourceModel;
 import de.quinscape.exceed.model.view.ComponentModelBuilder;
 import de.quinscape.exceed.model.view.LayoutModel;
 import de.quinscape.exceed.model.view.View;
@@ -21,8 +25,12 @@ import de.quinscape.exceed.runtime.action.param.ContextPropertyValueProviderFact
 import de.quinscape.exceed.runtime.action.param.DataSourceProviderFactory;
 import de.quinscape.exceed.runtime.action.param.RuntimeContextProviderFactory;
 import de.quinscape.exceed.runtime.config.ExpressionConfiguration;
+import de.quinscape.exceed.runtime.datasrc.StorageConfiguration;
+import de.quinscape.exceed.runtime.datasrc.SystemDataSource;
+import de.quinscape.exceed.runtime.domain.DefaultNamingStrategy;
 import de.quinscape.exceed.runtime.domain.DomainService;
 import de.quinscape.exceed.runtime.domain.DomainServiceImpl;
+import de.quinscape.exceed.runtime.domain.SystemStorageOperations;
 import de.quinscape.exceed.runtime.js.DefaultExpressionCompiler;
 import de.quinscape.exceed.runtime.js.JsEnvironmentFactory;
 import de.quinscape.exceed.runtime.js.JsExpressionRenderer;
@@ -38,8 +46,10 @@ import de.quinscape.exceed.runtime.resource.DefaultResourceLoader;
 import de.quinscape.exceed.runtime.resource.ResourceLoader;
 import de.quinscape.exceed.runtime.resource.ResourceRoot;
 import de.quinscape.exceed.runtime.resource.file.FileResourceRoot;
+import de.quinscape.exceed.runtime.schema.NoopSchemaService;
 import de.quinscape.exceed.runtime.service.model.ModelSchemaService;
 import de.quinscape.exceed.runtime.util.JsUtil;
+import de.quinscape.exceed.runtime.util.RequestUtil;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FalseFileFilter;
@@ -122,11 +132,13 @@ public class TestApplicationBuilder
         }
     }
 
+
     public TestApplicationBuilder withDomainType(String name, DomainType domainType)
     {
         domainTypes.put(name, domainType);
         return this;
     }
+
 
     public TestApplicationBuilder withView(View view)
     {
@@ -155,6 +167,7 @@ public class TestApplicationBuilder
         return this;
     }
 
+
     public TestApplicationBuilder withApplicationContext(ScopedPropertyModel property)
     {
         final Map<String, ScopedPropertyModel> props;
@@ -173,6 +186,7 @@ public class TestApplicationBuilder
 
         return this;
     }
+
 
     public TestApplicationBuilder withSessionContext(ScopedPropertyModel property)
     {
@@ -208,11 +222,13 @@ public class TestApplicationBuilder
         return this;
     }
 
+
     public TestApplicationBuilder withDomainService(DomainService domainService)
     {
         this.domainService = domainService;
         return this;
     }
+
 
     public TestApplicationBuilder withExtensions(File... dirs)
     {
@@ -239,6 +255,7 @@ public class TestApplicationBuilder
         this.testActionBean = testActionBean;
         return this;
     }
+
 
     public TestApplication build()
     {
@@ -281,6 +298,7 @@ public class TestApplicationBuilder
                     new TypeAnalyzer()
                 )
             ),
+            null,
             null
         );
 
@@ -345,7 +363,6 @@ public class TestApplicationBuilder
         if (domainService == null)
         {
             domainService = new DomainServiceImpl();
-
         }
         else
         {
@@ -372,7 +389,8 @@ public class TestApplicationBuilder
                 {
                     applicationModel.addEnum(enumType);
                 }
-            };
+            }
+            ;
 
         }
 
@@ -391,11 +409,26 @@ public class TestApplicationBuilder
         svc.postprocess(applicationModel);
 
         final TestApplication testApplication = new TestApplication(applicationModel, domainService);
-        domainService.init(testApplication, null);
-
+        final String defaultDataSource = applicationModel.getConfigModel().getDefaultDataSource();
+        final SystemDataSource src = new SystemDataSource(
+            defaultDataSource,
+            new SystemDataSourceModel(),
+            new StorageConfiguration(
+                new DefaultNamingStrategy(),
+                new SystemStorageOperations(),
+                new NoopSchemaService()
+            )
+        );
+        domainService.init(
+            testApplication,
+            ImmutableMap.of(
+                defaultDataSource, src,
+                QueryTypeModel.DEFAULT_DATA_SOURCE, src
+            )
+        );
         return testApplication;
     }
-
+    
 
     public void readServerBundle(ApplicationModel applicationModel, NashornScriptEngine nashorn)
     {
@@ -416,7 +449,9 @@ public class TestApplicationBuilder
     }
 
 
-    private CompiledScript compileBundle(NashornScriptEngine nashorn, String path) throws ScriptException, FileNotFoundException
+    private CompiledScript compileBundle(
+        NashornScriptEngine nashorn, String path
+    ) throws ScriptException, FileNotFoundException
     {
         return nashorn.compile(
             new FileReader(
@@ -434,64 +469,56 @@ public class TestApplicationBuilder
      */
     private void readEssentialDomainTypeDefs(ApplicationModel applicationModel)
     {
-        try
-        {
-            DomainType appTranslation = readJSON(
-                DomainTypeModel.class,
-                new File("./src/main/base/models/domain/AppTranslation.json")
-            );
+        DomainType appTranslation = readJSON(
+            DomainTypeModel.class,
+            new File("./src/main/base/models/domain/AppTranslation.json")
+        );
 
-            applicationModel.addDomainType(appTranslation);
-
-        }
-        catch (FileNotFoundException e)
-        {
-            throw new ExceedRuntimeException(e);
-        }
+        applicationModel.addDomainType(appTranslation);
     }
 
 
     private Map<String, PropertyTypeModel> readBaseProperties()
     {
+        Map<String, PropertyTypeModel> map = new HashMap<>();
+
+        final Collection<File> files =
+            FileUtils.listFiles(
+                new File("./src/main/base/models/domain/property/"),
+                new SuffixFileFilter(".json"),
+                FalseFileFilter.INSTANCE
+            );
+
+        for (File file : files)
+        {
+            PropertyTypeModel propertyType = readJSON(PropertyTypeModel.class, file);
+            map.put(propertyType.getName(), propertyType);
+
+        }
+
+        return map;
+    }
+
+
+    private <T> T readJSON(Class<T> cls, File file)
+    {
+
         try
         {
-            Map<String, PropertyTypeModel> map = new HashMap<>();
-
-            final Collection<File> files =
-                FileUtils.listFiles(
-                    new File("./src/main/base/models/domain/property/"),
-                    new SuffixFileFilter(".json"),
-                    FalseFileFilter.INSTANCE
-                );
-            
-            for (File file : files)
-            {
-                PropertyTypeModel propertyType = readJSON(PropertyTypeModel.class, file) ;
-                map.put(propertyType.getName(), propertyType);
-
-            }
-
-            return map;
+            return JSONParser.defaultJSONParser().parse(
+                cls,
+                new InputStreamSource(
+                    new FileInputStream(
+                        file
+                    ),
+                    true
+                )
+            );
         }
         catch (FileNotFoundException e)
         {
             throw new ExceedRuntimeException(e);
         }
-    }
-
-
-    private <T> T readJSON(Class<T> cls, File file) throws FileNotFoundException
-    {
-
-        return JSONParser.defaultJSONParser().parse(
-            cls,
-            new InputStreamSource(
-                new FileInputStream(
-                    file
-                ),
-                true
-            )
-        );
     }
 
 
@@ -500,6 +527,7 @@ public class TestApplicationBuilder
         domainRules.put(domainRule.getName(), domainRule);
         return this;
     }
+
 
     public TestApplicationBuilder withStateMachine(StateMachine stateMachine)
     {
