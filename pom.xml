@@ -32,7 +32,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>9.3-1102-jdbc4</version>
+            <version>42.1.4</version>
         </dependency>
         
         <dependency>
@@ -141,6 +141,18 @@
             <groupId>org.webbitserver</groupId>
             <artifactId>webbit</artifactId>
             <version>0.4.15</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>o.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+            <version>3.10.6.Final</version>
         </dependency>
 
         <dependency>
@@ -148,11 +160,13 @@
             <artifactId>ziplet</artifactId>
             <version>2.1.2</version>
         </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>${spring.core.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
@@ -458,7 +472,7 @@
                     <dependency>
                         <groupId>org.postgresql</groupId>
                         <artifactId>postgresql</artifactId>
-                        <version>9.3-1102-jdbc4</version>
+                        <version>42.1.4</version>
                     </dependency>
                 </dependencies>
 
@@ -648,7 +662,27 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+	</plugin>
+
+             <plugin>
+                 <groupId>org.owasp</groupId>
+                 <artifactId>dependency-check-maven</artifactId>
+                 <version>1.4.5</version>
+                 <configuration>
+                     <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
+                     <suppressionFile>misc/owasp-suppression.xml</suppressionFile>
+                 </configuration>
+                 <executions>
+                     <execution>
+                         <id>OWASP dependency check</id>
+                         <goals>
+                             <goal>aggregate</goal>
+                         </goals>
+                     </execution>
+                 </executions>
+             </plugin>
+
+
         </plugins>
     </build>
 </project>
