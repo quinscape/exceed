@@ -240,7 +240,11 @@ public final class ModelMerger
                 String json = new String(topResource.read(), RequestUtil.UTF_8);
 
                 model = ModelCompositionService.create(
-                    modelJSONService, type, json, topResource
+                    applicationModel,
+                    modelJSONService,
+                    type,
+                    json,
+                    topResource
                 );
 
                 break;
@@ -249,12 +253,13 @@ public final class ModelMerger
 
                 model = (TopLevelModel) resources.getAppResources()
                     .stream()
-                    .map(r ->
+                    .map(resource ->
                         (Object) ModelCompositionService.create(
+                            applicationModel,
                             modelJSONService,
                             type,
-                            new String(r.read(), RequestUtil.UTF_8),
-                            r
+                            new String(resource.read(), RequestUtil.UTF_8),
+                            resource
                         )
                     )
                     .reduce(null, ModelMerger::merge);
@@ -418,7 +423,7 @@ public final class ModelMerger
                                     result = new ArrayList<>();
                                     if (currList != null)
                                     {
-                                        result.add(currList);
+                                        result.addAll(currList);
                                     }
                                     final List<Object> nextList = (List<Object>) util.getProperty(
                                         next, propertyName);

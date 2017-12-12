@@ -178,13 +178,50 @@ public class ModelMergerTest
     }
 
 
-    public <T> Set<T> newSet(T... values)
+    @Test
+    public void mergeEmptyLists()
+    {
+            final BeanWithMergedList configA = new BeanWithMergedList();
+            final BeanWithMergedList configB = new BeanWithMergedList();
+            final BeanWithMergedList merged = merge(configA,configB);
+
+            assertThat(merged.getValues(), is(Collections.emptyList()));
+    }
+
+    @Test
+    public void mergeInValue()
+    {
+        final BeanWithMergedList configA = new BeanWithMergedList();
+        final BeanWithMergedList configB = new BeanWithMergedList();
+
+        configB.setValues(Collections.singletonList("myValue"));
+
+        final BeanWithMergedList merged = merge(configA,configB);
+
+        assertThat(merged.getValues(), is(Collections.singletonList("myValue")));
+    }
+
+    @Test
+    public void mergeValues()
+    {
+        final BeanWithMergedList configA = new BeanWithMergedList();
+        final BeanWithMergedList configB = new BeanWithMergedList();
+
+        configA.setValues(Collections.singletonList("valueA"));
+        configB.setValues(Collections.singletonList("valueB"));
+
+        final BeanWithMergedList merged = merge(configA,configB);
+
+        assertThat(merged.getValues(), is(Arrays.asList("valueA", "valueB")));
+    }
+
+
+    @SafeVarargs
+    public final <T> Set<T> newSet(T... values)
     {
         final HashSet<T> set = new HashSet<>();
-        for (T value : values)
-        {
-            set.add(value);
-        }
+        Collections.addAll(set, values);
         return set;
     }
+    
 }
