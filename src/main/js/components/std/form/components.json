@@ -91,6 +91,10 @@
             "description": "Static text field that formats its output to fit in with other form elements.",
             "classes": ["field", "model-aware", "element"],
             "propTypes": {
+                "label" : {
+                    "description": "Explicit label to use for this StaticText. (Default is 'DomainType:fieldName' for the underlying cursor).",
+                    "type": "PLAINTEXT"
+                },
                 "value": {
                     "description": "cursor expression for the value",
                     "rule": "fieldOf(parent.prop('type'))",
@@ -111,6 +115,10 @@
             "description": "General purpose form field adapting to the property type of its target where possible",
             "classes": ["element", "field", "model-aware"],
             "propTypes": {
+                "label" : {
+                    "description": "Explicit label to use for this Field. (Default is 'DomainType:fieldName' for the underlying cursor).",
+                    "type": "PLAINTEXT"
+                },
                 "value": {
                     "description": "cursor expression for the value",
                     "rule": "fieldOf(parent.prop('type'))",
@@ -147,6 +155,10 @@
                 "data": "query( prop('type') )"
             },
             "propTypes": {
+                "label" : {
+                    "description": "Explicit label to use for this SelectField. (Default is 'DomainType:fieldName' for the underlying cursor).",
+                    "type": "PLAINTEXT"
+                },
                 "value": {
                     "description": "cursor expression for the value",
                     "rule": "fieldOf(parent.prop('type'))",
