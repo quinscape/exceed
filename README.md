@@ -1,5 +1,11 @@
 # Exceed Application Engine #
 
+---
+
+**NOTE**: This project has stopped development due to a strategic shifting decision made by Quinscape. Some of the ideas here have flown into the new DomainQL library, but at a vastly reduced scope and abandoning of a generalized model layer.
+
+---
+
 Model-based application engine for editing and running applications defined in a JSON format.
 
 [Project documentation](https://quinscape.github.io/exceed/index.html)
